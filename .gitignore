@@ -37,3 +37,9 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+android/.gradle/
+example/android/
+example/ios/
+lib/
+.cursor/

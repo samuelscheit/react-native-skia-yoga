@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/node_modules/react-native-nitro-modules/cpp/**",
+                "${workspaceFolder}/node_modules/@shopify/react-native-skia/cpp/**",
+                "${workspaceFolder}/node_modules/react-native-yoga-jsi/cpp/**",
+                "${workspaceFolder}/node_modules/react-native/ReactCommon/yoga/yoga/**"
+            ],
+            "defines": [],
+            "macFrameworkPath": [
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX26.sdk/System/Library/Frameworks",
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX26.sdk/System/Library/SubFrameworks"
+            ],
+            "compilerPath": "/opt/homebrew/opt/llvm/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-arm64"
+        }
+    ],
+    "version": 4
+}

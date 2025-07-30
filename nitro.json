@@ -1,0 +1,23 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "cxxNamespace": [
+    "RNSkiaYoga"
+  ],
+  "ios": {
+    "iosModuleName": "RNSkiaYoga"
+  },
+  "android": {
+    "androidNamespace": [
+      "RNSkiaYoga"
+    ],
+    "androidCxxLibName": "RNSkiaYoga"
+  },
+  "autolinking": {
+    "SkiaYoga": {
+      "cpp": "SkiaYoga"
+    }
+  },
+  "ignorePaths": [
+    "**/node_modules"
+  ]
+}

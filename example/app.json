@@ -1,22 +1,24 @@
 {
   "expo": {
-    "name": "react-native-skia-yoga",
-    "slug": "react-native-skia-yoga",
+    "name": "react-native-skia-yoga-example",
+    "slug": "react-native-skia-yoga-example",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "reactnativeskiayoga",
+    "scheme": "reactnativeskiayogaexample",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.flam3rboy.reactnativeskiayogaexample"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.flam3rboy.reactnativeskiayogaexample"
     },
     "web": {
       "bundler": "metro",
