@@ -11,6 +11,7 @@
 #import <type_traits>
 
 #include "SkiaYoga.hpp"
+#include "YogaNode.hpp"
 
 @interface RNSkiaYogaAutolinking : NSObject
 @end
@@ -28,6 +29,15 @@
                     "The HybridObject \"SkiaYoga\" is not default-constructible! "
                     "Create a public constructor that takes zero arguments to be able to autolink this HybridObject.");
       return std::make_shared<SkiaYoga>();
+    }
+  );
+  HybridObjectRegistry::registerHybridObjectConstructor(
+    "YogaNode",
+    []() -> std::shared_ptr<HybridObject> {
+      static_assert(std::is_default_constructible_v<YogaNode>,
+                    "The HybridObject \"YogaNode\" is not default-constructible! "
+                    "Create a public constructor that takes zero arguments to be able to autolink this HybridObject.");
+      return std::make_shared<YogaNode>();
     }
   );
 }

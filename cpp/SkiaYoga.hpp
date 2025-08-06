@@ -4,6 +4,10 @@
 #include "HybridYogaNodeSpec.hpp"
 #include <jsi/jsi.h>
 #include <yoga/Yoga.h>
+#include <react-native-skia/cpp/skia/include/private/base/SkTypeTraits.h>
+#include <react-native-skia/cpp/api/JsiSkApi.h>
+#include <react-native-skia/cpp/api/recorder/Command.h>
+#include <memory>
 
 namespace margelo::nitro::RNSkiaYoga {
 
@@ -11,19 +15,12 @@ using namespace facebook;
 
 class SkiaYoga : public HybridSkiaYogaSpec {
 public:
-  SkiaYoga() : HybridObject(TAG) {}
+  // This default constructor is required for autolinking in RNSkiaYogaAutolinking.mm
+  SkiaYoga();
+  ~SkiaYoga();
   double addNumbers(double a, double b) override;
  
 };
 
-class YogaNode : public HybridYogaNodeSpec {
-public:
-  YogaNode();
-  ~YogaNode();
-  void setStyle(const NodeStyle& style) override;
+}; // namespace margelo::nitro::RNSkiaYoga
 
-private:
-  YGNodeRef _node;
-};
-
-}; // namespace margelo::nitro::test

@@ -22,11 +22,38 @@ Pod::Spec.new do |s|
     "cpp/**/*.{hpp,cpp}",
   ]
 
+  # Configure header search paths to find React Native Skia and Skia headers
+  s.pod_target_xcconfig = {
+    'HEADER_SEARCH_PATHS' => [
+      '"$(PODS_TARGET_SRCROOT)/cpp/**"',
+	  '"$(PODS_ROOT)/../../node_modules/@shopify/react-native-skia/cpp/**"',
+	  '"$(PODS_ROOT)/../../node_modules/@shopify/react-native-skia/cpp/skia"',
+	  '"$(PODS_ROOT)/../../node_modules/@shopify/react-native-skia/cpp/skia/**"',
+    ].join(' '),
+	'CLANG_CXX_LANGUAGE_STANDARD' => 'c++20',
+	'CLANG_CXX_LIBRARY' => 'libc++',
+	'OTHER_CPLUSPLUSFLAGS' => [
+		'$(inherited)',
+		'-include',
+		'"$(PODS_TARGET_SRCROOT)/cpp/polyfill.h"', # <- new
+		'-std=c++20'
+	].join(' '),
+    # 'DEFINES_MODULE' => 'YES',
+    'GCC_PREPROCESSOR_DEFINITIONS' => [
+		# SK_METAL=1 SK_GANESH=1 SK_IMAGE_READ_PIXELS_DISABLE_LEGACY_API=1 SK_DISABLE_LEGACY_SHAPER_FACTORY=1
+      '$(inherited)',
+      'SK_METAL=1',
+	  'SK_GANESH=1',
+	  'SK_IMAGE_READ_PIXELS_DISABLE_LEGACY_API=1',
+	  'SK_DISABLE_LEGACY_SHAPER_FACTORY=1',
+    ].join(' ')
+  }
+
   load 'nitrogen/generated/ios/RNSkiaYoga+autolinking.rb'
   add_nitrogen_files(s)
 
   s.dependency 'Yoga'
-  s.dependency 'react-native-skia'
+#   s.dependency 'react-native-skia/Jsi'
   s.dependency 'react-native-yoga-jsi'
   s.dependency 'React-jsi'
   s.dependency 'React-callinvoker'

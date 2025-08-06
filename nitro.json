@@ -15,7 +15,10 @@
   "autolinking": {
     "SkiaYoga": {
       "cpp": "SkiaYoga"
-    }
+    },
+	"YogaNode": {
+		"cpp": "YogaNode"
+	}
   },
   "ignorePaths": [
     "**/node_modules"

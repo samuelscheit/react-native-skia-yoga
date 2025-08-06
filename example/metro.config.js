@@ -10,20 +10,17 @@ const finalConfig = {
 
   resolver: {
     ...config.resolver,
-	nodeModulesPaths: [
-		path.join(__dirname, '..'),
-		path.join(__dirname, '..', 'node_modules'),
-		path.join(__dirname, '.', 'node_modules'),
-	],
+    nodeModulesPaths: [
+      path.join(__dirname, '..'),
+      path.join(__dirname, '..', 'node_modules'),
+      path.join(__dirname, '.', 'node_modules'),
+    ],
     extraNodeModules: {
       ...config.resolver?.extraNodeModules,
       'react-native-skia-yoga': path.join(__dirname, '..'),
     },
   },
-  watchFolders: [
-	...config.watchFolders,
-	path.join(__dirname, '..'),
-  ],
+  watchFolders: [...config.watchFolders, path.join(__dirname, '..')],
 }
 
 console.log(finalConfig)
