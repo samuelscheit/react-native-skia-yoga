@@ -2,8 +2,6 @@
 
 A React Native C++ library that combines the [Yoga](https://www.yogalayout.dev/) CSS-like layout engine with [Skia](https://shopify.github.io/react-native-skia/) to efficiently render declarative, complex and interactive user interfaces.
 
-TL;DR: Flutter for React Native.
-
 > [!CAUTION]
 > This library is in early development and not ready for production use.
 
@@ -19,3 +17,11 @@ import { Canvas, View, Text } from 'react-native-skia-yoga';
 </Canvas>
 ```
 
+## Future Goal: Flutter for React Native
+
+- **Pressables**: to detect when an element inside of the canvas is being pressed
+- **Gesture Handler**: pressables in combination with `react-native-gesture-handler` to create complex and performant gestures 
+- **Reanimated**: to create animations and styling using `react-native-reanimated`
+- **Portal**: to be able to render react-native components "inside" of the canvas
+
+This way the entire react-native ecosystem can be leveraged while being able to use Skia as highly customizable and performant alternative render backend.
