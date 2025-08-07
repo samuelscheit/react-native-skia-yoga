@@ -24,4 +24,4 @@ import { Canvas, View, Text } from 'react-native-skia-yoga';
 - **Reanimated**: to create animations and styling using `react-native-reanimated`
 - **Portal**: to be able to render react-native components "inside" of the canvas
 
-This way the entire react-native ecosystem can be leveraged while being able to use Skia as highly customizable and performant alternative render backend.
+This way the entire react-native ecosystem can be leveraged while being able to use Skia as highly customizable and performant renderer.
