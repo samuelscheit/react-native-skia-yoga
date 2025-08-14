@@ -9,6 +9,9 @@
 #include <react-native-skia/cpp/api/recorder/Command.h>
 #include <memory>
 
+// Forward declare Skia platform context (base) in global namespace to avoid pulling platform-specific headers here
+namespace RNSkia { class RNSkPlatformContext; }
+
 namespace margelo::nitro::RNSkiaYoga {
 
 using namespace facebook;
@@ -19,6 +22,10 @@ public:
   SkiaYoga();
   ~SkiaYoga();
   double addNumbers(double a, double b) override;
+
+  // Static shared platform context (base type). On Apple we store an RNSkApplePlatformContext.
+  static std::shared_ptr<RNSkia::RNSkPlatformContext> platformContext;
+  static inline std::shared_ptr<RNSkia::RNSkPlatformContext> getPlatformContext() { return platformContext; }
  
 };
 

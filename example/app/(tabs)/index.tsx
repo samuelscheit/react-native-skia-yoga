@@ -37,8 +37,11 @@ reconciler.updateContainer(<Root />, r, null, null)
 
 // Yoga.Node.create().calculateLayout(undefined, undefined, Direction.LTR)
 // Yoga.Node.create().getComputedLayout()
+// const picture = root.draw()
 
-console.log(root.getComputedLayout())
+console.log("layout",root.getComputedLayout())
+
+// console.log("picture", picture)
 
 // @ts-ignore
 globalThis.node = root

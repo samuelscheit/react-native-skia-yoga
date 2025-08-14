@@ -9,6 +9,9 @@ namespace margelo::nitro::RNSkiaYoga {
 
 using namespace facebook;
 
+// Define static member (base platform context)
+std::shared_ptr<RNSkia::RNSkPlatformContext> SkiaYoga::platformContext = nullptr;
+
 SkiaYoga::SkiaYoga()
 : HybridObject(HybridSkiaYogaSpec::TAG) // wichtig: TAG der Spezifikation
 {}

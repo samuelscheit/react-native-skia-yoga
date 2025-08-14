@@ -21,11 +21,13 @@ public:
   void setStyle(const NodeStyle& style) override;
   void setType(const NodeType type) override;
   void insertChild(const std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>& child, const std::optional<std::variant<double, std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>>>& index) override;
-  void removeChild(const std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>& child);
+  void removeChild(const std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>& child) override;
   YogaNodeLayout getComputedLayout() override;
 
   void removeAllChildren() override;
   jsi::Value setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
+
+  jsi::Value draw(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
 
 private:
   YGNodeRef _node;
@@ -38,6 +40,7 @@ private:
     // register all methods we override here
     registerHybrids(this, [](Prototype& prototype) {
       prototype.registerRawHybridMethod("setProps", 1, &YogaNode::setProps);
+      prototype.registerRawHybridMethod("draw", 1, &YogaNode::draw);
     });
   }
 };

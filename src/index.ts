@@ -1,5 +1,15 @@
+import { NativeModules } from "react-native"
 import { NitroModules } from "react-native-nitro-modules"
 import type { SkiaYoga as SkiaYogaType, YogaNode } from "./specs/SkiaYoga.nitro"
+
+console.log("SkiaYogaModule", NativeModules.SkiaYogaModule)
+console.log("NativeModules", NativeModules)
+
+if (!NativeModules.SkiaYogaModule) {
+	console.error("SkiaYogaModule is not available. Make sure you have linked the SkiaYoga native module correctly.")
+}
+
+NativeModules.SkiaYogaModule?.install?.()
 
 export const SkiaYoga = NitroModules.createHybridObject<SkiaYogaType>("SkiaYoga")
 
