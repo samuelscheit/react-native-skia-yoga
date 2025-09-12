@@ -128,17 +128,15 @@ namespace margelo::nitro::RNSkiaYoga {
 
 namespace margelo::nitro {
 
-  using namespace margelo::nitro::RNSkiaYoga;
-
   // C++ NodeStyle <> JS NodeStyle (object)
   template <>
-  struct JSIConverter<NodeStyle> final {
-    static inline NodeStyle fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeStyle> final {
+    static inline margelo::nitro::RNSkiaYoga::NodeStyle fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
-      return NodeStyle(
-        JSIConverter<std::optional<Align>>::fromJSI(runtime, obj.getProperty(runtime, "alignContent")),
-        JSIConverter<std::optional<Align>>::fromJSI(runtime, obj.getProperty(runtime, "alignItems")),
-        JSIConverter<std::optional<Align>>::fromJSI(runtime, obj.getProperty(runtime, "alignSelf")),
+      return margelo::nitro::RNSkiaYoga::NodeStyle(
+        JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Align>>::fromJSI(runtime, obj.getProperty(runtime, "alignContent")),
+        JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Align>>::fromJSI(runtime, obj.getProperty(runtime, "alignItems")),
+        JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Align>>::fromJSI(runtime, obj.getProperty(runtime, "alignSelf")),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "aspectRatio")),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "borderBottomWidth")),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "borderEndWidth")),
@@ -150,21 +148,21 @@ namespace margelo::nitro {
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "borderHorizontalWidth")),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "borderVerticalWidth")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "bottom")),
-        JSIConverter<std::optional<BoxSizing>>::fromJSI(runtime, obj.getProperty(runtime, "boxSizing")),
-        JSIConverter<std::optional<Direction>>::fromJSI(runtime, obj.getProperty(runtime, "direction")),
-        JSIConverter<std::optional<Display>>::fromJSI(runtime, obj.getProperty(runtime, "display")),
+        JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::BoxSizing>>::fromJSI(runtime, obj.getProperty(runtime, "boxSizing")),
+        JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Direction>>::fromJSI(runtime, obj.getProperty(runtime, "direction")),
+        JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Display>>::fromJSI(runtime, obj.getProperty(runtime, "display")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "end")),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "flex")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "flexBasis")),
-        JSIConverter<std::optional<FlexDirection>>::fromJSI(runtime, obj.getProperty(runtime, "flexDirection")),
+        JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::FlexDirection>>::fromJSI(runtime, obj.getProperty(runtime, "flexDirection")),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "rowGap")),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "gap")),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "columnGap")),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "flexGrow")),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "flexShrink")),
-        JSIConverter<std::optional<FlexWrap>>::fromJSI(runtime, obj.getProperty(runtime, "flexWrap")),
+        JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::FlexWrap>>::fromJSI(runtime, obj.getProperty(runtime, "flexWrap")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "height")),
-        JSIConverter<std::optional<JustifyContent>>::fromJSI(runtime, obj.getProperty(runtime, "justifyContent")),
+        JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::JustifyContent>>::fromJSI(runtime, obj.getProperty(runtime, "justifyContent")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "left")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "margin")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "marginBottom")),
@@ -179,7 +177,7 @@ namespace margelo::nitro {
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "maxWidth")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "minHeight")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "minWidth")),
-        JSIConverter<std::optional<Overflow>>::fromJSI(runtime, obj.getProperty(runtime, "overflow")),
+        JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Overflow>>::fromJSI(runtime, obj.getProperty(runtime, "overflow")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "padding")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "paddingBottom")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "paddingEnd")),
@@ -189,7 +187,7 @@ namespace margelo::nitro {
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "paddingTop")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "paddingHorizontal")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "paddingVertical")),
-        JSIConverter<std::optional<Position>>::fromJSI(runtime, obj.getProperty(runtime, "position")),
+        JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Position>>::fromJSI(runtime, obj.getProperty(runtime, "position")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "right")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "start")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "top")),
@@ -199,11 +197,11 @@ namespace margelo::nitro {
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "width"))
       );
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, const NodeStyle& arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::RNSkiaYoga::NodeStyle& arg) {
       jsi::Object obj(runtime);
-      obj.setProperty(runtime, "alignContent", JSIConverter<std::optional<Align>>::toJSI(runtime, arg.alignContent));
-      obj.setProperty(runtime, "alignItems", JSIConverter<std::optional<Align>>::toJSI(runtime, arg.alignItems));
-      obj.setProperty(runtime, "alignSelf", JSIConverter<std::optional<Align>>::toJSI(runtime, arg.alignSelf));
+      obj.setProperty(runtime, "alignContent", JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Align>>::toJSI(runtime, arg.alignContent));
+      obj.setProperty(runtime, "alignItems", JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Align>>::toJSI(runtime, arg.alignItems));
+      obj.setProperty(runtime, "alignSelf", JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Align>>::toJSI(runtime, arg.alignSelf));
       obj.setProperty(runtime, "aspectRatio", JSIConverter<std::optional<double>>::toJSI(runtime, arg.aspectRatio));
       obj.setProperty(runtime, "borderBottomWidth", JSIConverter<std::optional<double>>::toJSI(runtime, arg.borderBottomWidth));
       obj.setProperty(runtime, "borderEndWidth", JSIConverter<std::optional<double>>::toJSI(runtime, arg.borderEndWidth));
@@ -215,21 +213,21 @@ namespace margelo::nitro {
       obj.setProperty(runtime, "borderHorizontalWidth", JSIConverter<std::optional<double>>::toJSI(runtime, arg.borderHorizontalWidth));
       obj.setProperty(runtime, "borderVerticalWidth", JSIConverter<std::optional<double>>::toJSI(runtime, arg.borderVerticalWidth));
       obj.setProperty(runtime, "bottom", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.bottom));
-      obj.setProperty(runtime, "boxSizing", JSIConverter<std::optional<BoxSizing>>::toJSI(runtime, arg.boxSizing));
-      obj.setProperty(runtime, "direction", JSIConverter<std::optional<Direction>>::toJSI(runtime, arg.direction));
-      obj.setProperty(runtime, "display", JSIConverter<std::optional<Display>>::toJSI(runtime, arg.display));
+      obj.setProperty(runtime, "boxSizing", JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::BoxSizing>>::toJSI(runtime, arg.boxSizing));
+      obj.setProperty(runtime, "direction", JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Direction>>::toJSI(runtime, arg.direction));
+      obj.setProperty(runtime, "display", JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Display>>::toJSI(runtime, arg.display));
       obj.setProperty(runtime, "end", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.end));
       obj.setProperty(runtime, "flex", JSIConverter<std::optional<double>>::toJSI(runtime, arg.flex));
       obj.setProperty(runtime, "flexBasis", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.flexBasis));
-      obj.setProperty(runtime, "flexDirection", JSIConverter<std::optional<FlexDirection>>::toJSI(runtime, arg.flexDirection));
+      obj.setProperty(runtime, "flexDirection", JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::FlexDirection>>::toJSI(runtime, arg.flexDirection));
       obj.setProperty(runtime, "rowGap", JSIConverter<std::optional<double>>::toJSI(runtime, arg.rowGap));
       obj.setProperty(runtime, "gap", JSIConverter<std::optional<double>>::toJSI(runtime, arg.gap));
       obj.setProperty(runtime, "columnGap", JSIConverter<std::optional<double>>::toJSI(runtime, arg.columnGap));
       obj.setProperty(runtime, "flexGrow", JSIConverter<std::optional<double>>::toJSI(runtime, arg.flexGrow));
       obj.setProperty(runtime, "flexShrink", JSIConverter<std::optional<double>>::toJSI(runtime, arg.flexShrink));
-      obj.setProperty(runtime, "flexWrap", JSIConverter<std::optional<FlexWrap>>::toJSI(runtime, arg.flexWrap));
+      obj.setProperty(runtime, "flexWrap", JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::FlexWrap>>::toJSI(runtime, arg.flexWrap));
       obj.setProperty(runtime, "height", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.height));
-      obj.setProperty(runtime, "justifyContent", JSIConverter<std::optional<JustifyContent>>::toJSI(runtime, arg.justifyContent));
+      obj.setProperty(runtime, "justifyContent", JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::JustifyContent>>::toJSI(runtime, arg.justifyContent));
       obj.setProperty(runtime, "left", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.left));
       obj.setProperty(runtime, "margin", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.margin));
       obj.setProperty(runtime, "marginBottom", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.marginBottom));
@@ -244,7 +242,7 @@ namespace margelo::nitro {
       obj.setProperty(runtime, "maxWidth", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.maxWidth));
       obj.setProperty(runtime, "minHeight", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.minHeight));
       obj.setProperty(runtime, "minWidth", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.minWidth));
-      obj.setProperty(runtime, "overflow", JSIConverter<std::optional<Overflow>>::toJSI(runtime, arg.overflow));
+      obj.setProperty(runtime, "overflow", JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Overflow>>::toJSI(runtime, arg.overflow));
       obj.setProperty(runtime, "padding", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.padding));
       obj.setProperty(runtime, "paddingBottom", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.paddingBottom));
       obj.setProperty(runtime, "paddingEnd", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.paddingEnd));
@@ -254,7 +252,7 @@ namespace margelo::nitro {
       obj.setProperty(runtime, "paddingTop", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.paddingTop));
       obj.setProperty(runtime, "paddingHorizontal", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.paddingHorizontal));
       obj.setProperty(runtime, "paddingVertical", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.paddingVertical));
-      obj.setProperty(runtime, "position", JSIConverter<std::optional<Position>>::toJSI(runtime, arg.position));
+      obj.setProperty(runtime, "position", JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Position>>::toJSI(runtime, arg.position));
       obj.setProperty(runtime, "right", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.right));
       obj.setProperty(runtime, "start", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.start));
       obj.setProperty(runtime, "top", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.top));
@@ -269,9 +267,9 @@ namespace margelo::nitro {
         return false;
       }
       jsi::Object obj = value.getObject(runtime);
-      if (!JSIConverter<std::optional<Align>>::canConvert(runtime, obj.getProperty(runtime, "alignContent"))) return false;
-      if (!JSIConverter<std::optional<Align>>::canConvert(runtime, obj.getProperty(runtime, "alignItems"))) return false;
-      if (!JSIConverter<std::optional<Align>>::canConvert(runtime, obj.getProperty(runtime, "alignSelf"))) return false;
+      if (!JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Align>>::canConvert(runtime, obj.getProperty(runtime, "alignContent"))) return false;
+      if (!JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Align>>::canConvert(runtime, obj.getProperty(runtime, "alignItems"))) return false;
+      if (!JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Align>>::canConvert(runtime, obj.getProperty(runtime, "alignSelf"))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "aspectRatio"))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "borderBottomWidth"))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "borderEndWidth"))) return false;
@@ -283,21 +281,21 @@ namespace margelo::nitro {
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "borderHorizontalWidth"))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "borderVerticalWidth"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "bottom"))) return false;
-      if (!JSIConverter<std::optional<BoxSizing>>::canConvert(runtime, obj.getProperty(runtime, "boxSizing"))) return false;
-      if (!JSIConverter<std::optional<Direction>>::canConvert(runtime, obj.getProperty(runtime, "direction"))) return false;
-      if (!JSIConverter<std::optional<Display>>::canConvert(runtime, obj.getProperty(runtime, "display"))) return false;
+      if (!JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::BoxSizing>>::canConvert(runtime, obj.getProperty(runtime, "boxSizing"))) return false;
+      if (!JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Direction>>::canConvert(runtime, obj.getProperty(runtime, "direction"))) return false;
+      if (!JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Display>>::canConvert(runtime, obj.getProperty(runtime, "display"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "end"))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "flex"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "flexBasis"))) return false;
-      if (!JSIConverter<std::optional<FlexDirection>>::canConvert(runtime, obj.getProperty(runtime, "flexDirection"))) return false;
+      if (!JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::FlexDirection>>::canConvert(runtime, obj.getProperty(runtime, "flexDirection"))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "rowGap"))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "gap"))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "columnGap"))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "flexGrow"))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "flexShrink"))) return false;
-      if (!JSIConverter<std::optional<FlexWrap>>::canConvert(runtime, obj.getProperty(runtime, "flexWrap"))) return false;
+      if (!JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::FlexWrap>>::canConvert(runtime, obj.getProperty(runtime, "flexWrap"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "height"))) return false;
-      if (!JSIConverter<std::optional<JustifyContent>>::canConvert(runtime, obj.getProperty(runtime, "justifyContent"))) return false;
+      if (!JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::JustifyContent>>::canConvert(runtime, obj.getProperty(runtime, "justifyContent"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "left"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "margin"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "marginBottom"))) return false;
@@ -312,7 +310,7 @@ namespace margelo::nitro {
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "maxWidth"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "minHeight"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "minWidth"))) return false;
-      if (!JSIConverter<std::optional<Overflow>>::canConvert(runtime, obj.getProperty(runtime, "overflow"))) return false;
+      if (!JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Overflow>>::canConvert(runtime, obj.getProperty(runtime, "overflow"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "padding"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "paddingBottom"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "paddingEnd"))) return false;
@@ -322,7 +320,7 @@ namespace margelo::nitro {
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "paddingTop"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "paddingHorizontal"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "paddingVertical"))) return false;
-      if (!JSIConverter<std::optional<Position>>::canConvert(runtime, obj.getProperty(runtime, "position"))) return false;
+      if (!JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::Position>>::canConvert(runtime, obj.getProperty(runtime, "position"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "right"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "start"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "top"))) return false;

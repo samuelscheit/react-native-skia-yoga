@@ -38,26 +38,24 @@ namespace margelo::nitro::RNSkiaYoga {
 
 namespace margelo::nitro {
 
-  using namespace margelo::nitro::RNSkiaYoga;
-
   // C++ FlexWrap <> JS FlexWrap (union)
   template <>
-  struct JSIConverter<FlexWrap> final {
-    static inline FlexWrap fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::RNSkiaYoga::FlexWrap> final {
+    static inline margelo::nitro::RNSkiaYoga::FlexWrap fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       std::string unionValue = JSIConverter<std::string>::fromJSI(runtime, arg);
       switch (hashString(unionValue.c_str(), unionValue.size())) {
-        case hashString("wrap"): return FlexWrap::WRAP;
-        case hashString("nowrap"): return FlexWrap::NOWRAP;
-        case hashString("wrap-reverse"): return FlexWrap::WRAP_REVERSE;
+        case hashString("wrap"): return margelo::nitro::RNSkiaYoga::FlexWrap::WRAP;
+        case hashString("nowrap"): return margelo::nitro::RNSkiaYoga::FlexWrap::NOWRAP;
+        case hashString("wrap-reverse"): return margelo::nitro::RNSkiaYoga::FlexWrap::WRAP_REVERSE;
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert \"" + unionValue + "\" to enum FlexWrap - invalid value!");
       }
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, FlexWrap arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, margelo::nitro::RNSkiaYoga::FlexWrap arg) {
       switch (arg) {
-        case FlexWrap::WRAP: return JSIConverter<std::string>::toJSI(runtime, "wrap");
-        case FlexWrap::NOWRAP: return JSIConverter<std::string>::toJSI(runtime, "nowrap");
-        case FlexWrap::WRAP_REVERSE: return JSIConverter<std::string>::toJSI(runtime, "wrap-reverse");
+        case margelo::nitro::RNSkiaYoga::FlexWrap::WRAP: return JSIConverter<std::string>::toJSI(runtime, "wrap");
+        case margelo::nitro::RNSkiaYoga::FlexWrap::NOWRAP: return JSIConverter<std::string>::toJSI(runtime, "nowrap");
+        case margelo::nitro::RNSkiaYoga::FlexWrap::WRAP_REVERSE: return JSIConverter<std::string>::toJSI(runtime, "wrap-reverse");
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert FlexWrap to JS - invalid value: "
                                     + std::to_string(static_cast<int>(arg)) + "!");

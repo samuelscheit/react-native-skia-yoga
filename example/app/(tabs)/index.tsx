@@ -1,6 +1,6 @@
+import { Canvas, Picture } from "@shopify/react-native-skia"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { createYogaNode, reconciler } from "react-native-skia-yoga"
-import { ThemedText } from "../../components/ThemedText"
 
 declare namespace React {
 	namespace JSX {
@@ -33,13 +33,34 @@ const r = reconciler.createContainer(
 	null,
 )
 
-reconciler.updateContainer(<Root />, r, null, null)
+root.insertChild(r)
+
+root.setType("rect")
+root.setProps({
+})
+root.setStyle({
+	flex: 1,
+	width: 500,
+	height: 500,
+	padding: 10
+})
+const child = createYogaNode()
+child.setType("rect")
+child.setStyle({
+})
+root.insertChild(child)
+
+const layout = root.getComputedLayout()
+
+const picture = root.draw()
+
+// reconciler.updateContainer(<Root />, r, null, null)
 
 // Yoga.Node.create().calculateLayout(undefined, undefined, Direction.LTR)
 // Yoga.Node.create().getComputedLayout()
 // const picture = root.draw()
 
-console.log("layout",root.getComputedLayout())
+console.log("layout", layout)
 
 // console.log("picture", picture)
 
@@ -51,9 +72,9 @@ export default function HomeScreen() {
 		<SafeAreaView
 			style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
 		>
-			<ThemedText style={{ fontSize: 50, lineHeight: 50 }}>
-				Hello
-			</ThemedText>
+			<Canvas style={{ width: 300, height: 300 }}>
+				<Picture picture={picture} />
+			</Canvas>
 		</SafeAreaView>
 	)
 }

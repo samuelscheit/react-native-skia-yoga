@@ -18,6 +18,7 @@ globalThis.SkiaYoga = SkiaYoga
 
 export interface YogaNodeFinal extends YogaNode {
 	setProps(props: any): void
+	draw(): any
 }
 
 export * from "./Reconciler"

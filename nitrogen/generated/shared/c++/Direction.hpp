@@ -38,26 +38,24 @@ namespace margelo::nitro::RNSkiaYoga {
 
 namespace margelo::nitro {
 
-  using namespace margelo::nitro::RNSkiaYoga;
-
   // C++ Direction <> JS Direction (union)
   template <>
-  struct JSIConverter<Direction> final {
-    static inline Direction fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::RNSkiaYoga::Direction> final {
+    static inline margelo::nitro::RNSkiaYoga::Direction fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       std::string unionValue = JSIConverter<std::string>::fromJSI(runtime, arg);
       switch (hashString(unionValue.c_str(), unionValue.size())) {
-        case hashString("inherit"): return Direction::INHERIT;
-        case hashString("ltr"): return Direction::LTR;
-        case hashString("rtl"): return Direction::RTL;
+        case hashString("inherit"): return margelo::nitro::RNSkiaYoga::Direction::INHERIT;
+        case hashString("ltr"): return margelo::nitro::RNSkiaYoga::Direction::LTR;
+        case hashString("rtl"): return margelo::nitro::RNSkiaYoga::Direction::RTL;
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert \"" + unionValue + "\" to enum Direction - invalid value!");
       }
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, Direction arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, margelo::nitro::RNSkiaYoga::Direction arg) {
       switch (arg) {
-        case Direction::INHERIT: return JSIConverter<std::string>::toJSI(runtime, "inherit");
-        case Direction::LTR: return JSIConverter<std::string>::toJSI(runtime, "ltr");
-        case Direction::RTL: return JSIConverter<std::string>::toJSI(runtime, "rtl");
+        case margelo::nitro::RNSkiaYoga::Direction::INHERIT: return JSIConverter<std::string>::toJSI(runtime, "inherit");
+        case margelo::nitro::RNSkiaYoga::Direction::LTR: return JSIConverter<std::string>::toJSI(runtime, "ltr");
+        case margelo::nitro::RNSkiaYoga::Direction::RTL: return JSIConverter<std::string>::toJSI(runtime, "rtl");
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert Direction to JS - invalid value: "
                                     + std::to_string(static_cast<int>(arg)) + "!");

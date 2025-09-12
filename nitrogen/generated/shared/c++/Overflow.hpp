@@ -38,26 +38,24 @@ namespace margelo::nitro::RNSkiaYoga {
 
 namespace margelo::nitro {
 
-  using namespace margelo::nitro::RNSkiaYoga;
-
   // C++ Overflow <> JS Overflow (union)
   template <>
-  struct JSIConverter<Overflow> final {
-    static inline Overflow fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::RNSkiaYoga::Overflow> final {
+    static inline margelo::nitro::RNSkiaYoga::Overflow fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       std::string unionValue = JSIConverter<std::string>::fromJSI(runtime, arg);
       switch (hashString(unionValue.c_str(), unionValue.size())) {
-        case hashString("visible"): return Overflow::VISIBLE;
-        case hashString("hidden"): return Overflow::HIDDEN;
-        case hashString("scroll"): return Overflow::SCROLL;
+        case hashString("visible"): return margelo::nitro::RNSkiaYoga::Overflow::VISIBLE;
+        case hashString("hidden"): return margelo::nitro::RNSkiaYoga::Overflow::HIDDEN;
+        case hashString("scroll"): return margelo::nitro::RNSkiaYoga::Overflow::SCROLL;
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert \"" + unionValue + "\" to enum Overflow - invalid value!");
       }
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, Overflow arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, margelo::nitro::RNSkiaYoga::Overflow arg) {
       switch (arg) {
-        case Overflow::VISIBLE: return JSIConverter<std::string>::toJSI(runtime, "visible");
-        case Overflow::HIDDEN: return JSIConverter<std::string>::toJSI(runtime, "hidden");
-        case Overflow::SCROLL: return JSIConverter<std::string>::toJSI(runtime, "scroll");
+        case margelo::nitro::RNSkiaYoga::Overflow::VISIBLE: return JSIConverter<std::string>::toJSI(runtime, "visible");
+        case margelo::nitro::RNSkiaYoga::Overflow::HIDDEN: return JSIConverter<std::string>::toJSI(runtime, "hidden");
+        case margelo::nitro::RNSkiaYoga::Overflow::SCROLL: return JSIConverter<std::string>::toJSI(runtime, "scroll");
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert Overflow to JS - invalid value: "
                                     + std::to_string(static_cast<int>(arg)) + "!");

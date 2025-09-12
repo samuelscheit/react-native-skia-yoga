@@ -35,6 +35,7 @@ export type Position = 'static' | 'relative' | 'absolute';
 export type Percentage = string // `${number}%`; // string templates not supported by nitro
 
 export type NodeStyle = {
+  /* Flexbox and layout properties */
   alignContent?: Align;
   alignItems?: Align;
   alignSelf?: Align;
@@ -96,4 +97,9 @@ export type NodeStyle = {
   insetVertical?: number | Percentage; // vertical
   inset?: number | Percentage;
   width?: number | 'auto' | Percentage;
+  /* End of flexbox and layout properties */
+
+  /* Skia specific properties */
+
+  /* End of Skia specific properties */
 };

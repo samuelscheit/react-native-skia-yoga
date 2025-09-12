@@ -369,46 +369,74 @@ void YogaNode::setStyle(const NodeStyle& style)
 
 void YogaNode::insertChild(const std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>& child, const std::optional<std::variant<double, std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>>>& index)
 {
-    //   size_t insertIndex;
+    if (!child) {
+        return; // No child to insert
+    }
+    
+    auto yogaNode = std::dynamic_pointer_cast<YogaNode>(child);
 
-    //   if (!index.has_value()) {
-    //     // Empty case - append to end
-    //     insertIndex = YGNodeGetChildCount(_node);
-    //   } else if (std::holds_alternative<double>(*index)) {
-    //     // Double index provided
-    //     insertIndex = static_cast<size_t>(std::get<double>(*index));
-    //   } else {
-    //     // YogaNode provided - find its current index
-    //     auto nodeToFind = std::get<std::shared_ptr<YogaNode>>(*index);
-    //     auto childCount = YGNodeGetChildCount(_node);
-    //     insertIndex = childCount; // Default to end if not found
+    if (!yogaNode) {
+        throw std::runtime_error("Child is not a YogaNode");
+    }
 
-    //     for (size_t i = 0; i < childCount; ++i) {
-    //       if (YGNodeGetChild(_node, i) == nodeToFind->_node) {
-    //         insertIndex = i;
-    //         break;
-    //       }
-    //     }
+    size_t insertIndex = 0;
 
-    //   }
+    if (index.has_value()) { 
+        if (std::holds_alternative<double>(index.value())) {
+            double idx = std::get<double>(index.value());
+            if (idx < 0 || idx >= YGNodeGetChildCount(_node)) {
+                throw std::out_of_range("Index out of range for YogaNode children");
+            }
+            insertIndex = static_cast<uint32_t>(idx);
+        } else if (std::holds_alternative<std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>>(index.value())) {
+            auto indexNode = std::get<std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>>(index.value());
+            auto indexYogaNode = std::dynamic_pointer_cast<YogaNode>(indexNode);
+            if (!indexYogaNode) {
+                throw std::runtime_error("Index is not a YogaNode");
+            }
+            // Insert before the given index node
+            uint32_t childCount = YGNodeGetChildCount(_node);
+            bool found = false;
+            for (uint32_t i = 0; i < childCount; ++i) {
+                if (YGNodeGetChild(_node, i) == indexYogaNode->_node) {
+                    insertIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                throw std::runtime_error("Index node is not a child of this YogaNode");
+            }
+        } else {
+            throw std::runtime_error("Invalid index type for YogaNode insertion");
+        }
+    } else {
+        insertIndex = YGNodeGetChildCount(_node);
+    }
 
-    //   YGNodeInsertChild(_node, child->_node, insertIndex);
+    YGNodeInsertChild(_node, yogaNode->_node, insertIndex);
+
+    // Store the child in our vector for easy access later
+    _children.push_back(yogaNode);
 }
 
 void YogaNode::removeChild(const std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>& child)
 {
-    //   YGNodeRemoveChild(_node, child->_node);
+    YGNodeRemoveChild(_node, child->_node);
+    _children.erase(std::remove(_children.begin(), _children.end(), child), _children.end());
 }
 
 void YogaNode::removeAllChildren()
 {
     YGNodeRemoveAllChildren(_node);
+    _children.clear();
 }
 
 void YogaNode::setType(const NodeType type)
 {
     _type = type;
 }
+
 
 jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
 {
@@ -417,15 +445,25 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
     RNSkia::Variables variables; // TODO: save reanimated shared values
 
     switch (this->_type) {
-    case NodeType::RECT:
-        _command = std::make_unique<RNSkia::RectCmd>(runtime, props, variables);
+    case NodeType::RECT:{
+        auto* rectCmd = new margelo::nitro::RNSkiaYoga::RectCmd(runtime, props, variables);
+        _command.reset(rectCmd);
         break;
-    case NodeType::TEXT:
-        _command = std::make_unique<RNSkia::TextCmd>(runtime, props, variables);
+    }
+    case NodeType::TEXT: {
+        auto* textCmd = new margelo::nitro::RNSkiaYoga::TextCmd(runtime, props, variables);
+        _command.reset(textCmd);
         break;
+    }
+    case NodeType::PARAGRAPH: {
+        auto* paragraphCmd = new margelo::nitro::RNSkiaYoga::ParagraphCmd(runtime, props, variables);
+        _command.reset(paragraphCmd);
         break;
+    }
     case NodeType::GROUP:
+    default:
         break;
+    
         //   _command = std::make_unique<RNSkia::GroupCmd>(runtime, props, variables);
     }
 
@@ -440,10 +478,42 @@ jsi::Value YogaNode::draw(jsi::Runtime& runtime, const jsi::Value& thisArg, cons
     auto canvas = pictureRecorder.beginRecording(rect, nullptr);
     RNSkia::DrawingCtx ctx(canvas);
 
+    if (!_command) {
+        return jsi::Value::undefined();
+    }
+    _command->draw(&ctx);
+
     // getObject()->play(&ctx);
 
     auto picture = pictureRecorder.finishRecordingAsPicture();
     return jsi::Object::createFromHostObject(runtime, std::make_shared<RNSkia::JsiSkPicture>(margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext(), picture));
+}
+
+void YogaNode::setChildren(const std::vector<std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>>& children)
+{
+    _children.clear();
+    _children.reserve(children.size());
+    YGNodeRemoveAllChildren(_node);
+
+    for (const auto& c : children) {
+        auto yogaNode = std::dynamic_pointer_cast<YogaNode>(c);
+        _children.push_back(yogaNode);
+        YGNodeInsertChild(_node, yogaNode->_node, YGNodeGetChildCount(_node)); 
+    }
+
+}
+
+std::vector<std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>> YogaNode::getChildren()
+{
+    std::vector<std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>> result;
+    // result.reserve(_children.size());
+
+    // std::transform(_children.begin(), _children.end(), std::back_inserter(result),
+    //     [](auto& child) {
+    //         return std::static_pointer_cast<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>(child);
+    //     });
+
+    return result;
 }
 
 YogaNodeLayout YogaNode::getComputedLayout()
@@ -461,7 +531,13 @@ YogaNodeLayout YogaNode::getComputedLayout()
     layout.top = YGNodeLayoutGetTop(_node);
     layout.bottom = YGNodeLayoutGetBottom(_node);
 
+    if (_command) {
+        _command->setLayout(layout);
+    }
+
     return layout;
 }
 
+
 } // namespace margelo::nitro::RNSkiaYoga
+

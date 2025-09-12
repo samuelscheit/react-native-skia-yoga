@@ -39,28 +39,26 @@ namespace margelo::nitro::RNSkiaYoga {
 
 namespace margelo::nitro {
 
-  using namespace margelo::nitro::RNSkiaYoga;
-
   // C++ FlexDirection <> JS FlexDirection (union)
   template <>
-  struct JSIConverter<FlexDirection> final {
-    static inline FlexDirection fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::RNSkiaYoga::FlexDirection> final {
+    static inline margelo::nitro::RNSkiaYoga::FlexDirection fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       std::string unionValue = JSIConverter<std::string>::fromJSI(runtime, arg);
       switch (hashString(unionValue.c_str(), unionValue.size())) {
-        case hashString("column"): return FlexDirection::COLUMN;
-        case hashString("column-reverse"): return FlexDirection::COLUMN_REVERSE;
-        case hashString("row"): return FlexDirection::ROW;
-        case hashString("row-reverse"): return FlexDirection::ROW_REVERSE;
+        case hashString("column"): return margelo::nitro::RNSkiaYoga::FlexDirection::COLUMN;
+        case hashString("column-reverse"): return margelo::nitro::RNSkiaYoga::FlexDirection::COLUMN_REVERSE;
+        case hashString("row"): return margelo::nitro::RNSkiaYoga::FlexDirection::ROW;
+        case hashString("row-reverse"): return margelo::nitro::RNSkiaYoga::FlexDirection::ROW_REVERSE;
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert \"" + unionValue + "\" to enum FlexDirection - invalid value!");
       }
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, FlexDirection arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, margelo::nitro::RNSkiaYoga::FlexDirection arg) {
       switch (arg) {
-        case FlexDirection::COLUMN: return JSIConverter<std::string>::toJSI(runtime, "column");
-        case FlexDirection::COLUMN_REVERSE: return JSIConverter<std::string>::toJSI(runtime, "column-reverse");
-        case FlexDirection::ROW: return JSIConverter<std::string>::toJSI(runtime, "row");
-        case FlexDirection::ROW_REVERSE: return JSIConverter<std::string>::toJSI(runtime, "row-reverse");
+        case margelo::nitro::RNSkiaYoga::FlexDirection::COLUMN: return JSIConverter<std::string>::toJSI(runtime, "column");
+        case margelo::nitro::RNSkiaYoga::FlexDirection::COLUMN_REVERSE: return JSIConverter<std::string>::toJSI(runtime, "column-reverse");
+        case margelo::nitro::RNSkiaYoga::FlexDirection::ROW: return JSIConverter<std::string>::toJSI(runtime, "row");
+        case margelo::nitro::RNSkiaYoga::FlexDirection::ROW_REVERSE: return JSIConverter<std::string>::toJSI(runtime, "row-reverse");
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert FlexDirection to JS - invalid value: "
                                     + std::to_string(static_cast<int>(arg)) + "!");

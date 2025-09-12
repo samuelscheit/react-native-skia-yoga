@@ -41,32 +41,30 @@ namespace margelo::nitro::RNSkiaYoga {
 
 namespace margelo::nitro {
 
-  using namespace margelo::nitro::RNSkiaYoga;
-
   // C++ JustifyContent <> JS JustifyContent (union)
   template <>
-  struct JSIConverter<JustifyContent> final {
-    static inline JustifyContent fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::RNSkiaYoga::JustifyContent> final {
+    static inline margelo::nitro::RNSkiaYoga::JustifyContent fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       std::string unionValue = JSIConverter<std::string>::fromJSI(runtime, arg);
       switch (hashString(unionValue.c_str(), unionValue.size())) {
-        case hashString("flex-start"): return JustifyContent::FLEX_START;
-        case hashString("center"): return JustifyContent::CENTER;
-        case hashString("flex-end"): return JustifyContent::FLEX_END;
-        case hashString("space-between"): return JustifyContent::SPACE_BETWEEN;
-        case hashString("space-around"): return JustifyContent::SPACE_AROUND;
-        case hashString("space-evenly"): return JustifyContent::SPACE_EVENLY;
+        case hashString("flex-start"): return margelo::nitro::RNSkiaYoga::JustifyContent::FLEX_START;
+        case hashString("center"): return margelo::nitro::RNSkiaYoga::JustifyContent::CENTER;
+        case hashString("flex-end"): return margelo::nitro::RNSkiaYoga::JustifyContent::FLEX_END;
+        case hashString("space-between"): return margelo::nitro::RNSkiaYoga::JustifyContent::SPACE_BETWEEN;
+        case hashString("space-around"): return margelo::nitro::RNSkiaYoga::JustifyContent::SPACE_AROUND;
+        case hashString("space-evenly"): return margelo::nitro::RNSkiaYoga::JustifyContent::SPACE_EVENLY;
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert \"" + unionValue + "\" to enum JustifyContent - invalid value!");
       }
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, JustifyContent arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, margelo::nitro::RNSkiaYoga::JustifyContent arg) {
       switch (arg) {
-        case JustifyContent::FLEX_START: return JSIConverter<std::string>::toJSI(runtime, "flex-start");
-        case JustifyContent::CENTER: return JSIConverter<std::string>::toJSI(runtime, "center");
-        case JustifyContent::FLEX_END: return JSIConverter<std::string>::toJSI(runtime, "flex-end");
-        case JustifyContent::SPACE_BETWEEN: return JSIConverter<std::string>::toJSI(runtime, "space-between");
-        case JustifyContent::SPACE_AROUND: return JSIConverter<std::string>::toJSI(runtime, "space-around");
-        case JustifyContent::SPACE_EVENLY: return JSIConverter<std::string>::toJSI(runtime, "space-evenly");
+        case margelo::nitro::RNSkiaYoga::JustifyContent::FLEX_START: return JSIConverter<std::string>::toJSI(runtime, "flex-start");
+        case margelo::nitro::RNSkiaYoga::JustifyContent::CENTER: return JSIConverter<std::string>::toJSI(runtime, "center");
+        case margelo::nitro::RNSkiaYoga::JustifyContent::FLEX_END: return JSIConverter<std::string>::toJSI(runtime, "flex-end");
+        case margelo::nitro::RNSkiaYoga::JustifyContent::SPACE_BETWEEN: return JSIConverter<std::string>::toJSI(runtime, "space-between");
+        case margelo::nitro::RNSkiaYoga::JustifyContent::SPACE_AROUND: return JSIConverter<std::string>::toJSI(runtime, "space-around");
+        case margelo::nitro::RNSkiaYoga::JustifyContent::SPACE_EVENLY: return JSIConverter<std::string>::toJSI(runtime, "space-evenly");
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert JustifyContent to JS - invalid value: "
                                     + std::to_string(static_cast<int>(arg)) + "!");

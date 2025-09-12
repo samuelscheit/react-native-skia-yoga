@@ -1,15 +1,15 @@
 import { NitroModules } from "react-native-nitro-modules"
 import Reconciler, { type HostConfig } from "react-reconciler"
 import { DefaultEventPriority } from "react-reconciler/constants"
-import type { YogaNode } from "./specs/SkiaYoga.nitro"
+import type { YogaNodeFinal } from "."
 
 export type SkiaYogaHostContext = HostConfig<
 	any,
 	any,
-	YogaNode,
-	YogaNode,
-	YogaNode,
-	YogaNode,
+	YogaNodeFinal,
+	YogaNodeFinal,
+	YogaNodeFinal,
+	YogaNodeFinal,
 	any,
 	any,
 	any,
@@ -36,9 +36,10 @@ const config = {
 
 		// This method happens in the render phase. It can (and usually should) mutate the node it has just created before returning it, but it must not modify any other nodes. It must not register any event handlers on the parent tree. This is because an instance being created doesn't guarantee it would be placed in the tree — it could be left unused and later collected by GC. If you need to do something when an instance is definitely in the tree, look at commitMount instead.
 
-		const node = NitroModules.createHybridObject<YogaNode>("YogaNode")
-		if (props?.style) node.setStyle(props.style)
+		const node = NitroModules.createHybridObject<YogaNodeFinal>("YogaNode")
 		node.setType(type)
+		if (props?.style) node.setStyle(props.style)
+		if (props) node.setProps(props)
 
 		return node
 	},

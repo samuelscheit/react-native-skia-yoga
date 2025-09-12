@@ -32,32 +32,39 @@ namespace margelo::nitro::RNSkiaYoga {
     RECT      SWIFT_NAME(rect) = 0,
     TEXT      SWIFT_NAME(text) = 1,
     GROUP      SWIFT_NAME(group) = 2,
+    IMAGE      SWIFT_NAME(image) = 3,
+    PATH      SWIFT_NAME(path) = 4,
+    PARAGRAPH      SWIFT_NAME(paragraph) = 5,
   } CLOSED_ENUM;
 
 } // namespace margelo::nitro::RNSkiaYoga
 
 namespace margelo::nitro {
 
-  using namespace margelo::nitro::RNSkiaYoga;
-
   // C++ NodeType <> JS NodeType (union)
   template <>
-  struct JSIConverter<NodeType> final {
-    static inline NodeType fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeType> final {
+    static inline margelo::nitro::RNSkiaYoga::NodeType fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       std::string unionValue = JSIConverter<std::string>::fromJSI(runtime, arg);
       switch (hashString(unionValue.c_str(), unionValue.size())) {
-        case hashString("rect"): return NodeType::RECT;
-        case hashString("text"): return NodeType::TEXT;
-        case hashString("group"): return NodeType::GROUP;
+        case hashString("rect"): return margelo::nitro::RNSkiaYoga::NodeType::RECT;
+        case hashString("text"): return margelo::nitro::RNSkiaYoga::NodeType::TEXT;
+        case hashString("group"): return margelo::nitro::RNSkiaYoga::NodeType::GROUP;
+        case hashString("image"): return margelo::nitro::RNSkiaYoga::NodeType::IMAGE;
+        case hashString("path"): return margelo::nitro::RNSkiaYoga::NodeType::PATH;
+        case hashString("paragraph"): return margelo::nitro::RNSkiaYoga::NodeType::PARAGRAPH;
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert \"" + unionValue + "\" to enum NodeType - invalid value!");
       }
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, NodeType arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, margelo::nitro::RNSkiaYoga::NodeType arg) {
       switch (arg) {
-        case NodeType::RECT: return JSIConverter<std::string>::toJSI(runtime, "rect");
-        case NodeType::TEXT: return JSIConverter<std::string>::toJSI(runtime, "text");
-        case NodeType::GROUP: return JSIConverter<std::string>::toJSI(runtime, "group");
+        case margelo::nitro::RNSkiaYoga::NodeType::RECT: return JSIConverter<std::string>::toJSI(runtime, "rect");
+        case margelo::nitro::RNSkiaYoga::NodeType::TEXT: return JSIConverter<std::string>::toJSI(runtime, "text");
+        case margelo::nitro::RNSkiaYoga::NodeType::GROUP: return JSIConverter<std::string>::toJSI(runtime, "group");
+        case margelo::nitro::RNSkiaYoga::NodeType::IMAGE: return JSIConverter<std::string>::toJSI(runtime, "image");
+        case margelo::nitro::RNSkiaYoga::NodeType::PATH: return JSIConverter<std::string>::toJSI(runtime, "path");
+        case margelo::nitro::RNSkiaYoga::NodeType::PARAGRAPH: return JSIConverter<std::string>::toJSI(runtime, "paragraph");
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert NodeType to JS - invalid value: "
                                     + std::to_string(static_cast<int>(arg)) + "!");
@@ -72,6 +79,9 @@ namespace margelo::nitro {
         case hashString("rect"):
         case hashString("text"):
         case hashString("group"):
+        case hashString("image"):
+        case hashString("path"):
+        case hashString("paragraph"):
           return true;
         default:
           return false;

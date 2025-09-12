@@ -38,26 +38,24 @@ namespace margelo::nitro::RNSkiaYoga {
 
 namespace margelo::nitro {
 
-  using namespace margelo::nitro::RNSkiaYoga;
-
   // C++ Display <> JS Display (union)
   template <>
-  struct JSIConverter<Display> final {
-    static inline Display fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::RNSkiaYoga::Display> final {
+    static inline margelo::nitro::RNSkiaYoga::Display fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       std::string unionValue = JSIConverter<std::string>::fromJSI(runtime, arg);
       switch (hashString(unionValue.c_str(), unionValue.size())) {
-        case hashString("flex"): return Display::FLEX;
-        case hashString("none"): return Display::NONE;
-        case hashString("contents"): return Display::CONTENTS;
+        case hashString("flex"): return margelo::nitro::RNSkiaYoga::Display::FLEX;
+        case hashString("none"): return margelo::nitro::RNSkiaYoga::Display::NONE;
+        case hashString("contents"): return margelo::nitro::RNSkiaYoga::Display::CONTENTS;
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert \"" + unionValue + "\" to enum Display - invalid value!");
       }
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, Display arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, margelo::nitro::RNSkiaYoga::Display arg) {
       switch (arg) {
-        case Display::FLEX: return JSIConverter<std::string>::toJSI(runtime, "flex");
-        case Display::NONE: return JSIConverter<std::string>::toJSI(runtime, "none");
-        case Display::CONTENTS: return JSIConverter<std::string>::toJSI(runtime, "contents");
+        case margelo::nitro::RNSkiaYoga::Display::FLEX: return JSIConverter<std::string>::toJSI(runtime, "flex");
+        case margelo::nitro::RNSkiaYoga::Display::NONE: return JSIConverter<std::string>::toJSI(runtime, "none");
+        case margelo::nitro::RNSkiaYoga::Display::CONTENTS: return JSIConverter<std::string>::toJSI(runtime, "contents");
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert Display to JS - invalid value: "
                                     + std::to_string(static_cast<int>(arg)) + "!");

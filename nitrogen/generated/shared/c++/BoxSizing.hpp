@@ -37,24 +37,22 @@ namespace margelo::nitro::RNSkiaYoga {
 
 namespace margelo::nitro {
 
-  using namespace margelo::nitro::RNSkiaYoga;
-
   // C++ BoxSizing <> JS BoxSizing (union)
   template <>
-  struct JSIConverter<BoxSizing> final {
-    static inline BoxSizing fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::RNSkiaYoga::BoxSizing> final {
+    static inline margelo::nitro::RNSkiaYoga::BoxSizing fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       std::string unionValue = JSIConverter<std::string>::fromJSI(runtime, arg);
       switch (hashString(unionValue.c_str(), unionValue.size())) {
-        case hashString("border-box"): return BoxSizing::BORDER_BOX;
-        case hashString("content-box"): return BoxSizing::CONTENT_BOX;
+        case hashString("border-box"): return margelo::nitro::RNSkiaYoga::BoxSizing::BORDER_BOX;
+        case hashString("content-box"): return margelo::nitro::RNSkiaYoga::BoxSizing::CONTENT_BOX;
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert \"" + unionValue + "\" to enum BoxSizing - invalid value!");
       }
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, BoxSizing arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, margelo::nitro::RNSkiaYoga::BoxSizing arg) {
       switch (arg) {
-        case BoxSizing::BORDER_BOX: return JSIConverter<std::string>::toJSI(runtime, "border-box");
-        case BoxSizing::CONTENT_BOX: return JSIConverter<std::string>::toJSI(runtime, "content-box");
+        case margelo::nitro::RNSkiaYoga::BoxSizing::BORDER_BOX: return JSIConverter<std::string>::toJSI(runtime, "border-box");
+        case margelo::nitro::RNSkiaYoga::BoxSizing::CONTENT_BOX: return JSIConverter<std::string>::toJSI(runtime, "content-box");
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert BoxSizing to JS - invalid value: "
                                     + std::to_string(static_cast<int>(arg)) + "!");

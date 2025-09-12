@@ -1,11 +1,11 @@
-import type { HybridObject } from "react-native-nitro-modules";
+import type { CustomType, HybridObject } from "react-native-nitro-modules";
 import type { NodeStyle } from "./style";
 
 export interface SkiaYoga extends HybridObject<{ ios: "c++"; android: "c++" }> {
 	addNumbers(a: number, b: number): number
 }
 
-export type NodeType = "rect" | "text" | "group"
+export type NodeType = "rect" | "text" | "group" | "image" | "path" | "paragraph";
 
 export interface YogaNodeLayout {
 	left: number
@@ -16,12 +16,19 @@ export interface YogaNodeLayout {
 	height: number
 }
 
+type YogaNodeImplementation = CustomType<
+  YogaNode,
+  'const std::shared_ptr<margelo::nitro::RNSkiaYoga::YogaNode>& ',
+  { include: 'YogaNode.hpp' }
+>
+
 export interface YogaNode extends HybridObject<{ ios: "c++"; android: "c++" }> {
 	setStyle(style: NodeStyle): void
 	setType(type: NodeType): void
-	insertChild(child: YogaNode, index?: number | YogaNode): void
-	removeChild(child: YogaNode): void
+	insertChild(child: YogaNodeImplementation, index?: number | YogaNodeImplementation): void
+	removeChild(child: YogaNodeImplementation): void
 	removeAllChildren(): void
 	getComputedLayout(): YogaNodeLayout
-	draw(): any
+
+	children: YogaNode[]
 }

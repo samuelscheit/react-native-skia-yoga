@@ -38,26 +38,24 @@ namespace margelo::nitro::RNSkiaYoga {
 
 namespace margelo::nitro {
 
-  using namespace margelo::nitro::RNSkiaYoga;
-
   // C++ Position <> JS Position (union)
   template <>
-  struct JSIConverter<Position> final {
-    static inline Position fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::RNSkiaYoga::Position> final {
+    static inline margelo::nitro::RNSkiaYoga::Position fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       std::string unionValue = JSIConverter<std::string>::fromJSI(runtime, arg);
       switch (hashString(unionValue.c_str(), unionValue.size())) {
-        case hashString("static"): return Position::STATIC;
-        case hashString("relative"): return Position::RELATIVE;
-        case hashString("absolute"): return Position::ABSOLUTE;
+        case hashString("static"): return margelo::nitro::RNSkiaYoga::Position::STATIC;
+        case hashString("relative"): return margelo::nitro::RNSkiaYoga::Position::RELATIVE;
+        case hashString("absolute"): return margelo::nitro::RNSkiaYoga::Position::ABSOLUTE;
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert \"" + unionValue + "\" to enum Position - invalid value!");
       }
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, Position arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, margelo::nitro::RNSkiaYoga::Position arg) {
       switch (arg) {
-        case Position::STATIC: return JSIConverter<std::string>::toJSI(runtime, "static");
-        case Position::RELATIVE: return JSIConverter<std::string>::toJSI(runtime, "relative");
-        case Position::ABSOLUTE: return JSIConverter<std::string>::toJSI(runtime, "absolute");
+        case margelo::nitro::RNSkiaYoga::Position::STATIC: return JSIConverter<std::string>::toJSI(runtime, "static");
+        case margelo::nitro::RNSkiaYoga::Position::RELATIVE: return JSIConverter<std::string>::toJSI(runtime, "relative");
+        case margelo::nitro::RNSkiaYoga::Position::ABSOLUTE: return JSIConverter<std::string>::toJSI(runtime, "absolute");
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert Position to JS - invalid value: "
                                     + std::to_string(static_cast<int>(arg)) + "!");

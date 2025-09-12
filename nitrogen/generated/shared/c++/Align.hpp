@@ -44,38 +44,36 @@ namespace margelo::nitro::RNSkiaYoga {
 
 namespace margelo::nitro {
 
-  using namespace margelo::nitro::RNSkiaYoga;
-
   // C++ Align <> JS Align (union)
   template <>
-  struct JSIConverter<Align> final {
-    static inline Align fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::RNSkiaYoga::Align> final {
+    static inline margelo::nitro::RNSkiaYoga::Align fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       std::string unionValue = JSIConverter<std::string>::fromJSI(runtime, arg);
       switch (hashString(unionValue.c_str(), unionValue.size())) {
-        case hashString("auto"): return Align::AUTO;
-        case hashString("flex-start"): return Align::FLEX_START;
-        case hashString("center"): return Align::CENTER;
-        case hashString("flex-end"): return Align::FLEX_END;
-        case hashString("stretch"): return Align::STRETCH;
-        case hashString("bseline"): return Align::BSELINE;
-        case hashString("space-between"): return Align::SPACE_BETWEEN;
-        case hashString("space-around"): return Align::SPACE_AROUND;
-        case hashString("space-evenly"): return Align::SPACE_EVENLY;
+        case hashString("auto"): return margelo::nitro::RNSkiaYoga::Align::AUTO;
+        case hashString("flex-start"): return margelo::nitro::RNSkiaYoga::Align::FLEX_START;
+        case hashString("center"): return margelo::nitro::RNSkiaYoga::Align::CENTER;
+        case hashString("flex-end"): return margelo::nitro::RNSkiaYoga::Align::FLEX_END;
+        case hashString("stretch"): return margelo::nitro::RNSkiaYoga::Align::STRETCH;
+        case hashString("bseline"): return margelo::nitro::RNSkiaYoga::Align::BSELINE;
+        case hashString("space-between"): return margelo::nitro::RNSkiaYoga::Align::SPACE_BETWEEN;
+        case hashString("space-around"): return margelo::nitro::RNSkiaYoga::Align::SPACE_AROUND;
+        case hashString("space-evenly"): return margelo::nitro::RNSkiaYoga::Align::SPACE_EVENLY;
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert \"" + unionValue + "\" to enum Align - invalid value!");
       }
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, Align arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, margelo::nitro::RNSkiaYoga::Align arg) {
       switch (arg) {
-        case Align::AUTO: return JSIConverter<std::string>::toJSI(runtime, "auto");
-        case Align::FLEX_START: return JSIConverter<std::string>::toJSI(runtime, "flex-start");
-        case Align::CENTER: return JSIConverter<std::string>::toJSI(runtime, "center");
-        case Align::FLEX_END: return JSIConverter<std::string>::toJSI(runtime, "flex-end");
-        case Align::STRETCH: return JSIConverter<std::string>::toJSI(runtime, "stretch");
-        case Align::BSELINE: return JSIConverter<std::string>::toJSI(runtime, "bseline");
-        case Align::SPACE_BETWEEN: return JSIConverter<std::string>::toJSI(runtime, "space-between");
-        case Align::SPACE_AROUND: return JSIConverter<std::string>::toJSI(runtime, "space-around");
-        case Align::SPACE_EVENLY: return JSIConverter<std::string>::toJSI(runtime, "space-evenly");
+        case margelo::nitro::RNSkiaYoga::Align::AUTO: return JSIConverter<std::string>::toJSI(runtime, "auto");
+        case margelo::nitro::RNSkiaYoga::Align::FLEX_START: return JSIConverter<std::string>::toJSI(runtime, "flex-start");
+        case margelo::nitro::RNSkiaYoga::Align::CENTER: return JSIConverter<std::string>::toJSI(runtime, "center");
+        case margelo::nitro::RNSkiaYoga::Align::FLEX_END: return JSIConverter<std::string>::toJSI(runtime, "flex-end");
+        case margelo::nitro::RNSkiaYoga::Align::STRETCH: return JSIConverter<std::string>::toJSI(runtime, "stretch");
+        case margelo::nitro::RNSkiaYoga::Align::BSELINE: return JSIConverter<std::string>::toJSI(runtime, "bseline");
+        case margelo::nitro::RNSkiaYoga::Align::SPACE_BETWEEN: return JSIConverter<std::string>::toJSI(runtime, "space-between");
+        case margelo::nitro::RNSkiaYoga::Align::SPACE_AROUND: return JSIConverter<std::string>::toJSI(runtime, "space-around");
+        case margelo::nitro::RNSkiaYoga::Align::SPACE_EVENLY: return JSIConverter<std::string>::toJSI(runtime, "space-evenly");
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert Align to JS - invalid value: "
                                     + std::to_string(static_cast<int>(arg)) + "!");

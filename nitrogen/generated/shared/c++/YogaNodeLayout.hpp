@@ -45,14 +45,12 @@ namespace margelo::nitro::RNSkiaYoga {
 
 namespace margelo::nitro {
 
-  using namespace margelo::nitro::RNSkiaYoga;
-
   // C++ YogaNodeLayout <> JS YogaNodeLayout (object)
   template <>
-  struct JSIConverter<YogaNodeLayout> final {
-    static inline YogaNodeLayout fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::RNSkiaYoga::YogaNodeLayout> final {
+    static inline margelo::nitro::RNSkiaYoga::YogaNodeLayout fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
-      return YogaNodeLayout(
+      return margelo::nitro::RNSkiaYoga::YogaNodeLayout(
         JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, "left")),
         JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, "right")),
         JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, "top")),
@@ -61,7 +59,7 @@ namespace margelo::nitro {
         JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, "height"))
       );
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, const YogaNodeLayout& arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::RNSkiaYoga::YogaNodeLayout& arg) {
       jsi::Object obj(runtime);
       obj.setProperty(runtime, "left", JSIConverter<double>::toJSI(runtime, arg.left));
       obj.setProperty(runtime, "right", JSIConverter<double>::toJSI(runtime, arg.right));
