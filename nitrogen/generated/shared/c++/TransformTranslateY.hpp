@@ -20,7 +20,7 @@
 
 
 
-#include <optional>
+
 
 namespace margelo::nitro::RNSkiaYoga {
 
@@ -29,11 +29,11 @@ namespace margelo::nitro::RNSkiaYoga {
    */
   struct TransformTranslateY {
   public:
-    std::optional<double> translateY     SWIFT_PRIVATE;
+    double translateY     SWIFT_PRIVATE;
 
   public:
     TransformTranslateY() = default;
-    explicit TransformTranslateY(std::optional<double> translateY): translateY(translateY) {}
+    explicit TransformTranslateY(double translateY): translateY(translateY) {}
   };
 
 } // namespace margelo::nitro::RNSkiaYoga
@@ -46,12 +46,12 @@ namespace margelo::nitro {
     static inline margelo::nitro::RNSkiaYoga::TransformTranslateY fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
       return margelo::nitro::RNSkiaYoga::TransformTranslateY(
-        JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "translateY"))
+        JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, "translateY"))
       );
     }
     static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::RNSkiaYoga::TransformTranslateY& arg) {
       jsi::Object obj(runtime);
-      obj.setProperty(runtime, "translateY", JSIConverter<std::optional<double>>::toJSI(runtime, arg.translateY));
+      obj.setProperty(runtime, "translateY", JSIConverter<double>::toJSI(runtime, arg.translateY));
       return obj;
     }
     static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
@@ -59,7 +59,7 @@ namespace margelo::nitro {
         return false;
       }
       jsi::Object obj = value.getObject(runtime);
-      if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "translateY"))) return false;
+      if (!JSIConverter<double>::canConvert(runtime, obj.getProperty(runtime, "translateY"))) return false;
       return true;
     }
   };

@@ -20,7 +20,7 @@
 
 
 
-#include <optional>
+
 
 namespace margelo::nitro::RNSkiaYoga {
 
@@ -29,11 +29,11 @@ namespace margelo::nitro::RNSkiaYoga {
    */
   struct TransformScaleY {
   public:
-    std::optional<double> scaleY     SWIFT_PRIVATE;
+    double scaleY     SWIFT_PRIVATE;
 
   public:
     TransformScaleY() = default;
-    explicit TransformScaleY(std::optional<double> scaleY): scaleY(scaleY) {}
+    explicit TransformScaleY(double scaleY): scaleY(scaleY) {}
   };
 
 } // namespace margelo::nitro::RNSkiaYoga
@@ -46,12 +46,12 @@ namespace margelo::nitro {
     static inline margelo::nitro::RNSkiaYoga::TransformScaleY fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
       return margelo::nitro::RNSkiaYoga::TransformScaleY(
-        JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "scaleY"))
+        JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, "scaleY"))
       );
     }
     static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::RNSkiaYoga::TransformScaleY& arg) {
       jsi::Object obj(runtime);
-      obj.setProperty(runtime, "scaleY", JSIConverter<std::optional<double>>::toJSI(runtime, arg.scaleY));
+      obj.setProperty(runtime, "scaleY", JSIConverter<double>::toJSI(runtime, arg.scaleY));
       return obj;
     }
     static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
@@ -59,7 +59,7 @@ namespace margelo::nitro {
         return false;
       }
       jsi::Object obj = value.getObject(runtime);
-      if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "scaleY"))) return false;
+      if (!JSIConverter<double>::canConvert(runtime, obj.getProperty(runtime, "scaleY"))) return false;
       return true;
     }
   };

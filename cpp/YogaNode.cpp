@@ -4,12 +4,16 @@
 #include "HybridYogaNodeSpec.hpp"
 #include "SkColor.h"
 #include "SkiaYoga.hpp"
+#include <array>
+#include <cmath>
 #include <jsi/jsi.h>
 #include <react-native-skia/cpp/api/JsiSkCanvas.h>
 #include <react-native-skia/cpp/api/JsiSkHostObjects.h>
 #include <react-native-skia/cpp/api/recorder/DrawingCtx.h>
 #include <react-native-skia/cpp/api/recorder/Drawings.h>
 #include <react-native-skia/cpp/rnskia/RNSkManager.h>
+#include <type_traits>
+#include <variant>
 #include <yoga/Yoga.h>
 
 namespace margelo::nitro::RNSkiaYoga {
@@ -28,6 +32,7 @@ YogaNode::YogaNode()
     : HybridObject(HybridYogaNodeSpec::TAG)
 {
     _node = YGNodeNew();
+    YGNodeSetContext(_node, this);
 }
 
 // Helper function to handle variant<string, double> values dfor setting yoga values
@@ -384,7 +389,6 @@ void YogaNode::setStyle(const NodeStyle& style)
             const auto& str = std::get<std::string>(*value);
             if (auto parsed = parseCssColor(str)) {
                 _paint.setColor(*parsed);
-
             }
         } else {
             // backgroundColor is a SkPaint
@@ -395,6 +399,149 @@ void YogaNode::setStyle(const NodeStyle& style)
 
     if (const auto& value = style.opacity) {
         _paint.setAlphaf(static_cast<float>(*value));
+    }
+
+    if (const auto& value = style.blendMode) {
+        _paint.setBlendMode(static_cast<SkBlendMode>(*value));
+    }
+
+    auto shouldClip = style.borderRadius.has_value() || style.borderTopLeftRadius.has_value() || style.borderTopRightRadius.has_value() || style.borderBottomLeftRadius.has_value() || style.borderBottomRightRadius.has_value();
+
+    if (shouldClip) {
+        std::array<SkVector, 4> radii;
+        radii.fill(SkVector::Make(0.0f, 0.0f));
+
+        if (const auto& value = style.borderRadius) {
+            auto radius = static_cast<float>(*value);
+            radii[SkRRect::kUpperLeft_Corner] = SkVector::Make(radius, radius);
+            radii[SkRRect::kUpperRight_Corner] = SkVector::Make(radius, radius);
+            radii[SkRRect::kLowerRight_Corner] = SkVector::Make(radius, radius);
+            radii[SkRRect::kLowerLeft_Corner] = SkVector::Make(radius, radius);
+
+            shouldClip = true;
+        }
+
+        auto setCornerRadius = [&](const auto& val, int corner) {
+            if (val) {
+                if (std::holds_alternative<SkPoint>(*val)) {
+                    SkPoint p = std::get<SkPoint>(*val);
+                    radii[corner] = SkVector::Make(p.x, p.y);
+                } else {
+                    auto radius = static_cast<float>(std::get<double>(*val));
+                    radii[corner] = SkVector::Make(radius, radius);
+                }
+                shouldClip = true;
+            }
+        };
+
+        setCornerRadius(style.borderTopLeftRadius, SkRRect::kUpperLeft_Corner);
+        setCornerRadius(style.borderTopRightRadius, SkRRect::kUpperRight_Corner);
+        setCornerRadius(style.borderBottomRightRadius, SkRRect::kLowerRight_Corner);
+        setCornerRadius(style.borderBottomLeftRadius, SkRRect::kLowerLeft_Corner);
+
+        _clipRRect = SkRRect();
+        _clipRRectRadii = radii;
+        _clipRRect->setRectRadii(SkRect::MakeXYWH(_layout.left, _layout.top, _layout.width, _layout.height), radii.data());
+        _clipPath.reset();
+        _clipRect.reset();
+    } else if (const auto& value = style.clip) {
+        if (std::holds_alternative<SkPath>(*value)) {
+            _clipPath = std::get<SkPath>(*value);
+            _clipRRect.reset();
+            _clipRRectRadii.reset();
+            _clipRect.reset();
+        } else if (std::holds_alternative<SkRRect>(*value)) {
+            _clipRRect = std::get<SkRRect>(*value);
+            _clipPath.reset();
+            _clipRRectRadii.reset();
+            _clipRect.reset();
+        } else if (std::holds_alternative<SkRect>(*value)) {
+            SkRect r = std::get<SkRect>(*value);
+            _clipRect = r;
+            _clipPath.reset();
+            _clipRRect.reset();
+            _clipRRectRadii.reset();
+        }
+    } else {
+        _clipPath.reset();
+        _clipRRect.reset();
+        _clipRect.reset();
+        _clipRRectRadii.reset();
+    }
+
+    if (const auto& value = style.matrix) {
+        _matrix = value;
+    }
+
+    if (const auto& value = style.transform) {
+        SkM44 matrix;
+        matrix.setIdentity();
+        bool hasTransform = false;
+
+        for (const auto& transform : *value) {
+            std::visit(
+                [&](const auto& op) {
+                    using T = std::decay_t<decltype(op)>;
+
+                    if constexpr (std::is_same_v<T, TransformRotateX>) {
+                        SkM44 rotate;
+                        rotate.setRotateUnit({ 1.0f, 0.0f, 0.0f }, static_cast<float>(op.rotateX));
+                        matrix.preConcat(rotate);
+                        hasTransform = true;
+                    } else if constexpr (std::is_same_v<T, TransformRotateY>) {
+                        SkM44 rotate;
+                        rotate.setRotateUnit({ 0.0f, 1.0f, 0.0f }, static_cast<float>(op.rotateY));
+                        matrix.preConcat(rotate);
+                        hasTransform = true;
+                    } else if constexpr (std::is_same_v<T, TransformRotateZ>) {
+                        SkM44 rotate;
+                        rotate.setRotateUnit({ 0.0f, 0.0f, 1.0f }, static_cast<float>(op.rotateZ));
+                        matrix.preConcat(rotate);
+                        hasTransform = true;
+                    } else if constexpr (std::is_same_v<T, TransformScale>) {
+                        const float s = static_cast<float>(op.scale);
+                        matrix.preScale(s, s, 1.0f);
+                        hasTransform = true;
+                    } else if constexpr (std::is_same_v<T, TransformScaleX>) {
+                        matrix.preScale(static_cast<float>(op.scaleX), 1.0f, 1.0f);
+                        hasTransform = true;
+                    } else if constexpr (std::is_same_v<T, TransformScaleY>) {
+                        matrix.preScale(1.0f, static_cast<float>(op.scaleY), 1.0f);
+                        hasTransform = true;
+                    } else if constexpr (std::is_same_v<T, TransformTranslateX>) {
+                        matrix.preTranslate(static_cast<float>(op.translateX), 0.0f, 0.0f);
+                        hasTransform = true;
+                    } else if constexpr (std::is_same_v<T, TransformTranslateY>) {
+                        matrix.preTranslate(0.0f, static_cast<float>(op.translateY), 0.0f);
+                        hasTransform = true;
+                    } else if constexpr (std::is_same_v<T, TransformSkewX>) {
+                        const float tangent = static_cast<float>(std::tan(op.skewX));
+                        SkM44 skew(1.0f, 0.0f, 0.0f, 0.0f,
+                            tangent, 1.0f, 0.0f, 0.0f,
+                            0.0f, 0.0f, 1.0f, 0.0f,
+                            0.0f, 0.0f, 0.0f, 1.0f);
+                        matrix.preConcat(skew);
+                        hasTransform = true;
+                    } else if constexpr (std::is_same_v<T, TransformSkewY>) {
+                        const float tangent = static_cast<float>(std::tan(op.skewY));
+                        SkM44 skew(1.0f, tangent, 0.0f, 0.0f,
+                            0.0f, 1.0f, 0.0f, 0.0f,
+                            0.0f, 0.0f, 1.0f, 0.0f,
+                            0.0f, 0.0f, 0.0f, 1.0f);
+                        matrix.preConcat(skew);
+                        hasTransform = true;
+                    }
+                },
+                transform);
+        }
+
+        if (hasTransform) {
+            _transform = matrix;
+        } else {
+            _transform.reset();
+        }
+    } else {
+        _transform.reset();
     }
 }
 
@@ -483,6 +630,11 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
         _command.reset(rectCmd);
         break;
     }
+    case NodeType::RRECT: {
+        auto* rrectCmd = new margelo::nitro::RNSkiaYoga::RRectCmd(this, runtime, props, variables);
+        _command.reset(rrectCmd);
+        break;
+    }
     case NodeType::TEXT: {
         auto* textCmd = new margelo::nitro::RNSkiaYoga::TextCmd(this, runtime, props, variables);
         _command.reset(textCmd);
@@ -491,6 +643,9 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
     case NodeType::PARAGRAPH: {
         auto* paragraphCmd = new margelo::nitro::RNSkiaYoga::ParagraphCmd(this, runtime, props, variables);
         _command.reset(paragraphCmd);
+
+        YGNodeSetMeasureFunc(_node, margelo::nitro::RNSkiaYoga::ParagraphCmd::measureFunc);
+
         break;
     }
     case NodeType::GROUP:
@@ -519,22 +674,57 @@ jsi::Value YogaNode::draw(jsi::Runtime& runtime, const jsi::Value& thisArg, cons
         return jsi::Value::undefined();
     }
 
+    drawInternal(ctx);
+
+    auto picture = pictureRecorder.finishRecordingAsPicture();
+    return jsi::Object::createFromHostObject(runtime, std::make_shared<RNSkia::JsiSkPicture>(margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext(), picture));
+}
+
+void YogaNode::drawInternal(RNSkia::DrawingCtx& ctx)
+{
+    if (!_command) {
+        return;
+    }
+
+    auto op = _style.invertClip.has_value() && _style.invertClip.value() ? SkClipOp::kDifference : SkClipOp::kIntersect;
+    auto shouldClip = _clipPath.has_value() || _clipRect.has_value() || _clipRRect.has_value() || _matrix.has_value() || _transform.has_value();
+
+    if (shouldClip) {
+        ctx.canvas->save();
+    }
+
+    if (_matrix.has_value()) {
+        ctx.canvas->concat(*_matrix);
+    }
+
+    if (_transform.has_value()) {
+        ctx.canvas->concat(_transform->asM33());
+    }
+
+    if (_clipPath.has_value()) {
+        ctx.canvas->clipPath(*_clipPath, op, true);
+    } else if (_clipRect.has_value()) {
+        ctx.canvas->clipRect(*_clipRect, op, true);
+    } else if (_clipRRect.has_value()) {
+        ctx.canvas->clipRRect(*_clipRRect, op, true);
+    }
+
     ctx.pushPaint(_paint);
 
     _command->draw(&ctx);
 
-    ctx.restorePaint();
-
     for (const auto& child : _children) {
         if (child->_command) {
-            child->_command->draw(&ctx);
+            child->drawInternal(ctx);
         }
     }
 
-    // getObject()->play(&ctx);
+    ctx.restorePaint();
 
-    auto picture = pictureRecorder.finishRecordingAsPicture();
-    return jsi::Object::createFromHostObject(runtime, std::make_shared<RNSkia::JsiSkPicture>(margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext(), picture));
+    // TODO: decide if restore before or after children draw
+    if (shouldClip) {
+        ctx.canvas->restore();
+    }
 }
 
 void YogaNode::setChildren(const std::vector<std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>>& children)
@@ -582,6 +772,26 @@ void YogaNode::recursiveSetLayout()
     _layout.bottom = YGNodeLayoutGetBottom(_node);
     if (_command) {
         _command->setLayout(_layout);
+    }
+
+    if (_clipRRect) {
+        std::array<SkVector, 4> radii;
+        radii.fill(SkVector::Make(0.0f, 0.0f));
+
+        if (_clipRRectRadii) {
+            radii = *_clipRRectRadii;
+        } else {
+            auto currentRadii = _clipRRect->radii();
+            for (size_t i = 0; i < radii.size(); ++i) {
+                radii[i] = currentRadii[i];
+            }
+        }
+
+        _clipRRect->setRectRadii(SkRect::MakeXYWH(_layout.left, _layout.top, _layout.width, _layout.height), radii.data());
+    }
+
+    if (_clipRect) {
+        _clipRect->setWH(_layout.width, _layout.height);
     }
 
     for (const auto& child : _children) {

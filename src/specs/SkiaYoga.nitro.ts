@@ -5,7 +5,7 @@ export interface SkiaYoga extends HybridObject<{ ios: "c++"; android: "c++" }> {
 	addNumbers(a: number, b: number): number
 }
 
-export type NodeType = "rect" | "text" | "group" | "image" | "path" | "paragraph";
+export type NodeType = "rect" | "rrect" | "text" | "group" | "image" | "path" | "paragraph";
 
 export interface YogaNodeLayout {
 	left: number

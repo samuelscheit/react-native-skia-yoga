@@ -20,7 +20,7 @@
 
 
 
-#include <optional>
+
 
 namespace margelo::nitro::RNSkiaYoga {
 
@@ -29,11 +29,11 @@ namespace margelo::nitro::RNSkiaYoga {
    */
   struct TransformSkewY {
   public:
-    std::optional<double> skewY     SWIFT_PRIVATE;
+    double skewY     SWIFT_PRIVATE;
 
   public:
     TransformSkewY() = default;
-    explicit TransformSkewY(std::optional<double> skewY): skewY(skewY) {}
+    explicit TransformSkewY(double skewY): skewY(skewY) {}
   };
 
 } // namespace margelo::nitro::RNSkiaYoga
@@ -46,12 +46,12 @@ namespace margelo::nitro {
     static inline margelo::nitro::RNSkiaYoga::TransformSkewY fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
       return margelo::nitro::RNSkiaYoga::TransformSkewY(
-        JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "skewY"))
+        JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, "skewY"))
       );
     }
     static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::RNSkiaYoga::TransformSkewY& arg) {
       jsi::Object obj(runtime);
-      obj.setProperty(runtime, "skewY", JSIConverter<std::optional<double>>::toJSI(runtime, arg.skewY));
+      obj.setProperty(runtime, "skewY", JSIConverter<double>::toJSI(runtime, arg.skewY));
       return obj;
     }
     static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
@@ -59,7 +59,7 @@ namespace margelo::nitro {
         return false;
       }
       jsi::Object obj = value.getObject(runtime);
-      if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "skewY"))) return false;
+      if (!JSIConverter<double>::canConvert(runtime, obj.getProperty(runtime, "skewY"))) return false;
       return true;
     }
   };

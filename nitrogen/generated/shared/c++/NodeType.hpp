@@ -30,11 +30,12 @@ namespace margelo::nitro::RNSkiaYoga {
    */
   enum class NodeType {
     RECT      SWIFT_NAME(rect) = 0,
-    TEXT      SWIFT_NAME(text) = 1,
-    GROUP      SWIFT_NAME(group) = 2,
-    IMAGE      SWIFT_NAME(image) = 3,
-    PATH      SWIFT_NAME(path) = 4,
-    PARAGRAPH      SWIFT_NAME(paragraph) = 5,
+    RRECT      SWIFT_NAME(rrect) = 1,
+    TEXT      SWIFT_NAME(text) = 2,
+    GROUP      SWIFT_NAME(group) = 3,
+    IMAGE      SWIFT_NAME(image) = 4,
+    PATH      SWIFT_NAME(path) = 5,
+    PARAGRAPH      SWIFT_NAME(paragraph) = 6,
   } CLOSED_ENUM;
 
 } // namespace margelo::nitro::RNSkiaYoga
@@ -48,6 +49,7 @@ namespace margelo::nitro {
       std::string unionValue = JSIConverter<std::string>::fromJSI(runtime, arg);
       switch (hashString(unionValue.c_str(), unionValue.size())) {
         case hashString("rect"): return margelo::nitro::RNSkiaYoga::NodeType::RECT;
+        case hashString("rrect"): return margelo::nitro::RNSkiaYoga::NodeType::RRECT;
         case hashString("text"): return margelo::nitro::RNSkiaYoga::NodeType::TEXT;
         case hashString("group"): return margelo::nitro::RNSkiaYoga::NodeType::GROUP;
         case hashString("image"): return margelo::nitro::RNSkiaYoga::NodeType::IMAGE;
@@ -60,6 +62,7 @@ namespace margelo::nitro {
     static inline jsi::Value toJSI(jsi::Runtime& runtime, margelo::nitro::RNSkiaYoga::NodeType arg) {
       switch (arg) {
         case margelo::nitro::RNSkiaYoga::NodeType::RECT: return JSIConverter<std::string>::toJSI(runtime, "rect");
+        case margelo::nitro::RNSkiaYoga::NodeType::RRECT: return JSIConverter<std::string>::toJSI(runtime, "rrect");
         case margelo::nitro::RNSkiaYoga::NodeType::TEXT: return JSIConverter<std::string>::toJSI(runtime, "text");
         case margelo::nitro::RNSkiaYoga::NodeType::GROUP: return JSIConverter<std::string>::toJSI(runtime, "group");
         case margelo::nitro::RNSkiaYoga::NodeType::IMAGE: return JSIConverter<std::string>::toJSI(runtime, "image");
@@ -77,6 +80,7 @@ namespace margelo::nitro {
       std::string unionValue = JSIConverter<std::string>::fromJSI(runtime, value);
       switch (hashString(unionValue.c_str(), unionValue.size())) {
         case hashString("rect"):
+        case hashString("rrect"):
         case hashString("text"):
         case hashString("group"):
         case hashString("image"):

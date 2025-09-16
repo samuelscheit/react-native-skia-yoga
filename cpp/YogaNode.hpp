@@ -4,11 +4,14 @@
 #include "JSIConverter+SkMatrix.hpp"
 #include "JSIConverter+SkPaint.hpp"
 #include "JSIConverter+SkPath.hpp"
+#include "JSIConverter+SkRect.hpp"
+#include "JSIConverter+SkRRect.hpp"
 
 #include "HybridSkiaYogaSpec.hpp"
 #include "HybridYogaNodeSpec.hpp"
 #include "SkiaYoga.hpp"
 #include <jsi/jsi.h>
+#include <array>
 #include <memory>
 #include <react-native-skia/cpp/api/JsiSkApi.h>
 #include <react-native-skia/cpp/api/JsiSkParagraph.h>
@@ -63,10 +66,10 @@ public:
     jsi::Value setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
 
     jsi::Value draw(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
+    void drawInternal(RNSkia::DrawingCtx& ctx);
 
     std::string getName() const { return "YogaNode"; }
 
-private:
     YGNodeRef _node;
     NodeType _type;
     YogaNodeLayout _layout;
@@ -74,6 +77,12 @@ private:
     std::vector<std::shared_ptr<YogaNode>> _children;
     NodeStyle _style;
     SkPaint _paint;
+    std::optional<SkPath> _clipPath;
+    std::optional<SkRRect> _clipRRect;
+    std::optional<std::array<SkVector, 4>> _clipRRectRadii;
+    std::optional<SkRect> _clipRect;
+    std::optional<SkM44> _transform;
+    std::optional<SkMatrix> _matrix;
 
     void loadHybridMethods() override
     {
@@ -101,6 +110,23 @@ public:
     }
 
     void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::RectCmd::draw(ctx); }
+};
+
+class RRectCmd : public RNSkia::RRectCmd, public YogaNodeCommand {
+public:
+    RRectCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
+        : RNSkia::RRectCmd(runtime, props, variables)
+        , YogaNodeCommand(node)
+    {
+    }  
+
+    void setLayout(const YogaNodeLayout& layout) override
+    {
+        auto radius = this->props.r.value_or(RNSkia::Radius{0, 0});
+        this->props.rect = SkRRect::MakeRectXY(SkRect::MakeXYWH(layout.left, layout.top, layout.width, layout.height), radius.rX, radius.rY);
+    }
+
+    void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::RRectCmd::draw(ctx); }
 };
 
 class TextCmd : public RNSkia::TextCmd, public YogaNodeCommand {
@@ -136,6 +162,23 @@ public:
     }
 
     void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::ParagraphCmd::draw(ctx); }
+
+
+    static YGSize measureFunc(YGNodeConstRef node, float width, YGMeasureMode widthMode, float height, YGMeasureMode heightMode) {
+        auto paragraph = static_cast<YogaNode *>(YGNodeGetContext(node));
+        
+        auto cmd = static_cast<ParagraphCmd *>(paragraph->_command.get());
+
+        auto skParagraph = cmd->props.paragraph->getObject();
+        if (width <= 0 || widthMode == YGMeasureModeUndefined) {
+            width = 20000000.0f; // very large width
+        }
+
+        skParagraph->layout(width);
+        auto sz = skParagraph->getHeight();
+        return YGSize{width, sz};
+
+    }
 };
 
 } // namespace margelo::nitro::RNSkiaYoga

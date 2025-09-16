@@ -1,6 +1,6 @@
-import { Canvas, Picture } from "@shopify/react-native-skia"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { createYogaNode, reconciler } from "react-native-skia-yoga"
+import { Canvas, Picture, Skia } from "@shopify/react-native-skia"
+import { Dimensions } from "react-native"
+import { createYogaNode } from "react-native-skia-yoga"
 
 declare namespace React {
 	namespace JSX {
@@ -20,43 +20,87 @@ function Root() {
 	)
 }
 
-const root = createYogaNode()
+// const r = reconciler.createContainer(
+// 	root,
+// 	0,
+// 	null,
+// 	true,
+// 	true,
+// 	"test",
+// 	console.error,
+// 	null,
+// )
 
-const r = reconciler.createContainer(
-	root,
-	0,
-	null,
-	true,
-	true,
-	"test",
-	console.error,
-	null,
-)
-globalThis.root = root
+const root = createYogaNode()
 
 root.setType("rect")
 root.setProps({})
 root.setStyle({
 	flex: 1,
-	width: 100,
-	height: 100,
-	flexDirection: "row",
-	backgroundColor: "blue",
+	paddingTop: 120,
+	paddingBottom: 30,
+	backgroundColor: "#2d3e50",
+	gap: 20,
+	paddingHorizontal: 40,
 })
 const child = createYogaNode()
-globalThis.child = child
 
 child.setType("rect")
 child.setProps({})
 child.setStyle({
-	margin: 10,
 	flex: 1,
-	backgroundColor: "red",
+	backgroundColor: "#16a186",
+	borderRadius: 20,
+	borderTopLeftRadius: {
+		x: 50,
+		y: 100,
+	},
+	borderBottomRightRadius: 100,
+	matrix: Skia.Matrix().identity().translate(20, -20).skew(0, -0.1),
 })
 root.insertChild(child)
 
+const child2 = createYogaNode()
 
-root.computeLayout()
+child2.setType("rect")
+child2.setProps({})
+child2.setStyle({
+	flex: 1,
+	backgroundColor: "#16a186",
+	invertClip: false,
+	borderRadius: 15,
+	transform: [
+		{
+			rotateX: 0.4,
+		},
+		{
+			rotateY: 0.3,
+		},
+		{
+			rotateZ: 0.1,
+		},
+		{
+			translateY: 150,
+		},
+		{
+			translateX: 100,
+		},
+		{
+			scale: 0.8
+		},
+	],
+})
+root.insertChild(child2)
+
+const screen = Dimensions.get("window")
+root.computeLayout(screen.width, screen.height)
+
+// @ts-ignore
+globalThis.root = root
+// @ts-ignore
+globalThis.child = child
+
+// root.computeLayout()
 
 const layout = root.layout
 const layoutChild = child.layout
@@ -78,12 +122,8 @@ globalThis.node = root
 
 export default function HomeScreen() {
 	return (
-		<SafeAreaView
-			style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-		>
-			<Canvas style={{ width: 300, height: 300 }}>
-				<Picture picture={picture} />
-			</Canvas>
-		</SafeAreaView>
+		<Canvas style={{ width: screen.width, height: screen.height }}>
+			<Picture picture={picture} />
+		</Canvas>
 	)
 }

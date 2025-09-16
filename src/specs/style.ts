@@ -1,11 +1,11 @@
 import type {
 	BlendMode,
-	InputMatrix,
-	RectCtor,
-	RRectCtor,
 	SkColor,
 	SkMatrix,
 	SkPath,
+	SkPoint,
+	SkRect,
+	SkRRect
 } from "@shopify/react-native-skia"
 import type { CustomType } from "react-native-nitro-modules"
 
@@ -62,6 +62,24 @@ export type SkMatrixNative = CustomType<
 	}
 >
 
+export type SkRRectNative = CustomType<
+	SkRRect,
+	"SkRRect",
+	{
+		include: "JSIConverter+SkRRect.hpp"
+		canBePassedByReference: true
+	}
+>
+
+export type SkRectNative = CustomType<
+	SkRect,
+	"SkRect",
+	{
+		include: "JSIConverter+SkRect.hpp"
+		canBePassedByReference: true
+	}
+>
+
 export type SkPathNative = CustomType<
 	SkPath,
 	"SkPath",
@@ -72,15 +90,15 @@ export type SkPathNative = CustomType<
 >
 
 export type TransformRotateX = { rotateX: number }
-export type TransformRotateY = { rotateY?: number }
-export type TransformRotateZ = { rotateZ?: number }
-export type TransformScale = { scale?: number }
-export type TransformScaleX = { scaleX?: number }
-export type TransformScaleY = { scaleY?: number }
-export type TransformTranslateX = { translateX?: number }
-export type TransformTranslateY = { translateY?: number }
-export type TransformSkewX = { skewX?: number }
-export type TransformSkewY = { skewY?: number }
+export type TransformRotateY = { rotateY: number }
+export type TransformRotateZ = { rotateZ: number }
+export type TransformScale = { scale: number }
+export type TransformScaleX = { scaleX: number }
+export type TransformScaleY = { scaleY: number }
+export type TransformTranslateX = { translateX: number }
+export type TransformTranslateY = { translateY: number }
+export type TransformSkewX = { skewX: number }
+export type TransformSkewY = { skewY: number }
 
 export type Transform = (
   | TransformRotateX
@@ -162,9 +180,15 @@ export type NodeStyle = {
 
 	/* Skia Paint properties */
 	backgroundColor?: string | SkColorNative // mapped to SkPaint color
+	/** alias for clip */
+	borderRadius?: number
+	borderBottomLeftRadius?: number | SkPoint
+	borderBottomRightRadius?: number | SkPoint
+	borderTopLeftRadius?: number | SkPoint
+	borderTopRightRadius?: number | SkPoint
+
 	/** Unfortunately Skia does not support both fill and stroke color for objects (TODO: add a hack to redraw everything twice if it has both border and fill color) */
 	// borderColor?: string | SkColorNative // mapped to SkPaint
-	// borderRadius?: number
 	// borderStyle?: "solid" | "dashed" | "dotted"
 	blendMode?: BlendMode
 	antiaAlias?: boolean // mapped to SkPaint antialias
@@ -175,8 +199,8 @@ export type NodeStyle = {
 	/* Skia transform properties */
 	transform?: Transform
 	origin?: [number, number]
-	matrix?: Exclude<InputMatrix, SkMatrix> | SkMatrixNative
-	clip?: SkPathNative | RectCtor | RRectCtor
+	matrix?: SkMatrixNative
+	clip?: SkPathNative | SkRRectNative | SkRectNative
 	invertClip?: boolean
 	// TODO: layer
 }

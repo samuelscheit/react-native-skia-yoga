@@ -20,7 +20,7 @@
 
 
 
-#include <optional>
+
 
 namespace margelo::nitro::RNSkiaYoga {
 
@@ -29,11 +29,11 @@ namespace margelo::nitro::RNSkiaYoga {
    */
   struct TransformRotateZ {
   public:
-    std::optional<double> rotateZ     SWIFT_PRIVATE;
+    double rotateZ     SWIFT_PRIVATE;
 
   public:
     TransformRotateZ() = default;
-    explicit TransformRotateZ(std::optional<double> rotateZ): rotateZ(rotateZ) {}
+    explicit TransformRotateZ(double rotateZ): rotateZ(rotateZ) {}
   };
 
 } // namespace margelo::nitro::RNSkiaYoga
@@ -46,12 +46,12 @@ namespace margelo::nitro {
     static inline margelo::nitro::RNSkiaYoga::TransformRotateZ fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
       return margelo::nitro::RNSkiaYoga::TransformRotateZ(
-        JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "rotateZ"))
+        JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, "rotateZ"))
       );
     }
     static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::RNSkiaYoga::TransformRotateZ& arg) {
       jsi::Object obj(runtime);
-      obj.setProperty(runtime, "rotateZ", JSIConverter<std::optional<double>>::toJSI(runtime, arg.rotateZ));
+      obj.setProperty(runtime, "rotateZ", JSIConverter<double>::toJSI(runtime, arg.rotateZ));
       return obj;
     }
     static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
@@ -59,7 +59,7 @@ namespace margelo::nitro {
         return false;
       }
       jsi::Object obj = value.getObject(runtime);
-      if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "rotateZ"))) return false;
+      if (!JSIConverter<double>::canConvert(runtime, obj.getProperty(runtime, "rotateZ"))) return false;
       return true;
     }
   };
