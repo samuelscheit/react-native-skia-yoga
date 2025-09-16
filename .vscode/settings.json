@@ -63,7 +63,8 @@
 	"sstream": "cpp",
 	"typeindex": "cpp",
 	"codecvt": "cpp",
-	"__assert": "cpp"
+	"__assert": "cpp",
+	"any": "cpp"
 },
 "cmake.sourceDirectory": "/Users/user/Developer/respond/react-native-skia-yoga/android",
 "C_Cpp.errorSquiggles": "disabled"

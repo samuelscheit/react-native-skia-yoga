@@ -1,6 +1,8 @@
 #include "YogaNode.hpp"
+#include "ColorParser.hpp"
 #include "HybridSkiaYogaSpec.hpp"
 #include "HybridYogaNodeSpec.hpp"
+#include "SkColor.h"
 #include "SkiaYoga.hpp"
 #include <jsi/jsi.h>
 #include <react-native-skia/cpp/api/JsiSkCanvas.h>
@@ -75,6 +77,8 @@ static void setYGEdgeValue(void (*setter)(YGNodeRef, YGEdge, float),
 
 void YogaNode::setStyle(const NodeStyle& style)
 {
+    _style = style;
+
     // Layout properties - using references to avoid multiple value() calls
     if (const auto& value = style.justifyContent) {
         YGNodeStyleSetJustifyContent(_node, static_cast<YGJustify>(*value));
@@ -365,14 +369,41 @@ void YogaNode::setStyle(const NodeStyle& style)
         setYGEdgeValue(YGNodeStyleSetPosition, YGNodeStyleSetPositionPercent,
             YGNodeStyleSetPositionAuto, _node, YGEdgeVertical, *value);
     }
+
+    if (const auto& value = style.antiaAlias) {
+        _paint.setAntiAlias(*value);
+    }
+
+    if (const auto& value = style.dither) {
+        _paint.setDither(*value);
+    }
+
+    if (const auto& value = style.backgroundColor) {
+
+        if (std::holds_alternative<std::string>(*value)) {
+            const auto& str = std::get<std::string>(*value);
+            if (auto parsed = parseCssColor(str)) {
+                _paint.setColor(*parsed);
+
+            }
+        } else {
+            // backgroundColor is a SkPaint
+            const auto& p = std::get<SkPaint>(*value);
+            _paint = p;
+        }
+    }
+
+    if (const auto& value = style.opacity) {
+        _paint.setAlphaf(static_cast<float>(*value));
+    }
 }
 
-void YogaNode::insertChild(const std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>& child, const std::optional<std::variant<double, std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>>>& index)
+void YogaNode::insertChild(const std::shared_ptr<HybridYogaNodeSpec>& child, const std::optional<std::variant<double, std::shared_ptr<HybridYogaNodeSpec>>>& index)
 {
     if (!child) {
         return; // No child to insert
     }
-    
+
     auto yogaNode = std::dynamic_pointer_cast<YogaNode>(child);
 
     if (!yogaNode) {
@@ -381,7 +412,7 @@ void YogaNode::insertChild(const std::shared_ptr<margelo::nitro::RNSkiaYoga::Hyb
 
     size_t insertIndex = 0;
 
-    if (index.has_value()) { 
+    if (index.has_value()) {
         if (std::holds_alternative<double>(index.value())) {
             double idx = std::get<double>(index.value());
             if (idx < 0 || idx >= YGNodeGetChildCount(_node)) {
@@ -420,8 +451,11 @@ void YogaNode::insertChild(const std::shared_ptr<margelo::nitro::RNSkiaYoga::Hyb
     _children.push_back(yogaNode);
 }
 
-void YogaNode::removeChild(const std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>& child)
+// void removeChild(const std::shared_ptr<HybridYogaNodeSpec>& child) override;
+void YogaNode::removeChild(const std::shared_ptr<HybridYogaNodeSpec>& c)
 {
+    auto child = std::dynamic_pointer_cast<YogaNode>(c);
+
     YGNodeRemoveChild(_node, child->_node);
     _children.erase(std::remove(_children.begin(), _children.end(), child), _children.end());
 }
@@ -437,7 +471,6 @@ void YogaNode::setType(const NodeType type)
     _type = type;
 }
 
-
 jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
 {
     jsi::Object props = args[0].asObject(runtime);
@@ -445,26 +478,30 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
     RNSkia::Variables variables; // TODO: save reanimated shared values
 
     switch (this->_type) {
-    case NodeType::RECT:{
-        auto* rectCmd = new margelo::nitro::RNSkiaYoga::RectCmd(runtime, props, variables);
+    case NodeType::RECT: {
+        auto* rectCmd = new margelo::nitro::RNSkiaYoga::RectCmd(this, runtime, props, variables);
         _command.reset(rectCmd);
         break;
     }
     case NodeType::TEXT: {
-        auto* textCmd = new margelo::nitro::RNSkiaYoga::TextCmd(runtime, props, variables);
+        auto* textCmd = new margelo::nitro::RNSkiaYoga::TextCmd(this, runtime, props, variables);
         _command.reset(textCmd);
         break;
     }
     case NodeType::PARAGRAPH: {
-        auto* paragraphCmd = new margelo::nitro::RNSkiaYoga::ParagraphCmd(runtime, props, variables);
+        auto* paragraphCmd = new margelo::nitro::RNSkiaYoga::ParagraphCmd(this, runtime, props, variables);
         _command.reset(paragraphCmd);
         break;
     }
     case NodeType::GROUP:
     default:
         break;
-    
+
         //   _command = std::make_unique<RNSkia::GroupCmd>(runtime, props, variables);
+    }
+
+    if (_command) {
+        _command->setLayout(_layout);
     }
 
     return jsi::Value::undefined();
@@ -481,7 +518,18 @@ jsi::Value YogaNode::draw(jsi::Runtime& runtime, const jsi::Value& thisArg, cons
     if (!_command) {
         return jsi::Value::undefined();
     }
+
+    ctx.pushPaint(_paint);
+
     _command->draw(&ctx);
+
+    ctx.restorePaint();
+
+    for (const auto& child : _children) {
+        if (child->_command) {
+            child->_command->draw(&ctx);
+        }
+    }
 
     // getObject()->play(&ctx);
 
@@ -498,9 +546,8 @@ void YogaNode::setChildren(const std::vector<std::shared_ptr<margelo::nitro::RNS
     for (const auto& c : children) {
         auto yogaNode = std::dynamic_pointer_cast<YogaNode>(c);
         _children.push_back(yogaNode);
-        YGNodeInsertChild(_node, yogaNode->_node, YGNodeGetChildCount(_node)); 
+        YGNodeInsertChild(_node, yogaNode->_node, YGNodeGetChildCount(_node));
     }
-
 }
 
 std::vector<std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>> YogaNode::getChildren()
@@ -516,28 +563,41 @@ std::vector<std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>> Yog
     return result;
 }
 
-YogaNodeLayout YogaNode::getComputedLayout()
+void YogaNode::computeLayout(std::optional<double> width, std::optional<double> height)
 {
-    YogaNodeLayout layout;
+    float w = width.has_value() ? static_cast<float>(width.value()) : YGUndefined;
+    float h = height.has_value() ? static_cast<float>(height.value()) : YGUndefined;
 
-    // Get the computed layout from Yoga
-    YGNodeCalculateLayout(_node, YGUndefined, YGUndefined, YGDirectionInherit);
-
-    // Fill the layout struct with computed values
-    layout.left = YGNodeLayoutGetLeft(_node);
-    layout.right = YGNodeLayoutGetRight(_node);
-    layout.width = YGNodeLayoutGetWidth(_node);
-    layout.height = YGNodeLayoutGetHeight(_node);
-    layout.top = YGNodeLayoutGetTop(_node);
-    layout.bottom = YGNodeLayoutGetBottom(_node);
-
-    if (_command) {
-        _command->setLayout(layout);
-    }
-
-    return layout;
+    YGNodeCalculateLayout(_node, w, h, YGDirectionInherit);
+    recursiveSetLayout();
 }
 
+void YogaNode::recursiveSetLayout()
+{
+    _layout.left = YGNodeLayoutGetLeft(_node);
+    _layout.right = YGNodeLayoutGetRight(_node);
+    _layout.width = YGNodeLayoutGetWidth(_node);
+    _layout.height = YGNodeLayoutGetHeight(_node);
+    _layout.top = YGNodeLayoutGetTop(_node);
+    _layout.bottom = YGNodeLayoutGetBottom(_node);
+    if (_command) {
+        _command->setLayout(_layout);
+    }
+
+    for (const auto& child : _children) {
+        child->recursiveSetLayout();
+    }
+}
+
+void YogaNode::setLayout(const YogaNodeLayout& layout)
+{
+
+    throw std::runtime_error("Setting layout is not supported");
+}
+
+YogaNodeLayout YogaNode::getLayout()
+{
+    return _layout;
+}
 
 } // namespace margelo::nitro::RNSkiaYoga
-

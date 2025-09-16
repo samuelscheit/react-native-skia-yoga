@@ -14,6 +14,8 @@ namespace margelo::nitro::RNSkiaYoga {
     HybridObject::loadHybridMethods();
     // load custom methods/properties
     registerHybrids(this, [](Prototype& prototype) {
+      prototype.registerHybridGetter("layout", &HybridYogaNodeSpec::getLayout);
+      prototype.registerHybridSetter("layout", &HybridYogaNodeSpec::setLayout);
       prototype.registerHybridGetter("children", &HybridYogaNodeSpec::getChildren);
       prototype.registerHybridSetter("children", &HybridYogaNodeSpec::setChildren);
       prototype.registerHybridMethod("setStyle", &HybridYogaNodeSpec::setStyle);
@@ -21,7 +23,7 @@ namespace margelo::nitro::RNSkiaYoga {
       prototype.registerHybridMethod("insertChild", &HybridYogaNodeSpec::insertChild);
       prototype.registerHybridMethod("removeChild", &HybridYogaNodeSpec::removeChild);
       prototype.registerHybridMethod("removeAllChildren", &HybridYogaNodeSpec::removeAllChildren);
-      prototype.registerHybridMethod("getComputedLayout", &HybridYogaNodeSpec::getComputedLayout);
+      prototype.registerHybridMethod("computeLayout", &HybridYogaNodeSpec::computeLayout);
     });
   }
 

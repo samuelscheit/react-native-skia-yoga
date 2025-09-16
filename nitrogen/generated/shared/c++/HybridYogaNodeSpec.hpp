@@ -13,24 +13,23 @@
 #error NitroModules cannot be found! Are you sure you installed NitroModules properly?
 #endif
 
+// Forward declaration of `YogaNodeLayout` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct YogaNodeLayout; }
 // Forward declaration of `HybridYogaNodeSpec` to properly resolve imports.
 namespace margelo::nitro::RNSkiaYoga { class HybridYogaNodeSpec; }
 // Forward declaration of `NodeStyle` to properly resolve imports.
 namespace margelo::nitro::RNSkiaYoga { struct NodeStyle; }
 // Forward declaration of `NodeType` to properly resolve imports.
 namespace margelo::nitro::RNSkiaYoga { enum class NodeType; }
-// Forward declaration of `YogaNodeLayout` to properly resolve imports.
-namespace margelo::nitro::RNSkiaYoga { struct YogaNodeLayout; }
 
+#include "YogaNodeLayout.hpp"
 #include <memory>
 #include "HybridYogaNodeSpec.hpp"
 #include <vector>
 #include "NodeStyle.hpp"
 #include "NodeType.hpp"
-#include "YogaNode.hpp"
 #include <variant>
 #include <optional>
-#include "YogaNodeLayout.hpp"
 
 namespace margelo::nitro::RNSkiaYoga {
 
@@ -59,6 +58,8 @@ namespace margelo::nitro::RNSkiaYoga {
 
     public:
       // Properties
+      virtual YogaNodeLayout getLayout() = 0;
+      virtual void setLayout(const YogaNodeLayout& layout) = 0;
       virtual std::vector<std::shared_ptr<HybridYogaNodeSpec>> getChildren() = 0;
       virtual void setChildren(const std::vector<std::shared_ptr<HybridYogaNodeSpec>>& children) = 0;
 
@@ -66,10 +67,10 @@ namespace margelo::nitro::RNSkiaYoga {
       // Methods
       virtual void setStyle(const NodeStyle& style) = 0;
       virtual void setType(NodeType type) = 0;
-      virtual void insertChild(const std::shared_ptr<margelo::nitro::RNSkiaYoga::YogaNode>&  child, const std::optional<std::variant<double, const std::shared_ptr<margelo::nitro::RNSkiaYoga::YogaNode>& >>& index) = 0;
-      virtual void removeChild(const std::shared_ptr<margelo::nitro::RNSkiaYoga::YogaNode>&  child) = 0;
+      virtual void insertChild(const std::shared_ptr<HybridYogaNodeSpec>& child, const std::optional<std::variant<double, std::shared_ptr<HybridYogaNodeSpec>>>& index) = 0;
+      virtual void removeChild(const std::shared_ptr<HybridYogaNodeSpec>& child) = 0;
       virtual void removeAllChildren() = 0;
-      virtual YogaNodeLayout getComputedLayout() = 0;
+      virtual void computeLayout(std::optional<double> width, std::optional<double> height) = 0;
 
     protected:
       // Hybrid Setup

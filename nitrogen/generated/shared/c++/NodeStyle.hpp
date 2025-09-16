@@ -36,6 +36,32 @@ namespace margelo::nitro::RNSkiaYoga { enum class JustifyContent; }
 namespace margelo::nitro::RNSkiaYoga { enum class Overflow; }
 // Forward declaration of `Position` to properly resolve imports.
 namespace margelo::nitro::RNSkiaYoga { enum class Position; }
+// Forward declaration of `BlendMode` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { enum class BlendMode; }
+// Forward declaration of `TransformRotateX` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct TransformRotateX; }
+// Forward declaration of `TransformRotateY` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct TransformRotateY; }
+// Forward declaration of `TransformRotateZ` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct TransformRotateZ; }
+// Forward declaration of `TransformScale` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct TransformScale; }
+// Forward declaration of `TransformScaleX` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct TransformScaleX; }
+// Forward declaration of `TransformScaleY` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct TransformScaleY; }
+// Forward declaration of `TransformTranslateX` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct TransformTranslateX; }
+// Forward declaration of `TransformTranslateY` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct TransformTranslateY; }
+// Forward declaration of `TransformSkewX` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct TransformSkewX; }
+// Forward declaration of `TransformSkewY` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct TransformSkewY; }
+// Forward declaration of `RectCtor` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct RectCtor; }
+// Forward declaration of `RRectCtor` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct RRectCtor; }
 
 #include "Align.hpp"
 #include <optional>
@@ -49,6 +75,24 @@ namespace margelo::nitro::RNSkiaYoga { enum class Position; }
 #include "JustifyContent.hpp"
 #include "Overflow.hpp"
 #include "Position.hpp"
+#include "JSIConverter+SkPaint.hpp"
+#include "BlendMode.hpp"
+#include "TransformRotateX.hpp"
+#include "TransformRotateY.hpp"
+#include "TransformRotateZ.hpp"
+#include "TransformScale.hpp"
+#include "TransformScaleX.hpp"
+#include "TransformScaleY.hpp"
+#include "TransformTranslateX.hpp"
+#include "TransformTranslateY.hpp"
+#include "TransformSkewX.hpp"
+#include "TransformSkewY.hpp"
+#include <vector>
+#include <tuple>
+#include "JSIConverter+SkMatrix.hpp"
+#include "JSIConverter+SkPath.hpp"
+#include "RectCtor.hpp"
+#include "RRectCtor.hpp"
 
 namespace margelo::nitro::RNSkiaYoga {
 
@@ -118,10 +162,20 @@ namespace margelo::nitro::RNSkiaYoga {
     std::optional<std::variant<std::string, double>> insetVertical     SWIFT_PRIVATE;
     std::optional<std::variant<std::string, double>> inset     SWIFT_PRIVATE;
     std::optional<std::variant<std::string, double>> width     SWIFT_PRIVATE;
+    std::optional<std::variant<std::string, SkPaint>> backgroundColor     SWIFT_PRIVATE;
+    std::optional<BlendMode> blendMode     SWIFT_PRIVATE;
+    std::optional<bool> antiaAlias     SWIFT_PRIVATE;
+    std::optional<bool> dither     SWIFT_PRIVATE;
+    std::optional<double> opacity     SWIFT_PRIVATE;
+    std::optional<std::vector<std::variant<TransformRotateX, TransformRotateY, TransformRotateZ, TransformScale, TransformScaleX, TransformScaleY, TransformTranslateX, TransformTranslateY, TransformSkewX, TransformSkewY>>> transform     SWIFT_PRIVATE;
+    std::optional<std::tuple<double, double>> origin     SWIFT_PRIVATE;
+    std::optional<std::variant<std::vector<double>, std::tuple<double, double, double, double, double, double, double, double, double>, std::tuple<double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double>, SkMatrix>> matrix     SWIFT_PRIVATE;
+    std::optional<std::variant<SkPath, RectCtor, RRectCtor>> clip     SWIFT_PRIVATE;
+    std::optional<bool> invertClip     SWIFT_PRIVATE;
 
   public:
     NodeStyle() = default;
-    explicit NodeStyle(std::optional<Align> alignContent, std::optional<Align> alignItems, std::optional<Align> alignSelf, std::optional<double> aspectRatio, std::optional<double> borderBottomWidth, std::optional<double> borderEndWidth, std::optional<double> borderLeftWidth, std::optional<double> borderRightWidth, std::optional<double> borderStartWidth, std::optional<double> borderTopWidth, std::optional<double> borderWidth, std::optional<double> borderHorizontalWidth, std::optional<double> borderVerticalWidth, std::optional<std::variant<std::string, double>> bottom, std::optional<BoxSizing> boxSizing, std::optional<Direction> direction, std::optional<Display> display, std::optional<std::variant<std::string, double>> end, std::optional<double> flex, std::optional<std::variant<std::string, double>> flexBasis, std::optional<FlexDirection> flexDirection, std::optional<double> rowGap, std::optional<double> gap, std::optional<double> columnGap, std::optional<double> flexGrow, std::optional<double> flexShrink, std::optional<FlexWrap> flexWrap, std::optional<std::variant<std::string, double>> height, std::optional<JustifyContent> justifyContent, std::optional<std::variant<std::string, double>> left, std::optional<std::variant<std::string, double>> margin, std::optional<std::variant<std::string, double>> marginBottom, std::optional<std::variant<std::string, double>> marginEnd, std::optional<std::variant<std::string, double>> marginLeft, std::optional<std::variant<std::string, double>> marginRight, std::optional<std::variant<std::string, double>> marginStart, std::optional<std::variant<std::string, double>> marginTop, std::optional<std::variant<std::string, double>> marginHorizontal, std::optional<std::variant<std::string, double>> marginVertical, std::optional<std::variant<std::string, double>> maxHeight, std::optional<std::variant<std::string, double>> maxWidth, std::optional<std::variant<std::string, double>> minHeight, std::optional<std::variant<std::string, double>> minWidth, std::optional<Overflow> overflow, std::optional<std::variant<std::string, double>> padding, std::optional<std::variant<std::string, double>> paddingBottom, std::optional<std::variant<std::string, double>> paddingEnd, std::optional<std::variant<std::string, double>> paddingLeft, std::optional<std::variant<std::string, double>> paddingRight, std::optional<std::variant<std::string, double>> paddingStart, std::optional<std::variant<std::string, double>> paddingTop, std::optional<std::variant<std::string, double>> paddingHorizontal, std::optional<std::variant<std::string, double>> paddingVertical, std::optional<Position> position, std::optional<std::variant<std::string, double>> right, std::optional<std::variant<std::string, double>> start, std::optional<std::variant<std::string, double>> top, std::optional<std::variant<std::string, double>> insetHorizontal, std::optional<std::variant<std::string, double>> insetVertical, std::optional<std::variant<std::string, double>> inset, std::optional<std::variant<std::string, double>> width): alignContent(alignContent), alignItems(alignItems), alignSelf(alignSelf), aspectRatio(aspectRatio), borderBottomWidth(borderBottomWidth), borderEndWidth(borderEndWidth), borderLeftWidth(borderLeftWidth), borderRightWidth(borderRightWidth), borderStartWidth(borderStartWidth), borderTopWidth(borderTopWidth), borderWidth(borderWidth), borderHorizontalWidth(borderHorizontalWidth), borderVerticalWidth(borderVerticalWidth), bottom(bottom), boxSizing(boxSizing), direction(direction), display(display), end(end), flex(flex), flexBasis(flexBasis), flexDirection(flexDirection), rowGap(rowGap), gap(gap), columnGap(columnGap), flexGrow(flexGrow), flexShrink(flexShrink), flexWrap(flexWrap), height(height), justifyContent(justifyContent), left(left), margin(margin), marginBottom(marginBottom), marginEnd(marginEnd), marginLeft(marginLeft), marginRight(marginRight), marginStart(marginStart), marginTop(marginTop), marginHorizontal(marginHorizontal), marginVertical(marginVertical), maxHeight(maxHeight), maxWidth(maxWidth), minHeight(minHeight), minWidth(minWidth), overflow(overflow), padding(padding), paddingBottom(paddingBottom), paddingEnd(paddingEnd), paddingLeft(paddingLeft), paddingRight(paddingRight), paddingStart(paddingStart), paddingTop(paddingTop), paddingHorizontal(paddingHorizontal), paddingVertical(paddingVertical), position(position), right(right), start(start), top(top), insetHorizontal(insetHorizontal), insetVertical(insetVertical), inset(inset), width(width) {}
+    explicit NodeStyle(std::optional<Align> alignContent, std::optional<Align> alignItems, std::optional<Align> alignSelf, std::optional<double> aspectRatio, std::optional<double> borderBottomWidth, std::optional<double> borderEndWidth, std::optional<double> borderLeftWidth, std::optional<double> borderRightWidth, std::optional<double> borderStartWidth, std::optional<double> borderTopWidth, std::optional<double> borderWidth, std::optional<double> borderHorizontalWidth, std::optional<double> borderVerticalWidth, std::optional<std::variant<std::string, double>> bottom, std::optional<BoxSizing> boxSizing, std::optional<Direction> direction, std::optional<Display> display, std::optional<std::variant<std::string, double>> end, std::optional<double> flex, std::optional<std::variant<std::string, double>> flexBasis, std::optional<FlexDirection> flexDirection, std::optional<double> rowGap, std::optional<double> gap, std::optional<double> columnGap, std::optional<double> flexGrow, std::optional<double> flexShrink, std::optional<FlexWrap> flexWrap, std::optional<std::variant<std::string, double>> height, std::optional<JustifyContent> justifyContent, std::optional<std::variant<std::string, double>> left, std::optional<std::variant<std::string, double>> margin, std::optional<std::variant<std::string, double>> marginBottom, std::optional<std::variant<std::string, double>> marginEnd, std::optional<std::variant<std::string, double>> marginLeft, std::optional<std::variant<std::string, double>> marginRight, std::optional<std::variant<std::string, double>> marginStart, std::optional<std::variant<std::string, double>> marginTop, std::optional<std::variant<std::string, double>> marginHorizontal, std::optional<std::variant<std::string, double>> marginVertical, std::optional<std::variant<std::string, double>> maxHeight, std::optional<std::variant<std::string, double>> maxWidth, std::optional<std::variant<std::string, double>> minHeight, std::optional<std::variant<std::string, double>> minWidth, std::optional<Overflow> overflow, std::optional<std::variant<std::string, double>> padding, std::optional<std::variant<std::string, double>> paddingBottom, std::optional<std::variant<std::string, double>> paddingEnd, std::optional<std::variant<std::string, double>> paddingLeft, std::optional<std::variant<std::string, double>> paddingRight, std::optional<std::variant<std::string, double>> paddingStart, std::optional<std::variant<std::string, double>> paddingTop, std::optional<std::variant<std::string, double>> paddingHorizontal, std::optional<std::variant<std::string, double>> paddingVertical, std::optional<Position> position, std::optional<std::variant<std::string, double>> right, std::optional<std::variant<std::string, double>> start, std::optional<std::variant<std::string, double>> top, std::optional<std::variant<std::string, double>> insetHorizontal, std::optional<std::variant<std::string, double>> insetVertical, std::optional<std::variant<std::string, double>> inset, std::optional<std::variant<std::string, double>> width, std::optional<std::variant<std::string, SkPaint>> backgroundColor, std::optional<BlendMode> blendMode, std::optional<bool> antiaAlias, std::optional<bool> dither, std::optional<double> opacity, std::optional<std::vector<std::variant<TransformRotateX, TransformRotateY, TransformRotateZ, TransformScale, TransformScaleX, TransformScaleY, TransformTranslateX, TransformTranslateY, TransformSkewX, TransformSkewY>>> transform, std::optional<std::tuple<double, double>> origin, std::optional<std::variant<std::vector<double>, std::tuple<double, double, double, double, double, double, double, double, double>, std::tuple<double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double>, SkMatrix>> matrix, std::optional<std::variant<SkPath, RectCtor, RRectCtor>> clip, std::optional<bool> invertClip): alignContent(alignContent), alignItems(alignItems), alignSelf(alignSelf), aspectRatio(aspectRatio), borderBottomWidth(borderBottomWidth), borderEndWidth(borderEndWidth), borderLeftWidth(borderLeftWidth), borderRightWidth(borderRightWidth), borderStartWidth(borderStartWidth), borderTopWidth(borderTopWidth), borderWidth(borderWidth), borderHorizontalWidth(borderHorizontalWidth), borderVerticalWidth(borderVerticalWidth), bottom(bottom), boxSizing(boxSizing), direction(direction), display(display), end(end), flex(flex), flexBasis(flexBasis), flexDirection(flexDirection), rowGap(rowGap), gap(gap), columnGap(columnGap), flexGrow(flexGrow), flexShrink(flexShrink), flexWrap(flexWrap), height(height), justifyContent(justifyContent), left(left), margin(margin), marginBottom(marginBottom), marginEnd(marginEnd), marginLeft(marginLeft), marginRight(marginRight), marginStart(marginStart), marginTop(marginTop), marginHorizontal(marginHorizontal), marginVertical(marginVertical), maxHeight(maxHeight), maxWidth(maxWidth), minHeight(minHeight), minWidth(minWidth), overflow(overflow), padding(padding), paddingBottom(paddingBottom), paddingEnd(paddingEnd), paddingLeft(paddingLeft), paddingRight(paddingRight), paddingStart(paddingStart), paddingTop(paddingTop), paddingHorizontal(paddingHorizontal), paddingVertical(paddingVertical), position(position), right(right), start(start), top(top), insetHorizontal(insetHorizontal), insetVertical(insetVertical), inset(inset), width(width), backgroundColor(backgroundColor), blendMode(blendMode), antiaAlias(antiaAlias), dither(dither), opacity(opacity), transform(transform), origin(origin), matrix(matrix), clip(clip), invertClip(invertClip) {}
   };
 
 } // namespace margelo::nitro::RNSkiaYoga
@@ -194,7 +248,17 @@ namespace margelo::nitro {
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "insetHorizontal")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "insetVertical")),
         JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "inset")),
-        JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "width"))
+        JSIConverter<std::optional<std::variant<std::string, double>>>::fromJSI(runtime, obj.getProperty(runtime, "width")),
+        JSIConverter<std::optional<std::variant<std::string, SkPaint>>>::fromJSI(runtime, obj.getProperty(runtime, "backgroundColor")),
+        JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::BlendMode>>::fromJSI(runtime, obj.getProperty(runtime, "blendMode")),
+        JSIConverter<std::optional<bool>>::fromJSI(runtime, obj.getProperty(runtime, "antiaAlias")),
+        JSIConverter<std::optional<bool>>::fromJSI(runtime, obj.getProperty(runtime, "dither")),
+        JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, "opacity")),
+        JSIConverter<std::optional<std::vector<std::variant<margelo::nitro::RNSkiaYoga::TransformRotateX, margelo::nitro::RNSkiaYoga::TransformRotateY, margelo::nitro::RNSkiaYoga::TransformRotateZ, margelo::nitro::RNSkiaYoga::TransformScale, margelo::nitro::RNSkiaYoga::TransformScaleX, margelo::nitro::RNSkiaYoga::TransformScaleY, margelo::nitro::RNSkiaYoga::TransformTranslateX, margelo::nitro::RNSkiaYoga::TransformTranslateY, margelo::nitro::RNSkiaYoga::TransformSkewX, margelo::nitro::RNSkiaYoga::TransformSkewY>>>>::fromJSI(runtime, obj.getProperty(runtime, "transform")),
+        JSIConverter<std::optional<std::tuple<double, double>>>::fromJSI(runtime, obj.getProperty(runtime, "origin")),
+        JSIConverter<std::optional<std::variant<std::vector<double>, std::tuple<double, double, double, double, double, double, double, double, double>, std::tuple<double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double>, SkMatrix>>>::fromJSI(runtime, obj.getProperty(runtime, "matrix")),
+        JSIConverter<std::optional<std::variant<SkPath, margelo::nitro::RNSkiaYoga::RectCtor, margelo::nitro::RNSkiaYoga::RRectCtor>>>::fromJSI(runtime, obj.getProperty(runtime, "clip")),
+        JSIConverter<std::optional<bool>>::fromJSI(runtime, obj.getProperty(runtime, "invertClip"))
       );
     }
     static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::RNSkiaYoga::NodeStyle& arg) {
@@ -260,6 +324,16 @@ namespace margelo::nitro {
       obj.setProperty(runtime, "insetVertical", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.insetVertical));
       obj.setProperty(runtime, "inset", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.inset));
       obj.setProperty(runtime, "width", JSIConverter<std::optional<std::variant<std::string, double>>>::toJSI(runtime, arg.width));
+      obj.setProperty(runtime, "backgroundColor", JSIConverter<std::optional<std::variant<std::string, SkPaint>>>::toJSI(runtime, arg.backgroundColor));
+      obj.setProperty(runtime, "blendMode", JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::BlendMode>>::toJSI(runtime, arg.blendMode));
+      obj.setProperty(runtime, "antiaAlias", JSIConverter<std::optional<bool>>::toJSI(runtime, arg.antiaAlias));
+      obj.setProperty(runtime, "dither", JSIConverter<std::optional<bool>>::toJSI(runtime, arg.dither));
+      obj.setProperty(runtime, "opacity", JSIConverter<std::optional<double>>::toJSI(runtime, arg.opacity));
+      obj.setProperty(runtime, "transform", JSIConverter<std::optional<std::vector<std::variant<margelo::nitro::RNSkiaYoga::TransformRotateX, margelo::nitro::RNSkiaYoga::TransformRotateY, margelo::nitro::RNSkiaYoga::TransformRotateZ, margelo::nitro::RNSkiaYoga::TransformScale, margelo::nitro::RNSkiaYoga::TransformScaleX, margelo::nitro::RNSkiaYoga::TransformScaleY, margelo::nitro::RNSkiaYoga::TransformTranslateX, margelo::nitro::RNSkiaYoga::TransformTranslateY, margelo::nitro::RNSkiaYoga::TransformSkewX, margelo::nitro::RNSkiaYoga::TransformSkewY>>>>::toJSI(runtime, arg.transform));
+      obj.setProperty(runtime, "origin", JSIConverter<std::optional<std::tuple<double, double>>>::toJSI(runtime, arg.origin));
+      obj.setProperty(runtime, "matrix", JSIConverter<std::optional<std::variant<std::vector<double>, std::tuple<double, double, double, double, double, double, double, double, double>, std::tuple<double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double>, SkMatrix>>>::toJSI(runtime, arg.matrix));
+      obj.setProperty(runtime, "clip", JSIConverter<std::optional<std::variant<SkPath, margelo::nitro::RNSkiaYoga::RectCtor, margelo::nitro::RNSkiaYoga::RRectCtor>>>::toJSI(runtime, arg.clip));
+      obj.setProperty(runtime, "invertClip", JSIConverter<std::optional<bool>>::toJSI(runtime, arg.invertClip));
       return obj;
     }
     static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
@@ -328,6 +402,16 @@ namespace margelo::nitro {
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "insetVertical"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "inset"))) return false;
       if (!JSIConverter<std::optional<std::variant<std::string, double>>>::canConvert(runtime, obj.getProperty(runtime, "width"))) return false;
+      if (!JSIConverter<std::optional<std::variant<std::string, SkPaint>>>::canConvert(runtime, obj.getProperty(runtime, "backgroundColor"))) return false;
+      if (!JSIConverter<std::optional<margelo::nitro::RNSkiaYoga::BlendMode>>::canConvert(runtime, obj.getProperty(runtime, "blendMode"))) return false;
+      if (!JSIConverter<std::optional<bool>>::canConvert(runtime, obj.getProperty(runtime, "antiaAlias"))) return false;
+      if (!JSIConverter<std::optional<bool>>::canConvert(runtime, obj.getProperty(runtime, "dither"))) return false;
+      if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, "opacity"))) return false;
+      if (!JSIConverter<std::optional<std::vector<std::variant<margelo::nitro::RNSkiaYoga::TransformRotateX, margelo::nitro::RNSkiaYoga::TransformRotateY, margelo::nitro::RNSkiaYoga::TransformRotateZ, margelo::nitro::RNSkiaYoga::TransformScale, margelo::nitro::RNSkiaYoga::TransformScaleX, margelo::nitro::RNSkiaYoga::TransformScaleY, margelo::nitro::RNSkiaYoga::TransformTranslateX, margelo::nitro::RNSkiaYoga::TransformTranslateY, margelo::nitro::RNSkiaYoga::TransformSkewX, margelo::nitro::RNSkiaYoga::TransformSkewY>>>>::canConvert(runtime, obj.getProperty(runtime, "transform"))) return false;
+      if (!JSIConverter<std::optional<std::tuple<double, double>>>::canConvert(runtime, obj.getProperty(runtime, "origin"))) return false;
+      if (!JSIConverter<std::optional<std::variant<std::vector<double>, std::tuple<double, double, double, double, double, double, double, double, double>, std::tuple<double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double>, SkMatrix>>>::canConvert(runtime, obj.getProperty(runtime, "matrix"))) return false;
+      if (!JSIConverter<std::optional<std::variant<SkPath, margelo::nitro::RNSkiaYoga::RectCtor, margelo::nitro::RNSkiaYoga::RRectCtor>>>::canConvert(runtime, obj.getProperty(runtime, "clip"))) return false;
+      if (!JSIConverter<std::optional<bool>>::canConvert(runtime, obj.getProperty(runtime, "invertClip"))) return false;
       return true;
     }
   };
