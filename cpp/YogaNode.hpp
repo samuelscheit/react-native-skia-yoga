@@ -3,6 +3,8 @@
 // Ensure JSIConverter specializations are visible before Nitro-generated headers
 #include "JSIConverter+SkMatrix.hpp"
 #include "JSIConverter+SkPaint.hpp"
+#include "JSIConverter+SkFont.hpp"
+#include "JSIConverter+SkImage.hpp"
 #include "JSIConverter+SkPath.hpp"
 #include "JSIConverter+SkRect.hpp"
 #include "JSIConverter+SkRRect.hpp"
@@ -63,8 +65,9 @@ public:
     void setLayout(const YogaNodeLayout& layout) override;
 
     void removeAllChildren() override;
-    jsi::Value setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
 
+    jsi::Value setType(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
+    jsi::Value setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
     jsi::Value draw(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
     void drawInternal(RNSkia::DrawingCtx& ctx);
 
@@ -92,6 +95,8 @@ public:
         registerHybrids(this, [](Prototype& prototype) {
             prototype.registerRawHybridMethod("setProps", 1, &YogaNode::setProps);
             prototype.registerRawHybridMethod("draw", 1, &YogaNode::draw);
+            prototype.registerRawHybridMethod("setType", 1, &YogaNode::setType);
+
         });
     }
 };
@@ -144,6 +149,49 @@ public:
     }
 
     void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::TextCmd::draw(ctx); }
+};
+
+class ImageCmd : public RNSkia::ImageCmd, public YogaNodeCommand {
+public:
+    ImageCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
+        : RNSkia::ImageCmd(runtime, props, variables)
+        , YogaNodeCommand(node)
+    {
+    }
+
+    void setLayout(const YogaNodeLayout& layout) override
+    {
+        this->props.x = static_cast<float>(layout.left);
+        this->props.y = static_cast<float>(layout.top);
+        this->props.width = static_cast<float>(layout.width);
+        this->props.height = static_cast<float>(layout.height);
+        this->props.rect = SkRect::MakeXYWH(layout.left, layout.top, layout.width, layout.height);
+    }
+
+    void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::ImageCmd::draw(ctx); }
+};
+
+class PathCmd : public RNSkia::PathCmd, public YogaNodeCommand {
+public:
+    PathCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
+        : RNSkia::PathCmd(runtime, props, variables)
+        , YogaNodeCommand(node)
+        , _basePath(this->props.path)
+    {
+    }
+
+    void setLayout(const YogaNodeLayout& layout) override
+    {
+        this->props.path = _basePath;
+        this->props.path.offset(static_cast<float>(layout.left), static_cast<float>(layout.top));
+    }
+
+    void setBasePath(const SkPath& path) { _basePath = path; }
+
+    void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::PathCmd::draw(ctx); }
+
+private:
+    SkPath _basePath;
 };
 
 class ParagraphCmd : public RNSkia::ParagraphCmd, public YogaNodeCommand {

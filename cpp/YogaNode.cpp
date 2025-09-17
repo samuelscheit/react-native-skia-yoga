@@ -615,14 +615,14 @@ void YogaNode::removeAllChildren()
 
 void YogaNode::setType(const NodeType type)
 {
-    _type = type;
 }
 
-jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
+jsi::Value YogaNode::setType(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
 {
-    jsi::Object props = args[0].asObject(runtime);
-
+    jsi::Object props = jsi::Object(runtime);
     RNSkia::Variables variables; // TODO: save reanimated shared values
+
+    _type = JSIConverter<NodeType>::fromJSI(runtime, args[0]);
 
     switch (this->_type) {
     case NodeType::RECT: {
@@ -638,6 +638,16 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
     case NodeType::TEXT: {
         auto* textCmd = new margelo::nitro::RNSkiaYoga::TextCmd(this, runtime, props, variables);
         _command.reset(textCmd);
+        break;
+    }
+    case NodeType::PATH: {
+        auto* pathCmd = new margelo::nitro::RNSkiaYoga::PathCmd(this, runtime, props, variables);
+        _command.reset(pathCmd);
+        break;
+    }
+    case NodeType::IMAGE: {
+        auto* imageCmd = new margelo::nitro::RNSkiaYoga::ImageCmd(this, runtime, props, variables);
+        _command.reset(imageCmd);
         break;
     }
     case NodeType::PARAGRAPH: {
@@ -657,6 +667,127 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
 
     if (_command) {
         _command->setLayout(_layout);
+    }
+
+    return jsi::Value::undefined();
+}
+
+jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
+{
+    jsi::Object props = args[0].asObject(runtime);
+
+    switch (this->_type) {
+    case NodeType::RECT: {
+        auto rectCmd = static_cast<margelo::nitro::RNSkiaYoga::RectCmd*>(_command.get());
+        break;
+    }
+    case NodeType::RRECT: {
+        auto rrectCmd = static_cast<margelo::nitro::RNSkiaYoga::RRectCmd*>(_command.get());
+        auto radius = JSIConverter<std::optional<double>>::fromJSI(runtime, props.getProperty(runtime, "r"));
+        auto r = static_cast<float>(radius.value_or(0.0));
+        rrectCmd->props.r = RNSkia::Radius { .rX = r, .rY = r };
+        break;
+    }
+    case NodeType::TEXT: {
+        auto textCmd = static_cast<margelo::nitro::RNSkiaYoga::TextCmd*>(_command.get());
+        textCmd->props.text = JSIConverter<std::string>::fromJSI(runtime, props.getProperty(runtime, "text"));
+        textCmd->props.font = JSIConverter<SkFont>::fromJSI(runtime, props.getProperty(runtime, "font"));
+        break;
+    }
+    case NodeType::PATH: {
+        auto pathCmd = static_cast<margelo::nitro::RNSkiaYoga::PathCmd*>(_command.get());
+        if (!pathCmd) {
+            break;
+        }
+
+        if (props.hasProperty(runtime, "path")) {
+            auto pathValue = props.getProperty(runtime, "path");
+            if (pathValue.isObject()) {
+                auto newPath = JSIConverter<SkPath>::fromJSI(runtime, pathValue);
+                pathCmd->setBasePath(newPath);
+                pathCmd->setLayout(_layout);
+            }
+        }
+
+        if (props.hasProperty(runtime, "start")) {
+            const auto startValue = props.getProperty(runtime, "start");
+            if (startValue.isNumber()) {
+                pathCmd->props.start = static_cast<float>(startValue.asNumber());
+            }
+        }
+
+        if (props.hasProperty(runtime, "end")) {
+            const auto endValue = props.getProperty(runtime, "end");
+            if (endValue.isNumber()) {
+                pathCmd->props.end = static_cast<float>(endValue.asNumber());
+            }
+        }
+
+        if (props.hasProperty(runtime, "stroke")) {
+            const auto strokeValue = props.getProperty(runtime, "stroke");
+            if (strokeValue.isNull() || strokeValue.isUndefined()) {
+                pathCmd->props.stroke.reset();
+            } else if (strokeValue.isObject()) {
+                pathCmd->props.stroke = RNSkia::getPropertyValue<RNSkia::StrokeOpts>(runtime, strokeValue);
+            }
+        }
+
+        if (props.hasProperty(runtime, "fillType")) {
+            const auto fillValue = props.getProperty(runtime, "fillType");
+            if (fillValue.isNull() || fillValue.isUndefined()) {
+                pathCmd->props.fillType.reset();
+            } else if (fillValue.isNumber()) {
+                pathCmd->props.fillType = static_cast<SkPathFillType>(static_cast<int>(fillValue.asNumber()));
+            }
+        }
+
+        break;
+    }
+    case NodeType::PARAGRAPH: {
+        auto paragraphCmd = static_cast<margelo::nitro::RNSkiaYoga::ParagraphCmd*>(_command.get());
+        paragraphCmd->props.paragraph = props.getProperty(runtime, "paragraph").asObject(runtime).getHostObject<RNSkia::JsiSkParagraph>(runtime);
+
+        break;
+    }
+    case NodeType::IMAGE: {
+        auto imageCmd = static_cast<margelo::nitro::RNSkiaYoga::ImageCmd*>(_command.get());
+        if (!imageCmd) {
+            break;
+        }
+
+        if (props.hasProperty(runtime, "image")) {
+            const auto imageValue = props.getProperty(runtime, "image");
+            auto image = JSIConverter<sk_sp<SkImage>>::fromJSI(runtime, imageValue);
+            if (image) {
+                imageCmd->props.image = image;
+            } else {
+                imageCmd->props.image.reset();
+            }
+        }
+
+        if (props.hasProperty(runtime, "sampling")) {
+            const auto samplingValue = props.getProperty(runtime, "sampling");
+            if (samplingValue.isNull() || samplingValue.isUndefined()) {
+                imageCmd->props.sampling.reset();
+            } else {
+                imageCmd->props.sampling = RNSkia::SamplingOptionsFromValue(runtime, samplingValue);
+            }
+        }
+
+        if (props.hasProperty(runtime, "fit")) {
+            const auto fitValue = props.getProperty(runtime, "fit");
+            if (fitValue.isString()) {
+                imageCmd->props.fit = fitValue.asString(runtime).utf8(runtime);
+            }
+        } else if (imageCmd->props.fit.empty()) {
+            imageCmd->props.fit = "contain";
+        }
+
+        break;
+    }
+    case NodeType::GROUP:
+    default: {
+    }
     }
 
     return jsi::Value::undefined();
@@ -721,7 +852,6 @@ void YogaNode::drawInternal(RNSkia::DrawingCtx& ctx)
 
     ctx.restorePaint();
 
-    // TODO: decide if restore before or after children draw
     if (shouldClip) {
         ctx.canvas->restore();
     }
