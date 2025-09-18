@@ -309,7 +309,21 @@ void YogaNode::setStyle(const NodeStyle& style)
 
     // Border properties
     if (const auto& value = style.borderWidth) {
-        YGNodeStyleSetBorder(_node, YGEdgeAll, static_cast<float>(*value));
+        auto val = static_cast<float>(*value);
+        YGNodeStyleSetBorder(_node, YGEdgeAll, val);
+        _paint.setStrokeWidth(val);
+    }
+
+    if (const auto& value = style.strokeCap) {
+        _paint.setStrokeCap(static_cast<SkPaint::Cap>(*value));
+    }
+
+    if (const auto& value = style.strokeJoin) {
+        _paint.setStrokeJoin(static_cast<SkPaint::Join>(*value));
+    }
+
+    if (const auto& value = style.strokeMiter) {
+        _paint.setStrokeMiter(*value);
     }
 
     if (const auto& value = style.borderTopWidth) {
@@ -644,6 +658,11 @@ jsi::Value YogaNode::setType(jsi::Runtime& runtime, const jsi::Value& thisArg, c
         _command.reset(pathCmd);
         break;
     }
+    case NodeType::LINE: {
+        auto* lineCmd = new margelo::nitro::RNSkiaYoga::LineCmd(this, runtime, props, variables);
+        _command.reset(lineCmd);
+        break;
+    }
     case NodeType::OVAL: {
         auto* ovalCmd = new margelo::nitro::RNSkiaYoga::OvalCmd(this, runtime, props, variables);
         _command.reset(ovalCmd);
@@ -738,6 +757,38 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
             } else if (fillValue.isNumber()) {
                 pathCmd->props.fillType = static_cast<SkPathFillType>(static_cast<int>(fillValue.asNumber()));
             }
+        }
+
+        break;
+    }
+    case NodeType::LINE: {
+        auto lineCmd = static_cast<margelo::nitro::RNSkiaYoga::LineCmd*>(_command.get());
+        if (!lineCmd) {
+            break;
+        }
+
+        bool updated = false;
+
+        if (props.hasProperty(runtime, "p1")) {
+            const auto p1Value = props.getProperty(runtime, "p1");
+            if (p1Value.isObject()) {
+                const auto p1 = RNSkia::getPropertyValue<::SkPoint>(runtime, p1Value);
+                lineCmd->setBasePoint1(p1);
+                updated = true;
+            }
+        }
+
+        if (props.hasProperty(runtime, "p2")) {
+            const auto p2Value = props.getProperty(runtime, "p2");
+            if (p2Value.isObject()) {
+                const auto p2 = RNSkia::getPropertyValue<::SkPoint>(runtime, p2Value);
+                lineCmd->setBasePoint2(p2);
+                updated = true;
+            }
+        }
+
+        if (updated) {
+            lineCmd->setLayout(_layout);
         }
 
         break;

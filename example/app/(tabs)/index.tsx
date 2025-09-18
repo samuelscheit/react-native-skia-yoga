@@ -3,7 +3,9 @@ import {
 	Picture,
 	Skia,
 	SkPicture,
-	useImage
+	StrokeCap,
+	useImage,
+	vec
 } from "@shopify/react-native-skia"
 import { useEffect } from "react"
 import { Dimensions } from "react-native"
@@ -68,25 +70,30 @@ export default function HomeScreen() {
 			const child = createYogaNode()
 			const matrix = Skia.Matrix().identity()
 
-			root.setType("oval")
+			root.setType("rect")
 			root.setProps({})
 			root.setStyle({
 				flex: 1,
+				padding: 50,
 				// paddingTop: 120,
 				// paddingBottom: 30,
-				backgroundColor: "#2d3e50",
+				backgroundColor: "#ffffff",
 				// gap: 20,
 				// paddingHorizontal: 40,
 			})
 
 
-			child.setType("circle")
+			child.setType("line")
 			child.setProps({
+				p1: vec(0, 0),
+				p2: vec(200, 200),
 			})
 			child.setStyle({
-				backgroundColor: "#e3c16f",
+				backgroundColor: "#000000",
 				flex: 1,
 				matrix,
+				borderWidth: 50,
+				strokeCap: StrokeCap.Round
 			})
 			root.insertChild(child)
 
@@ -105,7 +112,7 @@ export default function HomeScreen() {
 				matrix
 					.identity()
 					.translate(-pathLayout.width / 2, -pathLayout.height / 2)
-					.postRotate((dt * 0.1 * Math.PI) / 180)
+					// .postRotate((dt * 0.1 * Math.PI) / 180)
 					// .postScale(scale, scale)
 					.postTranslate(pathLayout.width / 2, pathLayout.height / 2)
 

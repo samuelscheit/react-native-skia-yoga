@@ -5,7 +5,9 @@ import type {
 	SkPath,
 	SkPoint,
 	SkRect,
-	SkRRect
+	SkRRect,
+	StrokeCap,
+	StrokeJoin
 } from "@shopify/react-native-skia"
 import type { CustomType } from "react-native-nitro-modules"
 
@@ -186,6 +188,9 @@ export type NodeStyle = {
 	borderBottomRightRadius?: number | SkPoint
 	borderTopLeftRadius?: number | SkPoint
 	borderTopRightRadius?: number | SkPoint
+	strokeCap?: StrokeCap
+	strokeJoin?: StrokeJoin
+	strokeMiter?: number
 
 	/** Unfortunately Skia does not support both fill and stroke color for objects (TODO: add a hack to redraw everything twice if it has both border and fill color) */
 	// borderColor?: string | SkColorNative // mapped to SkPaint

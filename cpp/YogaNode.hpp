@@ -33,6 +33,66 @@ namespace margelo::nitro::RNSkiaYoga {
 
 using namespace facebook;
 
+namespace detail {
+
+inline SkMatrix calculateLayoutTransform(const SkRect& bounds, const YogaNodeLayout& layout)
+{
+    SkMatrix transform;
+    transform.setIdentity();
+
+    const auto boundsWidth = bounds.width();
+    const auto boundsHeight = bounds.height();
+    const bool hasWidth = boundsWidth > 0.0f;
+    const bool hasHeight = boundsHeight > 0.0f;
+
+    if (!hasWidth && !hasHeight) {
+        return transform;
+    }
+
+    const auto layoutWidth = static_cast<float>(layout.width);
+    const auto layoutHeight = static_cast<float>(layout.height);
+
+    float widthRatio = std::numeric_limits<float>::max();
+    if (hasWidth) {
+        widthRatio = layoutWidth <= 0.0f ? 0.0f : layoutWidth / boundsWidth;
+    }
+
+    float heightRatio = std::numeric_limits<float>::max();
+    if (hasHeight) {
+        heightRatio = layoutHeight <= 0.0f ? 0.0f : layoutHeight / boundsHeight;
+    }
+
+    float scale = 1.0f;
+    if (hasWidth && hasHeight) {
+        const auto candidate = std::min(widthRatio, heightRatio);
+        if (candidate != std::numeric_limits<float>::max()) {
+            scale = candidate;
+        }
+    } else if (hasWidth) {
+        if (widthRatio != std::numeric_limits<float>::max()) {
+            scale = widthRatio;
+        }
+    } else if (hasHeight) {
+        if (heightRatio != std::numeric_limits<float>::max()) {
+            scale = heightRatio;
+        }
+    }
+
+    if (scale < 0.0f) {
+        scale = 0.0f;
+    }
+
+    transform.preTranslate(-bounds.left(), -bounds.top());
+    if (scale != 1.0f) {
+        transform.preScale(scale, scale);
+    }
+    transform.postTranslate(bounds.left(), bounds.top());
+
+    return transform;
+}
+
+} // namespace detail
+
 class YogaNodeCommand {
 public:
     virtual ~YogaNodeCommand() = default;
@@ -215,50 +275,10 @@ public:
         this->props.path = _basePath;
         _baseLayout = layout;
 
-        const auto layoutLeft = static_cast<float>(layout.left);
-        const auto layoutTop = static_cast<float>(layout.top);
-        const auto layoutWidth = static_cast<float>(layout.width);
-        const auto layoutHeight = static_cast<float>(layout.height);
-
         auto bounds = _basePath.getBounds();
 
-        if (!bounds.isEmpty()) {
-            const auto boundsWidth = bounds.width();
-            const auto boundsHeight = bounds.height();
-
-            float widthRatio = std::numeric_limits<float>::max();
-            if (boundsWidth > 0.0f) {
-                widthRatio = layoutWidth <= 0.0f ? 0.0f : layoutWidth / boundsWidth;
-            }
-
-            float heightRatio = std::numeric_limits<float>::max();
-            if (boundsHeight > 0.0f) {
-                heightRatio = layoutHeight <= 0.0f ? 0.0f : layoutHeight / boundsHeight;
-            }
-
-            float scale = 1.0f;
-            const auto candidate = std::min(widthRatio, heightRatio);
-            if (candidate != std::numeric_limits<float>::max()) {
-                scale = candidate;
-            }
-
-            if (scale < 0.0f) {
-                scale = 0.0f;
-            }
-            //  else if (scale > 1.0f) {
-            //     scale = 1.0f;
-            // }
-
-            SkMatrix transform;
-            transform.setIdentity();
-            transform.preTranslate(-bounds.left(), -bounds.top());
-            if (scale != 1.0f) {
-                transform.preScale(scale, scale);
-            }
-            transform.postTranslate(bounds.left(), bounds.top());
-
-            this->props.path.transform(transform);
-        }
+        const auto transform = detail::calculateLayoutTransform(bounds, layout);
+        this->props.path.transform(transform);
     }
 
     void setBasePath(const SkPath& path) { _basePath = path; }
@@ -267,6 +287,42 @@ public:
 
 private:
     SkPath _basePath;
+};
+
+class LineCmd : public RNSkia::LineCmd, public YogaNodeCommand {
+public:
+    LineCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
+        : RNSkia::LineCmd(runtime, props, variables)
+        , YogaNodeCommand(node)
+        , _baseP1(this->props.p1)
+        , _baseP2(this->props.p2)
+    {
+    }
+
+    void setLayout(const YogaNodeLayout& layout) override
+    {
+        auto minX = std::min(_baseP1.x(), _baseP2.x());
+        auto minY = std::min(_baseP1.y(), _baseP2.y());
+        auto maxX = std::max(_baseP1.x(), _baseP2.x());
+        auto maxY = std::max(_baseP1.y(), _baseP2.y());
+
+        SkRect bounds = SkRect::MakeLTRB(minX, minY, maxX, maxY);
+
+        const auto transform = detail::calculateLayoutTransform(bounds, layout);
+        this->props.p1 = transform.mapPoint(_baseP1);
+        this->props.p2 = transform.mapPoint(_baseP2);
+    }
+
+    void setBasePoint1(const ::SkPoint& p) { _baseP1 = p; }
+    void setBasePoint2(const ::SkPoint& p) { _baseP2 = p; }
+    const ::SkPoint& basePoint1() const { return _baseP1; }
+    const ::SkPoint& basePoint2() const { return _baseP2; }
+
+    void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::LineCmd::draw(ctx); }
+
+private:
+    ::SkPoint _baseP1;
+    ::SkPoint _baseP2;
 };
 
 class ParagraphCmd : public RNSkia::ParagraphCmd, public YogaNodeCommand {
