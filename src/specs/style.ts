@@ -1,7 +1,7 @@
 import type {
 	BlendMode,
-	SkColor,
 	SkMatrix,
+	SkPaint,
 	SkPath,
 	SkPoint,
 	SkRect,
@@ -47,7 +47,7 @@ export type Position = "static" | "relative" | "absolute"
 export type Percentage = string // `${number}%`; // string templates not supported by nitro
 
 export type SkColorNative = CustomType<
-	SkColor,
+	SkPaint,
 	"SkPaint",
 	{
 		include: "JSIConverter+SkPaint.hpp"
@@ -87,6 +87,15 @@ export type SkPathNative = CustomType<
 	"SkPath",
 	{
 		include: "JSIConverter+SkPath.hpp"
+		canBePassedByReference: true
+	}
+>
+
+export type SkPaintNative = CustomType<
+	SkPaint,
+	"shared_ptr<SkPaint>",
+	{
+		include: "JSIConverter+SkPaint.hpp"
 		canBePassedByReference: true
 	}
 >
@@ -207,5 +216,5 @@ export type NodeStyle = {
 	matrix?: SkMatrixNative
 	clip?: SkPathNative | SkRRectNative | SkRectNative
 	invertClip?: boolean
-	// TODO: layer
+	layer?: SkColorNative
 }

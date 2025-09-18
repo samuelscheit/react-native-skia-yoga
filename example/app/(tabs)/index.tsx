@@ -1,11 +1,13 @@
 import {
 	Canvas,
+	matchFont,
 	Picture,
 	Skia,
+	SkParagraphStyle,
 	SkPicture,
-	StrokeCap,
-	useImage,
-	vec
+	SkTextStyle,
+	TextAlign,
+	useImage
 } from "@shopify/react-native-skia"
 import { useEffect } from "react"
 import { Dimensions } from "react-native"
@@ -49,8 +51,8 @@ function Root() {
 // console.log("picture", picture)
 const x = createYogaNode()
 x.setType("rect")
-x.setProps({ color: "red" })
-x.setStyle({ width: 100, height: 100 })
+x.setProps({})
+x.setStyle({ width: 100, height: 100, backgroundColor: "red" })
 x.computeLayout()
 const p = x.draw()
 
@@ -65,35 +67,65 @@ export default function HomeScreen() {
 		const id = Math.random()
 		currentlyRunning.value = id
 
+		const font = matchFont({
+			fontFamily: "Arial",
+			fontSize: 14,
+			fontStyle: "normal",
+		})
+
+		const textStyle = {
+			color: Skia.Color("black"),
+			fontSize: 40,
+			fontFamilies: ["Arial"],
+		}
+
+		const builder = Skia.ParagraphBuilder.Make({
+			textStyle,
+			textAlign: TextAlign.Left,
+		})
+
+		const paint = Skia.Paint()
+		paint.setColor(Skia.Color("green"))
+
 		runOnUI(() => {
 			const root = createYogaNode()
 			const child = createYogaNode()
 			const matrix = Skia.Matrix().identity()
 
+
 			root.setType("rect")
 			root.setProps({})
 			root.setStyle({
 				flex: 1,
-				padding: 50,
+				padding: 60,
 				// paddingTop: 120,
 				// paddingBottom: 30,
 				backgroundColor: "#ffffff",
+				layer: paint,
+				justifyContent: "center",
+				alignItems: "center",
+				// flexDirection: "row",
 				// gap: 20,
 				// paddingHorizontal: 40,
 			})
-
-
-			child.setType("line")
-			child.setProps({
-				p1: vec(0, 0),
-				p2: vec(200, 200),
-			})
+			child.setType("paragraph")
 			child.setStyle({
-				backgroundColor: "#000000",
-				flex: 1,
+				// backgroundColor: "#ff0000ff",
+				flex: 0,
 				matrix,
-				borderWidth: 50,
-				strokeCap: StrokeCap.Round
+			})
+			child.setProps({
+				text: "Hello World! How are you doing today?",
+				style: {
+					fontSize: 50,
+					fontFamilies: ["Arial"],
+					color: Skia.Color("#0091ff"),
+					backgroundColor: Skia.Color("#ffeeaaff"),
+					textAlign: TextAlign.Center,
+				} as SkTextStyle & SkParagraphStyle,
+				// style,
+				// paragraph,
+				// font,
 			})
 			root.insertChild(child)
 
@@ -107,13 +139,13 @@ export default function HomeScreen() {
 				if (currentlyRunning.value !== id) return
 				const dt = time - start
 
-				const scale = (Math.cos(dt * 0.002) * 0.25 + 0.75) 
+				const scale = Math.cos(dt * 0.002) * 0.25 + 0.75
 
 				matrix
 					.identity()
 					.translate(-pathLayout.width / 2, -pathLayout.height / 2)
-					// .postRotate((dt * 0.1 * Math.PI) / 180)
-					// .postScale(scale, scale)
+					.postRotate((dt * 0.1 * Math.PI) / 180)
+					.postScale(scale, scale)
 					.postTranslate(pathLayout.width / 2, pathLayout.height / 2)
 
 				pic.value = root.draw() as SkPicture
@@ -130,7 +162,6 @@ export default function HomeScreen() {
 					lastTime = time
 					frames = -1
 				}
-
 
 				frames++
 

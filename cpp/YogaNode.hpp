@@ -1,28 +1,40 @@
 #pragma once
 
 // Ensure JSIConverter specializations are visible before Nitro-generated headers
-#include "JSIConverter+SkMatrix.hpp"
-#include "JSIConverter+SkPaint.hpp"
 #include "JSIConverter+SkFont.hpp"
 #include "JSIConverter+SkImage.hpp"
+#include "JSIConverter+SkMatrix.hpp"
+#include "JSIConverter+SkPaint.hpp"
 #include "JSIConverter+SkPath.hpp"
-#include "JSIConverter+SkRect.hpp"
 #include "JSIConverter+SkRRect.hpp"
+#include "JSIConverter+SkRect.hpp"
 
 #include "HybridSkiaYogaSpec.hpp"
 #include "HybridYogaNodeSpec.hpp"
 #include "SkiaYoga.hpp"
-#include <jsi/jsi.h>
 #include <algorithm>
 #include <array>
+#include <jsi/jsi.h>
 #include <limits>
 #include <memory>
 #include <optional>
+#include <mutex>
+#include <functional>
 #include <react-native-skia/cpp/api/JsiSkApi.h>
+#include <react-native-skia/cpp/api/JsiSkFontMgrFactory.h>
 #include <react-native-skia/cpp/api/JsiSkParagraph.h>
 #include <react-native-skia/cpp/api/recorder/Command.h>
 #include <react-native-skia/cpp/api/recorder/Drawings.h>
+#include <react-native-skia/cpp/skia/include/core/SkSpan.h>
+#include <react-native-skia/cpp/skia/include/core/SkFontMgr.h>
+#include <react-native-skia/cpp/skia/include/core/SkTypeface.h>
+#include <react-native-skia/cpp/skia/modules/skparagraph/include/FontCollection.h>
+#include <react-native-skia/cpp/skia/modules/skparagraph/include/ParagraphBuilder.h>
+#include <react-native-skia/cpp/skia/modules/skparagraph/include/ParagraphStyle.h>
 #include <react-native-skia/cpp/skia/include/private/base/SkTypeTraits.h>
+#include <string>
+#include <unordered_map>
+#include <vector>
 #include <yoga/Yoga.h>
 
 namespace margelo::nitro::RNSkiaYoga {
@@ -33,63 +45,179 @@ namespace margelo::nitro::RNSkiaYoga {
 
 using namespace facebook;
 
+namespace para = skia::textlayout;
+
 namespace detail {
 
-inline SkMatrix calculateLayoutTransform(const SkRect& bounds, const YogaNodeLayout& layout)
-{
-    SkMatrix transform;
-    transform.setIdentity();
+    struct FamilyCacheKey {
+        std::string name;
+        bool isDefault = false;
 
-    const auto boundsWidth = bounds.width();
-    const auto boundsHeight = bounds.height();
-    const bool hasWidth = boundsWidth > 0.0f;
-    const bool hasHeight = boundsHeight > 0.0f;
+        static FamilyCacheKey From(const char* familyName)
+        {
+            FamilyCacheKey key;
+            if (familyName == nullptr) {
+                key.isDefault = true;
+            } else {
+                key.name = familyName;
+            }
+            return key;
+        }
 
-    if (!hasWidth && !hasHeight) {
+        bool operator==(const FamilyCacheKey& other) const
+        {
+            return isDefault == other.isDefault && name == other.name;
+        }
+    };
+
+    struct FamilyCacheKeyHash {
+        std::size_t operator()(const FamilyCacheKey& key) const noexcept
+        {
+            std::size_t hash = std::hash<std::string>{}(key.name);
+            if (key.isDefault) {
+                static constexpr std::size_t salt = static_cast<std::size_t>(0x9e3779b97f4a7c15ULL);
+                hash ^= salt;
+            }
+            return hash;
+        }
+    };
+
+    struct FontStyleKey {
+        int weight = 0;
+        int width = 0;
+        SkFontStyle::Slant slant = SkFontStyle::kUpright_Slant;
+
+        explicit FontStyleKey(const SkFontStyle& style)
+            : weight(style.weight())
+            , width(style.width())
+            , slant(style.slant())
+        {
+        }
+
+        bool operator==(const FontStyleKey& other) const noexcept
+        {
+            return weight == other.weight && width == other.width && slant == other.slant;
+        }
+    };
+
+    struct FontStyleKeyHash {
+        std::size_t operator()(const FontStyleKey& key) const noexcept
+        {
+            std::size_t hash = std::hash<int>{}(key.weight);
+            hash ^= (std::hash<int>{}(key.width) + 0x9e3779b9 + (hash << 6) + (hash >> 2));
+            hash ^= (std::hash<int>{}(static_cast<int>(key.slant)) + 0x9e3779b9 + (hash << 6) + (hash >> 2));
+            return hash;
+        }
+    };
+
+    // Cache style sets per family and nested typefaces per style key.
+    struct FontCacheEntry {
+        bool styleSetInitialized = false;
+        sk_sp<SkFontStyleSet> styleSet;
+        std::unordered_map<FontStyleKey, sk_sp<SkTypeface>, FontStyleKeyHash> typefaces;
+    };
+
+    inline std::unordered_map<FamilyCacheKey, FontCacheEntry, FamilyCacheKeyHash>& fontFamilyCache()
+    {
+        static std::unordered_map<FamilyCacheKey, FontCacheEntry, FamilyCacheKeyHash> cache;
+        return cache;
+    }
+
+    inline std::mutex& fontFamilyCacheMutex()
+    {
+        static std::mutex mutex;
+        return mutex;
+    }
+
+    inline sk_sp<SkTypeface> getCachedTypeface(SkFontMgr* fontMgr, const char* familyName, const SkFontStyle& style)
+    {
+        if (fontMgr == nullptr) {
+            return nullptr;
+        }
+
+        auto familyKey = FamilyCacheKey::From(familyName);
+        const FontStyleKey styleKey(style);
+
+        std::lock_guard<std::mutex> lock(fontFamilyCacheMutex());
+        auto& cache = fontFamilyCache();
+        FontCacheEntry& entry = cache[familyKey];
+
+        if (!entry.styleSetInitialized) {
+            entry.styleSet = fontMgr->matchFamily(familyName);
+            entry.styleSetInitialized = true;
+        }
+
+        const auto tfIt = entry.typefaces.find(styleKey);
+        if (tfIt != entry.typefaces.end()) {
+            return tfIt->second;
+        }
+
+        sk_sp<SkTypeface> typeface;
+        if (entry.styleSet) {
+            typeface = entry.styleSet->matchStyle(style);
+        } else {
+            typeface = fontMgr->matchFamilyStyle(familyName, style);
+        }
+
+        entry.typefaces.emplace(styleKey, typeface);
+        return typeface;
+    }
+
+    inline SkMatrix calculateLayoutTransform(const SkRect& bounds, const YogaNodeLayout& layout)
+    {
+        SkMatrix transform;
+        transform.setIdentity();
+
+        const auto boundsWidth = bounds.width();
+        const auto boundsHeight = bounds.height();
+        const bool hasWidth = boundsWidth > 0.0f;
+        const bool hasHeight = boundsHeight > 0.0f;
+
+        if (!hasWidth && !hasHeight) {
+            return transform;
+        }
+
+        const auto layoutWidth = static_cast<float>(layout.width);
+        const auto layoutHeight = static_cast<float>(layout.height);
+
+        float widthRatio = std::numeric_limits<float>::max();
+        if (hasWidth) {
+            widthRatio = layoutWidth <= 0.0f ? 0.0f : layoutWidth / boundsWidth;
+        }
+
+        float heightRatio = std::numeric_limits<float>::max();
+        if (hasHeight) {
+            heightRatio = layoutHeight <= 0.0f ? 0.0f : layoutHeight / boundsHeight;
+        }
+
+        float scale = 1.0f;
+        if (hasWidth && hasHeight) {
+            const auto candidate = std::min(widthRatio, heightRatio);
+            if (candidate != std::numeric_limits<float>::max()) {
+                scale = candidate;
+            }
+        } else if (hasWidth) {
+            if (widthRatio != std::numeric_limits<float>::max()) {
+                scale = widthRatio;
+            }
+        } else if (hasHeight) {
+            if (heightRatio != std::numeric_limits<float>::max()) {
+                scale = heightRatio;
+            }
+        }
+
+        if (scale < 0.0f) {
+            scale = 0.0f;
+        }
+
+        transform.preTranslate(-bounds.left(), -bounds.top());
+        if (scale != 1.0f) {
+            transform.preScale(scale, scale);
+        }
+        transform.postTranslate(bounds.left(), bounds.top());
+
         return transform;
     }
-
-    const auto layoutWidth = static_cast<float>(layout.width);
-    const auto layoutHeight = static_cast<float>(layout.height);
-
-    float widthRatio = std::numeric_limits<float>::max();
-    if (hasWidth) {
-        widthRatio = layoutWidth <= 0.0f ? 0.0f : layoutWidth / boundsWidth;
-    }
-
-    float heightRatio = std::numeric_limits<float>::max();
-    if (hasHeight) {
-        heightRatio = layoutHeight <= 0.0f ? 0.0f : layoutHeight / boundsHeight;
-    }
-
-    float scale = 1.0f;
-    if (hasWidth && hasHeight) {
-        const auto candidate = std::min(widthRatio, heightRatio);
-        if (candidate != std::numeric_limits<float>::max()) {
-            scale = candidate;
-        }
-    } else if (hasWidth) {
-        if (widthRatio != std::numeric_limits<float>::max()) {
-            scale = widthRatio;
-        }
-    } else if (hasHeight) {
-        if (heightRatio != std::numeric_limits<float>::max()) {
-            scale = heightRatio;
-        }
-    }
-
-    if (scale < 0.0f) {
-        scale = 0.0f;
-    }
-
-    transform.preTranslate(-bounds.left(), -bounds.top());
-    if (scale != 1.0f) {
-        transform.preScale(scale, scale);
-    }
-    transform.postTranslate(bounds.left(), bounds.top());
-
-    return transform;
-}
 
 } // namespace detail
 
@@ -143,6 +271,7 @@ public:
     std::vector<std::shared_ptr<YogaNode>> _children;
     NodeStyle _style;
     SkPaint _paint;
+    std::optional<SkPaint> _layerPaint;
     std::optional<SkPath> _clipPath;
     std::optional<SkRRect> _clipRRect;
     std::optional<std::array<SkVector, 4>> _clipRRectRadii;
@@ -158,7 +287,6 @@ public:
             prototype.registerRawHybridMethod("setProps", 1, &YogaNode::setProps);
             prototype.registerRawHybridMethod("draw", 1, &YogaNode::draw);
             prototype.registerRawHybridMethod("setType", 1, &YogaNode::setType);
-
         });
     }
 };
@@ -189,7 +317,7 @@ public:
 
     void setLayout(const YogaNodeLayout& layout) override
     {
-        auto radius = this->props.r.value_or(RNSkia::Radius{0, 0});
+        auto radius = this->props.r.value_or(RNSkia::Radius { 0, 0 });
         this->props.rect = SkRRect::MakeRectXY(SkRect::MakeXYWH(0, 0, layout.width, layout.height), radius.rX, radius.rY);
     }
 
@@ -222,19 +350,43 @@ private:
 
 class TextCmd : public RNSkia::TextCmd, public YogaNodeCommand {
 public:
+
+
     TextCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
         : RNSkia::TextCmd(runtime, props, variables)
         , YogaNodeCommand(node)
     {
         this->props.x = 0;
         this->props.y = 0;
+
+        if (!sDefaultFont) {
+            auto context = margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext();
+            auto fontMgr = RNSkia::JsiSkFontMgrFactory::getFontMgr(context);
+            const auto style = SkFontStyle::Normal();
+
+            auto typeface = detail::getCachedTypeface(fontMgr.get(), nullptr, style);
+            if (!typeface) {
+                typeface = detail::getCachedTypeface(fontMgr.get(), "Arial", style);
+            }
+
+            sDefaultFont = SkFont(typeface, 14.0f);
+        }
+
+        this->props.font = *sDefaultFont;
+
     }
 
     void setLayout(const YogaNodeLayout& layout) override
     {
     }
 
-    void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::TextCmd::draw(ctx); }
+    void draw(RNSkia::DrawingCtx* ctx) override {
+        ctx->canvas->translate(0, this->props.font->getSize());
+
+        RNSkia::TextCmd::draw(ctx);
+    }
+private:
+    static std::optional<SkFont> sDefaultFont;
 };
 
 class ImageCmd : public RNSkia::ImageCmd, public YogaNodeCommand {
@@ -324,6 +476,71 @@ private:
     ::SkPoint _baseP1;
     ::SkPoint _baseP2;
 };
+class PointsCmd : public RNSkia::PointsCmd, public YogaNodeCommand {
+public:
+    PointsCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
+        : RNSkia::PointsCmd(runtime, props, variables)
+        , YogaNodeCommand(node)
+        , _basePoints(this->props.points)
+        , _baseBounds(computeBounds(_basePoints))
+    {
+    }
+
+    void setLayout(const YogaNodeLayout& layout) override
+    {
+        this->props.points = _basePoints;
+
+        if (_basePoints.empty()) {
+            return;
+        }
+
+        const auto transform = detail::calculateLayoutTransform(_baseBounds, layout);
+
+        const auto count = static_cast<size_t>(this->props.points.size());
+        if (count > 0) {
+            SkSpan<::SkPoint> span(this->props.points.data(), count);
+            transform.mapPoints(span);
+        }
+    }
+
+    void setBasePoints(const std::vector<::SkPoint>& points)
+    {
+        _basePoints = points;
+        _baseBounds = computeBounds(_basePoints);
+    }
+
+    const std::vector<::SkPoint>& basePoints() const { return _basePoints; }
+
+    void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::PointsCmd::draw(ctx); }
+
+private:
+    static SkRect computeBounds(const std::vector<::SkPoint>& points)
+    {
+        if (points.empty()) {
+            return SkRect::MakeEmpty();
+        }
+
+        float minX = std::numeric_limits<float>::max();
+        float minY = std::numeric_limits<float>::max();
+        float maxX = std::numeric_limits<float>::lowest();
+        float maxY = std::numeric_limits<float>::lowest();
+
+        for (const auto& p : points) {
+            minX = std::min(minX, p.x());
+            minY = std::min(minY, p.y());
+            maxX = std::max(maxX, p.x());
+            maxY = std::max(maxY, p.y());
+        }
+
+        if (minX == std::numeric_limits<float>::max() || minY == std::numeric_limits<float>::max()) {
+            return SkRect::MakeEmpty();
+        }
+        return SkRect::MakeLTRB(minX, minY, maxX, maxY);
+    }
+
+    std::vector<::SkPoint> _basePoints;
+    SkRect _baseBounds;
+};
 
 class ParagraphCmd : public RNSkia::ParagraphCmd, public YogaNodeCommand {
 public:
@@ -342,11 +559,15 @@ public:
 
     void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::ParagraphCmd::draw(ctx); }
 
+    static YGSize measureFunc(YGNodeConstRef node, float width, YGMeasureMode widthMode, float height, YGMeasureMode heightMode)
+    {
+        auto paragraph = static_cast<YogaNode*>(YGNodeGetContext(node));
 
-    static YGSize measureFunc(YGNodeConstRef node, float width, YGMeasureMode widthMode, float height, YGMeasureMode heightMode) {
-        auto paragraph = static_cast<YogaNode *>(YGNodeGetContext(node));
-        
-        auto cmd = static_cast<ParagraphCmd *>(paragraph->_command.get());
+        auto cmd = static_cast<ParagraphCmd*>(paragraph->_command.get());
+
+        if (!cmd || !cmd->props.paragraph) {
+            return YGSize { 0, 0 };
+        }
 
         auto skParagraph = cmd->props.paragraph->getObject();
         if (width <= 0 || widthMode == YGMeasureModeUndefined) {
@@ -355,9 +576,15 @@ public:
 
         skParagraph->layout(width);
         auto sz = skParagraph->getHeight();
-        return YGSize{width, sz};
-
+        return YGSize { width, sz };
     }
+
+    static void ensureDefaultParagraphResources();
+
+    static std::mutex sParagraphBuilderMutex;
+    static std::unique_ptr<para::ParagraphBuilder> sDefaultParagraphBuilder;
+    static sk_sp<para::FontCollection> sDefaultFontCollection;
+    static std::optional<para::ParagraphStyle> sDefaultParagraphStyle;
 };
 
 } // namespace margelo::nitro::RNSkiaYoga

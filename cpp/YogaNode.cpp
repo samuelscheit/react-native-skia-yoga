@@ -6,13 +6,19 @@
 #include "SkiaYoga.hpp"
 #include <array>
 #include <cmath>
+#include <optional>
 #include <jsi/jsi.h>
 #include <react-native-skia/cpp/api/JsiSkCanvas.h>
 #include <react-native-skia/cpp/api/JsiSkHostObjects.h>
 #include <react-native-skia/cpp/api/JsiSkMatrix.h>
+#include <react-native-skia/cpp/api/JsiSkFontMgrFactory.h>
+#include <react-native-skia/cpp/api/JsiSkTextStyle.h>
 #include <react-native-skia/cpp/api/recorder/DrawingCtx.h>
 #include <react-native-skia/cpp/api/recorder/Drawings.h>
 #include <react-native-skia/cpp/rnskia/RNSkManager.h>
+#include <react-native-skia/cpp/skia/modules/skparagraph/include/ParagraphBuilder.h>
+#include <react-native-skia/cpp/skia/modules/skparagraph/include/ParagraphStyle.h>
+#include <react-native-skia/cpp/skia/modules/skparagraph/include/FontCollection.h>
 #include <type_traits>
 #include <variant>
 #include <yoga/Yoga.h>
@@ -20,6 +26,12 @@
 namespace margelo::nitro::RNSkiaYoga {
 
 using namespace facebook;
+
+std::optional<SkFont> TextCmd::sDefaultFont;
+std::mutex ParagraphCmd::sParagraphBuilderMutex;
+std::unique_ptr<para::ParagraphBuilder> ParagraphCmd::sDefaultParagraphBuilder;
+sk_sp<para::FontCollection> ParagraphCmd::sDefaultFontCollection;
+std::optional<para::ParagraphStyle> ParagraphCmd::sDefaultParagraphStyle;
 
 YogaNode::~YogaNode()
 {
@@ -390,6 +402,10 @@ void YogaNode::setStyle(const NodeStyle& style)
             YGNodeStyleSetPositionAuto, _node, YGEdgeVertical, *value);
     }
 
+    if (const auto& value = style.layer) {
+        _layerPaint = *value;
+    }
+
     if (const auto& value = style.antiaAlias) {
         _paint.setAntiAlias(*value);
     }
@@ -663,6 +679,11 @@ jsi::Value YogaNode::setType(jsi::Runtime& runtime, const jsi::Value& thisArg, c
         _command.reset(lineCmd);
         break;
     }
+    case NodeType::POINTS: {
+        auto* pointsCmd = new margelo::nitro::RNSkiaYoga::PointsCmd(this, runtime, props, variables);
+        _command.reset(pointsCmd);
+        break;
+    }
     case NodeType::OVAL: {
         auto* ovalCmd = new margelo::nitro::RNSkiaYoga::OvalCmd(this, runtime, props, variables);
         _command.reset(ovalCmd);
@@ -709,7 +730,25 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
     case NodeType::TEXT: {
         auto textCmd = static_cast<margelo::nitro::RNSkiaYoga::TextCmd*>(_command.get());
         textCmd->props.text = JSIConverter<std::string>::fromJSI(runtime, props.getProperty(runtime, "text"));
-        textCmd->props.font = JSIConverter<SkFont>::fromJSI(runtime, props.getProperty(runtime, "font"));
+        auto fontOptional = JSIConverter<std::optional<SkFont>>::fromJSI(runtime, props.getProperty(runtime, "font"));
+
+        if (fontOptional.has_value()) {
+            textCmd->props.font = fontOptional;
+        }
+
+        auto font = textCmd->props.font;
+
+        if (props.hasProperty(runtime, "size")) {
+            const auto sizeValue = props.getProperty(runtime, "size");
+            if (sizeValue.isNumber()) {
+                font->setSize(static_cast<float>(sizeValue.asNumber()));
+
+                textCmd->props.font = font;
+            }
+        }
+
+        // font.measureText(textCmd->props.text.c_str(), textCmd->props.text.size(), &textCmd->props.width, &textCmd->props.height, nullptr);
+
         break;
     }
     case NodeType::PATH: {
@@ -793,12 +832,93 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
 
         break;
     }
+    case NodeType::POINTS: {
+        auto pointsCmd = static_cast<margelo::nitro::RNSkiaYoga::PointsCmd*>(_command.get());
+        if (!pointsCmd) {
+            break;
+        }
+
+        bool didUpdateLayout = false;
+
+        if (props.hasProperty(runtime, "points")) {
+            const auto pointsValue = props.getProperty(runtime, "points");
+            if (pointsValue.isObject()) {
+                const auto points = RNSkia::getPropertyValue<std::vector<::SkPoint>>(runtime, pointsValue);
+                pointsCmd->setBasePoints(points);
+                didUpdateLayout = true;
+            }
+        }
+
+        if (props.hasProperty(runtime, "mode")) {
+            const auto modeValue = props.getProperty(runtime, "mode");
+            pointsCmd->props.mode = RNSkia::getPropertyValue<SkCanvas::PointMode>(runtime, modeValue);
+        }
+
+        if (didUpdateLayout) {
+            pointsCmd->setLayout(_layout);
+        }
+
+        break;
+    }
     case NodeType::OVAL: {
         break;
     }
     case NodeType::PARAGRAPH: {
         auto paragraphCmd = static_cast<margelo::nitro::RNSkiaYoga::ParagraphCmd*>(_command.get());
-        paragraphCmd->props.paragraph = props.getProperty(runtime, "paragraph").asObject(runtime).getHostObject<RNSkia::JsiSkParagraph>(runtime);
+
+        if (props.hasProperty(runtime, "paragraph")) {
+            paragraphCmd->props.paragraph = props.getProperty(runtime, "paragraph").asObject(runtime).getHostObject<RNSkia::JsiSkParagraph>(runtime);
+        } else if (props.hasProperty(runtime, "text")) {
+            ParagraphCmd::ensureDefaultParagraphResources();
+            std::lock_guard<std::mutex> lock(ParagraphCmd::sParagraphBuilderMutex);
+            auto* builder = ParagraphCmd::sDefaultParagraphBuilder.get();
+            if (builder == nullptr) {
+                break;
+            }
+            builder->Reset();
+
+            auto textStyle = skia::textlayout::TextStyle();
+
+            auto styleValue = props.getProperty(runtime, "style");
+            if (styleValue.isObject()) {
+                textStyle = RNSkia::JsiSkTextStyle::fromValue(runtime, styleValue);
+                auto obj = styleValue.asObject(runtime);
+
+                if (!obj.hasProperty(runtime, "color")) {
+                    textStyle.setColor(SK_ColorBLACK);
+                }
+
+                auto paragraphStyle = RNSkia::JsiSkParagraphStyle::fromValue(runtime, styleValue);
+                const auto& currentStyle = builder->getParagraphStyle();
+                const bool paragraphStyleChanged = paragraphStyle.getTextAlign() != currentStyle.getTextAlign() ||
+                    paragraphStyle.getTextDirection() != currentStyle.getTextDirection() ||
+                    paragraphStyle.getMaxLines() != currentStyle.getMaxLines() ||
+                    paragraphStyle.getEllipsis() != currentStyle.getEllipsis() ||
+                    paragraphStyle.getTextHeightBehavior() != currentStyle.getTextHeightBehavior();
+
+                if (paragraphStyleChanged) {
+                    ParagraphCmd::sDefaultParagraphBuilder = para::ParagraphBuilder::make(paragraphStyle, ParagraphCmd::sDefaultFontCollection);
+                    builder = ParagraphCmd::sDefaultParagraphBuilder.get();
+                }
+            } else {
+                textStyle.setFontFamilies({ SkString("Arial") });
+                textStyle.setFontSize(14.0f);
+                textStyle.setColor(SK_ColorBLACK);
+            }
+            builder->Reset();
+            builder->pushStyle(textStyle);
+            
+            auto textValue = props.getProperty(runtime, "text");
+            if (textValue.isString()) {
+                auto text = textValue.asString(runtime).utf8(runtime);
+                builder->addText(text.c_str(), text.size());
+            }
+
+            auto context = margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext();
+            auto paragraph = std::make_shared<RNSkia::JsiSkParagraph>(context, builder);
+            paragraphCmd->props.paragraph = paragraph;
+            builder->Reset();
+        }
 
         break;
     }
@@ -872,7 +992,12 @@ void YogaNode::drawInternal(RNSkia::DrawingCtx& ctx)
 
     auto op = _style.invertClip.has_value() && _style.invertClip.value() ? SkClipOp::kDifference : SkClipOp::kIntersect;
 
-    ctx.canvas->save();
+    if (_layerPaint.has_value()) {
+        const SkPaint* paint = &(_layerPaint.value());
+        ctx.canvas->saveLayer(nullptr, paint);
+    } else {
+        ctx.canvas->save();
+    }
     ctx.canvas->translate(_layout.left, _layout.top);
 
     if (_matrix) {
@@ -983,6 +1108,28 @@ void YogaNode::setLayout(const YogaNodeLayout& layout)
 YogaNodeLayout YogaNode::getLayout()
 {
     return _layout;
+}
+
+void ParagraphCmd::ensureDefaultParagraphResources()
+{
+    std::lock_guard<std::mutex> lock(sParagraphBuilderMutex);
+    if (sDefaultParagraphBuilder) {
+        return;
+    }
+
+    if (!sDefaultParagraphStyle.has_value()) {
+        sDefaultParagraphStyle.emplace();
+    }
+
+    sDefaultFontCollection = sk_make_sp<para::FontCollection>();
+    auto context = margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext();
+    auto fontMgr = RNSkia::JsiSkFontMgrFactory::getFontMgr(context);
+    if (fontMgr) {
+        sDefaultFontCollection->setDefaultFontManager(fontMgr);
+    }
+    sDefaultFontCollection->enableFontFallback();
+
+    sDefaultParagraphBuilder = para::ParagraphBuilder::make(*sDefaultParagraphStyle, sDefaultFontCollection);
 }
 
 } // namespace margelo::nitro::RNSkiaYoga
