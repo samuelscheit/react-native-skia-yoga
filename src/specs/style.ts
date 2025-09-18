@@ -55,7 +55,7 @@ export type SkColorNative = CustomType<
 
 export type SkMatrixNative = CustomType<
 	SkMatrix,
-	"SkMatrix",
+	"shared_ptr<SkMatrix>",
 	{
 		include: "JSIConverter+SkMatrix.hpp"
 		canBePassedByReference: true

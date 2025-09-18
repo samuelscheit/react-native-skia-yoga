@@ -7,6 +7,7 @@
 #endif
 
 #include <jsi/jsi.h>
+#include <memory>
 
 // Keep include consistent with generated headers
 #include "SkMatrix.h"
@@ -93,6 +94,65 @@ struct JSIConverter<SkMatrix> final {
       if (host) return true;
     }
     if (!obj.isArray(runtime)) return false;
+    auto array = obj.asArray(runtime);
+    auto len = array.size(runtime);
+    return len == 9 || len == 16;
+  }
+};
+
+template <>
+struct JSIConverter<std::shared_ptr<SkMatrix>> final {
+  static inline std::shared_ptr<SkMatrix> fromJSI(jsi::Runtime& runtime, const jsi::Value& value) {
+    if (value.isNull() || value.isUndefined()) {
+      return nullptr;
+    }
+
+    if (!value.isObject()) {
+      throw jsi::JSError(runtime, "SkMatrix must be an object/array");
+    }
+
+    jsi::Object obj = value.asObject(runtime);
+
+    if (obj.isHostObject(runtime)) {
+      auto host = obj.asHostObject<RNSkia::JsiSkMatrix>(runtime);
+      if (host) {
+        return host->getObject();
+      }
+    }
+
+    if (!obj.isArray(runtime)) {
+      throw jsi::JSError(runtime, "SkMatrix must be a JS array of 9 or 16 numbers or a JsiSkMatrix host object");
+    }
+
+    auto matrix = JSIConverter<SkMatrix>::fromJSI(runtime, value);
+    return std::make_shared<SkMatrix>(matrix);
+  }
+
+  static inline jsi::Value toJSI(jsi::Runtime& runtime, const std::shared_ptr<SkMatrix>& matrix) {
+    if (!matrix) {
+      return jsi::Value::null();
+    }
+    return JSIConverter<SkMatrix>::toJSI(runtime, *matrix);
+  }
+
+  static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
+    if (value.isNull() || value.isUndefined()) {
+      return true;
+    }
+    if (!value.isObject()) {
+      return false;
+    }
+
+    jsi::Object obj = value.asObject(runtime);
+    if (obj.isHostObject(runtime)) {
+      auto host = obj.asHostObject<RNSkia::JsiSkMatrix>(runtime);
+      if (host) {
+        return true;
+      }
+    }
+    if (!obj.isArray(runtime)) {
+      return false;
+    }
     auto array = obj.asArray(runtime);
     auto len = array.size(runtime);
     return len == 9 || len == 16;

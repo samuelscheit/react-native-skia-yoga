@@ -1,5 +1,15 @@
-import { Canvas, Picture, Skia, useImage } from "@shopify/react-native-skia"
+import {
+	Canvas,
+	FillType,
+	Picture,
+	Skia,
+	SkPicture,
+	StrokeOpts,
+	useImage,
+} from "@shopify/react-native-skia"
+import { useEffect } from "react"
 import { Dimensions } from "react-native"
+import { runOnUI, useSharedValue } from "react-native-reanimated"
 import { createYogaNode } from "react-native-skia-yoga"
 
 declare namespace React {
@@ -37,100 +47,131 @@ function Root() {
 // Yoga.Node.create().getComputedLayout()
 // const picture = root.draw()
 // console.log("picture", picture)
+const x = createYogaNode()
+x.setType("rect")
+x.setProps({ color: "red" })
+x.setStyle({ width: 100, height: 100 })
+const p = x.draw()
 
 export default function HomeScreen() {
 	const image = useImage("https://picsum.photos/200/300")
-
-	const root = createYogaNode()
-
-	root.setType("rect")
-	root.setProps({})
-	root.setStyle({
-		flex: 1,
-		paddingTop: 120,
-		paddingBottom: 30,
-		backgroundColor: "#2d3e50",
-		gap: 20,
-		paddingHorizontal: 40,
-	})
-	const child = createYogaNode()
-
-	child.setType("rrect")
-	child.setProps({
-		r: 20,
-	})
-	child.setStyle({
-		flex: 1,
-		backgroundColor: "#16a186",
-		// borderRadius: 20,
-		// borderTopLeftRadius: {
-		// 	x: 50,
-		// 	y: 100,
-		// },
-		matrix: Skia.Matrix().identity().translate(20, -20).skew(0, -0.1),
-	})
-	root.insertChild(child)
-
-	const child2 = createYogaNode()
-
-	child2.setType("rect")
-	child2.setProps({})
-	child2.setStyle({
-		flex: 1,
-		backgroundColor: "#16a186",
-		invertClip: false,
-		borderRadius: 15,
-	})
-	root.insertChild(child2)
-
-	const img = createYogaNode()
-	img.setType("image")
-	img.setProps({
-		image,
-	})
-	img.setStyle({
-		flex: 1,
-	})
-
-	root.insertChild(img)
-
-	const path = Skia.Path.Make()
-	path.moveTo(128, 0)
-	path.lineTo(168, 80)
-	path.lineTo(256, 93)
-	path.lineTo(192, 155)
-	path.lineTo(207, 244)
-	path.lineTo(128, 202)
-	path.lineTo(49, 244)
-	path.lineTo(64, 155)
-	path.lineTo(0, 93)
-	path.lineTo(88, 80)
-	path.lineTo(128, 0)
-	path.close()
-	const pathNode = createYogaNode()
-
-	pathNode.setType("path")
-	pathNode.setProps({
-		path,
-	})
-	pathNode.setStyle({
-		backgroundColor: "#e3c16f",
-		flex: 1,
-	})
-	root.insertChild(pathNode)
-
 	const screen = Dimensions.get("window")
-	root.computeLayout(screen.width, screen.height)
+	const start = performance.now()
+	const currentlyRunning = useSharedValue(0)
+	const pic = useSharedValue<SkPicture>(p)
 
-	// @ts-ignore
-	globalThis.root = root // @ts-ignore
-	globalThis.child = child
+	useEffect(() => {
+		const id = Math.random()
+		currentlyRunning.value = id
 
-	const picture = root.draw()
+		runOnUI(() => {
+			const root = createYogaNode()
+			const img = createYogaNode()
+			const pathNode = createYogaNode()
+			const matrix = Skia.Matrix().identity()
+
+			root.setType("rect")
+			root.setProps({})
+			root.setStyle({
+				flex: 1,
+				// paddingTop: 120,
+				// paddingBottom: 30,
+				backgroundColor: "#2d3e50",
+				// gap: 20,
+				// paddingHorizontal: 40,
+			})
+
+			img.setType("image")
+			img.setProps({
+				image,
+				fit: "contain",
+			})
+			img.setStyle({
+				flex: 1,
+			})
+
+			root.insertChild(img)
+
+			const path = Skia.Path.Make()
+			path.moveTo(128, 0)
+			path.lineTo(168, 80)
+			path.lineTo(256, 93)
+			path.lineTo(192, 155)
+			path.lineTo(207, 244)
+			path.lineTo(128, 202)
+			path.lineTo(49, 244)
+			path.lineTo(64, 155)
+			path.lineTo(0, 93)
+			path.lineTo(88, 80)
+			path.lineTo(128, 0)
+			path.close()
+
+			pathNode.setType("path")
+			pathNode.setProps({
+				path,
+				fillType: FillType.Winding,
+				stroke: {
+					width: 1,
+					miter_limit: 0,
+					precision: 1,
+				} as StrokeOpts,
+			})
+			pathNode.setStyle({
+				backgroundColor: "#e3c16f",
+				flex: 1,
+				matrix,
+			})
+			root.insertChild(pathNode)
+
+			root.computeLayout(screen.width, screen.height)
+			const start = performance.now()
+			let lastTime = performance.now()
+			let frames = 0
+			const pathLayout = pathNode.layout
+
+			function frame(time: number) {
+				if (currentlyRunning.value !== id) return
+				const dt = time - start
+
+				matrix
+					.identity()
+					.translate(-pathLayout.width / 2, -pathLayout.height / 2)
+					.postRotate((dt * 0.1 * Math.PI) / 180)
+					.postScale(0.5, 0.5)
+					.postTranslate(pathLayout.width / 2, pathLayout.height / 2)
+
+				pic.value = root.draw() as SkPicture
+
+				if (time - lastTime >= 1000) {
+					console.log(
+						"dt",
+						dt,
+						"time",
+						time - lastTime,
+						"fps",
+						frames,
+					)
+					lastTime = time
+					frames = -1
+				}
+
+
+				frames++
+
+				requestAnimationFrame(frame)
+			}
+
+			requestAnimationFrame(frame)
+		})()
+
+		return () => {
+			currentlyRunning.value = 0
+		}
+	}, [image])
 
 	return (
 		<Canvas style={{ width: screen.width, height: screen.height }}>
-			<Picture picture={picture} />
+			<Picture picture={pic} />
 		</Canvas>
 	)
 }

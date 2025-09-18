@@ -13,8 +13,11 @@
 #include "HybridYogaNodeSpec.hpp"
 #include "SkiaYoga.hpp"
 #include <jsi/jsi.h>
+#include <algorithm>
 #include <array>
+#include <limits>
 #include <memory>
+#include <optional>
 #include <react-native-skia/cpp/api/JsiSkApi.h>
 #include <react-native-skia/cpp/api/JsiSkParagraph.h>
 #include <react-native-skia/cpp/api/recorder/Command.h>
@@ -84,8 +87,7 @@ public:
     std::optional<SkRRect> _clipRRect;
     std::optional<std::array<SkVector, 4>> _clipRRectRadii;
     std::optional<SkRect> _clipRect;
-    std::optional<SkM44> _transform;
-    std::optional<SkMatrix> _matrix;
+    std::shared_ptr<SkMatrix> _matrix;
 
     void loadHybridMethods() override
     {
@@ -111,7 +113,7 @@ public:
 
     void setLayout(const YogaNodeLayout& layout) override
     {
-        this->props.rect = SkRect::MakeXYWH(layout.left, layout.top, layout.width, layout.height);
+        this->props.rect = SkRect::MakeXYWH(0, 0, layout.width, layout.height);
     }
 
     void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::RectCmd::draw(ctx); }
@@ -123,12 +125,12 @@ public:
         : RNSkia::RRectCmd(runtime, props, variables)
         , YogaNodeCommand(node)
     {
-    }  
+    }
 
     void setLayout(const YogaNodeLayout& layout) override
     {
         auto radius = this->props.r.value_or(RNSkia::Radius{0, 0});
-        this->props.rect = SkRRect::MakeRectXY(SkRect::MakeXYWH(layout.left, layout.top, layout.width, layout.height), radius.rX, radius.rY);
+        this->props.rect = SkRRect::MakeRectXY(SkRect::MakeXYWH(0, 0, layout.width, layout.height), radius.rX, radius.rY);
     }
 
     void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::RRectCmd::draw(ctx); }
@@ -140,12 +142,12 @@ public:
         : RNSkia::TextCmd(runtime, props, variables)
         , YogaNodeCommand(node)
     {
+        this->props.x = 0;
+        this->props.y = 0;
     }
 
     void setLayout(const YogaNodeLayout& layout) override
     {
-        this->props.x = layout.left;
-        this->props.y = layout.top;
     }
 
     void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::TextCmd::draw(ctx); }
@@ -157,12 +159,12 @@ public:
         : RNSkia::ImageCmd(runtime, props, variables)
         , YogaNodeCommand(node)
     {
+        this->props.x = 0;
+        this->props.y = 0;
     }
 
     void setLayout(const YogaNodeLayout& layout) override
     {
-        this->props.x = static_cast<float>(layout.left);
-        this->props.y = static_cast<float>(layout.top);
         this->props.width = static_cast<float>(layout.width);
         this->props.height = static_cast<float>(layout.height);
         this->props.rect = SkRect::MakeXYWH(layout.left, layout.top, layout.width, layout.height);
@@ -173,17 +175,66 @@ public:
 
 class PathCmd : public RNSkia::PathCmd, public YogaNodeCommand {
 public:
+    YogaNodeLayout _baseLayout;
+
     PathCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
         : RNSkia::PathCmd(runtime, props, variables)
         , YogaNodeCommand(node)
         , _basePath(this->props.path)
     {
+        this->props.start = 0.0f;
+        this->props.end = 1.0f;
     }
 
     void setLayout(const YogaNodeLayout& layout) override
     {
         this->props.path = _basePath;
-        this->props.path.offset(static_cast<float>(layout.left), static_cast<float>(layout.top));
+        _baseLayout = layout;
+
+        const auto layoutLeft = static_cast<float>(layout.left);
+        const auto layoutTop = static_cast<float>(layout.top);
+        const auto layoutWidth = static_cast<float>(layout.width);
+        const auto layoutHeight = static_cast<float>(layout.height);
+
+        auto bounds = _basePath.getBounds();
+
+        if (!bounds.isEmpty()) {
+            const auto boundsWidth = bounds.width();
+            const auto boundsHeight = bounds.height();
+
+            float widthRatio = std::numeric_limits<float>::max();
+            if (boundsWidth > 0.0f) {
+                widthRatio = layoutWidth <= 0.0f ? 0.0f : layoutWidth / boundsWidth;
+            }
+
+            float heightRatio = std::numeric_limits<float>::max();
+            if (boundsHeight > 0.0f) {
+                heightRatio = layoutHeight <= 0.0f ? 0.0f : layoutHeight / boundsHeight;
+            }
+
+            float scale = 1.0f;
+            const auto candidate = std::min(widthRatio, heightRatio);
+            if (candidate != std::numeric_limits<float>::max()) {
+                scale = candidate;
+            }
+
+            if (scale < 0.0f) {
+                scale = 0.0f;
+            }
+            //  else if (scale > 1.0f) {
+            //     scale = 1.0f;
+            // }
+
+            SkMatrix transform;
+            transform.setIdentity();
+            transform.preTranslate(-bounds.left(), -bounds.top());
+            if (scale != 1.0f) {
+                transform.preScale(scale, scale);
+            }
+            transform.postTranslate(bounds.left(), bounds.top());
+
+            this->props.path.transform(transform);
+        }
     }
 
     void setBasePath(const SkPath& path) { _basePath = path; }
@@ -200,12 +251,12 @@ public:
         : RNSkia::ParagraphCmd(runtime, props, variables)
         , YogaNodeCommand(node)
     {
+        this->props.x = 0;
+        this->props.y = 0;
     }
 
     void setLayout(const YogaNodeLayout& layout) override
     {
-        this->props.x = layout.left;
-        this->props.y = layout.top;
         this->props.width = layout.width;
     }
 

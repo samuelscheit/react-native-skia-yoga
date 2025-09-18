@@ -9,6 +9,7 @@
 #include <jsi/jsi.h>
 #include <react-native-skia/cpp/api/JsiSkCanvas.h>
 #include <react-native-skia/cpp/api/JsiSkHostObjects.h>
+#include <react-native-skia/cpp/api/JsiSkMatrix.h>
 #include <react-native-skia/cpp/api/recorder/DrawingCtx.h>
 #include <react-native-skia/cpp/api/recorder/Drawings.h>
 #include <react-native-skia/cpp/rnskia/RNSkManager.h>
@@ -470,7 +471,7 @@ void YogaNode::setStyle(const NodeStyle& style)
     }
 
     if (const auto& value = style.matrix) {
-        _matrix = value;
+        _matrix = *value;
     }
 
     if (const auto& value = style.transform) {
@@ -536,12 +537,10 @@ void YogaNode::setStyle(const NodeStyle& style)
         }
 
         if (hasTransform) {
-            _transform = matrix;
+            _matrix = std::make_shared<SkMatrix>(matrix.asM33());
         } else {
-            _transform.reset();
+            _matrix.reset();
         }
-    } else {
-        _transform.reset();
     }
 }
 
@@ -818,18 +817,12 @@ void YogaNode::drawInternal(RNSkia::DrawingCtx& ctx)
     }
 
     auto op = _style.invertClip.has_value() && _style.invertClip.value() ? SkClipOp::kDifference : SkClipOp::kIntersect;
-    auto shouldClip = _clipPath.has_value() || _clipRect.has_value() || _clipRRect.has_value() || _matrix.has_value() || _transform.has_value();
 
-    if (shouldClip) {
-        ctx.canvas->save();
-    }
+    ctx.canvas->save();
+    ctx.canvas->translate(_layout.left, _layout.top);
 
-    if (_matrix.has_value()) {
+    if (_matrix) {
         ctx.canvas->concat(*_matrix);
-    }
-
-    if (_transform.has_value()) {
-        ctx.canvas->concat(_transform->asM33());
     }
 
     if (_clipPath.has_value()) {
@@ -852,9 +845,7 @@ void YogaNode::drawInternal(RNSkia::DrawingCtx& ctx)
 
     ctx.restorePaint();
 
-    if (shouldClip) {
-        ctx.canvas->restore();
-    }
+    ctx.canvas->restore();
 }
 
 void YogaNode::setChildren(const std::vector<std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>>& children)

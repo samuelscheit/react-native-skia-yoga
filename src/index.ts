@@ -23,8 +23,14 @@ export interface YogaNodeFinal extends YogaNode {
 
 export * from "./Reconciler"
 
+const NitroModulesBox = NitroModules.box(NitroModules)
+
 export function createYogaNode(): YogaNodeFinal {
-	const node = NitroModules.createHybridObject<YogaNode>("YogaNode")
+	"worklet"
+
+	const box = NitroModulesBox.unbox()
+
+	const node = box.createHybridObject<YogaNode>("YogaNode")
 
 	return node as YogaNodeFinal
 }
