@@ -1,11 +1,9 @@
 import {
 	Canvas,
-	FillType,
 	Picture,
 	Skia,
 	SkPicture,
-	StrokeOpts,
-	useImage,
+	useImage
 } from "@shopify/react-native-skia"
 import { useEffect } from "react"
 import { Dimensions } from "react-native"
@@ -51,6 +49,7 @@ const x = createYogaNode()
 x.setType("rect")
 x.setProps({ color: "red" })
 x.setStyle({ width: 100, height: 100 })
+x.computeLayout()
 const p = x.draw()
 
 export default function HomeScreen() {
@@ -66,11 +65,10 @@ export default function HomeScreen() {
 
 		runOnUI(() => {
 			const root = createYogaNode()
-			const img = createYogaNode()
-			const pathNode = createYogaNode()
+			const child = createYogaNode()
 			const matrix = Skia.Matrix().identity()
 
-			root.setType("rect")
+			root.setType("oval")
 			root.setProps({})
 			root.setStyle({
 				flex: 1,
@@ -81,63 +79,34 @@ export default function HomeScreen() {
 				// paddingHorizontal: 40,
 			})
 
-			img.setType("image")
-			img.setProps({
-				image,
-				fit: "contain",
-			})
-			img.setStyle({
-				flex: 1,
-			})
 
-			root.insertChild(img)
-
-			const path = Skia.Path.Make()
-			path.moveTo(128, 0)
-			path.lineTo(168, 80)
-			path.lineTo(256, 93)
-			path.lineTo(192, 155)
-			path.lineTo(207, 244)
-			path.lineTo(128, 202)
-			path.lineTo(49, 244)
-			path.lineTo(64, 155)
-			path.lineTo(0, 93)
-			path.lineTo(88, 80)
-			path.lineTo(128, 0)
-			path.close()
-
-			pathNode.setType("path")
-			pathNode.setProps({
-				path,
-				fillType: FillType.Winding,
-				stroke: {
-					width: 1,
-					miter_limit: 0,
-					precision: 1,
-				} as StrokeOpts,
+			child.setType("circle")
+			child.setProps({
 			})
-			pathNode.setStyle({
+			child.setStyle({
 				backgroundColor: "#e3c16f",
 				flex: 1,
 				matrix,
 			})
-			root.insertChild(pathNode)
+			root.insertChild(child)
 
 			root.computeLayout(screen.width, screen.height)
 			const start = performance.now()
 			let lastTime = performance.now()
 			let frames = 0
-			const pathLayout = pathNode.layout
+			const pathLayout = child.layout
 
 			function frame(time: number) {
 				if (currentlyRunning.value !== id) return
 				const dt = time - start
 
+				const scale = (Math.cos(dt * 0.002) * 0.25 + 0.75) 
+
 				matrix
 					.identity()
 					.translate(-pathLayout.width / 2, -pathLayout.height / 2)
 					.postRotate((dt * 0.1 * Math.PI) / 180)
-					.postScale(0.5, 0.5)
+					// .postScale(scale, scale)
 					.postTranslate(pathLayout.width / 2, pathLayout.height / 2)
 
 				pic.value = root.draw() as SkPicture

@@ -36,6 +36,14 @@ namespace margelo::nitro::RNSkiaYoga {
     IMAGE      SWIFT_NAME(image) = 4,
     PATH      SWIFT_NAME(path) = 5,
     PARAGRAPH      SWIFT_NAME(paragraph) = 6,
+    CIRCLE      SWIFT_NAME(circle) = 7,
+    LINE      SWIFT_NAME(line) = 8,
+    OVAL      SWIFT_NAME(oval) = 9,
+    POINTS      SWIFT_NAME(points) = 10,
+    PATCH      SWIFT_NAME(patch) = 11,
+    VERTICES      SWIFT_NAME(vertices) = 12,
+    PICTURE      SWIFT_NAME(picture) = 13,
+    SVG      SWIFT_NAME(svg) = 14,
   } CLOSED_ENUM;
 
 } // namespace margelo::nitro::RNSkiaYoga
@@ -55,6 +63,14 @@ namespace margelo::nitro {
         case hashString("image"): return margelo::nitro::RNSkiaYoga::NodeType::IMAGE;
         case hashString("path"): return margelo::nitro::RNSkiaYoga::NodeType::PATH;
         case hashString("paragraph"): return margelo::nitro::RNSkiaYoga::NodeType::PARAGRAPH;
+        case hashString("circle"): return margelo::nitro::RNSkiaYoga::NodeType::CIRCLE;
+        case hashString("line"): return margelo::nitro::RNSkiaYoga::NodeType::LINE;
+        case hashString("oval"): return margelo::nitro::RNSkiaYoga::NodeType::OVAL;
+        case hashString("points"): return margelo::nitro::RNSkiaYoga::NodeType::POINTS;
+        case hashString("patch"): return margelo::nitro::RNSkiaYoga::NodeType::PATCH;
+        case hashString("vertices"): return margelo::nitro::RNSkiaYoga::NodeType::VERTICES;
+        case hashString("picture"): return margelo::nitro::RNSkiaYoga::NodeType::PICTURE;
+        case hashString("svg"): return margelo::nitro::RNSkiaYoga::NodeType::SVG;
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert \"" + unionValue + "\" to enum NodeType - invalid value!");
       }
@@ -68,6 +84,14 @@ namespace margelo::nitro {
         case margelo::nitro::RNSkiaYoga::NodeType::IMAGE: return JSIConverter<std::string>::toJSI(runtime, "image");
         case margelo::nitro::RNSkiaYoga::NodeType::PATH: return JSIConverter<std::string>::toJSI(runtime, "path");
         case margelo::nitro::RNSkiaYoga::NodeType::PARAGRAPH: return JSIConverter<std::string>::toJSI(runtime, "paragraph");
+        case margelo::nitro::RNSkiaYoga::NodeType::CIRCLE: return JSIConverter<std::string>::toJSI(runtime, "circle");
+        case margelo::nitro::RNSkiaYoga::NodeType::LINE: return JSIConverter<std::string>::toJSI(runtime, "line");
+        case margelo::nitro::RNSkiaYoga::NodeType::OVAL: return JSIConverter<std::string>::toJSI(runtime, "oval");
+        case margelo::nitro::RNSkiaYoga::NodeType::POINTS: return JSIConverter<std::string>::toJSI(runtime, "points");
+        case margelo::nitro::RNSkiaYoga::NodeType::PATCH: return JSIConverter<std::string>::toJSI(runtime, "patch");
+        case margelo::nitro::RNSkiaYoga::NodeType::VERTICES: return JSIConverter<std::string>::toJSI(runtime, "vertices");
+        case margelo::nitro::RNSkiaYoga::NodeType::PICTURE: return JSIConverter<std::string>::toJSI(runtime, "picture");
+        case margelo::nitro::RNSkiaYoga::NodeType::SVG: return JSIConverter<std::string>::toJSI(runtime, "svg");
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert NodeType to JS - invalid value: "
                                     + std::to_string(static_cast<int>(arg)) + "!");
@@ -86,6 +110,14 @@ namespace margelo::nitro {
         case hashString("image"):
         case hashString("path"):
         case hashString("paragraph"):
+        case hashString("circle"):
+        case hashString("line"):
+        case hashString("oval"):
+        case hashString("points"):
+        case hashString("patch"):
+        case hashString("vertices"):
+        case hashString("picture"):
+        case hashString("svg"):
           return true;
         default:
           return false;

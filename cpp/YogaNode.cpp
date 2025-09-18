@@ -644,6 +644,11 @@ jsi::Value YogaNode::setType(jsi::Runtime& runtime, const jsi::Value& thisArg, c
         _command.reset(pathCmd);
         break;
     }
+    case NodeType::OVAL: {
+        auto* ovalCmd = new margelo::nitro::RNSkiaYoga::OvalCmd(this, runtime, props, variables);
+        _command.reset(ovalCmd);
+        break;
+    }
     case NodeType::IMAGE: {
         auto* imageCmd = new margelo::nitro::RNSkiaYoga::ImageCmd(this, runtime, props, variables);
         _command.reset(imageCmd);
@@ -664,10 +669,6 @@ jsi::Value YogaNode::setType(jsi::Runtime& runtime, const jsi::Value& thisArg, c
         //   _command = std::make_unique<RNSkia::GroupCmd>(runtime, props, variables);
     }
 
-    if (_command) {
-        _command->setLayout(_layout);
-    }
-
     return jsi::Value::undefined();
 }
 
@@ -677,7 +678,6 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
 
     switch (this->_type) {
     case NodeType::RECT: {
-        auto rectCmd = static_cast<margelo::nitro::RNSkiaYoga::RectCmd*>(_command.get());
         break;
     }
     case NodeType::RRECT: {
@@ -740,6 +740,9 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
             }
         }
 
+        break;
+    }
+    case NodeType::OVAL: {
         break;
     }
     case NodeType::PARAGRAPH: {

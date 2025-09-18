@@ -136,6 +136,30 @@ public:
     void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::RRectCmd::draw(ctx); }
 };
 
+class OvalCmd : public RNSkia::OvalCmd, public YogaNodeCommand {
+public:
+    OvalCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
+        : RNSkia::OvalCmd(runtime, props, variables)
+        , YogaNodeCommand(node)
+    {
+    }
+
+    void setLayout(const YogaNodeLayout& layout) override
+    {
+        const auto width = std::max(0.0f, static_cast<float>(layout.width));
+        const auto height = std::max(0.0f, static_cast<float>(layout.height));
+        this->props.rect = SkRect::MakeXYWH(0, 0, width, height);
+    }
+
+    void draw(RNSkia::DrawingCtx* ctx) override
+    {
+
+        RNSkia::OvalCmd::draw(ctx);
+    }
+
+private:
+};
+
 class TextCmd : public RNSkia::TextCmd, public YogaNodeCommand {
 public:
     TextCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
