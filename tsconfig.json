@@ -1,31 +1,46 @@
 {
-  "include": [
-    "src"
-  ],
-  "compilerOptions": {
-    "composite": true,
-    "outDir": "lib",
-    "rootDir": "src",
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "jsx": "react",
-    "lib": ["esnext"],
-    "module": "esnext",
-    "moduleResolution": "node",
-    "noEmit": false,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noImplicitUseStrict": false,
-    "noStrictGenericChecks": false,
-    "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "esnext",
-    "verbatimModuleSyntax": true
-  }
+	"include": ["src"],
+	"compilerOptions": {
+		"composite": true,
+		"outDir": "lib",
+		"rootDir": "src",
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"jsx": "react",
+		"lib": ["esnext"],
+		"module": "esnext",
+		"moduleResolution": "node",
+		"noEmit": false,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitReturns": true,
+		"noImplicitUseStrict": false,
+		"noStrictGenericChecks": false,
+		"noUncheckedIndexedAccess": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"strict": true,
+		"target": "esnext",
+		"verbatimModuleSyntax": true,
+		"paths": {
+			"react-native-reanimated": [
+				"./example/node_modules/react-native-reanimated"
+			],
+			"@shopify/react-native-skia": [
+				"./example/node_modules/@shopify/react-native-skia"
+			],
+			"@shopify/react-native-skia/*": [
+				"./example/node_modules/@shopify/react-native-skia/*"
+			],
+			"react-native-worklets": [
+				"./example/node_modules/react-native-worklets"
+			],
+			"react-native": ["./example/node_modules/react-native"],
+			"react-native-nitro-modules": ["./example/node_modules/react-native-nitro-modules"],
+			"react": ["./example/node_modules/react"]
+		}
+	}
 }

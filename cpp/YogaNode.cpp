@@ -701,6 +701,11 @@ jsi::Value YogaNode::setType(jsi::Runtime& runtime, const jsi::Value& thisArg, c
         _command.reset(pointsCmd);
         break;
     }
+    case NodeType::BLURMASKFILTER: {
+        auto* blurMaskFilterCmd = new margelo::nitro::RNSkiaYoga::BlurMaskFilterCmd(this, runtime, props, variables);
+        _command.reset(blurMaskFilterCmd);
+        break;
+    }
     case NodeType::OVAL: {
         auto* ovalCmd = new margelo::nitro::RNSkiaYoga::OvalCmd(this, runtime, props, variables);
         _command.reset(ovalCmd);
@@ -751,7 +756,8 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
     }
     case NodeType::TEXT: {
         auto textCmd = static_cast<margelo::nitro::RNSkiaYoga::TextCmd*>(_command.get());
-        textCmd->props.text = JSIConverter<std::string>::fromJSI(runtime, props.getProperty(runtime, "text"));
+        auto text = JSIConverter<std::optional<std::string>>::fromJSI(runtime, props.getProperty(runtime, "children"));
+        textCmd->props.text = text.value_or("");
         auto fontOptional = JSIConverter<std::optional<SkFont>>::fromJSI(runtime, props.getProperty(runtime, "font"));
 
         if (fontOptional.has_value()) {
@@ -760,14 +766,28 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
 
         auto font = textCmd->props.font;
 
-        if (props.hasProperty(runtime, "size")) {
-            const auto sizeValue = props.getProperty(runtime, "size");
-            if (sizeValue.isNumber()) {
-                font->setSize(static_cast<float>(sizeValue.asNumber()));
+        auto textStyle = skia::textlayout::TextStyle();
 
-                textCmd->props.font = font;
+        auto styleValue = props.getProperty(runtime, "style");
+        if (styleValue.isObject()) {
+            auto skColor = textStyle.getColor();
+            auto colorValue = styleValue.asObject(runtime).getProperty(runtime, "color");
+            if (colorValue.isString()) {
+                if (auto parsed = parseCssColor(colorValue.asString(runtime).utf8(runtime))) {
+                    skColor = *parsed;
+                }
+            } else if (colorValue.isNumber()) {
+                skColor = static_cast<SkColor>(colorValue.asNumber());
             }
+            styleValue.asObject(runtime).setProperty(runtime, "color", RNSkia::JsiSkColor::toValue(runtime, skColor));
+
+            textStyle = RNSkia::JsiSkTextStyle::fromValue(runtime, styleValue);
         }
+
+        _paint.setColor(textStyle.getColor());
+        font->setSize(textStyle.getFontSize());
+
+        textCmd->props.font = font;
 
         // font.measureText(textCmd->props.text.c_str(), textCmd->props.text.size(), &textCmd->props.width, &textCmd->props.height, nullptr);
 
@@ -882,6 +902,15 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
 
         break;
     }
+    case NodeType::BLURMASKFILTER: {
+        auto blurMaskFilterCmd = static_cast<margelo::nitro::RNSkiaYoga::BlurMaskFilterCmd*>(_command.get());
+        if (!blurMaskFilterCmd) {
+            break;
+        }
+
+        blurMaskFilterCmd->updateProps(runtime, props);
+        break;
+    }
     case NodeType::OVAL: {
         break;
     }
@@ -910,9 +939,11 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
     case NodeType::PARAGRAPH: {
         auto paragraphCmd = static_cast<margelo::nitro::RNSkiaYoga::ParagraphCmd*>(_command.get());
 
+        auto text = JSIConverter<std::optional<std::string>>::fromJSI(runtime, props.getProperty(runtime, "children"));
+
         if (props.hasProperty(runtime, "paragraph")) {
             paragraphCmd->props.paragraph = props.getProperty(runtime, "paragraph").asObject(runtime).getHostObject<RNSkia::JsiSkParagraph>(runtime);
-        } else if (props.hasProperty(runtime, "text")) {
+        } else {
             ParagraphCmd::ensureDefaultParagraphResources();
             std::lock_guard<std::mutex> lock(ParagraphCmd::sParagraphBuilderMutex);
             auto* builder = ParagraphCmd::sDefaultParagraphBuilder.get();
@@ -925,10 +956,21 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
 
             auto styleValue = props.getProperty(runtime, "style");
             if (styleValue.isObject()) {
-                textStyle = RNSkia::JsiSkTextStyle::fromValue(runtime, styleValue);
-                auto obj = styleValue.asObject(runtime);
 
-                if (!obj.hasProperty(runtime, "color")) {
+                auto skColor = textStyle.getColor();
+                auto colorValue = styleValue.asObject(runtime).getProperty(runtime, "color");
+                if (colorValue.isString()) {
+                    if (auto parsed = parseCssColor(colorValue.asString(runtime).utf8(runtime))) {
+                        skColor = *parsed;
+                    }
+                } else if (colorValue.isNumber()) {
+                    skColor = static_cast<SkColor>(colorValue.asNumber());
+                }
+                styleValue.asObject(runtime).setProperty(runtime, "color", RNSkia::JsiSkColor::toValue(runtime, skColor));
+
+                textStyle = RNSkia::JsiSkTextStyle::fromValue(runtime, styleValue);
+
+                if (!styleValue.asObject(runtime).hasProperty(runtime, "color")) {
                     textStyle.setColor(SK_ColorBLACK);
                 }
 
@@ -948,11 +990,9 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
             builder->Reset();
             builder->pushStyle(textStyle);
 
-            auto textValue = props.getProperty(runtime, "text");
-            if (textValue.isString()) {
-                auto text = textValue.asString(runtime).utf8(runtime);
-                builder->addText(text.c_str(), text.size());
-            }
+            auto textStr = text.value_or("");
+
+            builder->addText(textStr.c_str(), textStr.size());
 
             auto context = margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext();
             auto paragraph = std::make_shared<RNSkia::JsiSkParagraph>(context, builder);
@@ -1056,6 +1096,9 @@ void YogaNode::drawInternal(RNSkia::DrawingCtx& ctx)
     } else if (_clipRRect.has_value()) {
         ctx.canvas->clipRRect(*_clipRRect, op, true);
     }
+
+    auto maskFilter = ctx.getPaint().refMaskFilter();
+    _paint.setMaskFilter(maskFilter);
 
     ctx.pushPaint(_paint);
 

@@ -1,6 +1,6 @@
-import { NitroModules } from "react-native-nitro-modules"
-import type { YogaNodeFinal } from "./index"
-import type { YogaNode } from "./specs/SkiaYoga.nitro"
+import { NitroModules } from "react-native-nitro-modules";
+import type { YogaNodeFinal } from "./index";
+import type { YogaNode } from "./specs/SkiaYoga.nitro";
 
 const NitroModulesBox = NitroModules.box(NitroModules)
 

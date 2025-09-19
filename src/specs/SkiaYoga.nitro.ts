@@ -5,7 +5,23 @@ export interface SkiaYoga extends HybridObject<{ ios: "c++"; android: "c++" }> {
 	addNumbers(a: number, b: number): number
 }
 
-export type NodeType = "rect" | "rrect" | "text" | "group" | "image" | "path" | "paragraph" | "circle" | "line" | "oval" | "points" | "patch" | "vertices" | "picture" | "svg";
+export type NodeType =
+	| "rect"
+	| "rrect"
+	| "text"
+	| "group"
+	| "blurMaskFilter"
+	| "image"
+	| "path"
+	| "paragraph"
+	| "circle"
+	| "line"
+	| "oval"
+	| "points"
+	| "patch"
+	| "vertices"
+	| "picture"
+	| "svg";
 
 export interface YogaNodeLayout {
 	left: number

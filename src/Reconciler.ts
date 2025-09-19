@@ -1,3 +1,6 @@
+import { NitroModules } from "react-native-nitro-modules"
+import { isSharedValue } from "react-native-reanimated"
+import { executeOnUIRuntimeSync } from "react-native-worklets"
 import Reconciler, { type HostConfig } from "react-reconciler"
 import { DefaultEventPriority } from "react-reconciler/constants"
 import type { YogaNodeFinal } from "./index"
@@ -22,6 +25,8 @@ export type SkiaYogaHostContext = HostConfig<
 
 let priority = DefaultEventPriority
 
+const reanimatedMapper = new WeakMap<YogaNodeFinal, number[]>()
+
 const config = {
 	supportsMutation: true,
 	supportsPersistence: false,
@@ -37,9 +42,36 @@ const config = {
 		// This method happens in the render phase. It can (and usually should) mutate the node it has just created before returning it, but it must not modify any other nodes. It must not register any event handlers on the parent tree. This is because an instance being created doesn't guarantee it would be placed in the tree — it could be left unused and later collected by GC. If you need to do something when an instance is definitely in the tree, look at commitMount instead.
 
 		const node = createYogaNode()
+		const nodeBoxed = NitroModules.box(node)
 		node.setType(type)
-		if (props?.style) node.setStyle(props.style)
 		if (props) node.setProps(props)
+
+		const listeners = reanimatedMapper.get(node) || []
+		reanimatedMapper.set(node, listeners)
+
+		if (props?.style) {
+			let newStyle = { ...props.style }
+			Object.keys(props.style).forEach((key) => {
+				const value = props.style[key]
+				if (isSharedValue(value)) {
+					newStyle[key] = value.value
+
+					executeOnUIRuntimeSync((key) => {
+						"worklet"
+						const unboxed = nodeBoxed.unbox()
+
+						value.addListener(1, (v) => {
+							unboxed.setStyle({
+								[key]: v,
+							})
+							// unboxed.computeLayout(width, height)
+						})
+					})(key)
+				}
+			})
+
+			node.setStyle(newStyle)
+		}
 
 		return node
 	},
@@ -56,14 +88,19 @@ const config = {
 	},
 	createTextInstance(text, rootContainer, hostContext, internalHandle) {
 		// Same as createInstance, but for text nodes. If your renderer doesn't support text nodes, you can throw here.
-
-		const node = createYogaNode()
-		node.setStyle({
-			// TODO: text style
-		})
+		// const node = createYogaNode()
+		// node.setStyle({
+		// TODO: text style
+		// })
 		// TODO: text node
 		// node.insertText
-		return node
+		// return node
+	},
+	removeChildFromContainer(container, child) {
+		/**
+         * Same as `removeChild`, but for when a node is detached from the root container. This is useful if attaching to the root has a slightly different implementation, or if the root container nodes are of a different type than the rest of the tree.
+         */
+		container.removeChild(child)
 	},
 	appendChildToContainer(container, child) {
 		/**
@@ -89,8 +126,7 @@ const config = {
 		return false
 	},
 	shouldSetTextContent(type, props) {
-		// If you return true from this method, React will assume that this node's children are text, and will not create nodes for them. It will instead rely on you to have filled that text during createInstance. This is a performance optimization. For example, the DOM renderer returns true only if type is a known text-only parent (like 'textarea') or if props.children has a 'string' type. If you return true, you will need to implement resetTextContent too.
-		return false
+		return typeof props.children === "string"
 	},
 	getRootHostContext(rootContainer) {
 		return rootContainer
@@ -135,6 +171,7 @@ const config = {
 	},
 	resetTextContent(instance) {
 		// TODO
+		instance.setProps({ text: "" })
 	},
 	commitTextUpdate(textInstance, oldText, newText) {
 		// TODO
@@ -168,7 +205,7 @@ export const reconciler = Reconciler(
 			const value = target[prop]
 			if (typeof value === "function") {
 				return (...args: any[]) => {
-					// console.log(prop, ...args)
+					console.log(prop, ...args)
 					return value(...args)
 				}
 			}

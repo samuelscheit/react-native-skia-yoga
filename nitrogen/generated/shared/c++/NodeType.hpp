@@ -33,17 +33,18 @@ namespace margelo::nitro::RNSkiaYoga {
     RRECT      SWIFT_NAME(rrect) = 1,
     TEXT      SWIFT_NAME(text) = 2,
     GROUP      SWIFT_NAME(group) = 3,
-    IMAGE      SWIFT_NAME(image) = 4,
-    PATH      SWIFT_NAME(path) = 5,
-    PARAGRAPH      SWIFT_NAME(paragraph) = 6,
-    CIRCLE      SWIFT_NAME(circle) = 7,
-    LINE      SWIFT_NAME(line) = 8,
-    OVAL      SWIFT_NAME(oval) = 9,
-    POINTS      SWIFT_NAME(points) = 10,
-    PATCH      SWIFT_NAME(patch) = 11,
-    VERTICES      SWIFT_NAME(vertices) = 12,
-    PICTURE      SWIFT_NAME(picture) = 13,
-    SVG      SWIFT_NAME(svg) = 14,
+    BLURMASKFILTER      SWIFT_NAME(blurmaskfilter) = 4,
+    IMAGE      SWIFT_NAME(image) = 5,
+    PATH      SWIFT_NAME(path) = 6,
+    PARAGRAPH      SWIFT_NAME(paragraph) = 7,
+    CIRCLE      SWIFT_NAME(circle) = 8,
+    LINE      SWIFT_NAME(line) = 9,
+    OVAL      SWIFT_NAME(oval) = 10,
+    POINTS      SWIFT_NAME(points) = 11,
+    PATCH      SWIFT_NAME(patch) = 12,
+    VERTICES      SWIFT_NAME(vertices) = 13,
+    PICTURE      SWIFT_NAME(picture) = 14,
+    SVG      SWIFT_NAME(svg) = 15,
   } CLOSED_ENUM;
 
 } // namespace margelo::nitro::RNSkiaYoga
@@ -60,6 +61,7 @@ namespace margelo::nitro {
         case hashString("rrect"): return margelo::nitro::RNSkiaYoga::NodeType::RRECT;
         case hashString("text"): return margelo::nitro::RNSkiaYoga::NodeType::TEXT;
         case hashString("group"): return margelo::nitro::RNSkiaYoga::NodeType::GROUP;
+        case hashString("blurMaskFilter"): return margelo::nitro::RNSkiaYoga::NodeType::BLURMASKFILTER;
         case hashString("image"): return margelo::nitro::RNSkiaYoga::NodeType::IMAGE;
         case hashString("path"): return margelo::nitro::RNSkiaYoga::NodeType::PATH;
         case hashString("paragraph"): return margelo::nitro::RNSkiaYoga::NodeType::PARAGRAPH;
@@ -81,6 +83,7 @@ namespace margelo::nitro {
         case margelo::nitro::RNSkiaYoga::NodeType::RRECT: return JSIConverter<std::string>::toJSI(runtime, "rrect");
         case margelo::nitro::RNSkiaYoga::NodeType::TEXT: return JSIConverter<std::string>::toJSI(runtime, "text");
         case margelo::nitro::RNSkiaYoga::NodeType::GROUP: return JSIConverter<std::string>::toJSI(runtime, "group");
+        case margelo::nitro::RNSkiaYoga::NodeType::BLURMASKFILTER: return JSIConverter<std::string>::toJSI(runtime, "blurMaskFilter");
         case margelo::nitro::RNSkiaYoga::NodeType::IMAGE: return JSIConverter<std::string>::toJSI(runtime, "image");
         case margelo::nitro::RNSkiaYoga::NodeType::PATH: return JSIConverter<std::string>::toJSI(runtime, "path");
         case margelo::nitro::RNSkiaYoga::NodeType::PARAGRAPH: return JSIConverter<std::string>::toJSI(runtime, "paragraph");
@@ -107,6 +110,7 @@ namespace margelo::nitro {
         case hashString("rrect"):
         case hashString("text"):
         case hashString("group"):
+        case hashString("blurMaskFilter"):
         case hashString("image"):
         case hashString("path"):
         case hashString("paragraph"):

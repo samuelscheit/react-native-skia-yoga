@@ -11,9 +11,9 @@ const finalConfig = {
   resolver: {
     ...config.resolver,
     nodeModulesPaths: [
+      path.join(__dirname, '.', 'node_modules'),
       path.join(__dirname, '..'),
       path.join(__dirname, '..', 'node_modules'),
-      path.join(__dirname, '.', 'node_modules'),
     ],
     extraNodeModules: {
       ...config.resolver?.extraNodeModules,

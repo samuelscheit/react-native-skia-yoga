@@ -26,9 +26,14 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = {
     'HEADER_SEARCH_PATHS' => [
       '"$(PODS_TARGET_SRCROOT)/cpp/**"',
-	  '"$(PODS_ROOT)/../../node_modules/@shopify/react-native-skia/cpp/**"',
-	  '"$(PODS_ROOT)/../../node_modules/@shopify/react-native-skia/cpp/skia"',
-	  '"$(PODS_ROOT)/../../node_modules/@shopify/react-native-skia/cpp/skia/**"',
+      '"$(PODS_ROOT)/../../node_modules/@shopify"',
+      '"$(PODS_ROOT)/../../node_modules/@shopify/react-native-skia/cpp/**"',
+      '"$(PODS_ROOT)/../../node_modules/@shopify/react-native-skia/cpp/skia"',
+      '"$(PODS_ROOT)/../../node_modules/@shopify/react-native-skia/cpp/skia/**"',
+      '"$(PODS_ROOT)/../../../node_modules/@shopify"',
+      '"$(PODS_ROOT)/../../../node_modules/@shopify/react-native-skia/cpp/**"',
+      '"$(PODS_ROOT)/../../../node_modules/@shopify/react-native-skia/cpp/skia"',
+      '"$(PODS_ROOT)/../../../node_modules/@shopify/react-native-skia/cpp/skia/**"',
     ].join(' '),
 	'CLANG_CXX_LANGUAGE_STANDARD' => 'c++20',
 	'CLANG_CXX_LIBRARY' => 'libc++',

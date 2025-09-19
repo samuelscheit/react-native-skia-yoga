@@ -24,4 +24,5 @@ export interface YogaNodeFinal extends YogaNode {
 
 export * from "./Reconciler"
 export * from "./util"
+export * from "./YogaCanvas"
 
