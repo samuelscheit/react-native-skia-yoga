@@ -7,7 +7,7 @@ import type {
 	SkRect,
 	SkRRect,
 	StrokeCap,
-	StrokeJoin
+	StrokeJoin,
 } from "@shopify/react-native-skia"
 import type { CustomType } from "react-native-nitro-modules"
 
@@ -112,16 +112,16 @@ export type TransformSkewX = { skewX: number }
 export type TransformSkewY = { skewY: number }
 
 export type Transform = (
-  | TransformRotateX
-  | TransformRotateY
-  | TransformRotateZ
-  | TransformScale
-  | TransformScaleX
-  | TransformScaleY
-  | TransformTranslateX
-  | TransformTranslateY
-  | TransformSkewX
-  | TransformSkewY
+	| TransformRotateX
+	| TransformRotateY
+	| TransformRotateZ
+	| TransformScale
+	| TransformScaleX
+	| TransformScaleY
+	| TransformTranslateX
+	| TransformTranslateY
+	| TransformSkewX
+	| TransformSkewY
 )[]
 
 export type NodeStyle = {
@@ -186,7 +186,13 @@ export type NodeStyle = {
 	insetHorizontal?: number | Percentage // horizontal
 	insetVertical?: number | Percentage // vertical
 	inset?: number | Percentage
-	width?: number | "auto" | Percentage
+	width?:
+		| "fit-content"
+		| "max-content"
+		| "stretch"
+		| "auto"
+		| number
+		| Percentage
 	/* End of flexbox and layout properties */
 
 	/* Skia Paint properties */

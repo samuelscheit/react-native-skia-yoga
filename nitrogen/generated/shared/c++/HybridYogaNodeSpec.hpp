@@ -15,19 +15,18 @@
 
 // Forward declaration of `YogaNodeLayout` to properly resolve imports.
 namespace margelo::nitro::RNSkiaYoga { struct YogaNodeLayout; }
-// Forward declaration of `HybridYogaNodeSpec` to properly resolve imports.
-namespace margelo::nitro::RNSkiaYoga { class HybridYogaNodeSpec; }
 // Forward declaration of `NodeStyle` to properly resolve imports.
 namespace margelo::nitro::RNSkiaYoga { struct NodeStyle; }
 // Forward declaration of `NodeType` to properly resolve imports.
 namespace margelo::nitro::RNSkiaYoga { enum class NodeType; }
+// Forward declaration of `HybridYogaNodeSpec` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { class HybridYogaNodeSpec; }
 
 #include "YogaNodeLayout.hpp"
-#include <memory>
-#include "HybridYogaNodeSpec.hpp"
-#include <vector>
 #include "NodeStyle.hpp"
 #include "NodeType.hpp"
+#include <memory>
+#include "HybridYogaNodeSpec.hpp"
 #include <variant>
 #include <optional>
 
@@ -60,8 +59,6 @@ namespace margelo::nitro::RNSkiaYoga {
       // Properties
       virtual YogaNodeLayout getLayout() = 0;
       virtual void setLayout(const YogaNodeLayout& layout) = 0;
-      virtual std::vector<std::shared_ptr<HybridYogaNodeSpec>> getChildren() = 0;
-      virtual void setChildren(const std::vector<std::shared_ptr<HybridYogaNodeSpec>>& children) = 0;
 
     public:
       // Methods

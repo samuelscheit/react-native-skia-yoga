@@ -25,7 +25,4 @@ export interface YogaNode extends HybridObject<{ ios: "c++"; android: "c++" }> {
 	removeAllChildren(): void
 	computeLayout(width?: number, height?: number): void
 	layout: YogaNodeLayout
-
-	children: YogaNode[]
-
 }

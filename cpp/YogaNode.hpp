@@ -14,24 +14,24 @@
 #include "SkiaYoga.hpp"
 #include <algorithm>
 #include <array>
+#include <functional>
 #include <jsi/jsi.h>
 #include <limits>
 #include <memory>
-#include <optional>
 #include <mutex>
-#include <functional>
+#include <optional>
 #include <react-native-skia/cpp/api/JsiSkApi.h>
 #include <react-native-skia/cpp/api/JsiSkFontMgrFactory.h>
 #include <react-native-skia/cpp/api/JsiSkParagraph.h>
 #include <react-native-skia/cpp/api/recorder/Command.h>
 #include <react-native-skia/cpp/api/recorder/Drawings.h>
-#include <react-native-skia/cpp/skia/include/core/SkSpan.h>
 #include <react-native-skia/cpp/skia/include/core/SkFontMgr.h>
+#include <react-native-skia/cpp/skia/include/core/SkSpan.h>
 #include <react-native-skia/cpp/skia/include/core/SkTypeface.h>
+#include <react-native-skia/cpp/skia/include/private/base/SkTypeTraits.h>
 #include <react-native-skia/cpp/skia/modules/skparagraph/include/FontCollection.h>
 #include <react-native-skia/cpp/skia/modules/skparagraph/include/ParagraphBuilder.h>
 #include <react-native-skia/cpp/skia/modules/skparagraph/include/ParagraphStyle.h>
-#include <react-native-skia/cpp/skia/include/private/base/SkTypeTraits.h>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -73,7 +73,7 @@ namespace detail {
     struct FamilyCacheKeyHash {
         std::size_t operator()(const FamilyCacheKey& key) const noexcept
         {
-            std::size_t hash = std::hash<std::string>{}(key.name);
+            std::size_t hash = std::hash<std::string> {}(key.name);
             if (key.isDefault) {
                 static constexpr std::size_t salt = static_cast<std::size_t>(0x9e3779b97f4a7c15ULL);
                 hash ^= salt;
@@ -103,9 +103,9 @@ namespace detail {
     struct FontStyleKeyHash {
         std::size_t operator()(const FontStyleKey& key) const noexcept
         {
-            std::size_t hash = std::hash<int>{}(key.weight);
-            hash ^= (std::hash<int>{}(key.width) + 0x9e3779b9 + (hash << 6) + (hash >> 2));
-            hash ^= (std::hash<int>{}(static_cast<int>(key.slant)) + 0x9e3779b9 + (hash << 6) + (hash >> 2));
+            std::size_t hash = std::hash<int> {}(key.weight);
+            hash ^= (std::hash<int> {}(key.width) + 0x9e3779b9 + (hash << 6) + (hash >> 2));
+            hash ^= (std::hash<int> {}(static_cast<int>(key.slant)) + 0x9e3779b9 + (hash << 6) + (hash >> 2));
             return hash;
         }
     };
@@ -247,8 +247,8 @@ public:
     void setType(NodeType type) override;
     void insertChild(const std::shared_ptr<HybridYogaNodeSpec>& child, const std::optional<std::variant<double, std::shared_ptr<HybridYogaNodeSpec>>>& index) override;
     void removeChild(const std::shared_ptr<HybridYogaNodeSpec>& child) override;
-    std::vector<std::shared_ptr<HybridYogaNodeSpec>> getChildren() override;
-    void setChildren(const std::vector<std::shared_ptr<HybridYogaNodeSpec>>& children) override;
+
+    jsi::Value getChildren(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
 
     void computeLayout(std::optional<double> width, std::optional<double> height) override;
     void recursiveSetLayout();
@@ -266,6 +266,7 @@ public:
 
     YGNodeRef _node;
     NodeType _type;
+    bool _hasLayoutBeenComputed = false;
     YogaNodeLayout _layout;
     std::unique_ptr<YogaNodeCommand> _command;
     std::vector<std::shared_ptr<YogaNode>> _children;
@@ -287,8 +288,23 @@ public:
             prototype.registerRawHybridMethod("setProps", 1, &YogaNode::setProps);
             prototype.registerRawHybridMethod("draw", 1, &YogaNode::draw);
             prototype.registerRawHybridMethod("setType", 1, &YogaNode::setType);
+            prototype.registerRawHybridMethod("getChildren", 0, &YogaNode::getChildren);
         });
     }
+};
+
+class GroupCmd : public YogaNodeCommand {
+public:
+    GroupCmd(YogaNode* node)
+        : YogaNodeCommand(node)
+    {
+    }
+
+    void setLayout(const YogaNodeLayout& layout) override
+    {
+    }
+
+    void draw(RNSkia::DrawingCtx* ctx) override { }
 };
 
 class RectCmd : public RNSkia::RectCmd, public YogaNodeCommand {
@@ -304,7 +320,13 @@ public:
         this->props.rect = SkRect::MakeXYWH(0, 0, layout.width, layout.height);
     }
 
-    void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::RectCmd::draw(ctx); }
+    void draw(RNSkia::DrawingCtx* ctx) override
+    {
+        if (!this->props.rect.has_value()) {
+            throw std::runtime_error("Call computeLayout before drawing");
+        }
+        RNSkia::RectCmd::draw(ctx);
+    }
 };
 
 class RRectCmd : public RNSkia::RRectCmd, public YogaNodeCommand {
@@ -348,10 +370,56 @@ public:
 private:
 };
 
+class CircleCmd : public RNSkia::CircleCmd, public YogaNodeCommand {
+public:
+    CircleCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
+        : RNSkia::CircleCmd(runtime, props, variables)
+        , YogaNodeCommand(node)
+    {
+    }
+
+    void setLayout(const YogaNodeLayout& layout) override
+    {
+        const float width = std::max(0.0f, static_cast<float>(layout.width));
+        const float height = std::max(0.0f, static_cast<float>(layout.height));
+
+        const float cx = width * 0.5f;
+        const float cy = height * 0.5f;
+        const ::SkPoint center = ::SkPoint::Make(cx, cy);
+        this->props.c = center;
+
+        if (!_hasExplicitRadius) {
+            const float radius = std::max(0.0f, std::min(width, height) * 0.5f);
+            this->props.r = radius;
+        }
+    }
+
+    void draw(RNSkia::DrawingCtx* ctx) override
+    {
+        RNSkia::CircleCmd::draw(ctx);
+    }
+
+
+    void setRadius(float radius)
+    {
+        this->props.r = radius;
+        _hasExplicitRadius = true;
+    }
+
+    void clearRadius()
+    {
+        this->props.r = 0.0f;
+        _hasExplicitRadius = false;
+    }
+
+    bool hasExplicitRadius() const { return _hasExplicitRadius; }
+
+private:
+    bool _hasExplicitRadius = false;
+};
+
 class TextCmd : public RNSkia::TextCmd, public YogaNodeCommand {
 public:
-
-
     TextCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
         : RNSkia::TextCmd(runtime, props, variables)
         , YogaNodeCommand(node)
@@ -373,18 +441,19 @@ public:
         }
 
         this->props.font = *sDefaultFont;
-
     }
 
     void setLayout(const YogaNodeLayout& layout) override
     {
     }
 
-    void draw(RNSkia::DrawingCtx* ctx) override {
+    void draw(RNSkia::DrawingCtx* ctx) override
+    {
         ctx->canvas->translate(0, this->props.font->getSize());
 
         RNSkia::TextCmd::draw(ctx);
     }
+
 private:
     static std::optional<SkFont> sDefaultFont;
 };
@@ -571,12 +640,13 @@ public:
 
         auto skParagraph = cmd->props.paragraph->getObject();
         if (width <= 0 || widthMode == YGMeasureModeUndefined) {
-            width = 20000000.0f; // very large width
+            // width = 20000000.0f; // very large width
         }
 
         skParagraph->layout(width);
         auto sz = skParagraph->getHeight();
-        return YGSize { width, sz };
+        auto sw = skParagraph->getMaxWidth();
+        return YGSize { .width = width, .height =  sz };
     }
 
     static void ensureDefaultParagraphResources();

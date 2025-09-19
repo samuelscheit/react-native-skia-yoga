@@ -1,7 +1,7 @@
-import { NitroModules } from "react-native-nitro-modules"
 import Reconciler, { type HostConfig } from "react-reconciler"
 import { DefaultEventPriority } from "react-reconciler/constants"
-import type { YogaNodeFinal } from "."
+import type { YogaNodeFinal } from "./index"
+import { createYogaNode } from "./util"
 
 export type SkiaYogaHostContext = HostConfig<
 	any,
@@ -36,7 +36,7 @@ const config = {
 
 		// This method happens in the render phase. It can (and usually should) mutate the node it has just created before returning it, but it must not modify any other nodes. It must not register any event handlers on the parent tree. This is because an instance being created doesn't guarantee it would be placed in the tree — it could be left unused and later collected by GC. If you need to do something when an instance is definitely in the tree, look at commitMount instead.
 
-		const node = NitroModules.createHybridObject<YogaNodeFinal>("YogaNode")
+		const node = createYogaNode()
 		node.setType(type)
 		if (props?.style) node.setStyle(props.style)
 		if (props) node.setProps(props)
@@ -57,7 +57,7 @@ const config = {
 	createTextInstance(text, rootContainer, hostContext, internalHandle) {
 		// Same as createInstance, but for text nodes. If your renderer doesn't support text nodes, you can throw here.
 
-		const node = NitroModules.createHybridObject<YogaNode>("YogaNode")
+		const node = createYogaNode()
 		node.setStyle({
 			// TODO: text style
 		})
@@ -69,6 +69,7 @@ const config = {
 		/**
 		 * Same as `appendChild`, but for when a node is attached to the root container. This is useful if attaching to the root has a slightly different implementation, or if the root container nodes are of a different type than the rest of the tree.
 		 */
+		container.insertChild(child)
 	},
 	appendInitialChild(parentInstance, child) {
 		// This method should mutate the parentInstance and add the child to its list of children. For example, in the DOM this would translate to a parentInstance.appendChild(child) call.
@@ -83,6 +84,8 @@ const config = {
 
 		// There is a second purpose to this method. It lets you specify whether there is some work that needs to happen when the node is connected to the tree on the screen. If you return true, the instance will receive a commitMount call later. See its documentation below.
 
+		// rootContainer.insertChild(instance)
+
 		return false
 	},
 	shouldSetTextContent(type, props) {
@@ -90,11 +93,7 @@ const config = {
 		return false
 	},
 	getRootHostContext(rootContainer) {
-		// This method lets you return the initial host context from the root of the tree. See getChildHostContext for the explanation of host context.
-		return {
-			type: "hostcontext",
-			// TODO
-		}
+		return rootContainer
 	},
 	getChildHostContext(parentHostContext, type, rootContainer) {
 		// Host context lets you track some information about where you are in the tree so that it's available inside createInstance as the hostContext parameter. For example, the DOM renderer uses it to track whether it's inside an HTML or an SVG tree, because createInstance implementation needs to be different for them.
@@ -151,7 +150,7 @@ const config = {
 		// The internalHandle data structure is meant to be opaque. If you bend the rules and rely on its internal fields, be aware that it may change significantly between versions. You're taking on additional maintenance risk by reading from it, and giving up all guarantees if you write something to it.
 	},
 	clearContainer(container) {
-		container.removeAllChildren()
+		// container.removeAllChildren()
 	},
 	maySuspendCommit(type, props) {
 		return false
@@ -169,7 +168,7 @@ export const reconciler = Reconciler(
 			const value = target[prop]
 			if (typeof value === "function") {
 				return (...args: any[]) => {
-					console.log(prop, ...args)
+					// console.log(prop, ...args)
 					return value(...args)
 				}
 			}

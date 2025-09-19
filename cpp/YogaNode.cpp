@@ -6,19 +6,19 @@
 #include "SkiaYoga.hpp"
 #include <array>
 #include <cmath>
-#include <optional>
 #include <jsi/jsi.h>
+#include <optional>
 #include <react-native-skia/cpp/api/JsiSkCanvas.h>
+#include <react-native-skia/cpp/api/JsiSkFontMgrFactory.h>
 #include <react-native-skia/cpp/api/JsiSkHostObjects.h>
 #include <react-native-skia/cpp/api/JsiSkMatrix.h>
-#include <react-native-skia/cpp/api/JsiSkFontMgrFactory.h>
 #include <react-native-skia/cpp/api/JsiSkTextStyle.h>
 #include <react-native-skia/cpp/api/recorder/DrawingCtx.h>
 #include <react-native-skia/cpp/api/recorder/Drawings.h>
 #include <react-native-skia/cpp/rnskia/RNSkManager.h>
+#include <react-native-skia/cpp/skia/modules/skparagraph/include/FontCollection.h>
 #include <react-native-skia/cpp/skia/modules/skparagraph/include/ParagraphBuilder.h>
 #include <react-native-skia/cpp/skia/modules/skparagraph/include/ParagraphStyle.h>
-#include <react-native-skia/cpp/skia/modules/skparagraph/include/FontCollection.h>
 #include <type_traits>
 #include <variant>
 #include <yoga/Yoga.h>
@@ -162,8 +162,25 @@ void YogaNode::setStyle(const NodeStyle& style)
 
     // Size properties
     if (const auto& value = style.width) {
-        setYGValueOrPercent(YGNodeStyleSetWidth, YGNodeStyleSetWidthPercent,
-            YGNodeStyleSetWidthAuto, _node, *value);
+        if (std::holds_alternative<std::string>(*value)) {
+            const auto& s = std::get<std::string>(*value);
+            if (s == "fit-content") {
+                YGNodeStyleSetWidthFitContent(_node);
+            } else if (s == "max-content") {
+                YGNodeStyleSetWidthMaxContent(_node);
+            } else if (s == "stretch") {
+                YGNodeStyleSetWidthStretch(_node);
+            } else {
+                setYGValueOrPercent(YGNodeStyleSetWidth, YGNodeStyleSetWidthPercent,
+                    YGNodeStyleSetWidthAuto, _node, *value);
+            }
+        } else {
+            setYGValueOrPercent(YGNodeStyleSetWidth, YGNodeStyleSetWidthPercent,
+                YGNodeStyleSetWidthAuto, _node, *value);
+        }
+    } else if (_type == NodeType::PARAGRAPH) {
+        // default width for paragraphs is to stretch but not beyond
+        YGNodeStyleSetWidthStretch(_node);
     }
 
     if (const auto& value = style.height) {
@@ -689,6 +706,11 @@ jsi::Value YogaNode::setType(jsi::Runtime& runtime, const jsi::Value& thisArg, c
         _command.reset(ovalCmd);
         break;
     }
+    case NodeType::CIRCLE: {
+        auto* circleCmd = new margelo::nitro::RNSkiaYoga::CircleCmd(this, runtime, props, variables);
+        _command.reset(circleCmd);
+        break;
+    }
     case NodeType::IMAGE: {
         auto* imageCmd = new margelo::nitro::RNSkiaYoga::ImageCmd(this, runtime, props, variables);
         _command.reset(imageCmd);
@@ -704,9 +726,9 @@ jsi::Value YogaNode::setType(jsi::Runtime& runtime, const jsi::Value& thisArg, c
     }
     case NodeType::GROUP:
     default:
+        auto* groupCmd = new margelo::nitro::RNSkiaYoga::GroupCmd(this);
+        _command.reset(groupCmd);
         break;
-
-        //   _command = std::make_unique<RNSkia::GroupCmd>(runtime, props, variables);
     }
 
     return jsi::Value::undefined();
@@ -863,6 +885,28 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
     case NodeType::OVAL: {
         break;
     }
+    case NodeType::CIRCLE: {
+        auto circleCmd = static_cast<margelo::nitro::RNSkiaYoga::CircleCmd*>(_command.get());
+        if (!circleCmd) {
+            break;
+        }
+
+        bool layoutNeedsUpdate = false;
+
+        if (props.hasProperty(runtime, "r")) {
+            const auto radiusValue = props.getProperty(runtime, "r");
+            if (radiusValue.isNull() || radiusValue.isUndefined()) {
+                circleCmd->clearRadius();
+                layoutNeedsUpdate = true;
+            } else if (radiusValue.isNumber()) {
+                circleCmd->setRadius(static_cast<float>(radiusValue.asNumber()));
+            }
+
+            circleCmd->setLayout(_layout);
+        }
+
+        break;
+    }
     case NodeType::PARAGRAPH: {
         auto paragraphCmd = static_cast<margelo::nitro::RNSkiaYoga::ParagraphCmd*>(_command.get());
 
@@ -890,11 +934,7 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
 
                 auto paragraphStyle = RNSkia::JsiSkParagraphStyle::fromValue(runtime, styleValue);
                 const auto& currentStyle = builder->getParagraphStyle();
-                const bool paragraphStyleChanged = paragraphStyle.getTextAlign() != currentStyle.getTextAlign() ||
-                    paragraphStyle.getTextDirection() != currentStyle.getTextDirection() ||
-                    paragraphStyle.getMaxLines() != currentStyle.getMaxLines() ||
-                    paragraphStyle.getEllipsis() != currentStyle.getEllipsis() ||
-                    paragraphStyle.getTextHeightBehavior() != currentStyle.getTextHeightBehavior();
+                const bool paragraphStyleChanged = paragraphStyle.getTextAlign() != currentStyle.getTextAlign() || paragraphStyle.getTextDirection() != currentStyle.getTextDirection() || paragraphStyle.getMaxLines() != currentStyle.getMaxLines() || paragraphStyle.getEllipsis() != currentStyle.getEllipsis() || paragraphStyle.getTextHeightBehavior() != currentStyle.getTextHeightBehavior();
 
                 if (paragraphStyleChanged) {
                     ParagraphCmd::sDefaultParagraphBuilder = para::ParagraphBuilder::make(paragraphStyle, ParagraphCmd::sDefaultFontCollection);
@@ -907,7 +947,7 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
             }
             builder->Reset();
             builder->pushStyle(textStyle);
-            
+
             auto textValue = props.getProperty(runtime, "text");
             if (textValue.isString()) {
                 auto text = textValue.asString(runtime).utf8(runtime);
@@ -998,6 +1038,11 @@ void YogaNode::drawInternal(RNSkia::DrawingCtx& ctx)
     } else {
         ctx.canvas->save();
     }
+
+    if (!_hasLayoutBeenComputed) {
+        computeLayout(std::nullopt, std::nullopt);
+    }
+
     ctx.canvas->translate(_layout.left, _layout.top);
 
     if (_matrix) {
@@ -1017,6 +1062,10 @@ void YogaNode::drawInternal(RNSkia::DrawingCtx& ctx)
     _command->draw(&ctx);
 
     for (const auto& child : _children) {
+        if (!child->_hasLayoutBeenComputed) {
+            child->computeLayout(_layout.width, _layout.height);
+        }
+
         if (child->_command) {
             child->drawInternal(ctx);
         }
@@ -1027,30 +1076,14 @@ void YogaNode::drawInternal(RNSkia::DrawingCtx& ctx)
     ctx.canvas->restore();
 }
 
-void YogaNode::setChildren(const std::vector<std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>>& children)
+jsi::Value YogaNode::getChildren(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
 {
-    _children.clear();
-    _children.reserve(children.size());
-    YGNodeRemoveAllChildren(_node);
-
-    for (const auto& c : children) {
-        auto yogaNode = std::dynamic_pointer_cast<YogaNode>(c);
-        _children.push_back(yogaNode);
-        YGNodeInsertChild(_node, yogaNode->_node, YGNodeGetChildCount(_node));
+    jsi::Array arr = jsi::Array(runtime, _children.size());
+    for (size_t i = 0; i < _children.size(); ++i) {
+        auto obj = JSIConverter<std::shared_ptr<margelo::nitro::RNSkiaYoga::YogaNode>>::toJSI(runtime, _children[i]);
+        arr.setValueAtIndex(runtime, i, obj);
     }
-}
-
-std::vector<std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>> YogaNode::getChildren()
-{
-    std::vector<std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>> result;
-    // result.reserve(_children.size());
-
-    // std::transform(_children.begin(), _children.end(), std::back_inserter(result),
-    //     [](auto& child) {
-    //         return std::static_pointer_cast<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>(child);
-    //     });
-
-    return result;
+    return arr;
 }
 
 void YogaNode::computeLayout(std::optional<double> width, std::optional<double> height)
@@ -1073,6 +1106,7 @@ void YogaNode::recursiveSetLayout()
     if (_command) {
         _command->setLayout(_layout);
     }
+    _hasLayoutBeenComputed = true;
 
     if (_clipRRect) {
         std::array<SkVector, 4> radii;

@@ -19,18 +19,9 @@ globalThis.SkiaYoga = SkiaYoga
 export interface YogaNodeFinal extends YogaNode {
 	setProps(props: any): void
 	draw(): any
+	getChildren(): YogaNodeFinal[]
 }
 
 export * from "./Reconciler"
+export * from "./util"
 
-const NitroModulesBox = NitroModules.box(NitroModules)
-
-export function createYogaNode(): YogaNodeFinal {
-	"worklet"
-
-	const box = NitroModulesBox.unbox()
-
-	const node = box.createHybridObject<YogaNode>("YogaNode")
-
-	return node as YogaNodeFinal
-}
