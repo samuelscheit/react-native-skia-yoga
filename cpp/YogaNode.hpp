@@ -25,7 +25,9 @@
 #include <react-native-skia/cpp/api/JsiSkParagraph.h>
 #include <react-native-skia/cpp/api/recorder/Command.h>
 #include <react-native-skia/cpp/api/recorder/Drawings.h>
+#include <react-native-skia/cpp/skia/include/core/SkBlurTypes.h>
 #include <react-native-skia/cpp/skia/include/core/SkFontMgr.h>
+#include <react-native-skia/cpp/skia/include/core/SkMaskFilter.h>
 #include <react-native-skia/cpp/skia/include/core/SkSpan.h>
 #include <react-native-skia/cpp/skia/include/core/SkTypeface.h>
 #include <react-native-skia/cpp/skia/include/private/base/SkTypeTraits.h>
@@ -305,6 +307,59 @@ public:
     }
 
     void draw(RNSkia::DrawingCtx* ctx) override { }
+};
+
+struct BlurMaskFilterProps {
+    float blur = 0.0f;
+    SkBlurStyle style = SkBlurStyle::kNormal_SkBlurStyle;
+    bool respectCTM = false;
+};
+
+class BlurMaskFilterCmd : public YogaNodeCommand {
+public:
+    BlurMaskFilterCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& /*variables*/)
+        : YogaNodeCommand(node)
+    {
+        updateProps(runtime, props);
+    }
+
+    void setLayout(const YogaNodeLayout& layout) override
+    {
+        (void)layout;
+    }
+
+    void draw(RNSkia::DrawingCtx* ctx) override
+    {
+        auto maskFilter = SkMaskFilter::MakeBlur(_props.style, _props.blur, _props.respectCTM);
+        ctx->getPaint().setMaskFilter(maskFilter);
+    }
+
+    void updateProps(jsi::Runtime& runtime, const jsi::Object& props)
+    {
+        if (props.hasProperty(runtime, "blur")) {
+            auto value = props.getProperty(runtime, "blur");
+            if (!value.isUndefined() && !value.isNull()) {
+                _props.blur = RNSkia::getPropertyValue<float>(runtime, value);
+            }
+        }
+
+        if (props.hasProperty(runtime, "style")) {
+            auto value = props.getProperty(runtime, "style");
+            if (!value.isUndefined() && !value.isNull()) {
+                _props.style = RNSkia::getPropertyValue<SkBlurStyle>(runtime, value);
+            }
+        }
+
+        if (props.hasProperty(runtime, "respectCTM")) {
+            auto value = props.getProperty(runtime, "respectCTM");
+            if (!value.isUndefined() && !value.isNull()) {
+                _props.respectCTM = RNSkia::getPropertyValue<bool>(runtime, value);
+            }
+        }
+    }
+
+private:
+    BlurMaskFilterProps _props;
 };
 
 class RectCmd : public RNSkia::RectCmd, public YogaNodeCommand {
