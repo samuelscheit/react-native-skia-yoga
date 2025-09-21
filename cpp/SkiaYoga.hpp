@@ -1,12 +1,12 @@
 #pragma once
 
+#include "SkiaGlue.hpp"
 #include "HybridSkiaYogaSpec.hpp"
 #include "HybridYogaNodeSpec.hpp"
 #include <jsi/jsi.h>
 #include <yoga/Yoga.h>
-#include <react-native-skia/cpp/skia/include/private/base/SkTypeTraits.h>
-#include <react-native-skia/cpp/api/JsiSkApi.h>
-#include <react-native-skia/cpp/api/recorder/Command.h>
+#include <JsiSkApi.h>
+#include "Command.h"
 #include <memory>
 
 // Forward declare Skia platform context (base) in global namespace to avoid pulling platform-specific headers here

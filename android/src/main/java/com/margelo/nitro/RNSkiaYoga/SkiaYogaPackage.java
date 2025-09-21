@@ -13,7 +13,7 @@ import com.margelo.nitro.core.HybridObject;
 import java.util.HashMap;
 import java.util.function.Supplier;
 
-public class RNSkiaYogaPackage extends TurboReactPackage {
+public class SkiaYogaPackage extends TurboReactPackage {
   @Nullable
   @Override
   public NativeModule getModule(String name, ReactApplicationContext reactContext) {

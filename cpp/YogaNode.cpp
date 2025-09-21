@@ -2,23 +2,22 @@
 #include "ColorParser.hpp"
 #include "HybridSkiaYogaSpec.hpp"
 #include "HybridYogaNodeSpec.hpp"
-#include "SkColor.h"
+#include <include/core/SkColor.h>
 #include "SkiaYoga.hpp"
 #include <array>
 #include <cmath>
 #include <jsi/jsi.h>
 #include <optional>
-#include <react-native-skia/cpp/api/JsiSkCanvas.h>
-#include <react-native-skia/cpp/api/JsiSkFontMgrFactory.h>
-#include <react-native-skia/cpp/api/JsiSkHostObjects.h>
-#include <react-native-skia/cpp/api/JsiSkMatrix.h>
-#include <react-native-skia/cpp/api/JsiSkTextStyle.h>
-#include <react-native-skia/cpp/api/recorder/DrawingCtx.h>
-#include <react-native-skia/cpp/api/recorder/Drawings.h>
-#include <react-native-skia/cpp/rnskia/RNSkManager.h>
-#include <react-native-skia/cpp/skia/modules/skparagraph/include/FontCollection.h>
-#include <react-native-skia/cpp/skia/modules/skparagraph/include/ParagraphBuilder.h>
-#include <react-native-skia/cpp/skia/modules/skparagraph/include/ParagraphStyle.h>
+#include <JsiSkCanvas.h>
+#include <JsiSkFontMgrFactory.h>
+#include <JsiSkHostObjects.h>
+#include <JsiSkMatrix.h>
+#include <JsiSkTextStyle.h>
+#include <recorder/DrawingCtx.h>
+#include <RNSkManager.h>
+#include <skia/modules/skparagraph/include/FontCollection.h>
+#include <skia/modules/skparagraph/include/ParagraphBuilder.h>
+#include <skia/modules/skparagraph/include/ParagraphStyle.h>
 #include <type_traits>
 #include <variant>
 #include <yoga/Yoga.h>
@@ -741,307 +740,16 @@ jsi::Value YogaNode::setType(jsi::Runtime& runtime, const jsi::Value& thisArg, c
 
 jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
 {
+    if (count == 0 || !args[0].isObject()) {
+        return jsi::Value::undefined();
+    }
+
+    if (!_command) {
+        return jsi::Value::undefined();
+    }
+
     jsi::Object props = args[0].asObject(runtime);
-
-    switch (this->_type) {
-    case NodeType::RECT: {
-        break;
-    }
-    case NodeType::RRECT: {
-        auto rrectCmd = static_cast<margelo::nitro::RNSkiaYoga::RRectCmd*>(_command.get());
-        auto radius = JSIConverter<std::optional<double>>::fromJSI(runtime, props.getProperty(runtime, "r"));
-        auto r = static_cast<float>(radius.value_or(0.0));
-        rrectCmd->props.r = RNSkia::Radius { .rX = r, .rY = r };
-        break;
-    }
-    case NodeType::TEXT: {
-        auto textCmd = static_cast<margelo::nitro::RNSkiaYoga::TextCmd*>(_command.get());
-        auto text = JSIConverter<std::optional<std::string>>::fromJSI(runtime, props.getProperty(runtime, "children"));
-        textCmd->props.text = text.value_or("");
-        auto fontOptional = JSIConverter<std::optional<SkFont>>::fromJSI(runtime, props.getProperty(runtime, "font"));
-
-        if (fontOptional.has_value()) {
-            textCmd->props.font = fontOptional;
-        }
-
-        auto font = textCmd->props.font;
-
-        auto textStyle = skia::textlayout::TextStyle();
-
-        auto styleValue = props.getProperty(runtime, "style");
-        if (styleValue.isObject()) {
-            auto skColor = textStyle.getColor();
-            auto colorValue = styleValue.asObject(runtime).getProperty(runtime, "color");
-            if (colorValue.isString()) {
-                if (auto parsed = parseCssColor(colorValue.asString(runtime).utf8(runtime))) {
-                    skColor = *parsed;
-                }
-            } else if (colorValue.isNumber()) {
-                skColor = static_cast<SkColor>(colorValue.asNumber());
-            }
-            styleValue.asObject(runtime).setProperty(runtime, "color", RNSkia::JsiSkColor::toValue(runtime, skColor));
-
-            textStyle = RNSkia::JsiSkTextStyle::fromValue(runtime, styleValue);
-        }
-
-        _paint.setColor(textStyle.getColor());
-        font->setSize(textStyle.getFontSize());
-
-        textCmd->props.font = font;
-
-        // font.measureText(textCmd->props.text.c_str(), textCmd->props.text.size(), &textCmd->props.width, &textCmd->props.height, nullptr);
-
-        break;
-    }
-    case NodeType::PATH: {
-        auto pathCmd = static_cast<margelo::nitro::RNSkiaYoga::PathCmd*>(_command.get());
-        if (!pathCmd) {
-            break;
-        }
-
-        if (props.hasProperty(runtime, "path")) {
-            auto pathValue = props.getProperty(runtime, "path");
-            if (pathValue.isObject()) {
-                auto newPath = JSIConverter<SkPath>::fromJSI(runtime, pathValue);
-                pathCmd->setBasePath(newPath);
-                pathCmd->setLayout(_layout);
-            }
-        }
-
-        if (props.hasProperty(runtime, "start")) {
-            const auto startValue = props.getProperty(runtime, "start");
-            if (startValue.isNumber()) {
-                pathCmd->props.start = static_cast<float>(startValue.asNumber());
-            }
-        }
-
-        if (props.hasProperty(runtime, "end")) {
-            const auto endValue = props.getProperty(runtime, "end");
-            if (endValue.isNumber()) {
-                pathCmd->props.end = static_cast<float>(endValue.asNumber());
-            }
-        }
-
-        if (props.hasProperty(runtime, "stroke")) {
-            const auto strokeValue = props.getProperty(runtime, "stroke");
-            if (strokeValue.isNull() || strokeValue.isUndefined()) {
-                pathCmd->props.stroke.reset();
-            } else if (strokeValue.isObject()) {
-                pathCmd->props.stroke = RNSkia::getPropertyValue<RNSkia::StrokeOpts>(runtime, strokeValue);
-            }
-        }
-
-        if (props.hasProperty(runtime, "fillType")) {
-            const auto fillValue = props.getProperty(runtime, "fillType");
-            if (fillValue.isNull() || fillValue.isUndefined()) {
-                pathCmd->props.fillType.reset();
-            } else if (fillValue.isNumber()) {
-                pathCmd->props.fillType = static_cast<SkPathFillType>(static_cast<int>(fillValue.asNumber()));
-            }
-        }
-
-        break;
-    }
-    case NodeType::LINE: {
-        auto lineCmd = static_cast<margelo::nitro::RNSkiaYoga::LineCmd*>(_command.get());
-        if (!lineCmd) {
-            break;
-        }
-
-        bool updated = false;
-
-        if (props.hasProperty(runtime, "p1")) {
-            const auto p1Value = props.getProperty(runtime, "p1");
-            if (p1Value.isObject()) {
-                const auto p1 = RNSkia::getPropertyValue<::SkPoint>(runtime, p1Value);
-                lineCmd->setBasePoint1(p1);
-                updated = true;
-            }
-        }
-
-        if (props.hasProperty(runtime, "p2")) {
-            const auto p2Value = props.getProperty(runtime, "p2");
-            if (p2Value.isObject()) {
-                const auto p2 = RNSkia::getPropertyValue<::SkPoint>(runtime, p2Value);
-                lineCmd->setBasePoint2(p2);
-                updated = true;
-            }
-        }
-
-        if (updated) {
-            lineCmd->setLayout(_layout);
-        }
-
-        break;
-    }
-    case NodeType::POINTS: {
-        auto pointsCmd = static_cast<margelo::nitro::RNSkiaYoga::PointsCmd*>(_command.get());
-        if (!pointsCmd) {
-            break;
-        }
-
-        bool didUpdateLayout = false;
-
-        if (props.hasProperty(runtime, "points")) {
-            const auto pointsValue = props.getProperty(runtime, "points");
-            if (pointsValue.isObject()) {
-                const auto points = RNSkia::getPropertyValue<std::vector<::SkPoint>>(runtime, pointsValue);
-                pointsCmd->setBasePoints(points);
-                didUpdateLayout = true;
-            }
-        }
-
-        if (props.hasProperty(runtime, "mode")) {
-            const auto modeValue = props.getProperty(runtime, "mode");
-            pointsCmd->props.mode = RNSkia::getPropertyValue<SkCanvas::PointMode>(runtime, modeValue);
-        }
-
-        if (didUpdateLayout) {
-            pointsCmd->setLayout(_layout);
-        }
-
-        break;
-    }
-    case NodeType::BLURMASKFILTER: {
-        auto blurMaskFilterCmd = static_cast<margelo::nitro::RNSkiaYoga::BlurMaskFilterCmd*>(_command.get());
-        if (!blurMaskFilterCmd) {
-            break;
-        }
-
-        blurMaskFilterCmd->updateProps(runtime, props);
-        break;
-    }
-    case NodeType::OVAL: {
-        break;
-    }
-    case NodeType::CIRCLE: {
-        auto circleCmd = static_cast<margelo::nitro::RNSkiaYoga::CircleCmd*>(_command.get());
-        if (!circleCmd) {
-            break;
-        }
-
-        bool layoutNeedsUpdate = false;
-
-        if (props.hasProperty(runtime, "r")) {
-            const auto radiusValue = props.getProperty(runtime, "r");
-            if (radiusValue.isNull() || radiusValue.isUndefined()) {
-                circleCmd->clearRadius();
-                layoutNeedsUpdate = true;
-            } else if (radiusValue.isNumber()) {
-                circleCmd->setRadius(static_cast<float>(radiusValue.asNumber()));
-            }
-
-            circleCmd->setLayout(_layout);
-        }
-
-        break;
-    }
-    case NodeType::PARAGRAPH: {
-        auto paragraphCmd = static_cast<margelo::nitro::RNSkiaYoga::ParagraphCmd*>(_command.get());
-
-        auto text = JSIConverter<std::optional<std::string>>::fromJSI(runtime, props.getProperty(runtime, "children"));
-
-        if (props.hasProperty(runtime, "paragraph")) {
-            paragraphCmd->props.paragraph = props.getProperty(runtime, "paragraph").asObject(runtime).getHostObject<RNSkia::JsiSkParagraph>(runtime);
-        } else {
-            ParagraphCmd::ensureDefaultParagraphResources();
-            std::lock_guard<std::mutex> lock(ParagraphCmd::sParagraphBuilderMutex);
-            auto* builder = ParagraphCmd::sDefaultParagraphBuilder.get();
-            if (builder == nullptr) {
-                break;
-            }
-            builder->Reset();
-
-            auto textStyle = skia::textlayout::TextStyle();
-
-            auto styleValue = props.getProperty(runtime, "style");
-            if (styleValue.isObject()) {
-
-                auto skColor = textStyle.getColor();
-                auto colorValue = styleValue.asObject(runtime).getProperty(runtime, "color");
-                if (colorValue.isString()) {
-                    if (auto parsed = parseCssColor(colorValue.asString(runtime).utf8(runtime))) {
-                        skColor = *parsed;
-                    }
-                } else if (colorValue.isNumber()) {
-                    skColor = static_cast<SkColor>(colorValue.asNumber());
-                }
-                styleValue.asObject(runtime).setProperty(runtime, "color", RNSkia::JsiSkColor::toValue(runtime, skColor));
-
-                textStyle = RNSkia::JsiSkTextStyle::fromValue(runtime, styleValue);
-
-                if (!styleValue.asObject(runtime).hasProperty(runtime, "color")) {
-                    textStyle.setColor(SK_ColorBLACK);
-                }
-
-                auto paragraphStyle = RNSkia::JsiSkParagraphStyle::fromValue(runtime, styleValue);
-                const auto& currentStyle = builder->getParagraphStyle();
-                const bool paragraphStyleChanged = paragraphStyle.getTextAlign() != currentStyle.getTextAlign() || paragraphStyle.getTextDirection() != currentStyle.getTextDirection() || paragraphStyle.getMaxLines() != currentStyle.getMaxLines() || paragraphStyle.getEllipsis() != currentStyle.getEllipsis() || paragraphStyle.getTextHeightBehavior() != currentStyle.getTextHeightBehavior();
-
-                if (paragraphStyleChanged) {
-                    ParagraphCmd::sDefaultParagraphBuilder = para::ParagraphBuilder::make(paragraphStyle, ParagraphCmd::sDefaultFontCollection);
-                    builder = ParagraphCmd::sDefaultParagraphBuilder.get();
-                }
-            } else {
-                textStyle.setFontFamilies({ SkString("Arial") });
-                textStyle.setFontSize(14.0f);
-                textStyle.setColor(SK_ColorBLACK);
-            }
-            builder->Reset();
-            builder->pushStyle(textStyle);
-
-            auto textStr = text.value_or("");
-
-            builder->addText(textStr.c_str(), textStr.size());
-
-            auto context = margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext();
-            auto paragraph = std::make_shared<RNSkia::JsiSkParagraph>(context, builder);
-            paragraphCmd->props.paragraph = paragraph;
-            builder->Reset();
-        }
-
-        break;
-    }
-    case NodeType::IMAGE: {
-        auto imageCmd = static_cast<margelo::nitro::RNSkiaYoga::ImageCmd*>(_command.get());
-        if (!imageCmd) {
-            break;
-        }
-
-        if (props.hasProperty(runtime, "image")) {
-            const auto imageValue = props.getProperty(runtime, "image");
-            auto image = JSIConverter<sk_sp<SkImage>>::fromJSI(runtime, imageValue);
-            if (image) {
-                imageCmd->props.image = image;
-            } else {
-                imageCmd->props.image.reset();
-            }
-        }
-
-        if (props.hasProperty(runtime, "sampling")) {
-            const auto samplingValue = props.getProperty(runtime, "sampling");
-            if (samplingValue.isNull() || samplingValue.isUndefined()) {
-                imageCmd->props.sampling.reset();
-            } else {
-                imageCmd->props.sampling = RNSkia::SamplingOptionsFromValue(runtime, samplingValue);
-            }
-        }
-
-        if (props.hasProperty(runtime, "fit")) {
-            const auto fitValue = props.getProperty(runtime, "fit");
-            if (fitValue.isString()) {
-                imageCmd->props.fit = fitValue.asString(runtime).utf8(runtime);
-            }
-        } else if (imageCmd->props.fit.empty()) {
-            imageCmd->props.fit = "contain";
-        }
-
-        break;
-    }
-    case NodeType::GROUP:
-    default: {
-    }
-    }
+    _command->updateProps(runtime, props);
 
     return jsi::Value::undefined();
 }

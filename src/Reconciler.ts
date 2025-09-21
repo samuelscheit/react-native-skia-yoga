@@ -62,6 +62,7 @@ const config = {
 
 						value.addListener(1, (v) => {
 							unboxed.setStyle({
+								// @ts-ignore
 								[key]: v,
 							})
 							// unboxed.computeLayout(width, height)
@@ -198,18 +199,19 @@ const config = {
 } as SkiaYogaHostContext
 
 // https://github.com/facebook/react/blob/main/packages/react-reconciler/README.md
-export const reconciler = Reconciler(
-	new Proxy(config, {
-		get(target, prop) {
-			// @ts-ignore
-			const value = target[prop]
-			if (typeof value === "function") {
-				return (...args: any[]) => {
-					console.log(prop, ...args)
-					return value(...args)
-				}
-			}
-			return value
-		},
-	}),
-)
+// export const reconciler = Reconciler(
+// 	new Proxy(config, {
+// 		get(target, prop) {
+// 			// @ts-ignore
+// 			const value = target[prop]
+// 			if (typeof value === "function") {
+// 				return (...args: any[]) => {
+// 					console.log(prop, ...args)
+// 					return value(...args)
+// 				}
+// 			}
+// 			return value
+// 		},
+// 	}),
+// )
+export const reconciler = Reconciler(config)

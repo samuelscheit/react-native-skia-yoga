@@ -8,9 +8,10 @@
 
 #include <jsi/jsi.h>
 
+#include "SkiaGlue.hpp"
 // Skia headers
-#include "SkPath.h"
-#include <react-native-skia/cpp/api/JsiSkPath.h>
+#include <include/core/SkPath.h>
+#include "JsiSkPath.h"
 // Access platform context without including SkiaYoga.hpp to avoid include cycles
 #include "PlatformContextAccessor.hpp"
 

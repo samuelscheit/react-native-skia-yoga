@@ -7,8 +7,9 @@ namespace RNSkia { class RNSkPlatformContext; }
 
 namespace margelo::nitro::RNSkiaYoga {
 
-// Minimal accessor to retrieve the global platform context without including SkiaYoga.hpp
+// Minimal accessor to retrieve/set the global platform context without including SkiaYoga.hpp
 std::shared_ptr<RNSkia::RNSkPlatformContext> GetPlatformContext();
+void SetPlatformContext(std::shared_ptr<RNSkia::RNSkPlatformContext> ctx);
 
 } // namespace margelo::nitro::RNSkiaYoga
 

@@ -71,6 +71,14 @@
     "@shopify/react-native-skia": "*",
     "react-native-worklets": "*"
   },
+  "codegenConfig": {
+    "name": "RNSkiaYogaSpec",
+    "type": "all",
+    "jsSrcsDir": "./src",
+    "android": {
+      "javaPackageName": "com.margelo.nitro.skiayoga"
+    }
+  },
   "prettier": {
     "singleQuote": false,
     "tabWidth": 4,

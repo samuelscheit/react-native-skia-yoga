@@ -6,7 +6,7 @@
 #include <string_view>
 #include <vector>
 
-#include "SkColor.h"
+#include <include/core/SkColor.h>
 
 namespace margelo::nitro::RNSkiaYoga {
 

@@ -9,11 +9,12 @@
 #include <jsi/jsi.h>
 #include <memory>
 
+#include "SkiaGlue.hpp"
 #include "PlatformContextAccessor.hpp"
 
-#include <react-native-skia/cpp/api/JsiSkImage.h>
+#include "JsiSkImage.h"
 
-#include "SkImage.h"
+#include <include/core/SkImage.h>
 
 namespace margelo::nitro {
 

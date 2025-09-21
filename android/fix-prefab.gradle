@@ -12,6 +12,10 @@ tasks.configureEach { task ->
   }
 }
 
+tasks.withType(JavaCompile) {
+    options.warnings = false
+}
+
 afterEvaluate {
   def abis = reactNativeArchitectures()
   rootProject.allprojects.each { proj ->

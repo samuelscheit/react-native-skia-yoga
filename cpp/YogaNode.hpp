@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SkiaGlue.hpp"
+#include "SkiaYoga.hpp"
 // Ensure JSIConverter specializations are visible before Nitro-generated headers
 #include "JSIConverter+SkFont.hpp"
 #include "JSIConverter+SkImage.hpp"
@@ -11,29 +13,24 @@
 
 #include "HybridSkiaYogaSpec.hpp"
 #include "HybridYogaNodeSpec.hpp"
-#include "SkiaYoga.hpp"
-#include <algorithm>
-#include <array>
-#include <functional>
-#include <jsi/jsi.h>
-#include <limits>
-#include <memory>
-#include <mutex>
-#include <optional>
-#include <react-native-skia/cpp/api/JsiSkApi.h>
-#include <react-native-skia/cpp/api/JsiSkFontMgrFactory.h>
-#include <react-native-skia/cpp/api/JsiSkParagraph.h>
-#include <react-native-skia/cpp/api/recorder/Command.h>
-#include <react-native-skia/cpp/api/recorder/Drawings.h>
-#include <react-native-skia/cpp/skia/include/core/SkBlurTypes.h>
-#include <react-native-skia/cpp/skia/include/core/SkFontMgr.h>
-#include <react-native-skia/cpp/skia/include/core/SkMaskFilter.h>
-#include <react-native-skia/cpp/skia/include/core/SkSpan.h>
-#include <react-native-skia/cpp/skia/include/core/SkTypeface.h>
-#include <react-native-skia/cpp/skia/include/private/base/SkTypeTraits.h>
-#include <react-native-skia/cpp/skia/modules/skparagraph/include/FontCollection.h>
-#include <react-native-skia/cpp/skia/modules/skparagraph/include/ParagraphBuilder.h>
-#include <react-native-skia/cpp/skia/modules/skparagraph/include/ParagraphStyle.h>
+
+
+#include "JsiSkRuntimeEffect.h"
+#include "ColorParser.hpp"
+#include "Drawings.h"
+#include "JsiSkApi.h"
+#include "JsiSkFontMgrFactory.h"
+#include "JsiSkParagraph.h"
+#include "Command.h"
+#include <include/core/SkBlurTypes.h>
+#include <include/core/SkFontMgr.h>
+#include <include/core/SkMaskFilter.h>
+#include <include/core/SkSpan.h>
+#include <include/core/SkTypeface.h>
+#include <include/private/base/SkTypeTraits.h>
+#include <modules/skparagraph/include/FontCollection.h>
+#include <modules/skparagraph/include/ParagraphBuilder.h>
+#include <modules/skparagraph/include/ParagraphStyle.h>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -230,6 +227,11 @@ public:
     // reine virtuelle Schnittstelle
     virtual void setLayout(const YogaNodeLayout& layout) = 0;
     virtual void draw(RNSkia::DrawingCtx* ctx) = 0;
+    virtual void updateProps(jsi::Runtime& runtime, const jsi::Object& props)
+    {
+        (void)runtime;
+        (void)props;
+    }
 
 protected:
     explicit YogaNodeCommand(YogaNode* node)
@@ -334,7 +336,7 @@ public:
         ctx->getPaint().setMaskFilter(maskFilter);
     }
 
-    void updateProps(jsi::Runtime& runtime, const jsi::Object& props)
+    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
     {
         if (props.hasProperty(runtime, "blur")) {
             auto value = props.getProperty(runtime, "blur");
@@ -392,6 +394,14 @@ public:
     {
     }
 
+    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
+    {
+        auto radiusValue = props.getProperty(runtime, "r");
+        auto radius = JSIConverter<std::optional<double>>::fromJSI(runtime, radiusValue);
+        auto r = static_cast<float>(radius.value_or(0.0));
+        this->props.r = RNSkia::Radius { .rX = r, .rY = r };
+    }
+
     void setLayout(const YogaNodeLayout& layout) override
     {
         auto radius = this->props.r.value_or(RNSkia::Radius { 0, 0 });
@@ -431,6 +441,20 @@ public:
         : RNSkia::CircleCmd(runtime, props, variables)
         , YogaNodeCommand(node)
     {
+    }
+
+    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
+    {
+        if (props.hasProperty(runtime, "r")) {
+            const auto radiusValue = props.getProperty(runtime, "r");
+            if (radiusValue.isNull() || radiusValue.isUndefined()) {
+                clearRadius();
+            } else if (radiusValue.isNumber()) {
+                setRadius(static_cast<float>(radiusValue.asNumber()));
+            }
+
+            setLayout(node->_layout);
+        }
     }
 
     void setLayout(const YogaNodeLayout& layout) override
@@ -498,6 +522,47 @@ public:
         this->props.font = *sDefaultFont;
     }
 
+    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
+    {
+        auto textValue = props.getProperty(runtime, "children");
+        auto text = JSIConverter<std::optional<std::string>>::fromJSI(runtime, textValue);
+        this->props.text = text.value_or("");
+
+        auto fontValue = props.getProperty(runtime, "font");
+        auto fontOptional = JSIConverter<std::optional<SkFont>>::fromJSI(runtime, fontValue);
+        if (fontOptional.has_value()) {
+            this->props.font = fontOptional;
+        }
+
+        auto font = this->props.font;
+        auto textStyle = skia::textlayout::TextStyle();
+
+        auto styleValue = props.getProperty(runtime, "style");
+        if (styleValue.isObject()) {
+            auto styleObject = styleValue.asObject(runtime);
+
+            auto skColor = textStyle.getColor();
+            auto colorValue = styleObject.getProperty(runtime, "color");
+            if (colorValue.isString()) {
+                if (auto parsed = parseCssColor(colorValue.asString(runtime).utf8(runtime))) {
+                    skColor = *parsed;
+                }
+            } else if (colorValue.isNumber()) {
+                skColor = static_cast<SkColor>(colorValue.asNumber());
+            }
+            styleObject.setProperty(runtime, "color", RNSkia::JsiSkColor::toValue(runtime, skColor));
+
+            textStyle = RNSkia::JsiSkTextStyle::fromValue(runtime, styleValue);
+        }
+
+        if (font.has_value()) {
+            font->setSize(textStyle.getFontSize());
+            this->props.font = font;
+        }
+
+        node->_paint.setColor(textStyle.getColor());
+    }
+
     void setLayout(const YogaNodeLayout& layout) override
     {
     }
@@ -523,6 +588,37 @@ public:
         this->props.y = 0;
     }
 
+    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
+    {
+        if (props.hasProperty(runtime, "image")) {
+            const auto imageValue = props.getProperty(runtime, "image");
+            auto image = JSIConverter<sk_sp<SkImage>>::fromJSI(runtime, imageValue);
+            if (image) {
+                this->props.image = image;
+            } else {
+                this->props.image.reset();
+            }
+        }
+
+        if (props.hasProperty(runtime, "sampling")) {
+            const auto samplingValue = props.getProperty(runtime, "sampling");
+            if (samplingValue.isNull() || samplingValue.isUndefined()) {
+                this->props.sampling.reset();
+            } else {
+                this->props.sampling = RNSkia::SamplingOptionsFromValue(runtime, samplingValue);
+            }
+        }
+
+        if (props.hasProperty(runtime, "fit")) {
+            const auto fitValue = props.getProperty(runtime, "fit");
+            if (fitValue.isString()) {
+                this->props.fit = fitValue.asString(runtime).utf8(runtime);
+            }
+        } else if (this->props.fit.empty()) {
+            this->props.fit = "contain";
+        }
+    }
+
     void setLayout(const YogaNodeLayout& layout) override
     {
         this->props.width = static_cast<float>(layout.width);
@@ -544,6 +640,56 @@ public:
     {
         this->props.start = 0.0f;
         this->props.end = 1.0f;
+    }
+
+    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
+    {
+        bool layoutNeedsUpdate = false;
+
+        if (props.hasProperty(runtime, "path")) {
+            auto pathValue = props.getProperty(runtime, "path");
+            if (pathValue.isObject()) {
+                auto newPath = JSIConverter<SkPath>::fromJSI(runtime, pathValue);
+                setBasePath(newPath);
+                layoutNeedsUpdate = true;
+            }
+        }
+
+        if (props.hasProperty(runtime, "start")) {
+            const auto startValue = props.getProperty(runtime, "start");
+            if (startValue.isNumber()) {
+                this->props.start = static_cast<float>(startValue.asNumber());
+            }
+        }
+
+        if (props.hasProperty(runtime, "end")) {
+            const auto endValue = props.getProperty(runtime, "end");
+            if (endValue.isNumber()) {
+                this->props.end = static_cast<float>(endValue.asNumber());
+            }
+        }
+
+        if (props.hasProperty(runtime, "stroke")) {
+            const auto strokeValue = props.getProperty(runtime, "stroke");
+            if (strokeValue.isNull() || strokeValue.isUndefined()) {
+                this->props.stroke.reset();
+            } else if (strokeValue.isObject()) {
+                this->props.stroke = RNSkia::getPropertyValue<RNSkia::StrokeOpts>(runtime, strokeValue);
+            }
+        }
+
+        if (props.hasProperty(runtime, "fillType")) {
+            const auto fillValue = props.getProperty(runtime, "fillType");
+            if (fillValue.isNull() || fillValue.isUndefined()) {
+                this->props.fillType.reset();
+            } else if (fillValue.isNumber()) {
+                this->props.fillType = static_cast<SkPathFillType>(static_cast<int>(fillValue.asNumber()));
+            }
+        }
+
+        if (layoutNeedsUpdate) {
+            setLayout(node->_layout);
+        }
     }
 
     void setLayout(const YogaNodeLayout& layout) override
@@ -573,6 +719,33 @@ public:
         , _baseP1(this->props.p1)
         , _baseP2(this->props.p2)
     {
+    }
+
+    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
+    {
+        bool updated = false;
+
+        if (props.hasProperty(runtime, "p1")) {
+            const auto p1Value = props.getProperty(runtime, "p1");
+            if (p1Value.isObject()) {
+                const auto p1 = RNSkia::getPropertyValue<::SkPoint>(runtime, p1Value);
+                setBasePoint1(p1);
+                updated = true;
+            }
+        }
+
+        if (props.hasProperty(runtime, "p2")) {
+            const auto p2Value = props.getProperty(runtime, "p2");
+            if (p2Value.isObject()) {
+                const auto p2 = RNSkia::getPropertyValue<::SkPoint>(runtime, p2Value);
+                setBasePoint2(p2);
+                updated = true;
+            }
+        }
+
+        if (updated) {
+            setLayout(node->_layout);
+        }
     }
 
     void setLayout(const YogaNodeLayout& layout) override
@@ -608,6 +781,29 @@ public:
         , _basePoints(this->props.points)
         , _baseBounds(computeBounds(_basePoints))
     {
+    }
+
+    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
+    {
+        bool didUpdateLayout = false;
+
+        if (props.hasProperty(runtime, "points")) {
+            const auto pointsValue = props.getProperty(runtime, "points");
+            if (pointsValue.isObject()) {
+                const auto points = RNSkia::getPropertyValue<std::vector<::SkPoint>>(runtime, pointsValue);
+                setBasePoints(points);
+                didUpdateLayout = true;
+            }
+        }
+
+        if (props.hasProperty(runtime, "mode")) {
+            const auto modeValue = props.getProperty(runtime, "mode");
+            this->props.mode = RNSkia::getPropertyValue<SkCanvas::PointMode>(runtime, modeValue);
+        }
+
+        if (didUpdateLayout) {
+            setLayout(node->_layout);
+        }
     }
 
     void setLayout(const YogaNodeLayout& layout) override
@@ -674,6 +870,79 @@ public:
     {
         this->props.x = 0;
         this->props.y = 0;
+    }
+
+    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
+    {
+        auto textValue = props.getProperty(runtime, "children");
+        auto text = JSIConverter<std::optional<std::string>>::fromJSI(runtime, textValue);
+
+        if (props.hasProperty(runtime, "paragraph")) {
+            auto paragraphValue = props.getProperty(runtime, "paragraph");
+            if (paragraphValue.isObject()) {
+                this->props.paragraph = paragraphValue.asObject(runtime).getHostObject<RNSkia::JsiSkParagraph>(runtime);
+            }
+            return;
+        }
+
+        ensureDefaultParagraphResources();
+        std::lock_guard<std::mutex> lock(sParagraphBuilderMutex);
+        auto* builder = sDefaultParagraphBuilder.get();
+        if (builder == nullptr) {
+            return;
+        }
+        builder->Reset();
+
+        auto textStyle = skia::textlayout::TextStyle();
+
+        auto styleValue = props.getProperty(runtime, "style");
+        if (styleValue.isObject()) {
+            auto styleObject = styleValue.asObject(runtime);
+
+            auto skColor = textStyle.getColor();
+            auto colorValue = styleObject.getProperty(runtime, "color");
+            if (colorValue.isString()) {
+                if (auto parsed = parseCssColor(colorValue.asString(runtime).utf8(runtime))) {
+                    skColor = *parsed;
+                }
+            } else if (colorValue.isNumber()) {
+                skColor = static_cast<SkColor>(colorValue.asNumber());
+            }
+            styleObject.setProperty(runtime, "color", RNSkia::JsiSkColor::toValue(runtime, skColor));
+
+            textStyle = RNSkia::JsiSkTextStyle::fromValue(runtime, styleValue);
+
+            if (!styleObject.hasProperty(runtime, "color")) {
+                textStyle.setColor(SK_ColorBLACK);
+            }
+
+            auto paragraphStyle = RNSkia::JsiSkParagraphStyle::fromValue(runtime, styleValue);
+            const auto& currentStyle = builder->getParagraphStyle();
+            const bool paragraphStyleChanged = paragraphStyle.getTextAlign() != currentStyle.getTextAlign() || paragraphStyle.getTextDirection() != currentStyle.getTextDirection() || paragraphStyle.getMaxLines() != currentStyle.getMaxLines() || paragraphStyle.getEllipsis() != currentStyle.getEllipsis() || paragraphStyle.getTextHeightBehavior() != currentStyle.getTextHeightBehavior();
+
+            if (paragraphStyleChanged) {
+                sDefaultParagraphBuilder = para::ParagraphBuilder::make(paragraphStyle, sDefaultFontCollection);
+                builder = sDefaultParagraphBuilder.get();
+                if (builder == nullptr) {
+                    return;
+                }
+            }
+        } else {
+            textStyle.setFontFamilies({ SkString("Arial") });
+            textStyle.setFontSize(14.0f);
+            textStyle.setColor(SK_ColorBLACK);
+        }
+        builder->Reset();
+        builder->pushStyle(textStyle);
+
+        auto textStr = text.value_or("");
+
+        builder->addText(textStr.c_str(), textStr.size());
+
+        auto context = margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext();
+        auto paragraph = std::make_shared<RNSkia::JsiSkParagraph>(context, builder);
+        this->props.paragraph = paragraph;
+        builder->Reset();
     }
 
     void setLayout(const YogaNodeLayout& layout) override

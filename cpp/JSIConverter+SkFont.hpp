@@ -9,8 +9,9 @@
 #include <jsi/jsi.h>
 #include <memory>
 
-#include "SkFont.h"
-#include <react-native-skia/cpp/api/JsiSkFont.h>
+#include "SkiaGlue.hpp"
+#include <include/core/SkFont.h>
+#include "JsiSkFont.h"
 
 #include "PlatformContextAccessor.hpp"
 

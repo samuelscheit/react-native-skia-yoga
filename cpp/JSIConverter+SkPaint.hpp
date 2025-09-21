@@ -8,9 +8,10 @@
 
 #include <jsi/jsi.h>
 
+#include "SkiaGlue.hpp"
 // Skia headers
-#include "SkPaint.h"
-#include <react-native-skia/cpp/api/JsiSkPaint.h>
+#include <include/core/SkPaint.h>
+#include "JsiSkPaint.h"
 
 // Access platform context without including SkiaYoga.hpp to avoid include cycles
 #include "PlatformContextAccessor.hpp"

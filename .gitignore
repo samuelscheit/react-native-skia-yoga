@@ -39,7 +39,12 @@ yarn-error.*
 app-example
 
 android/.gradle/
+android/build/
 example/android/
 example/ios/
 lib/
 .cursor/
+
+android/.cxx/
+android/.settings/
+

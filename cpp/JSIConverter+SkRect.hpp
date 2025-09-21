@@ -8,8 +8,9 @@
 
 #include <jsi/jsi.h>
 
-#include "SkRect.h"
-#include <react-native-skia/cpp/api/JsiSkRect.h>
+#include "SkiaGlue.hpp"
+#include <include/core/SkRect.h>
+#include "JsiSkRect.h"
 
 #include "PlatformContextAccessor.hpp"
 

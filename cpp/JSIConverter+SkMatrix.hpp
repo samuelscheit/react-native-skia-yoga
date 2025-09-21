@@ -9,9 +9,10 @@
 #include <jsi/jsi.h>
 #include <memory>
 
+#include "SkiaGlue.hpp"
 // Keep include consistent with generated headers
-#include "SkMatrix.h"
-#include <react-native-skia/cpp/api/JsiSkMatrix.h>
+#include <include/core/SkMatrix.h>
+#include "JsiSkMatrix.h"
 
 namespace margelo::nitro {
 
