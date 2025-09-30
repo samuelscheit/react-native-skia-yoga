@@ -1,16 +1,20 @@
 import {
+	mix,
+	polar2Canvas,
 	Skia
 } from "@shopify/react-native-skia"
 import { useEffect, useMemo } from "react"
+import { useWindowDimensions } from "react-native"
 import {
 	cancelAnimation,
 	Easing,
 	SharedValue,
+	useDerivedValue,
 	useSharedValue,
 	withRepeat,
-	withTiming
+	withTiming,
 } from "react-native-reanimated"
-import { YogaCanvas } from "react-native-skia-yoga"
+import { YogaCanvas } from "../../../src"
 
 declare namespace React {
 	namespace JSX {
@@ -25,6 +29,8 @@ declare namespace React {
 		}
 	}
 }
+
+const R = 200
 
 const c1 = "#61bea2"
 const c2 = "#529ca0"
@@ -51,15 +57,76 @@ export const useLoop = ({ duration }: { duration: number }) => {
 	return progress
 }
 
+const Ring = ({ index, progress, total }: RingProps) => {
+	const { width } = useWindowDimensions()
+	const R = width / 4
 
-function Chat() {
+	const theta = (index * (2 * Math.PI)) / total
 	const matrix = useMemo(() => Skia.Matrix(), [])
+	useDerivedValue(() => {
+		const { x, y } = polar2Canvas(
+			{ theta, radius: progress.value * R },
+			{ x: 0, y: 0 },
+		)
+		const scale = mix(progress.value, 0.3, 1)
+
+		matrix.identity().translate(x, y).scale(scale, scale)
+	})
 
 	return (
-		<rect style={{ flex: 1 }} />
+		<circle
+			r={R}
+			style={{
+				// backgroundColor: index % 2 === 0 ? c1 : c2,
+				// matrix,
+				// blendMode: BlendMode.Screen,
+			}}
+		/>
 	)
 }
 
-export default function ChatScreen() {
-	return <YogaCanvas style={{ flex: 1 }}><Chat /></YogaCanvas>
+function Root() {
+	return <rect style={{ flex: 1, backgroundColor: "#242b38" }} />
+	// const [rings] = useState(6)
+
+	// const progress = useLoop({ duration: 3000 })
+
+	// const matrix = useMemo(() => Skia.Matrix(), [])
+	// useDerivedValue(() => {
+	// 	matrix.identity().rotate(mix(progress.value, -Math.PI, 0))
+	// })
+
+	// globalThis.matrix = matrix
+
+	// return (
+	// 	<rect
+	// 		style={{
+	// 			flex: 1,
+	// 			justifyContent: "center",
+	// 			alignItems: "center",
+	// 			backgroundColor: "#242b38",
+	// 		}}
+	// 	>
+	// 		<blurMaskFilter style="solid" blur={40}>
+	// 			<group style={{ 
+	// 				// matrix
+	// 			 }}>
+	// 				{new Array(rings).fill(0).map((_, index) => {
+	// 					return (
+	// 						<Ring
+	// 							key={index}
+	// 							index={index}
+	// 							progress={progress}
+	// 							total={rings}
+	// 						/>
+	// 					)
+	// 				})}
+	// 			</group>
+	// 		</blurMaskFilter>
+	// 	</rect>
+	// )
+}
+
+export default function HomeScreen() {
+	return <YogaCanvas style={{ flex: 1 }}><Root /></YogaCanvas>
 }

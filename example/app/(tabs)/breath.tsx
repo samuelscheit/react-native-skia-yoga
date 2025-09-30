@@ -15,7 +15,6 @@ import {
   withRepeat,
   withTiming,
 } from "react-native-reanimated"
-import { YogaCanvas } from "react-native-skia-yoga"
 
 declare namespace React {
   namespace JSX {
@@ -122,5 +121,5 @@ function Breath() {
 }
 
 export default function BreathScreen() {
-  return <YogaCanvas style={{ flex: 1 }}><Breath /></YogaCanvas>
+  return
 }

@@ -73,8 +73,8 @@
   },
   "codegenConfig": {
     "name": "RNSkiaYogaSpec",
-    "type": "all",
-    "jsSrcsDir": "./src",
+    "type": "modules",
+    "jsSrcsDir": "./src/specs",
     "android": {
       "javaPackageName": "com.margelo.nitro.skiayoga"
     }

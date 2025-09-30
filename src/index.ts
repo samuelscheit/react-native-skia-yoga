@@ -1,15 +1,20 @@
-import { NativeModules } from "react-native"
+import { TurboModuleRegistry } from "react-native"
 import { NitroModules } from "react-native-nitro-modules"
+import type { Spec } from "./specs/NativeSkiaYoga"
 import type { SkiaYoga as SkiaYogaType, YogaNode } from "./specs/SkiaYoga.nitro"
 
-console.log("SkiaYogaModule", NativeModules.SkiaYogaModule)
-console.log("NativeModules", NativeModules)
-
-if (!NativeModules.SkiaYogaModule) {
-	console.error("SkiaYogaModule is not available. Make sure you have linked the SkiaYoga native module correctly.")
+let turboModule: Spec | undefined
+try {
+  turboModule = TurboModuleRegistry.getEnforcing<Spec>('SkiaYoga')
+} catch (e) {
+  throw new Error("SkiaYogaModule TurboModule is not available. Make sure you have linked the react-native-skia-yoga native module correctly. "+e)
 }
 
-NativeModules.SkiaYogaModule?.install?.()
+turboModule.install()
+
+console.log("react-native-skia-yoga initialized")
+
+// NativeModules.SkiaYogaModule?.install?.()
 
 export const SkiaYoga = NitroModules.createHybridObject<SkiaYogaType>("SkiaYoga")
 

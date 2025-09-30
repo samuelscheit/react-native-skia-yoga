@@ -12,85 +12,6 @@ const { default: SkiaPictureViewNativeComponent } =
 const { SkiaViewNativeId } =
 	require("@shopify/react-native-skia/src/views/SkiaViewNativeId") as typeof import("@shopify/react-native-skia/lib/typescript/src/views/SkiaViewNativeId")
 
-/*
-
-	const screen = Dimensions.get("window")
-	const root = createYogaNode()
-	const currentlyRunning = useSharedValue(0)
-
-	root.setType("group")
-	root.setStyle({
-		flex: 1,
-		minWidth: screen.width,
-		minHeight: screen.height,
-	})
-	root.setProps({})
-
-	const r = reconciler.createContainer(
-		root,
-		0,
-		null,
-		true,
-		true,
-		"test",
-		console.error,
-		null,
-	)
-
-	// @ts-ignore
-	globalThis.reconciler = reconciler
-
-	// @ts-ignore
-	reconciler.updateContainerSync(<Root />, r, null, null)
-	// @ts-ignore
-	reconciler.flushSyncWork()
-	reconciler.flushPassiveEffects()
-
-	// root.computeLayout(screen.width, screen.height)
-	console.log(
-		"picture",
-		root.getChildren().map((x) => ({ ...x, children: x.getChildren() })),
-	)
-	const picture = root.draw() as SkPicture
-
-	const pic = useSharedValue<SkPicture>(picture)
-
-	useEffect(() => {
-		const id = Math.random()
-		currentlyRunning.value = id
-
-		const boxed = NitroModules.box(root)
-
-		runOnUIAsync(() => {
-			let frames = 0
-
-			const unboxed = boxed.unbox()
-
-			function frame(time: number) {
-				if (currentlyRunning.value !== id) return
-
-				pic.value = unboxed.draw() as SkPicture
-
-				frames++
-
-				requestAnimationFrame(frame)
-			}
-
-			requestAnimationFrame(frame)
-		})()
-
-		return () => {
-			currentlyRunning.value = 0
-		}
-	}, [])
-
-	return (
-		<Canvas style={{ width: screen.width, height: screen.height }}>
-			<Picture picture={pic} />
-		</Canvas>
-	)
-*/
-
 export function YogaCanvas({
 	children,
 	style,
@@ -108,8 +29,14 @@ export function YogaCanvas({
 		node.setType("group")
 		node.setStyle({
 			flex: 1,
+			backgroundColor: "#ff0000"
 		})
 		node.setProps({})
+
+		const picture = node.draw() as SkPicture
+
+		SkiaViewApi.setJsiProperty(nativeId, "picture", picture)
+
 
 		return {
 			root: reconciler.createContainer(

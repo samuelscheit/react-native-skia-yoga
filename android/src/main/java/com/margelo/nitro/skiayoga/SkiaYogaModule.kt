@@ -10,12 +10,13 @@ import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.turbomodule.core.CallInvokerHolderImpl
 import com.facebook.react.common.annotations.FrameworkAPI
 import com.margelo.nitro.RNSkiaYoga.RNSkiaYogaOnLoad
+import com.shopify.reactnative.skia.RNSkiaModule
 
-private const val TAG = "SkiaYogaModule"
+private const val TAG = "SkiaYoga"
 
 @ReactModule(name = SkiaYogaModule.NAME)
 @OptIn(FrameworkAPI::class)
-class SkiaYogaModule(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
+class SkiaYogaModule(private val reactContext: ReactApplicationContext) : NativeSkiaYogaSpec(reactContext) {
   private var installed = false
   private var platformContext: Any? = null
 
@@ -26,32 +27,31 @@ class SkiaYogaModule(private val reactContext: ReactApplicationContext) : ReactC
   override fun getName() = NAME
 
   @ReactMethod(isBlockingSynchronousMethod = true)
-  fun install(): Boolean {
-    if (installed) return true
+  override fun install() {
+    if (installed) return
 
-    val jsContextHolder = reactContext.javaScriptContextHolder ?: return false
+    val jsContextHolder = reactContext.javaScriptContextHolder ?: return
     val runtimePtr = jsContextHolder.get()
-    if (runtimePtr == 0L) return false
+    if (runtimePtr == 0L) return
 
-    val runtimeExecutor: RuntimeExecutor? = ReactNativeSkiaReflection.getRuntimeExecutor(reactContext)
     val catalyst: CatalystInstance? = reactContext.catalystInstance
+    val runtimeExecutor: RuntimeExecutor? = catalyst?.runtimeExecutor
     val jsCallInvokerHolder = catalyst?.jsCallInvokerHolder as? CallInvokerHolderImpl
 
-    val currentPlatformContext = platformContext ?: ReactNativeSkiaReflection.createPlatformContext(reactContext)?.let {
+    val currentPlatformContext = platformContext ?: resolvePlatformContextFromSkiaModule()?.also {
       platformContext = it
       it
-    } ?: return false
+    } ?: return
 
     if (runtimeExecutor == null && jsCallInvokerHolder == null) {
       Log.w(TAG, "Skipping install: Could not obtain RuntimeExecutor or JS CallInvoker.")
-      return false
+      return
     }
 
     installed = nativeInstall(runtimePtr, runtimeExecutor, jsCallInvokerHolder, currentPlatformContext)
     if (!installed) {
       platformContext = null
     }
-    return installed
   }
 
   override fun invalidate() {
@@ -62,7 +62,7 @@ class SkiaYogaModule(private val reactContext: ReactApplicationContext) : ReactC
   }
 
   companion object {
-    const val NAME = "SkiaYogaModule"
+    const val NAME = "SkiaYoga"
 
     @JvmStatic
     private external fun nativeInstall(
@@ -75,33 +75,32 @@ class SkiaYogaModule(private val reactContext: ReactApplicationContext) : ReactC
     @JvmStatic
     private external fun nativeInvalidate()
   }
-}
 
-private object ReactNativeSkiaReflection {
-  private const val PLATFORM_CONTEXT_CLASS = "com.shopify.reactnative.skia.PlatformContext"
-  private const val RN_COMPAT_CLASS = "com.shopify.reactnative.skia.ReactNativeCompatible"
 
-  private val platformContextCtor by lazy {
-    runCatching {
-      Class.forName(PLATFORM_CONTEXT_CLASS).getConstructor(ReactApplicationContext::class.java)
-    }.onFailure {
-      Log.w(TAG, "PlatformContext class not found. Did you install @shopify/react-native-skia?")
-    }.getOrNull()
-  }
+  private fun resolvePlatformContextFromSkiaModule(): Any? {
+    val rnSkiaModule = reactContext.getNativeModule(RNSkiaModule::class.java)
+    if (rnSkiaModule == null) {
+      Log.w(TAG, "Skipping install: RNSkiaModule not available. Did you install @shopify/react-native-skia?")
+      return null
+    }
 
-  private val runtimeExecutorMethod by lazy {
-    runCatching {
-      Class.forName(RN_COMPAT_CLASS).getMethod("getRuntimeExecutor", com.facebook.react.bridge.ReactContext::class.java)
-    }.onFailure {
-      Log.w(TAG, "ReactNativeCompatible class not found. Falling back without runtime executor.")
-    }.getOrNull()
-  }
+    var skiaManager = rnSkiaModule.skiaManager
+    if (skiaManager == null && !rnSkiaModule.install()) {
+      Log.w(TAG, "Skipping install: Failed to initialize RNSkiaModule.")
+      return null
+    }
 
-  fun createPlatformContext(context: ReactApplicationContext): Any? {
-    return platformContextCtor?.newInstance(context)
-  }
+    skiaManager = rnSkiaModule.skiaManager
+    if (skiaManager == null) {
+      Log.w(TAG, "Skipping install: SkiaManager still null after install.")
+      return null
+    }
 
-  fun getRuntimeExecutor(context: ReactApplicationContext): RuntimeExecutor? {
-    return runtimeExecutorMethod?.invoke(null, context) as? RuntimeExecutor
+    val platformContext = skiaManager.platformContext ?: run {
+      Log.w(TAG, "Skipping install: PlatformContext not available from SkiaManager.")
+      return null
+    }
+
+    return platformContext
   }
 }

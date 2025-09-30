@@ -12,6 +12,13 @@ buildscript {
   }
 }
 
+def resolveBuildType() {
+  Gradle gradle = getGradle()
+  String tskReqStr = gradle.getStartParameter().getTaskRequests()['args'].toString()
+  return tskReqStr.contains('Release') ? 'release' : 'debug'
+}
+
+
 def reactNativeArchitectures() {
   def value = rootProject.getProperties().get("reactNativeArchitectures")
   return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
@@ -55,6 +62,13 @@ static def findNodeModules(baseDir) {
 
 def nodeModulesDir = findNodeModules(Paths.get(rootProject.projectDir.toString(), "..").toFile())
 
+def buildType = "debug"
+tasks.all({ task ->
+  if (task.name == "buildCMakeRelease") {
+    buildType = "release"
+  }
+})
+
 def reactNativeMinorVersion(nodeModulesDir) {
   def pkg = new File(nodeModulesDir, "react-native/package.json")
   if (!pkg.exists()) { return 81 }
@@ -66,23 +80,12 @@ def reactNativeMinorVersion(nodeModulesDir) {
 
 println("RNSkiaYoga: Using node_modules dir: " + nodeModulesDir)
 
-afterEvaluate {
-  def skia = findProject(':react-native-skia')
-  if (skia != null) {
-    tasks.matching { it.name.startsWith("externalNativeBuild") || it.name.startsWith("buildCMake") }.configureEach {
-      if (name.toLowerCase().contains("debug")) {
-        dependsOn(":react-native-skia:assembleDebug")
-      } else if (name.toLowerCase().contains("release")) {
-        dependsOn(":react-native-skia:assembleRelease")
-      }
-    }
-  }
-}
 
 android {
-  namespace "com.margelo.nitro.RNSkiaYoga"
+  namespace "com.margelo.nitro.skiayoga"
 
-  ndkVersion getExtOrDefault("ndkVersion")
+  // Prefer NDK r27+ for 16 KB page-size support. Use provided value if set.
+  ndkVersion (getExtOrDefault("ndkVersion") ?: "27.0.12077973")
   compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
 
   defaultConfig {
@@ -92,8 +95,10 @@ android {
 
     externalNativeBuild {
       cmake {
-        cppFlags "-frtti -fexceptions -Wall -Wextra -fstack-protector-all"
-        arguments "-DANDROID_STL=c++_shared", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON", "-DNODE_MODULES_DIR=${nodeModulesDir}", "-DREACT_NATIVE_DIR=${nodeModulesDir}/react-native", "-DREACT_NATIVE_VERSION=${reactNativeMinorVersion(nodeModulesDir)}", "-DANDROID_ALLOW_UNDEFINED_SYMBOLS=TRUE"
+        cppFlags "-frtti -fexceptions -Wall -Wextra -fstack-protector-all -std=c++20"
+        arguments "-DANDROID_STL=c++_shared",
+                  "-DNODE_MODULES_DIR=${nodeModulesDir}", 
+          "-DBUILD_TYPE=${buildType}"
         abiFilters (*reactNativeArchitectures())
 
         buildTypes {
@@ -111,13 +116,6 @@ android {
   externalNativeBuild {
     cmake {
       path "CMakeLists.txt"
-    }
-  }
-
-  packaging {
-    jniLibs {
-      // Don’t ship RN Skia’s .so from this library
-      excludes += ["**/librnskia.so"]
     }
   }
 
@@ -188,11 +186,21 @@ dependencies {
 
   // Add a dependency on NitroModules
   implementation project(":react-native-nitro-modules")
+  implementation(project(":shopify_react-native-skia")) {
+    exclude group: "com.facebook.react", module: "react-native"
+  }
+}
 
-  def skiaProject = findProject(':react-native-skia')
-  if (skiaProject != null) {
-    implementation skiaProject
-  } else {
-    logger.warn("react-native-skia-yoga: :react-native-skia project not found on classpath. Make sure @shopify/react-native-skia is installed.")
+tasks.whenTaskAdded { task ->
+  if (task.name.contains("configureCMakeDebug")) {
+    rootProject.getTasksByName("packageReactNdkDebugLibs", true).forEach {
+      task.dependsOn(it)
+    }
+  }
+
+  if (task.name.contains("configureCMakeRel")) {
+    rootProject.getTasksByName("packageReactNdkReleaseLibs", true).forEach {
+      task.dependsOn(it)
+    }
   }
 }

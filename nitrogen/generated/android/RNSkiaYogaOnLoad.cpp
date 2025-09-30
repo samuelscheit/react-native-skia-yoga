@@ -15,8 +15,14 @@
 #include <fbjni/fbjni.h>
 #include <NitroModules/HybridObjectRegistry.hpp>
 
-#include "SkiaYoga.hpp"
-#include "YogaNode.hpp"
+// Avoid including headers that pull in large RN Skia header graphs; instead
+// we call factory functions defined in the respective .cpp files.
+
+namespace margelo { namespace nitro { class HybridObject; }}
+namespace margelo::nitro::RNSkiaYoga {
+  std::shared_ptr<margelo::nitro::HybridObject> CreateSkiaYoga();
+  std::shared_ptr<margelo::nitro::HybridObject> CreateYogaNode();
+}
 
 namespace margelo::nitro::RNSkiaYoga {
 
@@ -32,21 +38,11 @@ int initialize(JavaVM* vm) {
     // Register Nitro Hybrid Objects
     HybridObjectRegistry::registerHybridObjectConstructor(
       "SkiaYoga",
-      []() -> std::shared_ptr<HybridObject> {
-        static_assert(std::is_default_constructible_v<SkiaYoga>,
-                      "The HybridObject \"SkiaYoga\" is not default-constructible! "
-                      "Create a public constructor that takes zero arguments to be able to autolink this HybridObject.");
-        return std::make_shared<SkiaYoga>();
-      }
+      []() -> std::shared_ptr<HybridObject> { return CreateSkiaYoga(); }
     );
     HybridObjectRegistry::registerHybridObjectConstructor(
       "YogaNode",
-      []() -> std::shared_ptr<HybridObject> {
-        static_assert(std::is_default_constructible_v<YogaNode>,
-                      "The HybridObject \"YogaNode\" is not default-constructible! "
-                      "Create a public constructor that takes zero arguments to be able to autolink this HybridObject.");
-        return std::make_shared<YogaNode>();
-      }
+      []() -> std::shared_ptr<HybridObject> { return CreateYogaNode(); }
     );
   });
 }

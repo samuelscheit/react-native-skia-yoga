@@ -15,11 +15,18 @@
 #include "HybridYogaNodeSpec.hpp"
 
 
-#include "JsiSkRuntimeEffect.h"
 #include "ColorParser.hpp"
+// Use generated RN Skia headers directly (no api/ or recorder/ prefixes)
+// Important: Include JsiSkSkottie before Convertor.h (included by Drawings.h)
+// because Convertor.h references JsiSkSkottie in template specializations.
+#include "JsiSkSkottie.h"
+#include "JsiSkRuntimeEffect.h"
 #include "Drawings.h"
-#include "JsiSkApi.h"
+#include "JsiSkFontMgr.h"
 #include "JsiSkFontMgrFactory.h"
+#include "JsiSkColor.h"
+#include "JsiSkTextStyle.h"
+#include "JsiSkParagraphStyle.h"
 #include "JsiSkParagraph.h"
 #include "Command.h"
 #include <include/core/SkBlurTypes.h>

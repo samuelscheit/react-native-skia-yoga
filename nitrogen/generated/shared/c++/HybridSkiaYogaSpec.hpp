@@ -48,7 +48,7 @@ namespace margelo::nitro::RNSkiaYoga {
 
     public:
       // Methods
-      virtual double addNumbers(double a, double b) = 0;
+      
 
     protected:
       // Hybrid Setup

@@ -8,16 +8,20 @@
 #include <cmath>
 #include <jsi/jsi.h>
 #include <optional>
-#include <JsiSkCanvas.h>
-#include <JsiSkFontMgrFactory.h>
-#include <JsiSkHostObjects.h>
-#include <JsiSkMatrix.h>
-#include <JsiSkTextStyle.h>
-#include <recorder/DrawingCtx.h>
-#include <RNSkManager.h>
-#include <skia/modules/skparagraph/include/FontCollection.h>
-#include <skia/modules/skparagraph/include/ParagraphBuilder.h>
-#include <skia/modules/skparagraph/include/ParagraphStyle.h>
+#include "JsiSkCanvas.h"
+#include "JsiSkFontMgr.h"
+#include "JsiSkFontMgrFactory.h"
+#include "JsiSkTextStyle.h"
+#include "JsiSkHostObjects.h"
+#include "JsiSkMatrix.h"
+#include "JsiSkTextStyle.h"
+#include <include/core/SkPictureRecorder.h>
+#include "DrawingCtx.h"
+#include "RNSkManager.h"
+#include "JsiSkSkottie.h" // provide definition once per library to satisfy Convertor.h refs
+#include <modules/skparagraph/include/FontCollection.h>
+#include <modules/skparagraph/include/ParagraphBuilder.h>
+#include <modules/skparagraph/include/ParagraphStyle.h>
 #include <type_traits>
 #include <variant>
 #include <yoga/Yoga.h>
@@ -915,6 +919,11 @@ void ParagraphCmd::ensureDefaultParagraphResources()
     sDefaultFontCollection->enableFontFallback();
 
     sDefaultParagraphBuilder = para::ParagraphBuilder::make(*sDefaultParagraphStyle, sDefaultFontCollection);
+}
+
+// Factory used by generated RNSkiaYogaOnLoad.cpp to avoid including headers there
+std::shared_ptr<margelo::nitro::HybridObject> CreateYogaNode() {
+    return std::make_shared<YogaNode>();
 }
 
 } // namespace margelo::nitro::RNSkiaYoga

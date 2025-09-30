@@ -5,8 +5,6 @@
 #include "HybridYogaNodeSpec.hpp"
 #include <jsi/jsi.h>
 #include <yoga/Yoga.h>
-#include <JsiSkApi.h>
-#include "Command.h"
 #include <memory>
 
 // Forward declare Skia platform context (base) in global namespace to avoid pulling platform-specific headers here
@@ -21,11 +19,19 @@ public:
   // This default constructor is required for autolinking in RNSkiaYogaAutolinking.mm
   SkiaYoga();
   ~SkiaYoga();
-  double addNumbers(double a, double b) override;
 
   // Static shared platform context (base type). On Apple we store an RNSkApplePlatformContext.
   static std::shared_ptr<RNSkia::RNSkPlatformContext> platformContext;
   static inline std::shared_ptr<RNSkia::RNSkPlatformContext> getPlatformContext() { return platformContext; }
+
+  void loadHybridMethods() override
+  {
+      // register base protoype
+      HybridSkiaYogaSpec::loadHybridMethods();
+      // register all methods we override here
+      registerHybrids(this, [](Prototype& prototype) {
+      });
+  }
  
 };
 

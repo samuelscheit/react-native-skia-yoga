@@ -13,6 +13,7 @@
 // Keep include consistent with generated headers
 #include <include/core/SkMatrix.h>
 #include "JsiSkMatrix.h"
+#include "PlatformContextAccessor.hpp"
 
 namespace margelo::nitro {
 
@@ -22,69 +23,19 @@ using namespace facebook;
 template <>
 struct JSIConverter<SkMatrix> final {
   static inline SkMatrix fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
-    if (!arg.isObject()) {
-      throw jsi::JSError(runtime, "SkMatrix must be an object/array");
+    std::shared_ptr<SkMatrix> matrix = RNSkia::JsiSkMatrix::fromValue(runtime, arg);
+
+    if (!matrix) {
+      throw jsi::JSError(runtime, "Matrix host object is null");
     }
 
-    jsi::Object obj = arg.asObject(runtime);
-
-    // Support RNSkia host object `JsiSkMatrix`
-    if (obj.isHostObject(runtime)) {
-      auto host = obj.asHostObject<RNSkia::JsiSkMatrix>(runtime);
-      if (host) {
-        // Unwrap and return the underlying SkMatrix
-        return *host->getObject();
-      }
-    }
-
-    if (!obj.isArray(runtime)) {
-      throw jsi::JSError(runtime, "SkMatrix must be a JS array of 9 or 16 numbers or a JsiSkMatrix host object");
-    }
-
-    auto array = obj.asArray(runtime);
-    auto len = array.size(runtime);
-
-    // 3x3 matrix in row-major order (Skia’s 3x3 form)
-    if (len == 9) {
-      auto m00 = array.getValueAtIndex(runtime, 0).asNumber();
-      auto m01 = array.getValueAtIndex(runtime, 1).asNumber();
-      auto m02 = array.getValueAtIndex(runtime, 2).asNumber();
-      auto m10 = array.getValueAtIndex(runtime, 3).asNumber();
-      auto m11 = array.getValueAtIndex(runtime, 4).asNumber();
-      auto m12 = array.getValueAtIndex(runtime, 5).asNumber();
-      auto m20 = array.getValueAtIndex(runtime, 6).asNumber();
-      auto m21 = array.getValueAtIndex(runtime, 7).asNumber();
-      auto m22 = array.getValueAtIndex(runtime, 8).asNumber();
-      return SkMatrix::MakeAll(m00, m01, m02, m10, m11, m12, m20, m21, m22);
-    }
-
-    // 4x4 matrix (length 16) mapped to Skia's 3x3 (ignore Z components).
-    // Mapping inspired by RNSkia’s JsiSkMatrix.getMatrix.
-    if (len == 16) {
-      auto m11 = array.getValueAtIndex(runtime, 0).asNumber();
-      auto m12 = array.getValueAtIndex(runtime, 1).asNumber();
-      auto m14 = array.getValueAtIndex(runtime, 3).asNumber();
-      auto m21 = array.getValueAtIndex(runtime, 4).asNumber();
-      auto m22 = array.getValueAtIndex(runtime, 5).asNumber();
-      auto m24 = array.getValueAtIndex(runtime, 7).asNumber();
-      auto m41 = array.getValueAtIndex(runtime, 12).asNumber();
-      auto m42 = array.getValueAtIndex(runtime, 13).asNumber();
-      auto m44 = array.getValueAtIndex(runtime, 15).asNumber();
-      return SkMatrix::MakeAll(m11, m12, m14, m21, m22, m24, m41, m42, m44);
-    }
-
-    throw jsi::JSError(
-        runtime,
-        std::string("SkMatrix must be an array of length 9 or 16 (got ") +
-            std::to_string(len) + ")");
+    return *matrix;
   }
 
   static inline jsi::Value toJSI(jsi::Runtime& runtime, const SkMatrix& m) {
-    jsi::Array values(runtime, 9);
-    for (int i = 0; i < 9; i++) {
-      values.setValueAtIndex(runtime, i, static_cast<double>(m.get(i)));
-    }
-    return values;
+    auto ctx = margelo::nitro::RNSkiaYoga::GetPlatformContext();
+    auto host = std::make_shared<RNSkia::JsiSkMatrix>(ctx, m);
+    return jsi::Object::createFromHostObject(runtime, host);
   }
 
   static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
@@ -104,29 +55,7 @@ struct JSIConverter<SkMatrix> final {
 template <>
 struct JSIConverter<std::shared_ptr<SkMatrix>> final {
   static inline std::shared_ptr<SkMatrix> fromJSI(jsi::Runtime& runtime, const jsi::Value& value) {
-    if (value.isNull() || value.isUndefined()) {
-      return nullptr;
-    }
-
-    if (!value.isObject()) {
-      throw jsi::JSError(runtime, "SkMatrix must be an object/array");
-    }
-
-    jsi::Object obj = value.asObject(runtime);
-
-    if (obj.isHostObject(runtime)) {
-      auto host = obj.asHostObject<RNSkia::JsiSkMatrix>(runtime);
-      if (host) {
-        return host->getObject();
-      }
-    }
-
-    if (!obj.isArray(runtime)) {
-      throw jsi::JSError(runtime, "SkMatrix must be a JS array of 9 or 16 numbers or a JsiSkMatrix host object");
-    }
-
-    auto matrix = JSIConverter<SkMatrix>::fromJSI(runtime, value);
-    return std::make_shared<SkMatrix>(matrix);
+    return RNSkia::JsiSkMatrix::fromValue(runtime, value);
   }
 
   static inline jsi::Value toJSI(jsi::Runtime& runtime, const std::shared_ptr<SkMatrix>& matrix) {
