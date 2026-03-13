@@ -1,217 +1,517 @@
+import { BlurStyle, FillType, PointMode } from "@shopify/react-native-skia"
 import { NitroModules } from "react-native-nitro-modules"
+import type {
+	BlurStyleName,
+	NodeCommand,
+	NodeType,
+	PathFillType,
+	PointModeName,
+} from "./specs/SkiaYoga.nitro"
+import type { SharedValue } from "react-native-reanimated"
 import { isSharedValue } from "react-native-reanimated"
-import { executeOnUIRuntimeSync } from "react-native-worklets"
-import Reconciler, { type HostConfig } from "react-reconciler"
+import { executeOnUIRuntimeSync, runOnJS } from "react-native-worklets"
+import Reconciler from "react-reconciler"
 import { DefaultEventPriority } from "react-reconciler/constants"
 import type { YogaNodeFinal } from "./index"
+import type { NodeStyle } from "./specs/style"
 import { createYogaNode } from "./util"
 
-export type SkiaYogaHostContext = HostConfig<
-	any,
-	any,
-	YogaNodeFinal,
-	YogaNodeFinal,
-	YogaNodeFinal,
-	YogaNodeFinal,
-	any,
-	any,
-	any,
-	any,
-	any,
-	any,
-	any,
-	any
->
+export type SkiaYogaHostContext = any
+
+export interface YogaRootContainer {
+	invalidate: () => void
+	node: YogaNodeFinal
+	setContinuousRedraw: (node: YogaNodeFinal, enabled: boolean) => void
+}
+
+type YogaNodeProps = Record<string, unknown> & {
+	style?: unknown
+	text?: unknown
+}
+
+type AnimatedStyleListener = {
+	id: number
+	value: SharedValue<unknown>
+}
+
+type NodeState = {
+	boxedNode: any
+	continuousRedraw: boolean
+	invalidate: () => void
+	lastProps: YogaNodeProps
+	setContinuousRedraw: (node: YogaNodeFinal, enabled: boolean) => void
+	styleListeners: Map<string, AnimatedStyleListener>
+	type: NodeType
+}
+
+const nodeStates = new WeakMap<YogaNodeFinal, NodeState>()
 
 let priority = DefaultEventPriority
+let nextListenerId = 1
 
-const reanimatedMapper = new WeakMap<YogaNodeFinal, number[]>()
+function isStyleObject(value: unknown): value is NodeStyle {
+	return typeof value === "object" && value !== null && !Array.isArray(value)
+}
 
-const config = {
-	supportsMutation: true,
-	supportsPersistence: false,
-	createInstance(type, props, rootContainer, hostContext, internalHandle) {
-		// This method should return a newly created node. For example, the DOM renderer would call document.createElement(type) here and then set the properties from props.
+function sanitizeProps(props: YogaNodeProps | null | undefined): YogaNodeProps {
+	if (!props) {
+		return {}
+	}
 
-		// You can use rootContainer to access the root container associated with that tree. For example, in the DOM renderer, this is useful to get the correct document reference that the root belongs to.
+	const nextProps: YogaNodeProps = { ...props }
+	delete (nextProps as Record<string, unknown>).children
+	return nextProps
+}
 
-		// The hostContext parameter lets you keep track of some information about your current place in the tree. To learn more about it, see getChildHostContext below.
+function getNodeState(
+	node: YogaNodeFinal,
+	type: NodeType,
+	invalidate?: () => void,
+	setContinuousRedraw?: (node: YogaNodeFinal, enabled: boolean) => void,
+): NodeState {
+	const existing = nodeStates.get(node)
+	if (existing) {
+		existing.type = type
+		if (invalidate) {
+			existing.invalidate = invalidate
+		}
+		if (setContinuousRedraw) {
+			existing.setContinuousRedraw = setContinuousRedraw
+		}
+		return existing
+	}
 
-		// The internalHandle data structure is meant to be opaque. If you bend the rules and rely on its internal fields, be aware that it may change significantly between versions. You're taking on additional maintenance risk by reading from it, and giving up all guarantees if you write something to it.
+	const state: NodeState = {
+		boxedNode: NitroModules.box(node),
+		continuousRedraw: false,
+		invalidate: invalidate ?? (() => {}),
+		lastProps: {},
+		setContinuousRedraw: setContinuousRedraw ?? (() => {}),
+		styleListeners: new Map(),
+		type,
+	}
 
-		// This method happens in the render phase. It can (and usually should) mutate the node it has just created before returning it, but it must not modify any other nodes. It must not register any event handlers on the parent tree. This is because an instance being created doesn't guarantee it would be placed in the tree — it could be left unused and later collected by GC. If you need to do something when an instance is definitely in the tree, look at commitMount instead.
+	nodeStates.set(node, state)
+	return state
+}
 
-		const node = createYogaNode()
-		const nodeBoxed = NitroModules.box(node)
-		node.setType(type)
-		if (props) node.setProps(props)
+function removeAnimatedStyleListeners(state: NodeState) {
+	for (const { id, value } of state.styleListeners.values()) {
+		executeOnUIRuntimeSync(
+			(sharedValue: SharedValue<unknown>, listenerId: number) => {
+				"worklet"
+				sharedValue.removeListener(listenerId)
+			},
+		)(value, id)
+	}
 
-		const listeners = reanimatedMapper.get(node) || []
-		reanimatedMapper.set(node, listeners)
+	state.styleListeners.clear()
+}
 
-		if (props?.style) {
-			let newStyle = { ...props.style }
-			Object.keys(props.style).forEach((key) => {
-				const value = props.style[key]
-				if (isSharedValue(value)) {
-					newStyle[key] = value.value
+function resolveAnimatedStyle(state: NodeState, props: YogaNodeProps) {
+	removeAnimatedStyleListeners(state)
 
-					executeOnUIRuntimeSync((key) => {
-						"worklet"
-						const unboxed = nodeBoxed.unbox()
+	if (!isStyleObject(props.style)) {
+		return {}
+	}
 
-						value.addListener(1, (v) => {
-							unboxed.setStyle({
-								// @ts-ignore
-								[key]: v,
-							})
-							// unboxed.computeLayout(width, height)
-						})
-					})(key)
-				}
-			})
+	const resolvedStyle: Record<string, unknown> = { ...props.style }
 
-			node.setStyle(newStyle)
+	for (const [key, value] of Object.entries(props.style)) {
+		if (!isSharedValue(value)) {
+			continue
 		}
 
+		const listenerId = nextListenerId++
+		const invalidate = state.invalidate
+
+		resolvedStyle[key] = value.value
+		state.styleListeners.set(key, { id: listenerId, value })
+
+		executeOnUIRuntimeSync(
+			(
+				boxedNode: any,
+				sharedValue: SharedValue<unknown>,
+				listenerKey: string,
+				currentListenerId: number,
+				invalidateOnJS: () => void,
+			) => {
+				"worklet"
+				const node = boxedNode.unbox()
+
+				sharedValue.addListener(currentListenerId, (nextValue: unknown) => {
+					node.setStyle({
+						[listenerKey]: nextValue,
+					})
+					runOnJS(invalidateOnJS as () => void)()
+				})
+			},
+		)(state.boxedNode, value, key, listenerId, invalidate)
+	}
+
+	return resolvedStyle as NodeStyle
+}
+
+function shouldUseContinuousRedraw(style: unknown) {
+	if (!isStyleObject(style)) {
+		return false
+	}
+
+	return style.matrix != null
+}
+
+function requireProp<T>(type: NodeType, props: YogaNodeProps, key: string): T {
+	const value = props[key]
+	if (value == null) {
+		throw new Error(`<${type}> requires the "${key}" prop.`)
+	}
+
+	return value as T
+}
+
+function normalizeBlurStyle(value: unknown): BlurStyleName | undefined {
+	if (value == null) {
+		return undefined
+	}
+	if (typeof value === "string") {
+		return value as BlurStyleName
+	}
+
+	switch (value) {
+		case BlurStyle.Normal:
+			return "normal"
+		case BlurStyle.Solid:
+			return "solid"
+		case BlurStyle.Outer:
+			return "outer"
+		case BlurStyle.Inner:
+			return "inner"
+		default:
+			throw new Error(`Unsupported blurStyle value: ${String(value)}`)
+	}
+}
+
+function normalizePointMode(value: unknown): PointModeName | undefined {
+	if (value == null) {
+		return undefined
+	}
+	if (typeof value === "string") {
+		return value as PointModeName
+	}
+
+	switch (value) {
+		case PointMode.Points:
+			return "points"
+		case PointMode.Lines:
+			return "lines"
+		case PointMode.Polygon:
+			return "polygon"
+		default:
+			throw new Error(`Unsupported pointMode value: ${String(value)}`)
+	}
+}
+
+function normalizePathFillType(value: unknown): PathFillType | undefined {
+	if (value == null) {
+		return undefined
+	}
+	if (typeof value === "string") {
+		return value as PathFillType
+	}
+
+	switch (value) {
+		case FillType.Winding:
+			return "winding"
+		case FillType.EvenOdd:
+			return "evenOdd"
+		case FillType.InverseWinding:
+			return "inverseWinding"
+		case FillType.InverseEvenOdd:
+			return "inverseEvenOdd"
+		default:
+			throw new Error(`Unsupported fillType value: ${String(value)}`)
+	}
+}
+
+function buildNodeCommand(type: NodeType, props: YogaNodeProps): NodeCommand {
+	switch (type) {
+		case "group":
+			return { group: {} }
+		case "rect":
+			return { rect: {} }
+		case "rrect":
+			return {
+				rrect: {
+					cornerRadius:
+						typeof props.cornerRadius === "number" ? props.cornerRadius : undefined,
+				},
+			}
+		case "circle":
+			return {
+				circle: {
+					radius: typeof props.radius === "number" ? props.radius : undefined,
+				},
+			}
+		case "oval":
+			return { oval: {} }
+		case "text":
+			return {
+				text: {
+					font: props.font as any,
+					text: typeof props.text === "string" ? props.text : undefined,
+					textStyle: props.textStyle as any,
+				},
+			}
+		case "paragraph":
+			return {
+				paragraph: {
+					paragraph: props.paragraph == null ? null : (props.paragraph as any),
+					paragraphStyle: props.paragraphStyle as any,
+					text: typeof props.text === "string" ? props.text : undefined,
+				},
+			}
+		case "path":
+			return {
+				path: {
+					fillType: normalizePathFillType(props.fillType),
+					path: requireProp<any>(type, props, "path"),
+					stroke: props.stroke as any,
+					trimEnd:
+						typeof props.trimEnd === "number" ? props.trimEnd : undefined,
+					trimStart:
+						typeof props.trimStart === "number" ? props.trimStart : undefined,
+				},
+			}
+		case "line":
+			return {
+				line: {
+					from: requireProp<any>(type, props, "from"),
+					to: requireProp<any>(type, props, "to"),
+				},
+			}
+		case "points":
+			return {
+				points: {
+					pointMode: normalizePointMode(props.pointMode),
+					points: requireProp<any>(type, props, "points"),
+				},
+			}
+		case "image":
+			return {
+				image: {
+					fit: props.fit as any,
+					image: props.image == null ? null : (props.image as any),
+					sampling: props.sampling as any,
+				},
+			}
+		case "blurMaskFilter":
+			return {
+				blurMaskFilter: {
+					blur: typeof props.blur === "number" ? props.blur : undefined,
+					blurStyle: normalizeBlurStyle(props.blurStyle),
+					respectCTM:
+						typeof props.respectCTM === "boolean"
+							? props.respectCTM
+							: undefined,
+				},
+			}
+		default: {
+			const exhaustiveType: never = type
+			throw new Error(`Unsupported node type: ${exhaustiveType}`)
+		}
+	}
+}
+
+function applyProps(
+	instance: YogaNodeFinal,
+	type: NodeType,
+	props: YogaNodeProps | null | undefined,
+	invalidate?: () => void,
+	setContinuousRedraw?: (node: YogaNodeFinal, enabled: boolean) => void,
+) {
+	const nextProps = sanitizeProps(props)
+	const state = getNodeState(instance, type, invalidate, setContinuousRedraw)
+	const resolvedStyle = resolveAnimatedStyle(state, nextProps)
+	const needsContinuousRedraw = shouldUseContinuousRedraw(nextProps.style)
+
+	if (state.continuousRedraw !== needsContinuousRedraw) {
+		state.continuousRedraw = needsContinuousRedraw
+		state.setContinuousRedraw(instance, needsContinuousRedraw)
+	}
+
+	state.lastProps = nextProps
+	instance.setCommand(buildNodeCommand(type, nextProps))
+	instance.setStyle(resolvedStyle)
+}
+
+function updateTextContent(instance: YogaNodeFinal, text: string) {
+	const state = nodeStates.get(instance)
+
+	applyProps(
+		instance,
+		state?.type ?? "text",
+		{
+			...(state?.lastProps ?? {}),
+			text,
+		},
+		state?.invalidate,
+	)
+}
+
+function cleanupNode(node: YogaNodeFinal) {
+	const state = nodeStates.get(node)
+	if (state) {
+		if (state.continuousRedraw) {
+			state.setContinuousRedraw(node, false)
+		}
+		removeAnimatedStyleListeners(state)
+		nodeStates.delete(node)
+	}
+
+	for (const child of node.getChildren()) {
+		cleanupNode(child)
+	}
+}
+
+const config: SkiaYogaHostContext = {
+	supportsMutation: true,
+	supportsPersistence: false,
+	createInstance(
+		type: NodeType,
+		props: YogaNodeProps | null | undefined,
+		rootContainer: YogaRootContainer,
+	) {
+		const node = createYogaNode()
+		applyProps(
+			node,
+			type,
+			props,
+			rootContainer.invalidate,
+			rootContainer.setContinuousRedraw,
+		)
 		return node
 	},
-	scheduleTimeout(fn, delay) {
+	scheduleTimeout(fn: (...args: never[]) => void, delay?: number) {
 		return setTimeout(fn, delay ?? 0)
 	},
-	cancelTimeout(id) {
+	cancelTimeout(id: ReturnType<typeof setTimeout>) {
 		clearTimeout(id)
 	},
 	noTimeout: -1,
 	supportsMicrotasks: true,
-	scheduleMicrotask(fn) {
+	scheduleMicrotask(fn: () => void) {
 		queueMicrotask(fn)
 	},
-	createTextInstance(text, rootContainer, hostContext, internalHandle) {
-		// Same as createInstance, but for text nodes. If your renderer doesn't support text nodes, you can throw here.
-		// const node = createYogaNode()
-		// node.setStyle({
-		// TODO: text style
-		// })
-		// TODO: text node
-		// node.insertText
-		// return node
+	createTextInstance(_text: string) {
+		throw new Error('Use the "text" prop on <text> and <paragraph>; raw text children are unsupported.')
 	},
-	removeChildFromContainer(container, child) {
-		/**
-         * Same as `removeChild`, but for when a node is detached from the root container. This is useful if attaching to the root has a slightly different implementation, or if the root container nodes are of a different type than the rest of the tree.
-         */
-		container.removeChild(child)
+	removeChildFromContainer(container: YogaRootContainer, child: YogaNodeFinal) {
+		container.node.removeChild(child)
 	},
-	appendChildToContainer(container, child) {
-		/**
-		 * Same as `appendChild`, but for when a node is attached to the root container. This is useful if attaching to the root has a slightly different implementation, or if the root container nodes are of a different type than the rest of the tree.
-		 */
-		container.insertChild(child)
+	appendChildToContainer(container: YogaRootContainer, child: YogaNodeFinal) {
+		container.node.insertChild(child)
 	},
-	appendInitialChild(parentInstance, child) {
-		// This method should mutate the parentInstance and add the child to its list of children. For example, in the DOM this would translate to a parentInstance.appendChild(child) call.
-		// This method happens in the render phase. It can mutate parentInstance and child, but it must not modify any other nodes. It's called while the tree is still being built up and not connected to the actual tree on the screen.
-
+	appendInitialChild(parentInstance: YogaNodeFinal, child: YogaNodeFinal) {
 		parentInstance.insertChild(child)
 	},
-	finalizeInitialChildren(instance, type, props, rootContainer, hostContext) {
-		// In this method, you can perform some final mutations on the instance. Unlike with createInstance, by the time finalizeInitialChildren is called, all the initial children have already been added to the instance, but the instance itself has not yet been connected to the tree on the screen.
-
-		// This method happens in the render phase. It can mutate instance, but it must not modify any other nodes. It's called while the tree is still being built up and not connected to the actual tree on the screen.
-
-		// There is a second purpose to this method. It lets you specify whether there is some work that needs to happen when the node is connected to the tree on the screen. If you return true, the instance will receive a commitMount call later. See its documentation below.
-
-		// rootContainer.insertChild(instance)
-
+	finalizeInitialChildren(
+		_instance: YogaNodeFinal,
+		_type: NodeType,
+		_props: YogaNodeProps,
+		_rootContainer: YogaRootContainer,
+		_hostContext: unknown,
+	) {
 		return false
 	},
-	shouldSetTextContent(type, props) {
-		return typeof props.children === "string"
+	shouldSetTextContent() {
+		return false
 	},
-	getRootHostContext(rootContainer) {
+	getRootHostContext(rootContainer: YogaRootContainer) {
 		return rootContainer
 	},
-	getChildHostContext(parentHostContext, type, rootContainer) {
-		// Host context lets you track some information about where you are in the tree so that it's available inside createInstance as the hostContext parameter. For example, the DOM renderer uses it to track whether it's inside an HTML or an SVG tree, because createInstance implementation needs to be different for them.
-		// If the node of this type does not influence the context you want to pass down, you can return parentHostContext. Alternatively, you can return any custom object representing the information you want to pass down.
+	getChildHostContext(
+		parentHostContext: YogaRootContainer,
+		_type: NodeType,
+		_rootContainer: YogaRootContainer,
+	) {
 		return parentHostContext
 	},
-	getPublicInstance(instance) {
-		// Determines what object gets exposed as a ref. You'll likely want to return the instance itself. But in some cases it might make sense to only expose some part of it.
+	getPublicInstance(instance: YogaNodeFinal) {
 		return instance
 	},
-	prepareForCommit(containerInfo) {
-		// This method lets you store some information before React starts making changes to the tree on the screen. For example, the DOM renderer stores the current text selection so that it can later restore it. This method is mirrored by resetAfterCommit.
+	prepareForCommit(_containerInfo: YogaRootContainer) {
 		return null
 	},
-	resetAfterCommit(containerInfo) {
-		// This method is called right after React has performed the tree mutations. You can use it to restore something you've stored in prepareForCommit — for example, text selection.
+	resetAfterCommit(containerInfo: YogaRootContainer) {
+		containerInfo.invalidate()
 	},
-	preparePortalMount(containerInfo) {
-		// This method is called for a container that's used as a portal target. Usually you can leave it empty.
-	},
+	preparePortalMount(_containerInfo: YogaRootContainer) {},
 	resolveUpdatePriority() {
 		return priority
 	},
-	setCurrentUpdatePriority(newPriority) {
+	setCurrentUpdatePriority(newPriority: number) {
 		priority = newPriority
 	},
 	isPrimaryRenderer: false,
 	getCurrentUpdatePriority() {
 		return DefaultEventPriority
 	},
-	appendChild(parentInstance, child) {
+	prepareUpdate() {
+		return true
+	},
+	appendChild(parentInstance: YogaNodeFinal, child: YogaNodeFinal) {
 		parentInstance.insertChild(child)
 	},
-	insertBefore(parentInstance, child, beforeChild) {
+	insertBefore(
+		parentInstance: YogaNodeFinal,
+		child: YogaNodeFinal,
+		beforeChild: YogaNodeFinal,
+	) {
 		parentInstance.insertChild(child, beforeChild)
 	},
-	removeChild(parentInstance, child) {
+	removeChild(parentInstance: YogaNodeFinal, child: YogaNodeFinal) {
 		parentInstance.removeChild(child)
 	},
-	resetTextContent(instance) {
-		// TODO
-		instance.setProps({ text: "" })
+	resetTextContent(instance: YogaNodeFinal) {
+		updateTextContent(instance, "")
 	},
-	commitTextUpdate(textInstance, oldText, newText) {
-		// TODO
+	commitTextUpdate(textInstance: YogaNodeFinal, _oldText: string, newText: string) {
+		updateTextContent(textInstance, newText)
 	},
-	commitMount(instance, type, props, internalInstanceHandle) {
-		// This method is only called if you returned true from finalizeInitialChildren for this instance.
-		// It lets you do some additional work after the node is actually attached to the tree on the screen for the first time. For example, the DOM renderer uses it to trigger focus on nodes with the autoFocus attribute.
-		// Note that commitMount does not mirror removeChild one to one because removeChild is only called for the top-level removed node. This is why ideally commitMount should not mutate any nodes other than the instance itself. For example, if it registers some events on some node above, it will be your responsibility to traverse the tree in removeChild and clean them up, which is not ideal.
-		// The internalHandle data structure is meant to be opaque. If you bend the rules and rely on its internal fields, be aware that it may change significantly between versions. You're taking on additional maintenance risk by reading from it, and giving up all guarantees if you write something to it.
-		// If you never return true from finalizeInitialChildren, you can leave it empty.
+	commitMount(
+		_instance: YogaNodeFinal,
+		_type: NodeType,
+		_props: YogaNodeProps,
+		_internalInstanceHandle: unknown,
+	) {},
+	commitUpdate(
+		instance: YogaNodeFinal,
+		type: NodeType,
+		_prevProps: YogaNodeProps,
+		nextProps: YogaNodeProps,
+		_internalHandle: unknown,
+	) {
+		const state = nodeStates.get(instance)
+		applyProps(
+			instance,
+			type,
+			nextProps,
+			state?.invalidate,
+			state?.setContinuousRedraw,
+		)
 	},
-	commitUpdate(instance, type, prevProps, nextProps, internalHandle) {
-		// The internalHandle data structure is meant to be opaque. If you bend the rules and rely on its internal fields, be aware that it may change significantly between versions. You're taking on additional maintenance risk by reading from it, and giving up all guarantees if you write something to it.
+	clearContainer(container: YogaRootContainer) {
+		for (const child of container.node.getChildren()) {
+			cleanupNode(child)
+		}
+		container.node.removeAllChildren()
 	},
-	clearContainer(container) {
-		// container.removeAllChildren()
-	},
-	maySuspendCommit(type, props) {
+	maySuspendCommit(_type: string, _props: YogaNodeProps) {
 		return false
 	},
-	detachDeletedInstance(node) {
-		// TODO
+	detachDeletedInstance(node: YogaNodeFinal) {
+		cleanupNode(node)
 	},
-} as SkiaYogaHostContext
+}
 
-// https://github.com/facebook/react/blob/main/packages/react-reconciler/README.md
-// export const reconciler = Reconciler(
-// 	new Proxy(config, {
-// 		get(target, prop) {
-// 			// @ts-ignore
-// 			const value = target[prop]
-// 			if (typeof value === "function") {
-// 				return (...args: any[]) => {
-// 					console.log(prop, ...args)
-// 					return value(...args)
-// 				}
-// 			}
-// 			return value
-// 		},
-// 	}),
-// )
 export const reconciler = Reconciler(config)

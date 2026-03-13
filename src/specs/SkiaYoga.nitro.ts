@@ -1,26 +1,38 @@
 import type { HybridObject } from "react-native-nitro-modules";
+import type { NodeCommand } from "./commands";
 import type { NodeStyle } from "./style";
+
+export type {
+	BlurMaskFilterCommand,
+	BlurMaskFilterCommandPayload,
+	BlurStyleName,
+	CircleCommand,
+	CircleCommandPayload,
+	GroupCommand,
+	ImageCommand,
+	ImageCommandPayload,
+	ImageFit,
+	LineCommand,
+	LineCommandPayload,
+	NodeCommand,
+	NodeType,
+	ParagraphCommand,
+	ParagraphCommandPayload,
+	PathCommand,
+	PathCommandPayload,
+	PathFillType,
+	PointModeName,
+	PointsCommand,
+	PointsCommandPayload,
+	RectCommand,
+	RoundedRectCommand,
+	RoundedRectCommandPayload,
+	TextCommand,
+	TextCommandPayload,
+} from "./commands";
 
 export interface SkiaYoga extends HybridObject<{ ios: "c++"; android: "c++" }> {
 }
-
-export type NodeType =
-	| "rect"
-	| "rrect"
-	| "text"
-	| "group"
-	| "blurMaskFilter"
-	| "image"
-	| "path"
-	| "paragraph"
-	| "circle"
-	| "line"
-	| "oval"
-	| "points"
-	| "patch"
-	| "vertices"
-	| "picture"
-	| "svg";
 
 export interface YogaNodeLayout {
 	left: number
@@ -33,8 +45,8 @@ export interface YogaNodeLayout {
 
 
 export interface YogaNode extends HybridObject<{ ios: "c++"; android: "c++" }> {
+	setCommand(command: NodeCommand): void
 	setStyle(style: NodeStyle): void
-	setType(type: NodeType): void
 	insertChild(child: YogaNode, index?: number | YogaNode): void
 	removeChild(child: YogaNode): void
 	removeAllChildren(): void

@@ -1,0 +1,10 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"jsx": "react-jsx",
+		"jsxImportSource": "react-native-skia-yoga",
+		"lib": ["ESNext"],
+		"types": ["react", "react-native"]
+	},
+	"include": ["types/skiayoga-typecheck.tsx"]
+}

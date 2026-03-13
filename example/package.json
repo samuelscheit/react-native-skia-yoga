@@ -9,6 +9,7 @@
 		"ios": "expo run:ios",
 		"web": "expo start --web",
 		"lint": "expo lint",
+		"typecheck": "tsc -p tsconfig.skiayoga.json --noEmit",
 		"postinstall": "rm node_modules/react-native-skia-yoga; ln -s ../../ node_modules/react-native-skia-yoga; bun ../scripts/sync-example-links.mjs"
 	},
 	"dependencies": {

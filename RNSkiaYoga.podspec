@@ -26,6 +26,8 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = {
     'HEADER_SEARCH_PATHS' => [
       '"$(PODS_TARGET_SRCROOT)/cpp/**"',
+      '"$(PODS_TARGET_SRCROOT)/nitrogen/generated/shared/c++"',
+      '"$(PODS_TARGET_SRCROOT)/nitrogen/generated/ios/c++"',
       '"$(PODS_ROOT)/../../node_modules/@shopify"',
       '"$(PODS_ROOT)/../../node_modules/@shopify/react-native-skia/cpp/**"',
       '"$(PODS_ROOT)/../../node_modules/@shopify/react-native-skia/cpp/skia"',

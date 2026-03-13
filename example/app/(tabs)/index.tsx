@@ -10,21 +10,7 @@ import {
 	withRepeat,
 	withTiming,
 } from "react-native-reanimated"
-import { YogaCanvas } from "../../../src"
-
-declare namespace React {
-	namespace JSX {
-		interface IntrinsicElements {
-			group: any
-			rect: any
-			circle: any
-			oval: any
-			text: any
-			paragraph: any
-			blurMaskFilter: any
-		}
-	}
-}
+import { YogaCanvas } from "react-native-skia-yoga"
 
 const R = 200
 
@@ -71,7 +57,7 @@ const Ring = ({ index, progress, total }: RingProps) => {
 
 	return (
 		<circle
-			r={R}
+			radius={R}
 			style={{
 				backgroundColor: index % 2 === 0 ? c1 : c2,
 				matrix,
@@ -91,8 +77,6 @@ function Root() {
 		matrix.identity().rotate(mix(progress.value, -Math.PI, 0))
 	})
 
-	globalThis.matrix = matrix
-
 	return (
 		<rect
 			style={{
@@ -102,7 +86,7 @@ function Root() {
 				backgroundColor: "#242b38",
 			}}
 		>
-			<blurMaskFilter style="solid" blur={40}>
+			<blurMaskFilter blurStyle="solid" blur={40}>
 				<group
 					style={{
 						matrix,

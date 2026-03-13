@@ -1,7 +1,11 @@
 import { TurboModuleRegistry } from "react-native"
 import { NitroModules } from "react-native-nitro-modules"
 import type { Spec } from "./specs/NativeSkiaYoga"
-import type { SkiaYoga as SkiaYogaType, YogaNode } from "./specs/SkiaYoga.nitro"
+import type {
+	NodeCommand,
+	SkiaYoga as SkiaYogaType,
+	YogaNode,
+} from "./specs/SkiaYoga.nitro"
 
 let turboModule: Spec | undefined
 try {
@@ -22,11 +26,12 @@ export const SkiaYoga = NitroModules.createHybridObject<SkiaYogaType>("SkiaYoga"
 globalThis.SkiaYoga = SkiaYoga
 
 export interface YogaNodeFinal extends YogaNode {
-	setProps(props: any): void
+	setCommand(command: NodeCommand): void
 	draw(): any
 	getChildren(): YogaNodeFinal[]
 }
 
 export * from "./Reconciler"
+export * from "./jsx"
 export * from "./util"
 export * from "./YogaCanvas"

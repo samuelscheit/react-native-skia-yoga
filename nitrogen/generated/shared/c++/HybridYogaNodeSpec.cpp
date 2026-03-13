@@ -16,8 +16,8 @@ namespace margelo::nitro::RNSkiaYoga {
     registerHybrids(this, [](Prototype& prototype) {
       prototype.registerHybridGetter("layout", &HybridYogaNodeSpec::getLayout);
       prototype.registerHybridSetter("layout", &HybridYogaNodeSpec::setLayout);
+      prototype.registerHybridMethod("setCommand", &HybridYogaNodeSpec::setCommand);
       prototype.registerHybridMethod("setStyle", &HybridYogaNodeSpec::setStyle);
-      prototype.registerHybridMethod("setType", &HybridYogaNodeSpec::setType);
       prototype.registerHybridMethod("insertChild", &HybridYogaNodeSpec::insertChild);
       prototype.registerHybridMethod("removeChild", &HybridYogaNodeSpec::removeChild);
       prototype.registerHybridMethod("removeAllChildren", &HybridYogaNodeSpec::removeAllChildren);

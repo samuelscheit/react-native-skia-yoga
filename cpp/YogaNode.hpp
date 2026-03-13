@@ -7,19 +7,20 @@
 #include "JSIConverter+SkImage.hpp"
 #include "JSIConverter+SkMatrix.hpp"
 #include "JSIConverter+SkPaint.hpp"
+#include "JSIConverter+SkParagraph.hpp"
+#include "JSIConverter+SkParagraphStyle.hpp"
 #include "JSIConverter+SkPath.hpp"
+#include "JSIConverter+SkSamplingOptions.hpp"
+#include "JSIConverter+SkTextStyle.hpp"
 #include "JSIConverter+SkRRect.hpp"
 #include "JSIConverter+SkRect.hpp"
+#include "JSIConverter+StrokeOpts.hpp"
 
 #include "HybridSkiaYogaSpec.hpp"
 #include "HybridYogaNodeSpec.hpp"
 
 
 #include "ColorParser.hpp"
-// Use generated RN Skia headers directly (no api/ or recorder/ prefixes)
-// Important: Include JsiSkSkottie before Convertor.h (included by Drawings.h)
-// because Convertor.h references JsiSkSkottie in template specializations.
-#include "JsiSkSkottie.h"
 #include "JsiSkRuntimeEffect.h"
 #include "Drawings.h"
 #include "JsiSkFontMgr.h"
@@ -231,14 +232,8 @@ class YogaNodeCommand {
 public:
     virtual ~YogaNodeCommand() = default;
 
-    // reine virtuelle Schnittstelle
     virtual void setLayout(const YogaNodeLayout& layout) = 0;
     virtual void draw(RNSkia::DrawingCtx* ctx) = 0;
-    virtual void updateProps(jsi::Runtime& runtime, const jsi::Object& props)
-    {
-        (void)runtime;
-        (void)props;
-    }
 
 protected:
     explicit YogaNodeCommand(YogaNode* node)
@@ -249,13 +244,29 @@ protected:
     YogaNode* node;
 };
 
+enum class YogaNodeCommandKind {
+    NONE,
+    RECT,
+    RRECT,
+    TEXT,
+    GROUP,
+    BLUR_MASK_FILTER,
+    IMAGE,
+    PATH,
+    PARAGRAPH,
+    CIRCLE,
+    LINE,
+    OVAL,
+    POINTS,
+};
+
 class YogaNode : public HybridYogaNodeSpec {
 public:
     // This default constructor is required for autolinking in RNSkiaYogaAutolinking.mm
     YogaNode();
     ~YogaNode();
     void setStyle(const NodeStyle& style) override;
-    void setType(NodeType type) override;
+    void setCommand(const std::variant<RectCommand, RoundedRectCommand, TextCommand, GroupCommand, BlurMaskFilterCommand, ImageCommand, PathCommand, ParagraphCommand, CircleCommand, LineCommand, OvalCommand, PointsCommand>& command) override;
     void insertChild(const std::shared_ptr<HybridYogaNodeSpec>& child, const std::optional<std::variant<double, std::shared_ptr<HybridYogaNodeSpec>>>& index) override;
     void removeChild(const std::shared_ptr<HybridYogaNodeSpec>& child) override;
 
@@ -269,15 +280,13 @@ public:
 
     void removeAllChildren() override;
 
-    jsi::Value setType(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
-    jsi::Value setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
     jsi::Value draw(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
     void drawInternal(RNSkia::DrawingCtx& ctx);
 
     std::string getName() const { return "YogaNode"; }
 
     YGNodeRef _node;
-    NodeType _type;
+    YogaNodeCommandKind _commandKind = YogaNodeCommandKind::NONE;
     bool _hasLayoutBeenComputed = false;
     YogaNodeLayout _layout;
     std::unique_ptr<YogaNodeCommand> _command;
@@ -298,7 +307,6 @@ public:
         HybridYogaNodeSpec::loadHybridMethods();
         // register all methods we override here
         registerHybrids(this, [](Prototype& prototype) {
-            prototype.registerRawHybridMethod("setProps", 1, &YogaNode::setProps);
             prototype.registerRawHybridMethod("draw", 0, &YogaNode::draw);
             prototype.registerRawHybridMethod("getChildren", 0, &YogaNode::getChildren);
         });
@@ -327,10 +335,9 @@ struct BlurMaskFilterProps {
 
 class BlurMaskFilterCmd : public YogaNodeCommand {
 public:
-    BlurMaskFilterCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& /*variables*/)
+    explicit BlurMaskFilterCmd(YogaNode* node)
         : YogaNodeCommand(node)
     {
-        updateProps(runtime, props);
     }
 
     void setLayout(const YogaNodeLayout& layout) override
@@ -344,29 +351,7 @@ public:
         ctx->getPaint().setMaskFilter(maskFilter);
     }
 
-    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
-    {
-        if (props.hasProperty(runtime, "blur")) {
-            auto value = props.getProperty(runtime, "blur");
-            if (!value.isUndefined() && !value.isNull()) {
-                _props.blur = RNSkia::getPropertyValue<float>(runtime, value);
-            }
-        }
-
-        if (props.hasProperty(runtime, "style")) {
-            auto value = props.getProperty(runtime, "style");
-            if (!value.isUndefined() && !value.isNull()) {
-                _props.style = RNSkia::getPropertyValue<SkBlurStyle>(runtime, value);
-            }
-        }
-
-        if (props.hasProperty(runtime, "respectCTM")) {
-            auto value = props.getProperty(runtime, "respectCTM");
-            if (!value.isUndefined() && !value.isNull()) {
-                _props.respectCTM = RNSkia::getPropertyValue<bool>(runtime, value);
-            }
-        }
-    }
+    void updateProps(const BlurMaskFilterCommandPayload& props);
 
 private:
     BlurMaskFilterProps _props;
@@ -374,8 +359,8 @@ private:
 
 class RectCmd : public RNSkia::RectCmd, public YogaNodeCommand {
 public:
-    RectCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
-        : RNSkia::RectCmd(runtime, props, variables)
+    RectCmd(YogaNode* node, jsi::Runtime& runtime, RNSkia::Variables& variables)
+        : RNSkia::RectCmd(runtime, jsi::Object(runtime), variables)
         , YogaNodeCommand(node)
     {
     }
@@ -396,17 +381,15 @@ public:
 
 class RRectCmd : public RNSkia::RRectCmd, public YogaNodeCommand {
 public:
-    RRectCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
-        : RNSkia::RRectCmd(runtime, props, variables)
+    RRectCmd(YogaNode* node, jsi::Runtime& runtime, RNSkia::Variables& variables)
+        : RNSkia::RRectCmd(runtime, jsi::Object(runtime), variables)
         , YogaNodeCommand(node)
     {
     }
 
-    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
+    void updateProps(const RoundedRectCommandPayload& props)
     {
-        auto radiusValue = props.getProperty(runtime, "r");
-        auto radius = JSIConverter<std::optional<double>>::fromJSI(runtime, radiusValue);
-        auto r = static_cast<float>(radius.value_or(0.0));
+        auto r = static_cast<float>(props.cornerRadius.value_or(0.0));
         this->props.r = RNSkia::Radius { .rX = r, .rY = r };
     }
 
@@ -421,8 +404,8 @@ public:
 
 class OvalCmd : public RNSkia::OvalCmd, public YogaNodeCommand {
 public:
-    OvalCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
-        : RNSkia::OvalCmd(runtime, props, variables)
+    OvalCmd(YogaNode* node, jsi::Runtime& runtime, RNSkia::Variables& variables)
+        : RNSkia::OvalCmd(runtime, jsi::Object(runtime), variables)
         , YogaNodeCommand(node)
     {
     }
@@ -445,24 +428,21 @@ private:
 
 class CircleCmd : public RNSkia::CircleCmd, public YogaNodeCommand {
 public:
-    CircleCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
-        : RNSkia::CircleCmd(runtime, props, variables)
+    CircleCmd(YogaNode* node, jsi::Runtime& runtime, RNSkia::Variables& variables)
+        : RNSkia::CircleCmd(runtime, jsi::Object(runtime), variables)
         , YogaNodeCommand(node)
     {
     }
 
-    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
+    void updateProps(const CircleCommandPayload& props)
     {
-        if (props.hasProperty(runtime, "r")) {
-            const auto radiusValue = props.getProperty(runtime, "r");
-            if (radiusValue.isNull() || radiusValue.isUndefined()) {
-                clearRadius();
-            } else if (radiusValue.isNumber()) {
-                setRadius(static_cast<float>(radiusValue.asNumber()));
-            }
-
-            setLayout(node->_layout);
+        if (props.radius.has_value()) {
+            setRadius(static_cast<float>(props.radius.value()));
+        } else {
+            clearRadius();
         }
+
+        setLayout(node->_layout);
     }
 
     void setLayout(const YogaNodeLayout& layout) override
@@ -507,8 +487,8 @@ private:
 
 class TextCmd : public RNSkia::TextCmd, public YogaNodeCommand {
 public:
-    TextCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
-        : RNSkia::TextCmd(runtime, props, variables)
+    TextCmd(YogaNode* node, jsi::Runtime& runtime, RNSkia::Variables& variables)
+        : RNSkia::TextCmd(runtime, jsi::Object(runtime), variables)
         , YogaNodeCommand(node)
     {
         this->props.x = 0;
@@ -530,46 +510,7 @@ public:
         this->props.font = *sDefaultFont;
     }
 
-    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
-    {
-        auto textValue = props.getProperty(runtime, "children");
-        auto text = JSIConverter<std::optional<std::string>>::fromJSI(runtime, textValue);
-        this->props.text = text.value_or("");
-
-        auto fontValue = props.getProperty(runtime, "font");
-        auto fontOptional = JSIConverter<std::optional<SkFont>>::fromJSI(runtime, fontValue);
-        if (fontOptional.has_value()) {
-            this->props.font = fontOptional;
-        }
-
-        auto font = this->props.font;
-        auto textStyle = skia::textlayout::TextStyle();
-
-        auto styleValue = props.getProperty(runtime, "style");
-        if (styleValue.isObject()) {
-            auto styleObject = styleValue.asObject(runtime);
-
-            auto skColor = textStyle.getColor();
-            auto colorValue = styleObject.getProperty(runtime, "color");
-            if (colorValue.isString()) {
-                if (auto parsed = parseCssColor(colorValue.asString(runtime).utf8(runtime))) {
-                    skColor = *parsed;
-                }
-            } else if (colorValue.isNumber()) {
-                skColor = static_cast<SkColor>(colorValue.asNumber());
-            }
-            styleObject.setProperty(runtime, "color", RNSkia::JsiSkColor::toValue(runtime, skColor));
-
-            textStyle = RNSkia::JsiSkTextStyle::fromValue(runtime, styleValue);
-        }
-
-        if (font.has_value()) {
-            font->setSize(textStyle.getFontSize());
-            this->props.font = font;
-        }
-
-        node->_paint.setColor(textStyle.getColor());
-    }
+    void updateProps(const TextCommandPayload& props);
 
     void setLayout(const YogaNodeLayout& layout) override
     {
@@ -588,44 +529,15 @@ private:
 
 class ImageCmd : public RNSkia::ImageCmd, public YogaNodeCommand {
 public:
-    ImageCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
-        : RNSkia::ImageCmd(SkiaYoga::getPlatformContext(), runtime, props, variables)
+    ImageCmd(YogaNode* node, jsi::Runtime& runtime, RNSkia::Variables& variables)
+        : RNSkia::ImageCmd(SkiaYoga::getPlatformContext(), runtime, jsi::Object(runtime), variables)
         , YogaNodeCommand(node)
     {
         this->props.x = 0;
         this->props.y = 0;
     }
 
-    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
-    {
-        if (props.hasProperty(runtime, "image")) {
-            const auto imageValue = props.getProperty(runtime, "image");
-            auto image = JSIConverter<sk_sp<SkImage>>::fromJSI(runtime, imageValue);
-            if (image) {
-                this->props.image = image;
-            } else {
-                this->props.image.reset();
-            }
-        }
-
-        if (props.hasProperty(runtime, "sampling")) {
-            const auto samplingValue = props.getProperty(runtime, "sampling");
-            if (samplingValue.isNull() || samplingValue.isUndefined()) {
-                this->props.sampling.reset();
-            } else {
-                this->props.sampling = RNSkia::SamplingOptionsFromValue(runtime, samplingValue);
-            }
-        }
-
-        if (props.hasProperty(runtime, "fit")) {
-            const auto fitValue = props.getProperty(runtime, "fit");
-            if (fitValue.isString()) {
-                this->props.fit = fitValue.asString(runtime).utf8(runtime);
-            }
-        } else if (this->props.fit.empty()) {
-            this->props.fit = "contain";
-        }
-    }
+    void updateProps(const ImageCommandPayload& props);
 
     void setLayout(const YogaNodeLayout& layout) override
     {
@@ -641,8 +553,8 @@ class PathCmd : public RNSkia::PathCmd, public YogaNodeCommand {
 public:
     YogaNodeLayout _baseLayout;
 
-    PathCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
-        : RNSkia::PathCmd(runtime, props, variables)
+    PathCmd(YogaNode* node, jsi::Runtime& runtime, RNSkia::Variables& variables)
+        : RNSkia::PathCmd(runtime, jsi::Object(runtime), variables)
         , YogaNodeCommand(node)
         , _basePath(this->props.path)
     {
@@ -650,55 +562,7 @@ public:
         this->props.end = 1.0f;
     }
 
-    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
-    {
-        bool layoutNeedsUpdate = false;
-
-        if (props.hasProperty(runtime, "path")) {
-            auto pathValue = props.getProperty(runtime, "path");
-            if (pathValue.isObject()) {
-                auto newPath = JSIConverter<SkPath>::fromJSI(runtime, pathValue);
-                setBasePath(newPath);
-                layoutNeedsUpdate = true;
-            }
-        }
-
-        if (props.hasProperty(runtime, "start")) {
-            const auto startValue = props.getProperty(runtime, "start");
-            if (startValue.isNumber()) {
-                this->props.start = static_cast<float>(startValue.asNumber());
-            }
-        }
-
-        if (props.hasProperty(runtime, "end")) {
-            const auto endValue = props.getProperty(runtime, "end");
-            if (endValue.isNumber()) {
-                this->props.end = static_cast<float>(endValue.asNumber());
-            }
-        }
-
-        if (props.hasProperty(runtime, "stroke")) {
-            const auto strokeValue = props.getProperty(runtime, "stroke");
-            if (strokeValue.isNull() || strokeValue.isUndefined()) {
-                this->props.stroke.reset();
-            } else if (strokeValue.isObject()) {
-                this->props.stroke = RNSkia::getPropertyValue<RNSkia::StrokeOpts>(runtime, strokeValue);
-            }
-        }
-
-        if (props.hasProperty(runtime, "fillType")) {
-            const auto fillValue = props.getProperty(runtime, "fillType");
-            if (fillValue.isNull() || fillValue.isUndefined()) {
-                this->props.fillType.reset();
-            } else if (fillValue.isNumber()) {
-                this->props.fillType = static_cast<SkPathFillType>(static_cast<int>(fillValue.asNumber()));
-            }
-        }
-
-        if (layoutNeedsUpdate) {
-            setLayout(node->_layout);
-        }
-    }
+    void updateProps(const PathCommandPayload& props);
 
     void setLayout(const YogaNodeLayout& layout) override
     {
@@ -721,40 +585,15 @@ private:
 
 class LineCmd : public RNSkia::LineCmd, public YogaNodeCommand {
 public:
-    LineCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
-        : RNSkia::LineCmd(runtime, props, variables)
+    LineCmd(YogaNode* node, jsi::Runtime& runtime, RNSkia::Variables& variables)
+        : RNSkia::LineCmd(runtime, jsi::Object(runtime), variables)
         , YogaNodeCommand(node)
         , _baseP1(this->props.p1)
         , _baseP2(this->props.p2)
     {
     }
 
-    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
-    {
-        bool updated = false;
-
-        if (props.hasProperty(runtime, "p1")) {
-            const auto p1Value = props.getProperty(runtime, "p1");
-            if (p1Value.isObject()) {
-                const auto p1 = RNSkia::getPropertyValue<::SkPoint>(runtime, p1Value);
-                setBasePoint1(p1);
-                updated = true;
-            }
-        }
-
-        if (props.hasProperty(runtime, "p2")) {
-            const auto p2Value = props.getProperty(runtime, "p2");
-            if (p2Value.isObject()) {
-                const auto p2 = RNSkia::getPropertyValue<::SkPoint>(runtime, p2Value);
-                setBasePoint2(p2);
-                updated = true;
-            }
-        }
-
-        if (updated) {
-            setLayout(node->_layout);
-        }
-    }
+    void updateProps(const LineCommandPayload& props);
 
     void setLayout(const YogaNodeLayout& layout) override
     {
@@ -783,36 +622,16 @@ private:
 };
 class PointsCmd : public RNSkia::PointsCmd, public YogaNodeCommand {
 public:
-    PointsCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
-        : RNSkia::PointsCmd(runtime, props, variables)
+    PointsCmd(YogaNode* node, jsi::Runtime& runtime, RNSkia::Variables& variables)
+        : RNSkia::PointsCmd(runtime, jsi::Object(runtime), variables)
         , YogaNodeCommand(node)
         , _basePoints(this->props.points)
         , _baseBounds(computeBounds(_basePoints))
     {
+        this->props.mode = SkCanvas::PointMode::kPoints_PointMode;
     }
 
-    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
-    {
-        bool didUpdateLayout = false;
-
-        if (props.hasProperty(runtime, "points")) {
-            const auto pointsValue = props.getProperty(runtime, "points");
-            if (pointsValue.isObject()) {
-                const auto points = RNSkia::getPropertyValue<std::vector<::SkPoint>>(runtime, pointsValue);
-                setBasePoints(points);
-                didUpdateLayout = true;
-            }
-        }
-
-        if (props.hasProperty(runtime, "mode")) {
-            const auto modeValue = props.getProperty(runtime, "mode");
-            this->props.mode = RNSkia::getPropertyValue<SkCanvas::PointMode>(runtime, modeValue);
-        }
-
-        if (didUpdateLayout) {
-            setLayout(node->_layout);
-        }
-    }
+    void updateProps(const PointsCommandPayload& props);
 
     void setLayout(const YogaNodeLayout& layout) override
     {
@@ -872,86 +691,15 @@ private:
 
 class ParagraphCmd : public RNSkia::ParagraphCmd, public YogaNodeCommand {
 public:
-    ParagraphCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
-        : RNSkia::ParagraphCmd(runtime, props, variables)
+    ParagraphCmd(YogaNode* node, jsi::Runtime& runtime, RNSkia::Variables& variables)
+        : RNSkia::ParagraphCmd(runtime, jsi::Object(runtime), variables)
         , YogaNodeCommand(node)
     {
         this->props.x = 0;
         this->props.y = 0;
     }
 
-    void updateProps(jsi::Runtime& runtime, const jsi::Object& props) override
-    {
-        auto textValue = props.getProperty(runtime, "children");
-        auto text = JSIConverter<std::optional<std::string>>::fromJSI(runtime, textValue);
-
-        if (props.hasProperty(runtime, "paragraph")) {
-            auto paragraphValue = props.getProperty(runtime, "paragraph");
-            if (paragraphValue.isObject()) {
-                this->props.paragraph = paragraphValue.asObject(runtime).getHostObject<RNSkia::JsiSkParagraph>(runtime);
-            }
-            return;
-        }
-
-        ensureDefaultParagraphResources();
-        std::lock_guard<std::mutex> lock(sParagraphBuilderMutex);
-        auto* builder = sDefaultParagraphBuilder.get();
-        if (builder == nullptr) {
-            return;
-        }
-        builder->Reset();
-
-        auto textStyle = skia::textlayout::TextStyle();
-
-        auto styleValue = props.getProperty(runtime, "style");
-        if (styleValue.isObject()) {
-            auto styleObject = styleValue.asObject(runtime);
-
-            auto skColor = textStyle.getColor();
-            auto colorValue = styleObject.getProperty(runtime, "color");
-            if (colorValue.isString()) {
-                if (auto parsed = parseCssColor(colorValue.asString(runtime).utf8(runtime))) {
-                    skColor = *parsed;
-                }
-            } else if (colorValue.isNumber()) {
-                skColor = static_cast<SkColor>(colorValue.asNumber());
-            }
-            styleObject.setProperty(runtime, "color", RNSkia::JsiSkColor::toValue(runtime, skColor));
-
-            textStyle = RNSkia::JsiSkTextStyle::fromValue(runtime, styleValue);
-
-            if (!styleObject.hasProperty(runtime, "color")) {
-                textStyle.setColor(SK_ColorBLACK);
-            }
-
-            auto paragraphStyle = RNSkia::JsiSkParagraphStyle::fromValue(runtime, styleValue);
-            const auto& currentStyle = builder->getParagraphStyle();
-            const bool paragraphStyleChanged = paragraphStyle.getTextAlign() != currentStyle.getTextAlign() || paragraphStyle.getTextDirection() != currentStyle.getTextDirection() || paragraphStyle.getMaxLines() != currentStyle.getMaxLines() || paragraphStyle.getEllipsis() != currentStyle.getEllipsis() || paragraphStyle.getTextHeightBehavior() != currentStyle.getTextHeightBehavior();
-
-            if (paragraphStyleChanged) {
-                sDefaultParagraphBuilder = para::ParagraphBuilder::make(paragraphStyle, sDefaultFontCollection);
-                builder = sDefaultParagraphBuilder.get();
-                if (builder == nullptr) {
-                    return;
-                }
-            }
-        } else {
-            textStyle.setFontFamilies({ SkString("Arial") });
-            textStyle.setFontSize(14.0f);
-            textStyle.setColor(SK_ColorBLACK);
-        }
-        builder->Reset();
-        builder->pushStyle(textStyle);
-
-        auto textStr = text.value_or("");
-
-        builder->addText(textStr.c_str(), textStr.size());
-
-        auto context = margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext();
-        auto paragraph = std::make_shared<RNSkia::JsiSkParagraph>(context, builder);
-        this->props.paragraph = paragraph;
-        builder->Reset();
-    }
+    void updateProps(const ParagraphCommandPayload& props);
 
     void setLayout(const YogaNodeLayout& layout) override
     {

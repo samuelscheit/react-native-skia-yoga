@@ -1,10 +1,11 @@
 import { type CanvasProps, type SkPicture } from "@shopify/react-native-skia"
 import "@shopify/react-native-skia/lib/typescript/src/views/api.d.ts"
-import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react"
-import type { LayoutChangeEvent, View } from "react-native"
+import React, { useEffect, useLayoutEffect, useMemo } from "react"
+import type { LayoutChangeEvent } from "react-native"
 import { useSharedValue } from "react-native-reanimated"
-import { reconciler } from "./Reconciler"
+import { type YogaRootContainer, reconciler } from "./Reconciler"
 import { createYogaNode } from "./util"
+
 const { default: SkiaPictureViewNativeComponent } =
 	require("@shopify/react-native-skia/src/specs/SkiaPictureViewNativeComponent") as typeof import("@shopify/react-native-skia/lib/typescript/src/specs/SkiaPictureViewNativeComponent")
 const { SkiaViewNativeId } =
@@ -28,28 +29,30 @@ export function YogaCanvas({
 	debug,
 	colorSpace,
 }: CanvasProps) {
-	const viewRef = useRef<View>(null)
 	const nativeId = useMemo(() => {
 		return SkiaViewNativeId.current++
 	}, [])
 
-	const { root, node } = useMemo(() => {
+	const { node, root } = useMemo(() => {
 		const node = createYogaNode()
-		node.setType("group")
-		node.setStyle({
-			flex: 1,
-			backgroundColor: "#ff0000"
-		})
-		node.setProps({})
+		node.setCommand({ group: {} })
 
 		const picture = node.draw() as SkPicture
-
 		presentPicture(nativeId, picture)
 
+		const rootContainer: YogaRootContainer = {
+			// Keep reconciler-driven invalidation disabled here. Mixing ad-hoc invalidation
+			// with the continuous RAF loop below caused out-of-phase picture presents and
+			// visible flicker in the demo.
+			invalidate: noop,
+			node,
+			setContinuousRedraw: noop,
+		}
 
 		return {
+			node,
 			root: reconciler.createContainer(
-				node,
+				rootContainer,
 				0,
 				null,
 				true,
@@ -61,9 +64,8 @@ export function YogaCanvas({
 				noop,
 				null,
 			),
-			node,
 		}
-	}, [])
+	}, [nativeId])
 
 	function drawNodePicture() {
 		const picture = node.draw() as SkPicture
@@ -82,12 +84,20 @@ export function YogaCanvas({
 	const currentlyRunning = useSharedValue(0)
 
 	useEffect(() => {
+		// The demo animates by mutating Skia host objects such as `SkMatrix` in place
+		// inside `useDerivedValue`. Those mutations do not go through React commits or a
+		// shared-value style listener, so an invalidation-only redraw model caused the
+		// canvas to stop animating. Keep a single continuous RAF loop until we have an
+		// explicit animation invalidation contract for mutable Skia objects.
 		const id = Math.random()
 		currentlyRunning.value = id
 		let frameId = 0
 
 		function frame() {
-			if (currentlyRunning.value !== id) return
+			if (currentlyRunning.value !== id) {
+				return
+			}
+
 			drawNodePicture()
 			frameId = requestAnimationFrame(frame)
 		}
@@ -114,7 +124,6 @@ export function YogaCanvas({
 
 	useEffect(() => {
 		return () => {
-			// destory the container
 			reconciler.updateContainer(null, root, null, null)
 			// @ts-ignore
 			reconciler.flushSyncWork()
@@ -124,7 +133,6 @@ export function YogaCanvas({
 
 	return (
 		<SkiaPictureViewNativeComponent
-			ref={viewRef}
 			collapsable={false}
 			debug={debug}
 			opaque={opaque}

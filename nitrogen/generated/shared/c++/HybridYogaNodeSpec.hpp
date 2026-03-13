@@ -15,19 +15,52 @@
 
 // Forward declaration of `YogaNodeLayout` to properly resolve imports.
 namespace margelo::nitro::RNSkiaYoga { struct YogaNodeLayout; }
+// Forward declaration of `RectCommand` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct RectCommand; }
+// Forward declaration of `RoundedRectCommand` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct RoundedRectCommand; }
+// Forward declaration of `TextCommand` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct TextCommand; }
+// Forward declaration of `GroupCommand` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct GroupCommand; }
+// Forward declaration of `BlurMaskFilterCommand` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct BlurMaskFilterCommand; }
+// Forward declaration of `ImageCommand` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct ImageCommand; }
+// Forward declaration of `PathCommand` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct PathCommand; }
+// Forward declaration of `ParagraphCommand` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct ParagraphCommand; }
+// Forward declaration of `CircleCommand` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct CircleCommand; }
+// Forward declaration of `LineCommand` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct LineCommand; }
+// Forward declaration of `OvalCommand` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct OvalCommand; }
+// Forward declaration of `PointsCommand` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { struct PointsCommand; }
 // Forward declaration of `NodeStyle` to properly resolve imports.
 namespace margelo::nitro::RNSkiaYoga { struct NodeStyle; }
-// Forward declaration of `NodeType` to properly resolve imports.
-namespace margelo::nitro::RNSkiaYoga { enum class NodeType; }
 // Forward declaration of `HybridYogaNodeSpec` to properly resolve imports.
 namespace margelo::nitro::RNSkiaYoga { class HybridYogaNodeSpec; }
 
 #include "YogaNodeLayout.hpp"
+#include "RectCommand.hpp"
+#include "RoundedRectCommand.hpp"
+#include "TextCommand.hpp"
+#include "GroupCommand.hpp"
+#include "BlurMaskFilterCommand.hpp"
+#include "ImageCommand.hpp"
+#include "PathCommand.hpp"
+#include "ParagraphCommand.hpp"
+#include "CircleCommand.hpp"
+#include "LineCommand.hpp"
+#include "OvalCommand.hpp"
+#include "PointsCommand.hpp"
+#include <variant>
 #include "NodeStyle.hpp"
-#include "NodeType.hpp"
 #include <memory>
 #include "HybridYogaNodeSpec.hpp"
-#include <variant>
 #include <optional>
 
 namespace margelo::nitro::RNSkiaYoga {
@@ -62,8 +95,8 @@ namespace margelo::nitro::RNSkiaYoga {
 
     public:
       // Methods
+      virtual void setCommand(const std::variant<RectCommand, RoundedRectCommand, TextCommand, GroupCommand, BlurMaskFilterCommand, ImageCommand, PathCommand, ParagraphCommand, CircleCommand, LineCommand, OvalCommand, PointsCommand>& command) = 0;
       virtual void setStyle(const NodeStyle& style) = 0;
-      virtual void setType(NodeType type) = 0;
       virtual void insertChild(const std::shared_ptr<HybridYogaNodeSpec>& child, const std::optional<std::variant<double, std::shared_ptr<HybridYogaNodeSpec>>>& index) = 0;
       virtual void removeChild(const std::shared_ptr<HybridYogaNodeSpec>& child) = 0;
       virtual void removeAllChildren() = 0;
