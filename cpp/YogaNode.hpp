@@ -41,6 +41,7 @@
 #include <modules/skparagraph/include/FontCollection.h>
 #include <modules/skparagraph/include/ParagraphBuilder.h>
 #include <modules/skparagraph/include/ParagraphStyle.h>
+#include <algorithm>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -693,6 +694,8 @@ private:
 
 class ParagraphCmd : public RNSkia::ParagraphCmd, public YogaNodeCommand {
 public:
+    static constexpr float kInitialParagraphLayoutWidth = 100000.0f;
+
     ParagraphCmd(YogaNode* node, jsi::Runtime& runtime, RNSkia::Variables& variables)
         : RNSkia::ParagraphCmd(runtime, jsi::Object(runtime), variables)
         , YogaNodeCommand(node)
@@ -708,7 +711,38 @@ public:
         this->props.width = layout.width;
     }
 
-    void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::ParagraphCmd::draw(ctx); }
+    void draw(RNSkia::DrawingCtx* ctx) override
+    {
+        SkPaint debugPaint;
+        const auto debugWidth = std::max(24.0f, this->props.width > 0 ? this->props.width : static_cast<float>(node->_layout.width));
+        const auto debugHeight = std::max(24.0f, static_cast<float>(node->_layout.height));
+
+        if (!this->props.paragraph) {
+            debugPaint.setStyle(SkPaint::kFill_Style);
+            debugPaint.setColor(SK_ColorRED);
+            ctx->canvas->drawRect(
+                SkRect::MakeXYWH(this->props.x, this->props.y, debugWidth, debugHeight),
+                debugPaint);
+            return;
+        }
+
+        auto paragraph = this->props.paragraph->getObject();
+        auto layoutWidth = this->props.width > 0 ? this->props.width : kInitialParagraphLayoutWidth;
+        paragraph->layout(layoutWidth);
+
+        debugPaint.setStyle(SkPaint::kStroke_Style);
+        debugPaint.setStrokeWidth(1.0f);
+        debugPaint.setColor(SK_ColorYELLOW);
+        ctx->canvas->drawRect(
+            SkRect::MakeXYWH(
+                this->props.x,
+                this->props.y,
+                debugWidth,
+                std::max(debugHeight, paragraph->getHeight())),
+            debugPaint);
+
+        paragraph->paint(ctx->canvas, this->props.x, this->props.y);
+    }
 
     static YGSize measureFunc(YGNodeConstRef node, float width, YGMeasureMode widthMode, float height, YGMeasureMode heightMode)
     {
@@ -721,14 +755,25 @@ public:
         }
 
         auto skParagraph = cmd->props.paragraph->getObject();
-        if (width <= 0 || widthMode == YGMeasureModeUndefined) {
-            // width = 20000000.0f; // very large width
+        auto layoutWidth = width;
+        if (layoutWidth <= 0 || widthMode == YGMeasureModeUndefined) {
+            skParagraph->layout(kInitialParagraphLayoutWidth);
+            layoutWidth = skParagraph->getMaxIntrinsicWidth();
+        }
+        if (layoutWidth <= 0) {
+            layoutWidth = skParagraph->getLongestLine();
+        }
+        if (layoutWidth <= 0) {
+            return YGSize { 0, 0 };
         }
 
-        skParagraph->layout(width);
-        auto sz = skParagraph->getHeight();
-        auto sw = skParagraph->getMaxWidth();
-        return YGSize { .width = width, .height =  sz };
+        skParagraph->layout(layoutWidth);
+        auto measuredWidth = layoutWidth;
+        if (widthMode == YGMeasureModeAtMost && width > 0) {
+            measuredWidth = std::min(width, layoutWidth);
+        }
+
+        return YGSize { .width = measuredWidth, .height = skParagraph->getHeight() };
     }
 
     static void ensureDefaultParagraphResources();

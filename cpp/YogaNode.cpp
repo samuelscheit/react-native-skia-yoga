@@ -1021,26 +1021,32 @@ void PointsCmd::updateProps(const PointsCommandData& props)
 
 void ParagraphCmd::updateProps(const ParagraphCommandData& props)
 {
-    if (props.paragraph.has_value()) {
+    if (props.paragraph.has_value() && props.paragraph.value()) {
         this->props.paragraph = props.paragraph.value();
-        return;
-    }
-
-    ensureDefaultParagraphResources();
-    if (!sDefaultFontCollection) {
+        setLayout(node->_layout);
         return;
     }
 
     auto paragraphStyle = props.paragraphStyle.value_or(para::ParagraphStyle());
     auto textStyle = paragraphStyle.getTextStyle();
-    if (!props.paragraphStyle.has_value()) {
+    if (textStyle.getFontFamilies().empty()) {
         textStyle.setFontFamilies({ SkString("Arial") });
-        textStyle.setFontSize(14.0f);
-        textStyle.setColor(SK_ColorBLACK);
-        paragraphStyle.setTextStyle(textStyle);
     }
+    if (textStyle.getFontSize() <= 0.0f) {
+        textStyle.setFontSize(14.0f);
+    }
+    if (!props.paragraphStyle.has_value()) {
+        textStyle.setColor(SK_ColorBLACK);
+    }
+    paragraphStyle.setTextStyle(textStyle);
 
-    auto builder = para::ParagraphBuilder::make(paragraphStyle, sDefaultFontCollection);
+    auto context = margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext();
+    auto fontCollection = sk_make_sp<para::FontCollection>();
+    auto fontMgr = RNSkia::JsiSkFontMgrFactory::getFontMgr(context);
+    fontCollection->setDefaultFontManager(fontMgr);
+    fontCollection->enableFontFallback();
+
+    auto builder = para::ParagraphBuilder::make(paragraphStyle, fontCollection);
     if (!builder) {
         return;
     }
@@ -1049,8 +1055,9 @@ void ParagraphCmd::updateProps(const ParagraphCommandData& props)
     const auto text = props.text.value_or("");
     builder->addText(text.c_str(), text.size());
 
-    auto context = margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext();
     this->props.paragraph = std::make_shared<RNSkia::JsiSkParagraph>(context, builder.get());
+    this->props.paragraph->getObject()->layout(ParagraphCmd::kInitialParagraphLayoutWidth);
+    setLayout(node->_layout);
 }
 
 void YogaNode::setLayout(const YogaNodeLayout& layout)

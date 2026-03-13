@@ -6,10 +6,14 @@ import type {
 	SamplingOptions,
 	SkFont,
 	SkImage,
+	SkMatrix,
 	SkParagraph,
 	SkParagraphStyle,
+	SkPaint,
 	SkPath,
 	SkPoint,
+	SkRect,
+	SkRRect,
 	SkTextStyle,
 	StrokeOpts,
 } from "@shopify/react-native-skia"
@@ -42,9 +46,47 @@ export type YogaTextStyle = Omit<
 
 export type YogaParagraphStyle = YogaTextStyle & SkParagraphStyle
 export type YogaAnimatedProp<T> = T | SharedValue<T>
+type YogaOpaqueValue =
+	| SkFont
+	| SkImage
+	| SkMatrix
+	| SkPaint
+	| SkParagraph
+	| SkPath
+	| SkRect
+	| SkRRect
+	| SamplingOptions
+
+export type YogaDeepAnimated<T> =
+	T extends string | number | boolean | null | undefined
+		? T | SharedValue<T>
+		: T extends YogaOpaqueValue
+			? T | SharedValue<T>
+			: T extends readonly (infer U)[]
+				? YogaDeepAnimated<U>[] | SharedValue<T>
+				: T extends object
+					? { [K in keyof T]: YogaDeepAnimated<T[K]> } | SharedValue<T>
+					: T | SharedValue<T>
+
+export type YogaAnimatedPoint = {
+	x: YogaAnimatedProp<number>
+	y: YogaAnimatedProp<number>
+}
+
+export type YogaAnimatedStrokeOpts = {
+	[K in keyof StrokeOpts]: YogaDeepAnimated<StrokeOpts[K]>
+}
+
+export type YogaAnimatedTextStyleProps = {
+	[K in keyof YogaTextStyle]: YogaDeepAnimated<YogaTextStyle[K]>
+}
+
+export type YogaAnimatedParagraphStyleProps = {
+	[K in keyof YogaParagraphStyle]: YogaDeepAnimated<YogaParagraphStyle[K]>
+}
 
 export interface YogaStyleProps {
-	style?: YogaNodeStyle
+	style?: YogaDeepAnimated<YogaNodeStyle>
 }
 
 export interface YogaContainerProps extends YogaStyleProps {
@@ -56,55 +98,55 @@ export interface YogaGroupProps extends YogaContainerProps {}
 export interface YogaRectProps extends YogaContainerProps {}
 
 export interface YogaRoundedRectProps extends YogaContainerProps {
-	cornerRadius?: YogaAnimatedProp<number>
+	cornerRadius?: YogaDeepAnimated<number>
 }
 
 export interface YogaCircleProps extends YogaContainerProps {
-	radius?: YogaAnimatedProp<number>
+	radius?: YogaDeepAnimated<number>
 }
 
 export interface YogaOvalProps extends YogaContainerProps {}
 
 export interface YogaTextProps extends YogaStyleProps {
-	font?: YogaAnimatedProp<SkFont>
-	text?: YogaAnimatedProp<string>
-	textStyle?: YogaAnimatedProp<YogaTextStyle>
+	font?: YogaDeepAnimated<SkFont>
+	text?: YogaDeepAnimated<string>
+	textStyle?: YogaAnimatedTextStyleProps | YogaAnimatedProp<YogaTextStyle>
 }
 
 export interface YogaParagraphProps extends YogaStyleProps {
-	paragraph?: YogaAnimatedProp<SkParagraph | null>
-	paragraphStyle?: YogaAnimatedProp<YogaParagraphStyle>
-	text?: YogaAnimatedProp<string>
+	paragraph?: YogaDeepAnimated<SkParagraph | null>
+	paragraphStyle?: YogaAnimatedParagraphStyleProps | YogaAnimatedProp<YogaParagraphStyle>
+	text?: YogaDeepAnimated<string>
 }
 
 export interface YogaPathProps extends YogaContainerProps {
-	fillType?: YogaAnimatedProp<YogaPathFillType>
-	path: YogaAnimatedProp<SkPath>
-	stroke?: YogaAnimatedProp<StrokeOpts>
-	trimEnd?: YogaAnimatedProp<number>
-	trimStart?: YogaAnimatedProp<number>
+	fillType?: YogaDeepAnimated<YogaPathFillType>
+	path: YogaDeepAnimated<SkPath>
+	stroke?: YogaAnimatedStrokeOpts | YogaAnimatedProp<StrokeOpts>
+	trimEnd?: YogaDeepAnimated<number>
+	trimStart?: YogaDeepAnimated<number>
 }
 
 export interface YogaLineProps extends YogaContainerProps {
-	from: YogaAnimatedProp<SkPoint>
-	to: YogaAnimatedProp<SkPoint>
+	from: YogaAnimatedPoint | YogaAnimatedProp<SkPoint>
+	to: YogaAnimatedPoint | YogaAnimatedProp<SkPoint>
 }
 
 export interface YogaPointsProps extends YogaContainerProps {
-	pointMode?: YogaAnimatedProp<YogaPointMode>
-	points: YogaAnimatedProp<SkPoint[]>
+	pointMode?: YogaDeepAnimated<YogaPointMode>
+	points: YogaAnimatedPoint[] | YogaAnimatedProp<SkPoint[]>
 }
 
 export interface YogaImageProps extends YogaContainerProps {
-	fit?: YogaAnimatedProp<Fit>
-	image?: YogaAnimatedProp<SkImage | null>
-	sampling?: YogaAnimatedProp<SamplingOptions>
+	fit?: YogaDeepAnimated<Fit>
+	image?: YogaDeepAnimated<SkImage | null>
+	sampling?: YogaDeepAnimated<SamplingOptions>
 }
 
 export interface YogaBlurMaskFilterProps extends YogaContainerProps {
-	blur?: YogaAnimatedProp<number>
-	blurStyle?: YogaAnimatedProp<YogaBlurStyle>
-	respectCTM?: YogaAnimatedProp<boolean>
+	blur?: YogaDeepAnimated<number>
+	blurStyle?: YogaDeepAnimated<YogaBlurStyle>
+	respectCTM?: YogaDeepAnimated<boolean>
 }
 
 export interface YogaIntrinsicElements {

@@ -1,5 +1,4 @@
 import { BlurStyle, FillType, PointMode } from "@shopify/react-native-skia"
-import { NitroModules } from "react-native-nitro-modules"
 import { NodeCommandKind } from "./specs/SkiaYoga.nitro"
 import type {
 	BlurStyleName,
@@ -38,13 +37,13 @@ type AnimatedListener = {
 type AnimatedValuesMap = Map<string, unknown>
 
 type NodeState = {
-	boxedNode: any
 	continuousRedraw: boolean
 	commandAnimatedValues: AnimatedValuesMap
 	commandListeners: Map<string, AnimatedListener>
 	invalidate: () => void
 	lastProps: YogaNodeProps
 	setContinuousRedraw: (node: YogaNodeFinal, enabled: boolean) => void
+	styleAnimatedValues: AnimatedValuesMap
 	styleListeners: Map<string, AnimatedListener>
 	type: NodeType
 }
@@ -68,6 +67,24 @@ const commandPropKeys: Record<NodeType, readonly string[]> = {
 	rrect: ["cornerRadius"],
 	text: ["font", "text", "textStyle"],
 }
+
+const commandNestedRoots = new Set([
+	"from",
+	"paragraphStyle",
+	"points",
+	"stroke",
+	"textStyle",
+	"to",
+])
+
+const styleNestedRoots = new Set([
+	"borderBottomLeftRadius",
+	"borderBottomRightRadius",
+	"borderTopLeftRadius",
+	"borderTopRightRadius",
+	"origin",
+	"transform",
+])
 
 function isStyleObject(value: unknown): value is NodeStyle {
 	return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -102,13 +119,13 @@ function getNodeState(
 	}
 
 	const state: NodeState = {
-		boxedNode: NitroModules.box(node),
 		continuousRedraw: false,
 		commandAnimatedValues: new Map(),
 		commandListeners: new Map(),
 		invalidate: invalidate ?? (() => {}),
 		lastProps: {},
 		setContinuousRedraw: setContinuousRedraw ?? (() => {}),
+		styleAnimatedValues: new Map(),
 		styleListeners: new Map(),
 		type,
 	}
@@ -138,6 +155,30 @@ function resetAnimatedState(
 	values?.clear()
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+	if (typeof value !== "object" || value === null || Array.isArray(value)) {
+		return false
+	}
+
+	const prototype = Object.getPrototypeOf(value)
+	return prototype === Object.prototype || prototype === null
+}
+
+function pathToKey(path: readonly string[]) {
+	return path.join(".")
+}
+
+function shouldTraverseNestedValue(
+	path: readonly string[],
+	nestedRoots: ReadonlySet<string>,
+) {
+	if (path.length === 0) {
+		return true
+	}
+
+	return nestedRoots.has(path[0]!)
+}
+
 function addAnimatedListener(
 	value: SharedValue<unknown>,
 	key: string,
@@ -165,48 +206,133 @@ function addAnimatedListener(
 	)(value, key, listenerId, onUpdate)
 }
 
-function resolveAnimatedProps(
-	props: Record<string, unknown>,
-	keys: Iterable<string>,
+function bindAnimatedValues(
+	value: unknown,
 	listeners: Map<string, AnimatedListener>,
+	values: AnimatedValuesMap,
 	onUpdate: (listenerKey: string, nextValue: unknown) => void,
-	values?: AnimatedValuesMap,
-) {
-	resetAnimatedState(listeners, values)
-
-	const resolvedProps: Record<string, unknown> = { ...props }
-
-	for (const key of keys) {
-		const value = props[key]
-		if (!isSharedValue(value)) {
-			continue
-		}
-
-		resolvedProps[key] = value.value
-		values?.set(key, value.value)
+	nestedRoots: ReadonlySet<string>,
+	path: readonly string[] = [],
+): unknown {
+	if (isSharedValue(value)) {
+		const key = pathToKey(path)
+		values.set(key, value.value)
 		addAnimatedListener(value, key, listeners, onUpdate)
+		return value.value
 	}
 
-	return resolvedProps
+	if (!shouldTraverseNestedValue(path, nestedRoots)) {
+		return value
+	}
+
+	if (Array.isArray(value)) {
+		return value.map((entry, index) =>
+			bindAnimatedValues(entry, listeners, values, onUpdate, nestedRoots, [
+				...path,
+				String(index),
+			]),
+		)
+	}
+
+	if (isPlainObject(value)) {
+		const resolved: Record<string, unknown> = {}
+		for (const [key, entry] of Object.entries(value)) {
+			resolved[key] = bindAnimatedValues(
+				entry,
+				listeners,
+				values,
+				onUpdate,
+				nestedRoots,
+				[...path, key],
+			)
+		}
+		return resolved
+	}
+
+	return value
 }
 
-function resolveAnimatedStyle(state: NodeState, props: YogaNodeProps) {
-	if (!isStyleObject(props.style)) {
-		resetAnimatedState(state.styleListeners)
+function resolveAnimatedSnapshot(
+	value: unknown,
+	values: AnimatedValuesMap,
+	nestedRoots: ReadonlySet<string>,
+	path: readonly string[] = [],
+): unknown {
+	if (isSharedValue(value)) {
+		const key = pathToKey(path)
+		return values.has(key) ? values.get(key) : value.value
+	}
+
+	if (!shouldTraverseNestedValue(path, nestedRoots)) {
+		return value
+	}
+
+	if (Array.isArray(value)) {
+		return value.map((entry, index) =>
+			resolveAnimatedSnapshot(entry, values, nestedRoots, [...path, String(index)]),
+		)
+	}
+
+	if (isPlainObject(value)) {
+		const resolved: Record<string, unknown> = {}
+		for (const [key, entry] of Object.entries(value)) {
+			resolved[key] = resolveAnimatedSnapshot(
+				entry,
+				values,
+				nestedRoots,
+				[...path, key],
+			)
+		}
+		return resolved
+	}
+
+	return value
+}
+
+function pickProps(props: YogaNodeProps, keys: readonly string[]) {
+	const subset: YogaNodeProps = {}
+	for (const key of keys) {
+		if (key in props) {
+			subset[key] = props[key]
+		}
+	}
+	return subset
+}
+
+function getResolvedStyle(state: NodeState) {
+	if (!isStyleObject(state.lastProps.style)) {
 		return {}
 	}
 
+	return resolveAnimatedSnapshot(
+		state.lastProps.style,
+		state.styleAnimatedValues,
+		styleNestedRoots,
+	) as NodeStyle
+}
+
+function resolveAnimatedStyle(
+	instance: YogaNodeFinal,
+	state: NodeState,
+	props: YogaNodeProps,
+) {
+	if (!isStyleObject(props.style)) {
+		resetAnimatedState(state.styleListeners, state.styleAnimatedValues)
+		return {}
+	}
+
+	resetAnimatedState(state.styleListeners, state.styleAnimatedValues)
 	const style = props.style as Record<string, unknown>
-	return resolveAnimatedProps(
+	return bindAnimatedValues(
 		style,
-		Object.keys(style),
 		state.styleListeners,
+		state.styleAnimatedValues,
 		(listenerKey, nextValue) => {
-			state.boxedNode.unbox().setStyle({
-				[listenerKey]: nextValue,
-			})
+			state.styleAnimatedValues.set(listenerKey, nextValue)
+			instance.setStyle(getResolvedStyle(state))
 			state.invalidate()
 		},
+		styleNestedRoots,
 	) as NodeStyle
 }
 
@@ -330,7 +456,7 @@ function buildNodeCommand(type: NodeType, props: YogaNodeProps): NodeCommand {
 			})
 		case "paragraph":
 			return createCommand(NodeCommandKind.Paragraph, {
-				paragraph: props.paragraph == null ? null : (props.paragraph as any),
+				paragraph: props.paragraph == null ? undefined : (props.paragraph as any),
 				paragraphStyle: props.paragraphStyle as any,
 				text: typeof props.text === "string" ? props.text : undefined,
 			})
@@ -371,31 +497,16 @@ function buildNodeCommand(type: NodeType, props: YogaNodeProps): NodeCommand {
 	}
 }
 
-function resolveCommandProps(
-	type: NodeType,
-	props: YogaNodeProps,
-	animatedValues: Map<string, unknown>,
-): YogaNodeProps {
-	const resolvedProps: YogaNodeProps = { ...props }
-
-	for (const key of commandPropKeys[type]) {
-		if (animatedValues.has(key)) {
-			resolvedProps[key] = animatedValues.get(key)
-		}
-	}
-
-	return resolvedProps
+function getResolvedCommandProps(state: NodeState): YogaNodeProps {
+	return resolveAnimatedSnapshot(
+		pickProps(state.lastProps, commandPropKeys[state.type]),
+		state.commandAnimatedValues,
+		commandNestedRoots,
+	) as YogaNodeProps
 }
 
 function applyResolvedCommand(instance: YogaNodeFinal, state: NodeState) {
-	setNodeCommand(
-		instance,
-		state.type,
-		buildNodeCommand(
-			state.type,
-			resolveCommandProps(state.type, state.lastProps, state.commandAnimatedValues),
-		),
-	)
+	setNodeCommand(instance, state.type, buildNodeCommand(state.type, getResolvedCommandProps(state)))
 }
 
 function formatCommandForError(command: NodeCommand) {
@@ -434,16 +545,17 @@ function resolveAnimatedCommand(
 	state: NodeState,
 	props: YogaNodeProps,
 ) {
-	return resolveAnimatedProps(
-		props,
-		commandPropKeys[state.type],
+	resetAnimatedState(state.commandListeners, state.commandAnimatedValues)
+	return bindAnimatedValues(
+		pickProps(props, commandPropKeys[state.type]),
 		state.commandListeners,
+		state.commandAnimatedValues,
 		(listenerKey, nextValue) => {
 			state.commandAnimatedValues.set(listenerKey, nextValue)
 			applyResolvedCommand(instance, state)
 			state.invalidate()
 		},
-		state.commandAnimatedValues,
+		commandNestedRoots,
 	) as YogaNodeProps
 }
 
@@ -459,7 +571,7 @@ function applyProps(
 	state.lastProps = nextProps
 
 	const resolvedCommandProps = resolveAnimatedCommand(instance, state, nextProps)
-	const resolvedStyle = resolveAnimatedStyle(state, nextProps)
+	const resolvedStyle = resolveAnimatedStyle(instance, state, nextProps)
 	const needsContinuousRedraw = shouldUseContinuousRedraw(nextProps.style)
 
 	if (state.continuousRedraw !== needsContinuousRedraw) {
@@ -492,7 +604,7 @@ function cleanupNode(node: YogaNodeFinal) {
 			state.setContinuousRedraw(node, false)
 		}
 		resetAnimatedState(state.commandListeners, state.commandAnimatedValues)
-		resetAnimatedState(state.styleListeners)
+		resetAnimatedState(state.styleListeners, state.styleAnimatedValues)
 		nodeStates.delete(node)
 	}
 

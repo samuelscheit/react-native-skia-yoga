@@ -1,6 +1,13 @@
-import { Easing, cancelAnimation, useDerivedValue, useSharedValue, withRepeat, withTiming } from "react-native-reanimated"
 import { Skia } from "@shopify/react-native-skia"
 import { useEffect, useMemo } from "react"
+import {
+	Easing,
+	cancelAnimation,
+	useDerivedValue,
+	useSharedValue,
+	withRepeat,
+	withTiming,
+} from "react-native-reanimated"
 import { YogaCanvas } from "react-native-skia-yoga"
 
 function useLoop(duration: number) {
@@ -26,6 +33,8 @@ function AnimatedCommandPropsDemo() {
 	const radius = useSharedValue(34)
 	const trimEnd = useSharedValue(0.2)
 	const blur = useSharedValue(6)
+	const fontSize = useSharedValue(18)
+	const strokeWidth = useSharedValue(10)
 
 	const wavePath = useMemo(() => {
 		const path = Skia.Path.MakeFromSVGString(
@@ -44,6 +53,8 @@ function AnimatedCommandPropsDemo() {
 		radius.value = 22 + t * 34
 		trimEnd.value = 0.15 + t * 0.85
 		blur.value = 4 + t * 24
+		fontSize.value = 16 + t * 14
+		strokeWidth.value = 6 + t * 12
 	})
 
 	return (
@@ -63,9 +74,9 @@ function AnimatedCommandPropsDemo() {
 				}}
 				paragraphStyle={{
 					color: "#dbe7f0",
-					fontSize: 18,
+					fontSize,
 				}}
-				text="This tab animates typed command props directly: circle.radius, path.trimEnd, and blurMaskFilter.blur."
+				text="This tab animates typed command props directly, including nested paragraphStyle.fontSize and stroke.width."
 			/>
 			<blurMaskFilter blur={blur} blurStyle="solid">
 				<group
@@ -85,7 +96,7 @@ function AnimatedCommandPropsDemo() {
 					/>
 					<path
 						path={wavePath}
-						stroke={{ width: 10 }}
+						stroke={{ width: strokeWidth }}
 						trimEnd={trimEnd}
 						style={{
 							backgroundColor: "#fda4af",

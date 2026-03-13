@@ -19,6 +19,9 @@ export function SkiaYogaTypecheck() {
 	const sharedTrimEnd = null as unknown as SharedValue<number>
 	const sharedBlur = null as unknown as SharedValue<number>
 	const sharedText = null as unknown as SharedValue<string>
+	const sharedFontSize = null as unknown as SharedValue<number>
+	const sharedStrokeWidth = null as unknown as SharedValue<number>
+	const sharedLineX = null as unknown as SharedValue<number>
 
 	const invalidChildren = (
 		// @ts-expect-error raw text children are unsupported
@@ -88,7 +91,7 @@ export function SkiaYogaTypecheck() {
 						/>
 						<path
 							path={demoPath}
-							stroke={{ width: 10 }}
+							stroke={{ width: sharedStrokeWidth }}
 							style={{
 								backgroundColor: "#8bd3dd",
 								height: 120,
@@ -98,7 +101,7 @@ export function SkiaYogaTypecheck() {
 					</group>
 				</blurMaskFilter>
 				<line
-					from={{ x: 0, y: 0 }}
+					from={{ x: sharedLineX, y: 0 }}
 					to={{ x: 10, y: 10 }}
 					style={{
 						backgroundColor: "#f2f7f5",
@@ -132,7 +135,7 @@ export function SkiaYogaTypecheck() {
 					}}
 					paragraphStyle={{
 						color: "#f2f7f5",
-						fontSize: 20,
+						fontSize: sharedFontSize,
 					}}
 					text="Package-owned JSX typings compile against the supported node set."
 				/>
