@@ -7,7 +7,7 @@ let turboModule: Spec | undefined
 try {
   turboModule = TurboModuleRegistry.getEnforcing<Spec>('SkiaYoga')
 } catch (e) {
-  throw new Error("SkiaYogaModule TurboModule is not available. Make sure you have linked the react-native-skia-yoga native module correctly. "+e)
+  throw new Error("SkiaYoga TurboModule is not available. Make sure you have linked the react-native-skia-yoga native module correctly. " + e)
 }
 
 turboModule.install()
@@ -30,4 +30,3 @@ export interface YogaNodeFinal extends YogaNode {
 export * from "./Reconciler"
 export * from "./util"
 export * from "./YogaCanvas"
-

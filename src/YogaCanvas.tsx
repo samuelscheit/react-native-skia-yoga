@@ -1,16 +1,25 @@
 import { type CanvasProps, type SkPicture } from "@shopify/react-native-skia"
 import "@shopify/react-native-skia/lib/typescript/src/views/api.d.ts"
 import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react"
-import type { View } from "react-native"
-import { NitroModules } from "react-native-nitro-modules"
+import type { LayoutChangeEvent, View } from "react-native"
 import { useSharedValue } from "react-native-reanimated"
-import { runOnUIAsync } from "react-native-worklets"
 import { reconciler } from "./Reconciler"
 import { createYogaNode } from "./util"
 const { default: SkiaPictureViewNativeComponent } =
 	require("@shopify/react-native-skia/src/specs/SkiaPictureViewNativeComponent") as typeof import("@shopify/react-native-skia/lib/typescript/src/specs/SkiaPictureViewNativeComponent")
 const { SkiaViewNativeId } =
 	require("@shopify/react-native-skia/src/views/SkiaViewNativeId") as typeof import("@shopify/react-native-skia/lib/typescript/src/views/SkiaViewNativeId")
+
+function reportError(error: Error) {
+	console.error(error)
+}
+
+function noop() {}
+
+function presentPicture(nativeId: number, picture: SkPicture) {
+	SkiaViewApi.setJsiProperty(nativeId, "picture", picture)
+	SkiaViewApi.requestRedraw(nativeId)
+}
 
 export function YogaCanvas({
 	children,
@@ -35,7 +44,7 @@ export function YogaCanvas({
 
 		const picture = node.draw() as SkPicture
 
-		SkiaViewApi.setJsiProperty(nativeId, "picture", picture)
+		presentPicture(nativeId, picture)
 
 
 		return {
@@ -44,52 +53,54 @@ export function YogaCanvas({
 				0,
 				null,
 				true,
-				true,
-				"test",
-				console.error,
+				null,
+				"",
+				reportError,
+				reportError,
+				reportError,
+				noop,
 				null,
 			),
 			node,
 		}
 	}, [])
 
-	useLayoutEffect(() => {
-		viewRef.current?.measure((x, y, width, height, pageX, pageY) => {
-			node.setStyle({
-				width,
-				height,
-			})
+	function drawNodePicture() {
+		const picture = node.draw() as SkPicture
+		presentPicture(nativeId, picture)
+	}
+
+	function handleLayout(event: LayoutChangeEvent) {
+		const { width, height } = event.nativeEvent.layout
+		node.setStyle({
+			width,
+			height,
 		})
-	}, [])
+		drawNodePicture()
+	}
 
 	const currentlyRunning = useSharedValue(0)
 
 	useEffect(() => {
 		const id = Math.random()
 		currentlyRunning.value = id
+		let frameId = 0
 
-		const boxed = NitroModules.box(node)
+		function frame() {
+			if (currentlyRunning.value !== id) return
+			drawNodePicture()
+			frameId = requestAnimationFrame(frame)
+		}
 
-		runOnUIAsync(() => {
-			function frame(time: number) {
-				if (currentlyRunning.value !== id) return
-
-				const unboxed = boxed.unbox()
-
-				const picture = unboxed.draw()
-
-				SkiaViewApi.setJsiProperty(nativeId, "picture", picture)
-
-				requestAnimationFrame(frame)
-			}
-
-			requestAnimationFrame(frame)
-		})()
+		frameId = requestAnimationFrame(frame)
 
 		return () => {
 			currentlyRunning.value = 0
+			if (frameId) {
+				cancelAnimationFrame(frameId)
+			}
 		}
-	}, [])
+	}, [currentlyRunning, node, nativeId])
 
 	useLayoutEffect(() => {
 		// @ts-ignore
@@ -98,9 +109,7 @@ export function YogaCanvas({
 		reconciler.flushSyncWork()
 		reconciler.flushPassiveEffects()
 
-		const picture = node.draw() as SkPicture
-
-		SkiaViewApi.setJsiProperty(nativeId, "picture", picture)
+		drawNodePicture()
 	}, [children, root, nativeId])
 
 	useEffect(() => {
@@ -120,6 +129,7 @@ export function YogaCanvas({
 			debug={debug}
 			opaque={opaque}
 			nativeID={`${nativeId}`}
+			onLayout={handleLayout}
 			style={style}
 			colorSpace={colorSpace}
 		/>

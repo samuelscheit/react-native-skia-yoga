@@ -18,6 +18,7 @@
 #include <include/core/SkPictureRecorder.h>
 #include "DrawingCtx.h"
 #include "RNSkManager.h"
+#include "RuntimeAwareCache.h"
 #include "JsiSkSkottie.h" // provide definition once per library to satisfy Convertor.h refs
 #include <modules/skparagraph/include/FontCollection.h>
 #include <modules/skparagraph/include/ParagraphBuilder.h>
@@ -98,6 +99,7 @@ static void setYGEdgeValue(void (*setter)(YGNodeRef, YGEdge, float),
 
 void YogaNode::setStyle(const NodeStyle& style)
 {
+    invalidateLayout();
     _style = style;
 
     // Layout properties - using references to avoid multiple value() calls
@@ -642,9 +644,11 @@ void YogaNode::insertChild(const std::shared_ptr<HybridYogaNodeSpec>& child, con
     }
 
     YGNodeInsertChild(_node, yogaNode->_node, insertIndex);
+    yogaNode->_parent = this;
 
     // Store the child in our vector for easy access later
     _children.push_back(yogaNode);
+    invalidateLayout();
 }
 
 // void removeChild(const std::shared_ptr<HybridYogaNodeSpec>& child) override;
@@ -653,79 +657,82 @@ void YogaNode::removeChild(const std::shared_ptr<HybridYogaNodeSpec>& c)
     auto child = std::dynamic_pointer_cast<YogaNode>(c);
 
     YGNodeRemoveChild(_node, child->_node);
+    child->_parent = nullptr;
     _children.erase(std::remove(_children.begin(), _children.end(), child), _children.end());
+    invalidateLayout();
 }
 
 void YogaNode::removeAllChildren()
 {
+    for (auto& child : _children) {
+        child->_parent = nullptr;
+    }
     YGNodeRemoveAllChildren(_node);
     _children.clear();
+    invalidateLayout();
 }
 
 void YogaNode::setType(const NodeType type)
 {
-}
-
-jsi::Value YogaNode::setType(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
-{
-    jsi::Object props = jsi::Object(runtime);
+    auto* runtime = RNJsi::BaseRuntimeAwareCache::getMainJsRuntime();
+    jsi::Object props = jsi::Object(*runtime);
     RNSkia::Variables variables; // TODO: save reanimated shared values
 
-    _type = JSIConverter<NodeType>::fromJSI(runtime, args[0]);
+    _type = type;
 
     switch (this->_type) {
     case NodeType::RECT: {
-        auto* rectCmd = new margelo::nitro::RNSkiaYoga::RectCmd(this, runtime, props, variables);
+        auto* rectCmd = new margelo::nitro::RNSkiaYoga::RectCmd(this, *runtime, props, variables);
         _command.reset(rectCmd);
         break;
     }
     case NodeType::RRECT: {
-        auto* rrectCmd = new margelo::nitro::RNSkiaYoga::RRectCmd(this, runtime, props, variables);
+        auto* rrectCmd = new margelo::nitro::RNSkiaYoga::RRectCmd(this, *runtime, props, variables);
         _command.reset(rrectCmd);
         break;
     }
     case NodeType::TEXT: {
-        auto* textCmd = new margelo::nitro::RNSkiaYoga::TextCmd(this, runtime, props, variables);
+        auto* textCmd = new margelo::nitro::RNSkiaYoga::TextCmd(this, *runtime, props, variables);
         _command.reset(textCmd);
         break;
     }
     case NodeType::PATH: {
-        auto* pathCmd = new margelo::nitro::RNSkiaYoga::PathCmd(this, runtime, props, variables);
+        auto* pathCmd = new margelo::nitro::RNSkiaYoga::PathCmd(this, *runtime, props, variables);
         _command.reset(pathCmd);
         break;
     }
     case NodeType::LINE: {
-        auto* lineCmd = new margelo::nitro::RNSkiaYoga::LineCmd(this, runtime, props, variables);
+        auto* lineCmd = new margelo::nitro::RNSkiaYoga::LineCmd(this, *runtime, props, variables);
         _command.reset(lineCmd);
         break;
     }
     case NodeType::POINTS: {
-        auto* pointsCmd = new margelo::nitro::RNSkiaYoga::PointsCmd(this, runtime, props, variables);
+        auto* pointsCmd = new margelo::nitro::RNSkiaYoga::PointsCmd(this, *runtime, props, variables);
         _command.reset(pointsCmd);
         break;
     }
     case NodeType::BLURMASKFILTER: {
-        auto* blurMaskFilterCmd = new margelo::nitro::RNSkiaYoga::BlurMaskFilterCmd(this, runtime, props, variables);
+        auto* blurMaskFilterCmd = new margelo::nitro::RNSkiaYoga::BlurMaskFilterCmd(this, *runtime, props, variables);
         _command.reset(blurMaskFilterCmd);
         break;
     }
     case NodeType::OVAL: {
-        auto* ovalCmd = new margelo::nitro::RNSkiaYoga::OvalCmd(this, runtime, props, variables);
+        auto* ovalCmd = new margelo::nitro::RNSkiaYoga::OvalCmd(this, *runtime, props, variables);
         _command.reset(ovalCmd);
         break;
     }
     case NodeType::CIRCLE: {
-        auto* circleCmd = new margelo::nitro::RNSkiaYoga::CircleCmd(this, runtime, props, variables);
+        auto* circleCmd = new margelo::nitro::RNSkiaYoga::CircleCmd(this, *runtime, props, variables);
         _command.reset(circleCmd);
         break;
     }
     case NodeType::IMAGE: {
-        auto* imageCmd = new margelo::nitro::RNSkiaYoga::ImageCmd(this, runtime, props, variables);
+        auto* imageCmd = new margelo::nitro::RNSkiaYoga::ImageCmd(this, *runtime, props, variables);
         _command.reset(imageCmd);
         break;
     }
     case NodeType::PARAGRAPH: {
-        auto* paragraphCmd = new margelo::nitro::RNSkiaYoga::ParagraphCmd(this, runtime, props, variables);
+        auto* paragraphCmd = new margelo::nitro::RNSkiaYoga::ParagraphCmd(this, *runtime, props, variables);
         _command.reset(paragraphCmd);
 
         YGNodeSetMeasureFunc(_node, margelo::nitro::RNSkiaYoga::ParagraphCmd::measureFunc);
@@ -738,12 +745,22 @@ jsi::Value YogaNode::setType(jsi::Runtime& runtime, const jsi::Value& thisArg, c
         _command.reset(groupCmd);
         break;
     }
+}
 
+jsi::Value YogaNode::setType(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
+{
+    (void)thisArg;
+    if (count == 0) {
+        return jsi::Value::undefined();
+    }
+
+    setType(JSIConverter<NodeType>::fromJSI(runtime, args[0]));
     return jsi::Value::undefined();
 }
 
 jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
 {
+    (void)thisArg;
     if (count == 0 || !args[0].isObject()) {
         return jsi::Value::undefined();
     }
@@ -760,6 +777,10 @@ jsi::Value YogaNode::setProps(jsi::Runtime& runtime, const jsi::Value& thisArg, 
 
 jsi::Value YogaNode::draw(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
 {
+    (void)thisArg;
+    (void)args;
+    (void)count;
+    jsi::Object props = jsi::Object(runtime);
     SkPictureRecorder pictureRecorder;
     SkISize size = SkISize::Make(2'000'000, 2'000'000);
     SkRect rect = SkRect::Make(size);
@@ -885,6 +906,14 @@ void YogaNode::recursiveSetLayout()
 
     for (const auto& child : _children) {
         child->recursiveSetLayout();
+    }
+}
+
+void YogaNode::invalidateLayout()
+{
+    _hasLayoutBeenComputed = false;
+    if (_parent != nullptr) {
+        _parent->invalidateLayout();
     }
 }
 

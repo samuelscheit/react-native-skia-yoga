@@ -1,9 +1,5 @@
-import {
-	mix,
-	polar2Canvas,
-	Skia
-} from "@shopify/react-native-skia"
-import { useEffect, useMemo } from "react"
+import { BlendMode, mix, polar2Canvas, Skia } from "@shopify/react-native-skia"
+import { useEffect, useMemo, useState } from "react"
 import { useWindowDimensions } from "react-native"
 import {
 	cancelAnimation,
@@ -77,56 +73,61 @@ const Ring = ({ index, progress, total }: RingProps) => {
 		<circle
 			r={R}
 			style={{
-				// backgroundColor: index % 2 === 0 ? c1 : c2,
-				// matrix,
-				// blendMode: BlendMode.Screen,
+				backgroundColor: index % 2 === 0 ? c1 : c2,
+				matrix,
+				blendMode: BlendMode.Screen,
 			}}
 		/>
 	)
 }
 
 function Root() {
-	return <rect style={{ flex: 1, backgroundColor: "#242b38" }} />
-	// const [rings] = useState(6)
+	const [rings] = useState(6)
 
-	// const progress = useLoop({ duration: 3000 })
+	const progress = useLoop({ duration: 3000 })
 
-	// const matrix = useMemo(() => Skia.Matrix(), [])
-	// useDerivedValue(() => {
-	// 	matrix.identity().rotate(mix(progress.value, -Math.PI, 0))
-	// })
+	const matrix = useMemo(() => Skia.Matrix(), [])
+	useDerivedValue(() => {
+		matrix.identity().rotate(mix(progress.value, -Math.PI, 0))
+	})
 
-	// globalThis.matrix = matrix
+	globalThis.matrix = matrix
 
-	// return (
-	// 	<rect
-	// 		style={{
-	// 			flex: 1,
-	// 			justifyContent: "center",
-	// 			alignItems: "center",
-	// 			backgroundColor: "#242b38",
-	// 		}}
-	// 	>
-	// 		<blurMaskFilter style="solid" blur={40}>
-	// 			<group style={{ 
-	// 				// matrix
-	// 			 }}>
-	// 				{new Array(rings).fill(0).map((_, index) => {
-	// 					return (
-	// 						<Ring
-	// 							key={index}
-	// 							index={index}
-	// 							progress={progress}
-	// 							total={rings}
-	// 						/>
-	// 					)
-	// 				})}
-	// 			</group>
-	// 		</blurMaskFilter>
-	// 	</rect>
-	// )
+	return (
+		<rect
+			style={{
+				flex: 1,
+				justifyContent: "center",
+				alignItems: "center",
+				backgroundColor: "#242b38",
+			}}
+		>
+			<blurMaskFilter style="solid" blur={40}>
+				<group
+					style={{
+						matrix,
+					}}
+				>
+					{new Array(rings).fill(0).map((_, index) => {
+						return (
+							<Ring
+								key={index}
+								index={index}
+								progress={progress}
+								total={rings}
+							/>
+						)
+					})}
+				</group>
+			</blurMaskFilter>
+		</rect>
+	)
 }
 
 export default function HomeScreen() {
-	return <YogaCanvas style={{ flex: 1 }}><Root /></YogaCanvas>
+	return (
+		<YogaCanvas style={{ flex: 1 }}>
+			<Root />
+		</YogaCanvas>
+	)
 }

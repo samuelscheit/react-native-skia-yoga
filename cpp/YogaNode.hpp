@@ -265,6 +265,7 @@ public:
     void recursiveSetLayout();
     YogaNodeLayout getLayout() override;
     void setLayout(const YogaNodeLayout& layout) override;
+    void invalidateLayout();
 
     void removeAllChildren() override;
 
@@ -280,6 +281,7 @@ public:
     bool _hasLayoutBeenComputed = false;
     YogaNodeLayout _layout;
     std::unique_ptr<YogaNodeCommand> _command;
+    YogaNode* _parent = nullptr;
     std::vector<std::shared_ptr<YogaNode>> _children;
     NodeStyle _style;
     SkPaint _paint;
@@ -297,8 +299,7 @@ public:
         // register all methods we override here
         registerHybrids(this, [](Prototype& prototype) {
             prototype.registerRawHybridMethod("setProps", 1, &YogaNode::setProps);
-            prototype.registerRawHybridMethod("draw", 1, &YogaNode::draw);
-            prototype.registerRawHybridMethod("setType", 1, &YogaNode::setType);
+            prototype.registerRawHybridMethod("draw", 0, &YogaNode::draw);
             prototype.registerRawHybridMethod("getChildren", 0, &YogaNode::getChildren);
         });
     }
@@ -588,7 +589,7 @@ private:
 class ImageCmd : public RNSkia::ImageCmd, public YogaNodeCommand {
 public:
     ImageCmd(YogaNode* node, jsi::Runtime& runtime, const jsi::Object& props, RNSkia::Variables& variables)
-        : RNSkia::ImageCmd(runtime, props, variables)
+        : RNSkia::ImageCmd(SkiaYoga::getPlatformContext(), runtime, props, variables)
         , YogaNodeCommand(node)
     {
         this->props.x = 0;

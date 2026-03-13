@@ -15,7 +15,7 @@ namespace jsi = facebook::jsi;
   std::shared_ptr<facebook::react::CallInvoker> _jsInvoker;
 }
 
-RCT_EXPORT_MODULE(SkiaYogaModule)
+RCT_EXPORT_MODULE(SkiaYoga)
 @synthesize bridge = _bridge;
 
 #pragma Accessorsp
@@ -53,4 +53,3 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install) {
 }
 
 @end
-

@@ -60,8 +60,8 @@ Pod::Spec.new do |s|
   add_nitrogen_files(s)
 
   s.dependency 'Yoga'
-#   s.dependency 'react-native-skia/Jsi'
-  s.dependency 'react-native-yoga-jsi'
+  # s.dependency 'react-native-skia/Jsi'
+  # s.dependency 'react-native-yoga-jsi'
   s.dependency 'React-jsi'
   s.dependency 'React-callinvoker'
   install_modules_dependencies(s)
