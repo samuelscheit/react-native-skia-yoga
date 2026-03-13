@@ -102,6 +102,10 @@ export type StrokeOptsNative = CustomType<
 
 export interface EmptyCommandPayload {}
 
+export interface GroupCommandPayload {
+	rasterize?: boolean
+}
+
 export enum NodeCommandKind {
 	Rect = "rect",
 	RoundedRect = "rrect",
@@ -169,7 +173,7 @@ export interface ImageCommandPayload {
 
 export interface GroupCommand {
 	type: NodeCommandKind.Group
-	data: EmptyCommandPayload
+	data: GroupCommandPayload
 }
 
 export interface RectCommand {

@@ -16,6 +16,7 @@
 #include "JsiSkMatrix.h"
 #include "JsiSkTextStyle.h"
 #include <include/core/SkPictureRecorder.h>
+#include <include/core/SkSurface.h>
 #include "DrawingCtx.h"
 #include "RNSkManager.h"
 #include "RuntimeAwareCache.h"
@@ -29,6 +30,48 @@
 namespace margelo::nitro::RNSkiaYoga {
 
 using namespace facebook;
+
+namespace {
+
+template <typename Tuple, std::size_t... Indices>
+std::array<SkScalar, sizeof...(Indices)> tupleToScalarArrayImpl(const Tuple& tuple, std::index_sequence<Indices...>)
+{
+    return { static_cast<SkScalar>(std::get<Indices>(tuple))... };
+}
+
+template <typename Tuple>
+auto tupleToScalarArray(const Tuple& tuple)
+{
+    return tupleToScalarArrayImpl(
+        tuple,
+        std::make_index_sequence<std::tuple_size_v<std::decay_t<Tuple>>> {});
+}
+
+template <typename MatrixStyleValue>
+std::shared_ptr<SkMatrix> makeMatrixPointer(const MatrixStyleValue& matrixValue)
+{
+    return std::visit(
+        [](const auto& value) -> std::shared_ptr<SkMatrix> {
+            using T = std::decay_t<decltype(value)>;
+
+            if constexpr (std::is_same_v<T, std::shared_ptr<SkMatrix>>) {
+                return value;
+            } else if constexpr (std::tuple_size_v<T> == 9) {
+                const auto values = tupleToScalarArray(value);
+                auto matrix = std::make_shared<SkMatrix>();
+                matrix->set9(values.data());
+                return matrix;
+            } else if constexpr (std::tuple_size_v<T> == 16) {
+                const auto values = tupleToScalarArray(value);
+                return std::make_shared<SkMatrix>(SkM44::RowMajor(values.data()).asM33());
+            } else {
+                static_assert(std::tuple_size_v<T> == 9 || std::tuple_size_v<T> == 16, "Unsupported matrix tuple size");
+            }
+        },
+        matrixValue);
+}
+
+} // namespace
 
 std::optional<SkFont> TextCmd::sDefaultFont;
 std::mutex ParagraphCmd::sParagraphBuilderMutex;
@@ -472,10 +515,14 @@ void YogaNode::setStyle(const NodeStyle& style)
         _paint.setBlendMode(static_cast<SkBlendMode>(*value));
     }
 
-    auto shouldClip = style.borderRadius.has_value() || style.borderTopLeftRadius.has_value() || style.borderTopRightRadius.has_value() || style.borderBottomLeftRadius.has_value() || style.borderBottomRightRadius.has_value();
+    const bool clipsOverflow =
+        style.overflow.has_value() &&
+        (style.overflow.value() == Overflow::HIDDEN || style.overflow.value() == Overflow::SCROLL);
 
-    if (shouldClip) {
-        std::array<SkVector, 4> radii;
+    auto shouldClipToBounds = style.borderRadius.has_value() || style.borderTopLeftRadius.has_value() || style.borderTopRightRadius.has_value() || style.borderBottomLeftRadius.has_value() || style.borderBottomRightRadius.has_value();
+
+    if (shouldClipToBounds) {
+        detail::CornerRadii radii;
         radii.fill(SkVector::Make(0.0f, 0.0f));
 
         if (const auto& value = style.borderRadius) {
@@ -485,7 +532,7 @@ void YogaNode::setStyle(const NodeStyle& style)
             radii[SkRRect::kLowerRight_Corner] = SkVector::Make(radius, radius);
             radii[SkRRect::kLowerLeft_Corner] = SkVector::Make(radius, radius);
 
-            shouldClip = true;
+            shouldClipToBounds = true;
         }
 
         auto setCornerRadius = [&](const auto& val, int corner) {
@@ -497,7 +544,7 @@ void YogaNode::setStyle(const NodeStyle& style)
                     auto radius = static_cast<float>(std::get<double>(*val));
                     radii[corner] = SkVector::Make(radius, radius);
                 }
-                shouldClip = true;
+                shouldClipToBounds = true;
             }
         };
 
@@ -506,38 +553,38 @@ void YogaNode::setStyle(const NodeStyle& style)
         setCornerRadius(style.borderBottomRightRadius, SkRRect::kLowerRight_Corner);
         setCornerRadius(style.borderBottomLeftRadius, SkRRect::kLowerLeft_Corner);
 
-        _clipRRect = SkRRect();
-        _clipRRectRadii = radii;
-        _clipRRect->setRectRadii(SkRect::MakeXYWH(_layout.left, _layout.top, _layout.width, _layout.height), radii.data());
-        _clipPath.reset();
-        _clipRect.reset();
-    } else if (const auto& value = style.clip) {
+        _clipsToBounds = true;
+        _clipToBoundsRadii = radii;
+    } else {
+        _clipsToBounds = clipsOverflow;
+        _clipToBoundsRadii.reset();
+    }
+
+    if (const auto& value = style.clip) {
         if (std::holds_alternative<SkPath>(*value)) {
             _clipPath = std::get<SkPath>(*value);
             _clipRRect.reset();
-            _clipRRectRadii.reset();
             _clipRect.reset();
         } else if (std::holds_alternative<SkRRect>(*value)) {
             _clipRRect = std::get<SkRRect>(*value);
             _clipPath.reset();
-            _clipRRectRadii.reset();
             _clipRect.reset();
         } else if (std::holds_alternative<SkRect>(*value)) {
             SkRect r = std::get<SkRect>(*value);
             _clipRect = r;
             _clipPath.reset();
             _clipRRect.reset();
-            _clipRRectRadii.reset();
         }
     } else {
         _clipPath.reset();
         _clipRRect.reset();
         _clipRect.reset();
-        _clipRRectRadii.reset();
     }
 
     if (const auto& value = style.matrix) {
-        _matrix = *value;
+        _matrix = makeMatrixPointer(*value);
+    } else if (!style.transform.has_value()) {
+        _matrix.reset();
     }
 
     if (const auto& value = style.transform) {
@@ -688,6 +735,8 @@ void YogaNode::removeAllChildren()
 
 void YogaNode::setCommand(NodeCommand command)
 {
+    invalidateRasterCache();
+
     auto* runtime = RNJsi::BaseRuntimeAwareCache::getMainJsRuntime();
     if (runtime == nullptr) {
         throw std::runtime_error("Main JS runtime is not available.");
@@ -728,6 +777,7 @@ void YogaNode::setCommand(NodeCommand command)
         } else if (_commandKind != YogaNodeCommandKind::GROUP) {
             throw std::runtime_error("YogaNode command type cannot change after initialization.");
         }
+        static_cast<GroupCmd*>(_command.get())->updateProps(std::get<GroupCommandData>(command.data));
         break;
     case NodeCommandKind::BLUR_MASK_FILTER:
         if (_commandKind == YogaNodeCommandKind::NONE) {
@@ -851,6 +901,20 @@ void YogaNode::drawInternal(RNSkia::DrawingCtx& ctx)
         ctx.canvas->concat(*_matrix);
     }
 
+    if (_clipsToBounds) {
+        if (_clipToBoundsRadii.has_value()) {
+            const auto clipBounds = detail::makeRoundedRect(_layout, *_clipToBoundsRadii);
+            SkPath clipPath;
+            clipPath.addRRect(clipBounds);
+            ctx.canvas->clipPath(clipPath, SkClipOp::kIntersect, true);
+        } else {
+            ctx.canvas->clipRect(
+                SkRect::MakeXYWH(0, 0, _layout.width, _layout.height),
+                SkClipOp::kIntersect,
+                true);
+        }
+    }
+
     if (_clipPath.has_value()) {
         ctx.canvas->clipPath(*_clipPath, op, true);
     } else if (_clipRect.has_value()) {
@@ -866,6 +930,61 @@ void YogaNode::drawInternal(RNSkia::DrawingCtx& ctx)
 
     _command->draw(&ctx);
 
+    if (_command->rasterizesSubtree()) {
+        const auto width = std::max(1, static_cast<int>(std::ceil(_layout.width)));
+        const auto height = std::max(1, static_cast<int>(std::ceil(_layout.height)));
+        const auto hasDynamicContent = subtreeHasDynamicRasterContent();
+        const auto canReuseRasterCache =
+            !hasDynamicContent &&
+            !_rasterCacheDirty &&
+            _rasterCache != nullptr &&
+            _rasterCacheWidth == width &&
+            _rasterCacheHeight == height;
+
+        if (canReuseRasterCache) {
+            ctx.canvas->drawImage(_rasterCache, 0.0f, 0.0f);
+        } else {
+            const auto imageInfo = SkImageInfo::MakeN32Premul(width, height);
+            const auto surface = SkSurfaces::Raster(imageInfo);
+
+            if (surface != nullptr) {
+                auto* offscreenCanvas = surface->getCanvas();
+                offscreenCanvas->clear(SK_ColorTRANSPARENT);
+
+                RNSkia::DrawingCtx offscreenCtx(offscreenCanvas);
+                auto maskFilter = ctx.getPaint().refMaskFilter();
+                _paint.setMaskFilter(maskFilter);
+                offscreenCtx.pushPaint(_paint);
+                drawChildren(offscreenCtx);
+                offscreenCtx.restorePaint();
+
+                const auto image = surface->makeImageSnapshot();
+                if (image != nullptr) {
+                    if (hasDynamicContent) {
+                        _rasterCache.reset();
+                        _rasterCacheDirty = true;
+                    } else {
+                        _rasterCache = image;
+                        _rasterCacheDirty = false;
+                    }
+
+                    _rasterCacheWidth = width;
+                    _rasterCacheHeight = height;
+                    ctx.canvas->drawImage(image, 0.0f, 0.0f);
+                }
+            }
+        }
+    } else {
+        drawChildren(ctx);
+    }
+
+    ctx.restorePaint();
+
+    ctx.canvas->restore();
+}
+
+void YogaNode::drawChildren(RNSkia::DrawingCtx& ctx)
+{
     for (const auto& child : _children) {
         if (!child->_hasLayoutBeenComputed) {
             child->computeLayout(_layout.width, _layout.height);
@@ -875,10 +994,21 @@ void YogaNode::drawInternal(RNSkia::DrawingCtx& ctx)
             child->drawInternal(ctx);
         }
     }
+}
 
-    ctx.restorePaint();
+bool YogaNode::subtreeHasDynamicRasterContent() const
+{
+    if (_command && _command->isDynamic()) {
+        return true;
+    }
 
-    ctx.canvas->restore();
+    for (const auto& child : _children) {
+        if (child->subtreeHasDynamicRasterContent()) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 jsi::Value YogaNode::getChildren(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
@@ -913,26 +1043,6 @@ void YogaNode::recursiveSetLayout()
     }
     _hasLayoutBeenComputed = true;
 
-    if (_clipRRect) {
-        std::array<SkVector, 4> radii;
-        radii.fill(SkVector::Make(0.0f, 0.0f));
-
-        if (_clipRRectRadii) {
-            radii = *_clipRRectRadii;
-        } else {
-            auto currentRadii = _clipRRect->radii();
-            for (size_t i = 0; i < radii.size(); ++i) {
-                radii[i] = currentRadii[i];
-            }
-        }
-
-        _clipRRect->setRectRadii(SkRect::MakeXYWH(_layout.left, _layout.top, _layout.width, _layout.height), radii.data());
-    }
-
-    if (_clipRect) {
-        _clipRect->setWH(_layout.width, _layout.height);
-    }
-
     for (const auto& child : _children) {
         child->recursiveSetLayout();
     }
@@ -941,16 +1051,26 @@ void YogaNode::recursiveSetLayout()
 void YogaNode::invalidateLayout()
 {
     _hasLayoutBeenComputed = false;
+    _rasterCacheDirty = true;
+    _rasterCache.reset();
     if (_parent != nullptr) {
         _parent->invalidateLayout();
     }
 }
 
+void YogaNode::invalidateRasterCache()
+{
+    _rasterCacheDirty = true;
+    _rasterCache.reset();
+
+    if (_parent != nullptr) {
+        _parent->invalidateRasterCache();
+    }
+}
+
 void BlurMaskFilterCmd::updateProps(const BlurMaskFilterCommandData& props)
 {
-    if (props.blur.has_value()) {
-        _props.blur = static_cast<float>(props.blur.value());
-    }
+    _blur = props.blur;
     if (props.blurStyle.has_value()) {
         _props.style = props.blurStyle.value();
     }
@@ -987,8 +1107,8 @@ void ImageCmd::updateProps(const ImageCommandData& props)
 void PathCmd::updateProps(const PathCommandData& props)
 {
     setBasePath(props.path);
-    this->props.start = static_cast<float>(props.trimStart.value_or(0.0));
-    this->props.end = static_cast<float>(props.trimEnd.value_or(1.0));
+    _trimStart = props.trimStart;
+    _trimEnd = props.trimEnd;
     if (props.stroke.has_value()) {
         this->props.stroke = toNativeStrokeOpts(props.stroke.value());
     } else {

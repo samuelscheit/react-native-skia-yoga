@@ -13,6 +13,7 @@
 #include "JSIConverter+SkPath.hpp"
 #include "JSIConverter+SkSamplingOptions.hpp"
 #include "JSIConverter+SkTextStyle.hpp"
+#include "JSIConverter+AnimatedDouble.hpp"
 #include "NodeCommand.hpp"
 #include <NitroModules/JSIConverter+Optional.hpp>
 #include <NitroModules/NitroHash.hpp>
@@ -80,67 +81,6 @@ inline margelo::nitro::RNSkiaYoga::NodeCommandKind parseNodeCommandKind(const st
     }
 }
 
-inline std::optional<SkBlurStyle> parseBlurStyle(jsi::Runtime& runtime, const jsi::Value& value)
-{
-    auto blurStyle = JSIConverter<std::optional<std::string>>::fromJSI(runtime, value);
-    if (!blurStyle.has_value()) {
-        return std::nullopt;
-    }
-
-    switch (hashString(blurStyle->c_str(), blurStyle->size())) {
-    case hashString("normal"):
-        return SkBlurStyle::kNormal_SkBlurStyle;
-    case hashString("solid"):
-        return SkBlurStyle::kSolid_SkBlurStyle;
-    case hashString("outer"):
-        return SkBlurStyle::kOuter_SkBlurStyle;
-    case hashString("inner"):
-        return SkBlurStyle::kInner_SkBlurStyle;
-    default:
-        throw std::invalid_argument("Invalid blurStyle: " + *blurStyle);
-    }
-}
-
-inline std::optional<SkCanvas::PointMode> parsePointMode(jsi::Runtime& runtime, const jsi::Value& value)
-{
-    auto pointMode = JSIConverter<std::optional<std::string>>::fromJSI(runtime, value);
-    if (!pointMode.has_value()) {
-        return std::nullopt;
-    }
-
-    switch (hashString(pointMode->c_str(), pointMode->size())) {
-    case hashString("points"):
-        return SkCanvas::PointMode::kPoints_PointMode;
-    case hashString("lines"):
-        return SkCanvas::PointMode::kLines_PointMode;
-    case hashString("polygon"):
-        return SkCanvas::PointMode::kPolygon_PointMode;
-    default:
-        throw std::invalid_argument("Invalid pointMode: " + *pointMode);
-    }
-}
-
-inline std::optional<SkPathFillType> parsePathFillType(jsi::Runtime& runtime, const jsi::Value& value)
-{
-    auto fillType = JSIConverter<std::optional<std::string>>::fromJSI(runtime, value);
-    if (!fillType.has_value()) {
-        return std::nullopt;
-    }
-
-    switch (hashString(fillType->c_str(), fillType->size())) {
-    case hashString("winding"):
-        return SkPathFillType::kWinding;
-    case hashString("evenOdd"):
-        return SkPathFillType::kEvenOdd;
-    case hashString("inverseWinding"):
-        return SkPathFillType::kInverseWinding;
-    case hashString("inverseEvenOdd"):
-        return SkPathFillType::kInverseEvenOdd;
-    default:
-        throw std::invalid_argument("Invalid fillType: " + *fillType);
-    }
-}
-
 inline std::optional<std::string> parseImageFit(jsi::Runtime& runtime, const jsi::Value& value)
 {
     auto fit = JSIConverter<std::optional<std::string>>::fromJSI(runtime, value);
@@ -162,8 +102,94 @@ inline std::optional<std::string> parseImageFit(jsi::Runtime& runtime, const jsi
     }
 }
 
+template <typename T>
+inline std::optional<T> parseOptionalNumericEnum(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    if (value.isUndefined() || value.isNull()) {
+        return std::nullopt;
+    }
+    return static_cast<T>(JSIConverter<int>::fromJSI(runtime, value));
+}
+
+inline std::optional<SkBlurStyle> parseBlurStyle(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    if (value.isNumber()) {
+        return parseOptionalNumericEnum<SkBlurStyle>(runtime, value);
+    }
+
+    auto blurStyle = JSIConverter<std::optional<std::string>>::fromJSI(runtime, value);
+    if (!blurStyle.has_value()) {
+        return std::nullopt;
+    }
+
+    switch (hashString(blurStyle->c_str(), blurStyle->size())) {
+    case hashString("normal"):
+        return SkBlurStyle::kNormal_SkBlurStyle;
+    case hashString("solid"):
+        return SkBlurStyle::kSolid_SkBlurStyle;
+    case hashString("outer"):
+        return SkBlurStyle::kOuter_SkBlurStyle;
+    case hashString("inner"):
+        return SkBlurStyle::kInner_SkBlurStyle;
+    default:
+        throw std::invalid_argument("Invalid blurStyle: " + *blurStyle);
+    }
+}
+
+inline std::optional<SkCanvas::PointMode> parsePointMode(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    if (value.isNumber()) {
+        return parseOptionalNumericEnum<SkCanvas::PointMode>(runtime, value);
+    }
+
+    auto pointMode = JSIConverter<std::optional<std::string>>::fromJSI(runtime, value);
+    if (!pointMode.has_value()) {
+        return std::nullopt;
+    }
+
+    switch (hashString(pointMode->c_str(), pointMode->size())) {
+    case hashString("points"):
+        return SkCanvas::PointMode::kPoints_PointMode;
+    case hashString("lines"):
+        return SkCanvas::PointMode::kLines_PointMode;
+    case hashString("polygon"):
+        return SkCanvas::PointMode::kPolygon_PointMode;
+    default:
+        throw std::invalid_argument("Invalid pointMode: " + *pointMode);
+    }
+}
+
+inline std::optional<SkPathFillType> parsePathFillType(jsi::Runtime& runtime, const jsi::Value& value)
+{
+    if (value.isNumber()) {
+        return parseOptionalNumericEnum<SkPathFillType>(runtime, value);
+    }
+
+    auto fillType = JSIConverter<std::optional<std::string>>::fromJSI(runtime, value);
+    if (!fillType.has_value()) {
+        return std::nullopt;
+    }
+
+    switch (hashString(fillType->c_str(), fillType->size())) {
+    case hashString("winding"):
+        return SkPathFillType::kWinding;
+    case hashString("evenOdd"):
+        return SkPathFillType::kEvenOdd;
+    case hashString("inverseWinding"):
+        return SkPathFillType::kInverseWinding;
+    case hashString("inverseEvenOdd"):
+        return SkPathFillType::kInverseEvenOdd;
+    default:
+        throw std::invalid_argument("Invalid fillType: " + *fillType);
+    }
+}
+
 inline std::optional<SkPaint::Join> parseStrokeJoin(jsi::Runtime& runtime, const jsi::Value& value)
 {
+    if (value.isNumber()) {
+        return parseOptionalNumericEnum<SkPaint::Join>(runtime, value);
+    }
+
     auto join = JSIConverter<std::optional<std::string>>::fromJSI(runtime, value);
     if (!join.has_value()) {
         return std::nullopt;
@@ -183,6 +209,10 @@ inline std::optional<SkPaint::Join> parseStrokeJoin(jsi::Runtime& runtime, const
 
 inline std::optional<SkPaint::Cap> parseStrokeCap(jsi::Runtime& runtime, const jsi::Value& value)
 {
+    if (value.isNumber()) {
+        return parseOptionalNumericEnum<SkPaint::Cap>(runtime, value);
+    }
+
     auto cap = JSIConverter<std::optional<std::string>>::fromJSI(runtime, value);
     if (!cap.has_value()) {
         return std::nullopt;
@@ -268,7 +298,7 @@ struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeCommand> final {
                 return NodeCommand { type, EmptyNodeCommandData {} };
             case NodeCommandKind::RRECT:
                 return NodeCommand { type, RoundedRectCommandData {
-                                               .cornerRadius = getOptionalProperty<double>(runtime, data, "cornerRadius"),
+                                               .cornerRadius = JSIConverter<AnimatedDouble>::fromJSI(runtime, data.getProperty(runtime, "cornerRadius")),
                                            } };
             case NodeCommandKind::TEXT:
                 return NodeCommand { type, TextCommandData {
@@ -277,10 +307,12 @@ struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeCommand> final {
                                                .textStyle = getOptionalProperty<skia::textlayout::TextStyle>(runtime, data, "textStyle"),
                                            } };
             case NodeCommandKind::GROUP:
-                return NodeCommand { type, EmptyNodeCommandData {} };
+                return NodeCommand { type, GroupCommandData {
+                                               .rasterize = getOptionalProperty<bool>(runtime, data, "rasterize"),
+                                           } };
             case NodeCommandKind::BLUR_MASK_FILTER:
                 return NodeCommand { type, BlurMaskFilterCommandData {
-                                               .blur = getOptionalProperty<double>(runtime, data, "blur"),
+                                               .blur = JSIConverter<AnimatedDouble>::fromJSI(runtime, data.getProperty(runtime, "blur")),
                                                .blurStyle = parseBlurStyle(runtime, data.getProperty(runtime, "blurStyle")),
                                                .respectCTM = getOptionalProperty<bool>(runtime, data, "respectCTM"),
                                            } };
@@ -295,8 +327,8 @@ struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeCommand> final {
                                                .fillType = parsePathFillType(runtime, data.getProperty(runtime, "fillType")),
                                                .path = getRequiredProperty<SkPath>(runtime, data, "path"),
                                                .stroke = parseStrokeOpts(runtime, data.getProperty(runtime, "stroke")),
-                                               .trimEnd = getOptionalProperty<double>(runtime, data, "trimEnd"),
-                                               .trimStart = getOptionalProperty<double>(runtime, data, "trimStart"),
+                                               .trimEnd = JSIConverter<AnimatedDouble>::fromJSI(runtime, data.getProperty(runtime, "trimEnd")),
+                                               .trimStart = JSIConverter<AnimatedDouble>::fromJSI(runtime, data.getProperty(runtime, "trimStart")),
                                            } };
             case NodeCommandKind::PARAGRAPH:
                 return NodeCommand { type, ParagraphCommandData {
@@ -306,7 +338,7 @@ struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeCommand> final {
                                            } };
             case NodeCommandKind::CIRCLE:
                 return NodeCommand { type, CircleCommandData {
-                                               .radius = getOptionalProperty<double>(runtime, data, "radius"),
+                                               .radius = JSIConverter<AnimatedDouble>::fromJSI(runtime, data.getProperty(runtime, "radius")),
                                            } };
             case NodeCommandKind::LINE:
                 return NodeCommand { type, LineCommandData {
@@ -342,7 +374,7 @@ struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeCommand> final {
         case NodeCommandKind::RRECT: {
             object.setProperty(runtime, "type", "rrect");
             const auto& payload = std::get<RoundedRectCommandData>(arg.data);
-            data.setProperty(runtime, "cornerRadius", JSIConverter<std::optional<double>>::toJSI(runtime, payload.cornerRadius));
+            data.setProperty(runtime, "cornerRadius", JSIConverter<AnimatedDouble>::toJSI(runtime, payload.cornerRadius));
             break;
         }
         case NodeCommandKind::TEXT: {
@@ -355,11 +387,17 @@ struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeCommand> final {
         }
         case NodeCommandKind::GROUP:
             object.setProperty(runtime, "type", "group");
+            data.setProperty(
+                runtime,
+                "rasterize",
+                JSIConverter<std::optional<bool>>::toJSI(
+                    runtime,
+                    std::get<GroupCommandData>(arg.data).rasterize));
             break;
         case NodeCommandKind::BLUR_MASK_FILTER: {
             object.setProperty(runtime, "type", "blurMaskFilter");
             const auto& payload = std::get<BlurMaskFilterCommandData>(arg.data);
-            data.setProperty(runtime, "blur", JSIConverter<std::optional<double>>::toJSI(runtime, payload.blur));
+            data.setProperty(runtime, "blur", JSIConverter<AnimatedDouble>::toJSI(runtime, payload.blur));
             break;
         }
         case NodeCommandKind::IMAGE: {
@@ -380,7 +418,7 @@ struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeCommand> final {
         case NodeCommandKind::CIRCLE: {
             object.setProperty(runtime, "type", "circle");
             const auto& payload = std::get<CircleCommandData>(arg.data);
-            data.setProperty(runtime, "radius", JSIConverter<std::optional<double>>::toJSI(runtime, payload.radius));
+            data.setProperty(runtime, "radius", JSIConverter<AnimatedDouble>::toJSI(runtime, payload.radius));
             break;
         }
         case NodeCommandKind::LINE:

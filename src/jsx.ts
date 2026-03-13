@@ -93,7 +93,9 @@ export interface YogaContainerProps extends YogaStyleProps {
 	children?: YogaElementChildren
 }
 
-export interface YogaGroupProps extends YogaContainerProps {}
+export interface YogaGroupProps extends YogaContainerProps {
+	rasterize?: boolean
+}
 
 export interface YogaRectProps extends YogaContainerProps {}
 

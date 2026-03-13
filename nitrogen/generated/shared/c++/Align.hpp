@@ -34,7 +34,7 @@ namespace margelo::nitro::RNSkiaYoga {
     CENTER      SWIFT_NAME(center) = 2,
     FLEX_END      SWIFT_NAME(flexEnd) = 3,
     STRETCH      SWIFT_NAME(stretch) = 4,
-    BSELINE      SWIFT_NAME(bseline) = 5,
+    BASELINE      SWIFT_NAME(baseline) = 5,
     SPACE_BETWEEN      SWIFT_NAME(spaceBetween) = 6,
     SPACE_AROUND      SWIFT_NAME(spaceAround) = 7,
     SPACE_EVENLY      SWIFT_NAME(spaceEvenly) = 8,
@@ -55,7 +55,7 @@ namespace margelo::nitro {
         case hashString("center"): return margelo::nitro::RNSkiaYoga::Align::CENTER;
         case hashString("flex-end"): return margelo::nitro::RNSkiaYoga::Align::FLEX_END;
         case hashString("stretch"): return margelo::nitro::RNSkiaYoga::Align::STRETCH;
-        case hashString("bseline"): return margelo::nitro::RNSkiaYoga::Align::BSELINE;
+        case hashString("baseline"): return margelo::nitro::RNSkiaYoga::Align::BASELINE;
         case hashString("space-between"): return margelo::nitro::RNSkiaYoga::Align::SPACE_BETWEEN;
         case hashString("space-around"): return margelo::nitro::RNSkiaYoga::Align::SPACE_AROUND;
         case hashString("space-evenly"): return margelo::nitro::RNSkiaYoga::Align::SPACE_EVENLY;
@@ -70,7 +70,7 @@ namespace margelo::nitro {
         case margelo::nitro::RNSkiaYoga::Align::CENTER: return JSIConverter<std::string>::toJSI(runtime, "center");
         case margelo::nitro::RNSkiaYoga::Align::FLEX_END: return JSIConverter<std::string>::toJSI(runtime, "flex-end");
         case margelo::nitro::RNSkiaYoga::Align::STRETCH: return JSIConverter<std::string>::toJSI(runtime, "stretch");
-        case margelo::nitro::RNSkiaYoga::Align::BSELINE: return JSIConverter<std::string>::toJSI(runtime, "bseline");
+        case margelo::nitro::RNSkiaYoga::Align::BASELINE: return JSIConverter<std::string>::toJSI(runtime, "baseline");
         case margelo::nitro::RNSkiaYoga::Align::SPACE_BETWEEN: return JSIConverter<std::string>::toJSI(runtime, "space-between");
         case margelo::nitro::RNSkiaYoga::Align::SPACE_AROUND: return JSIConverter<std::string>::toJSI(runtime, "space-around");
         case margelo::nitro::RNSkiaYoga::Align::SPACE_EVENLY: return JSIConverter<std::string>::toJSI(runtime, "space-evenly");
@@ -90,7 +90,7 @@ namespace margelo::nitro {
         case hashString("center"):
         case hashString("flex-end"):
         case hashString("stretch"):
-        case hashString("bseline"):
+        case hashString("baseline"):
         case hashString("space-between"):
         case hashString("space-around"):
         case hashString("space-evenly"):

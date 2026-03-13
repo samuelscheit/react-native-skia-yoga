@@ -9,7 +9,12 @@ import type {
 } from "./specs/SkiaYoga.nitro"
 import type { SharedValue } from "react-native-reanimated"
 import { isSharedValue } from "react-native-reanimated"
-import { executeOnUIRuntimeSync, runOnJS } from "react-native-worklets"
+import {
+	createSynchronizable,
+	executeOnUIRuntimeSync,
+	runOnJS,
+	type Synchronizable,
+} from "react-native-worklets"
 import Reconciler from "react-reconciler"
 import { DefaultEventPriority } from "react-reconciler/constants"
 import type { YogaNodeFinal } from "./index"
@@ -20,6 +25,7 @@ export type SkiaYogaHostContext = any
 
 export interface YogaRootContainer {
 	invalidate: () => void
+	nativeCommandBindingsEnabled: boolean
 	node: YogaNodeFinal
 	setContinuousRedraw: (node: YogaNodeFinal, enabled: boolean) => void
 }
@@ -34,14 +40,22 @@ type AnimatedListener = {
 	value: SharedValue<unknown>
 }
 
+type NativeAnimatedBinding = {
+	id: number
+	synchronizable: Synchronizable<unknown>
+	value: SharedValue<unknown>
+}
+
 type AnimatedValuesMap = Map<string, unknown>
 
 type NodeState = {
 	continuousRedraw: boolean
 	commandAnimatedValues: AnimatedValuesMap
 	commandListeners: Map<string, AnimatedListener>
+	commandNativeBindings: Map<string, NativeAnimatedBinding>
 	invalidate: () => void
 	lastProps: YogaNodeProps
+	nativeCommandBindingsEnabled: boolean
 	setContinuousRedraw: (node: YogaNodeFinal, enabled: boolean) => void
 	styleAnimatedValues: AnimatedValuesMap
 	styleListeners: Map<string, AnimatedListener>
@@ -56,7 +70,7 @@ let nextListenerId = 1
 const commandPropKeys: Record<NodeType, readonly string[]> = {
 	blurMaskFilter: ["blur", "blurStyle", "respectCTM"],
 	circle: ["radius"],
-	group: [],
+	group: ["rasterize"],
 	image: ["fit", "image", "sampling"],
 	line: ["from", "to"],
 	oval: [],
@@ -86,8 +100,37 @@ const styleNestedRoots = new Set([
 	"transform",
 ])
 
+const scalarCornerRadiusKeys = [
+	"borderBottomLeftRadius",
+	"borderBottomRightRadius",
+	"borderTopLeftRadius",
+	"borderTopRightRadius",
+] as const
+
 function isStyleObject(value: unknown): value is NodeStyle {
 	return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+function normalizeStyle(style: Record<string, unknown>): NodeStyle {
+	let nextStyle: Record<string, unknown> | undefined
+
+	for (const key of scalarCornerRadiusKeys) {
+		const value = style[key]
+		if (typeof value !== "number" && !isSharedValue(value)) {
+			continue
+		}
+
+		if (!nextStyle) {
+			nextStyle = { ...style }
+		}
+
+		nextStyle[key] = {
+			x: value,
+			y: value,
+		}
+	}
+
+	return (nextStyle ?? style) as NodeStyle
 }
 
 function sanitizeProps(props: YogaNodeProps | null | undefined): YogaNodeProps {
@@ -105,6 +148,7 @@ function getNodeState(
 	type: NodeType,
 	invalidate?: () => void,
 	setContinuousRedraw?: (node: YogaNodeFinal, enabled: boolean) => void,
+	nativeCommandBindingsEnabled?: boolean,
 ): NodeState {
 	const existing = nodeStates.get(node)
 	if (existing) {
@@ -115,6 +159,9 @@ function getNodeState(
 		if (setContinuousRedraw) {
 			existing.setContinuousRedraw = setContinuousRedraw
 		}
+		if (nativeCommandBindingsEnabled != null) {
+			existing.nativeCommandBindingsEnabled = nativeCommandBindingsEnabled
+		}
 		return existing
 	}
 
@@ -122,8 +169,10 @@ function getNodeState(
 		continuousRedraw: false,
 		commandAnimatedValues: new Map(),
 		commandListeners: new Map(),
+		commandNativeBindings: new Map(),
 		invalidate: invalidate ?? (() => {}),
 		lastProps: {},
+		nativeCommandBindingsEnabled: nativeCommandBindingsEnabled ?? true,
 		setContinuousRedraw: setContinuousRedraw ?? (() => {}),
 		styleAnimatedValues: new Map(),
 		styleListeners: new Map(),
@@ -147,12 +196,29 @@ function removeAnimatedListeners(listeners: Map<string, AnimatedListener>) {
 	listeners.clear()
 }
 
+function removeNativeAnimatedBindings(bindings: Map<string, NativeAnimatedBinding>) {
+	for (const { id, value } of bindings.values()) {
+		executeOnUIRuntimeSync(
+			(sharedValue: SharedValue<unknown>, listenerId: number) => {
+				"worklet"
+				sharedValue.removeListener(listenerId)
+			},
+		)(value, id)
+	}
+
+	bindings.clear()
+}
+
 function resetAnimatedState(
 	listeners: Map<string, AnimatedListener>,
 	values?: AnimatedValuesMap,
 ) {
 	removeAnimatedListeners(listeners)
 	values?.clear()
+}
+
+function resetNativeAnimatedBindings(bindings: Map<string, NativeAnimatedBinding>) {
+	removeNativeAnimatedBindings(bindings)
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -206,16 +272,75 @@ function addAnimatedListener(
 	)(value, key, listenerId, onUpdate)
 }
 
+function supportsNativeCommandBinding(type: NodeType, path: readonly string[]) {
+	if (path.length !== 1) {
+		return false
+	}
+
+	switch (type) {
+		case "blurMaskFilter":
+			return path[0] === "blur"
+		case "circle":
+			return path[0] === "radius"
+		case "path":
+			return path[0] === "trimEnd" || path[0] === "trimStart"
+		case "rrect":
+			return path[0] === "cornerRadius"
+		default:
+			return false
+	}
+}
+
+function createNativeAnimatedBinding(
+	value: SharedValue<unknown>,
+	key: string,
+	bindings: Map<string, NativeAnimatedBinding>,
+	invalidate: () => void,
+) {
+	const listenerId = nextListenerId++
+	const synchronizable = createSynchronizable(value.value)
+
+	executeOnUIRuntimeSync(
+		(
+			sharedValue: SharedValue<unknown>,
+			mirror: Synchronizable<unknown>,
+			currentListenerId: number,
+			invalidateOnJS: () => void,
+		) => {
+			"worklet"
+			sharedValue.addListener(currentListenerId, (nextValue: unknown) => {
+				mirror.setBlocking(nextValue)
+				runOnJS(invalidateOnJS)()
+			})
+		},
+	)(value, synchronizable, listenerId, invalidate)
+
+	bindings.set(key, { id: listenerId, synchronizable, value })
+	return synchronizable
+}
+
 function bindAnimatedValues(
 	value: unknown,
 	listeners: Map<string, AnimatedListener>,
+	nativeBindings: Map<string, NativeAnimatedBinding>,
 	values: AnimatedValuesMap,
 	onUpdate: (listenerKey: string, nextValue: unknown) => void,
 	nestedRoots: ReadonlySet<string>,
+	type?: NodeType,
+	invalidate?: () => void,
+	nativeCommandBindingsEnabled = true,
 	path: readonly string[] = [],
 ): unknown {
 	if (isSharedValue(value)) {
 		const key = pathToKey(path)
+		if (
+			nativeCommandBindingsEnabled &&
+			type &&
+			invalidate &&
+			supportsNativeCommandBinding(type, path)
+		) {
+			return createNativeAnimatedBinding(value, key, nativeBindings, invalidate)
+		}
 		values.set(key, value.value)
 		addAnimatedListener(value, key, listeners, onUpdate)
 		return value.value
@@ -227,10 +352,21 @@ function bindAnimatedValues(
 
 	if (Array.isArray(value)) {
 		return value.map((entry, index) =>
-			bindAnimatedValues(entry, listeners, values, onUpdate, nestedRoots, [
+			bindAnimatedValues(
+				entry,
+				listeners,
+				nativeBindings,
+				values,
+				onUpdate,
+				nestedRoots,
+				type,
+				invalidate,
+				nativeCommandBindingsEnabled,
+				[
 				...path,
 				String(index),
-			]),
+				],
+			),
 		)
 	}
 
@@ -240,9 +376,13 @@ function bindAnimatedValues(
 			resolved[key] = bindAnimatedValues(
 				entry,
 				listeners,
+				nativeBindings,
 				values,
 				onUpdate,
 				nestedRoots,
+				type,
+				invalidate,
+				nativeCommandBindingsEnabled,
 				[...path, key],
 			)
 		}
@@ -304,11 +444,13 @@ function getResolvedStyle(state: NodeState) {
 		return {}
 	}
 
-	return resolveAnimatedSnapshot(
+	return normalizeStyle(
+		resolveAnimatedSnapshot(
 		state.lastProps.style,
 		state.styleAnimatedValues,
 		styleNestedRoots,
-	) as NodeStyle
+		) as NodeStyle,
+	)
 }
 
 function resolveAnimatedStyle(
@@ -323,9 +465,11 @@ function resolveAnimatedStyle(
 
 	resetAnimatedState(state.styleListeners, state.styleAnimatedValues)
 	const style = props.style as Record<string, unknown>
-	return bindAnimatedValues(
+	return normalizeStyle(
+		bindAnimatedValues(
 		style,
 		state.styleListeners,
+		new Map<string, NativeAnimatedBinding>(),
 		state.styleAnimatedValues,
 		(listenerKey, nextValue) => {
 			state.styleAnimatedValues.set(listenerKey, nextValue)
@@ -333,7 +477,11 @@ function resolveAnimatedStyle(
 			state.invalidate()
 		},
 		styleNestedRoots,
-	) as NodeStyle
+		undefined,
+		undefined,
+		true,
+		) as NodeStyle,
+	)
 }
 
 function shouldUseContinuousRedraw(style: unknown) {
@@ -341,7 +489,12 @@ function shouldUseContinuousRedraw(style: unknown) {
 		return false
 	}
 
-	return style.matrix != null
+	const matrix = style.matrix
+	if (matrix == null || isSharedValue(matrix) || Array.isArray(matrix)) {
+		return false
+	}
+
+	return true
 }
 
 function requireProp<T>(type: NodeType, props: YogaNodeProps, key: string): T {
@@ -417,12 +570,12 @@ function normalizePathFillType(value: unknown): PathFillType | undefined {
 	}
 }
 
-function optionalNumber(value: unknown) {
-	return typeof value === "number" ? value : undefined
-}
-
 function optionalBoolean(value: unknown) {
 	return typeof value === "boolean" ? value : undefined
+}
+
+function optionalCommandNumber(value: unknown) {
+	return value == null ? undefined : (value as any)
 }
 
 function createCommand<TData extends Record<string, unknown>>(
@@ -435,16 +588,18 @@ function createCommand<TData extends Record<string, unknown>>(
 function buildNodeCommand(type: NodeType, props: YogaNodeProps): NodeCommand {
 	switch (type) {
 		case "group":
-			return createCommand(NodeCommandKind.Group, {})
+			return createCommand(NodeCommandKind.Group, {
+				rasterize: optionalBoolean(props.rasterize),
+			})
 		case "rect":
 			return createCommand(NodeCommandKind.Rect, {})
 		case "rrect":
 			return createCommand(NodeCommandKind.RoundedRect, {
-				cornerRadius: optionalNumber(props.cornerRadius),
+				cornerRadius: optionalCommandNumber(props.cornerRadius),
 			})
 		case "circle":
 			return createCommand(NodeCommandKind.Circle, {
-				radius: optionalNumber(props.radius),
+				radius: optionalCommandNumber(props.radius),
 			})
 		case "oval":
 			return createCommand(NodeCommandKind.Oval, {})
@@ -465,8 +620,8 @@ function buildNodeCommand(type: NodeType, props: YogaNodeProps): NodeCommand {
 				fillType: normalizePathFillType(props.fillType),
 				path: requireProp<any>(type, props, "path"),
 				stroke: props.stroke as any,
-				trimEnd: optionalNumber(props.trimEnd),
-				trimStart: optionalNumber(props.trimStart),
+				trimEnd: optionalCommandNumber(props.trimEnd),
+				trimStart: optionalCommandNumber(props.trimStart),
 			})
 		case "line":
 			return createCommand(NodeCommandKind.Line, {
@@ -486,7 +641,7 @@ function buildNodeCommand(type: NodeType, props: YogaNodeProps): NodeCommand {
 			})
 		case "blurMaskFilter":
 			return createCommand(NodeCommandKind.BlurMaskFilter, {
-				blur: optionalNumber(props.blur),
+				blur: optionalCommandNumber(props.blur),
 				blurStyle: normalizeBlurStyle(props.blurStyle),
 				respectCTM: optionalBoolean(props.respectCTM),
 			})
@@ -546,9 +701,11 @@ function resolveAnimatedCommand(
 	props: YogaNodeProps,
 ) {
 	resetAnimatedState(state.commandListeners, state.commandAnimatedValues)
+	resetNativeAnimatedBindings(state.commandNativeBindings)
 	return bindAnimatedValues(
 		pickProps(props, commandPropKeys[state.type]),
 		state.commandListeners,
+		state.commandNativeBindings,
 		state.commandAnimatedValues,
 		(listenerKey, nextValue) => {
 			state.commandAnimatedValues.set(listenerKey, nextValue)
@@ -556,6 +713,9 @@ function resolveAnimatedCommand(
 			state.invalidate()
 		},
 		commandNestedRoots,
+		state.type,
+		state.invalidate,
+		state.nativeCommandBindingsEnabled,
 	) as YogaNodeProps
 }
 
@@ -565,14 +725,30 @@ function applyProps(
 	props: YogaNodeProps | null | undefined,
 	invalidate?: () => void,
 	setContinuousRedraw?: (node: YogaNodeFinal, enabled: boolean) => void,
+	nativeCommandBindingsEnabled?: boolean,
 ) {
 	const nextProps = sanitizeProps(props)
-	const state = getNodeState(instance, type, invalidate, setContinuousRedraw)
-	state.lastProps = nextProps
+	const normalizedStyle = isStyleObject(nextProps.style)
+		? normalizeStyle(nextProps.style as Record<string, unknown>)
+		: nextProps.style
+	const state = getNodeState(
+		instance,
+		type,
+		invalidate,
+		setContinuousRedraw,
+		nativeCommandBindingsEnabled,
+	)
+	state.lastProps =
+		normalizedStyle === nextProps.style
+			? nextProps
+			: {
+					...nextProps,
+					style: normalizedStyle,
+				}
 
-	const resolvedCommandProps = resolveAnimatedCommand(instance, state, nextProps)
-	const resolvedStyle = resolveAnimatedStyle(instance, state, nextProps)
-	const needsContinuousRedraw = shouldUseContinuousRedraw(nextProps.style)
+	const resolvedCommandProps = resolveAnimatedCommand(instance, state, state.lastProps)
+	const resolvedStyle = resolveAnimatedStyle(instance, state, state.lastProps)
+	const needsContinuousRedraw = shouldUseContinuousRedraw(state.lastProps.style)
 
 	if (state.continuousRedraw !== needsContinuousRedraw) {
 		state.continuousRedraw = needsContinuousRedraw
@@ -604,6 +780,7 @@ function cleanupNode(node: YogaNodeFinal) {
 			state.setContinuousRedraw(node, false)
 		}
 		resetAnimatedState(state.commandListeners, state.commandAnimatedValues)
+		resetNativeAnimatedBindings(state.commandNativeBindings)
 		resetAnimatedState(state.styleListeners, state.styleAnimatedValues)
 		nodeStates.delete(node)
 	}
@@ -628,6 +805,7 @@ const config: SkiaYogaHostContext = {
 			props,
 			rootContainer.invalidate,
 			rootContainer.setContinuousRedraw,
+			rootContainer.nativeCommandBindingsEnabled,
 		)
 		return node
 	},
@@ -738,6 +916,7 @@ const config: SkiaYogaHostContext = {
 			nextProps,
 			state?.invalidate,
 			state?.setContinuousRedraw,
+			state?.nativeCommandBindingsEnabled,
 		)
 	},
 	clearContainer(container: YogaRootContainer) {

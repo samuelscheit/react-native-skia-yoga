@@ -10,6 +10,7 @@ export type {
 	CircleCommand,
 	CircleCommandPayload,
 	GroupCommand,
+	GroupCommandPayload,
 	ImageCommand,
 	ImageCommandPayload,
 	ImageFit,

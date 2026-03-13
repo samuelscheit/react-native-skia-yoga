@@ -1,5 +1,5 @@
-import { BlendMode, mix, polar2Canvas, Skia } from "@shopify/react-native-skia"
-import { useEffect, useMemo, useState } from "react"
+import { BlendMode, mix, polar2Canvas } from "@shopify/react-native-skia"
+import { useEffect, useState } from "react"
 import { useWindowDimensions } from "react-native"
 import {
 	cancelAnimation,
@@ -12,8 +12,6 @@ import {
 } from "react-native-reanimated"
 import { YogaCanvas } from "react-native-skia-yoga"
 
-const R = 200
-
 const c1 = "#61bea2"
 const c2 = "#529ca0"
 
@@ -22,6 +20,34 @@ interface RingProps {
 	index: number
 	progress: SharedValue<number>
 	total: number
+}
+
+type Matrix3 = [
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+]
+
+function createTranslateScaleMatrix(
+	x: number,
+	y: number,
+	scale: number,
+): Matrix3 {
+	"worklet"
+	return [scale, 0, x, 0, scale, y, 0, 0, 1]
+}
+
+function createRotateMatrix(radians: number): Matrix3 {
+	"worklet"
+	const cos = Math.cos(radians)
+	const sin = Math.sin(radians)
+	return [cos, -sin, 0, sin, cos, 0, 0, 0, 1]
 }
 
 export const useLoop = ({ duration }: { duration: number }) => {
@@ -44,15 +70,13 @@ const Ring = ({ index, progress, total }: RingProps) => {
 	const R = width / 4
 
 	const theta = (index * (2 * Math.PI)) / total
-	const matrix = useMemo(() => Skia.Matrix(), [])
-	useDerivedValue(() => {
+	const matrix = useDerivedValue(() => {
 		const { x, y } = polar2Canvas(
 			{ theta, radius: progress.value * R },
 			{ x: 0, y: 0 },
 		)
 		const scale = mix(progress.value, 0.3, 1)
-
-		matrix.identity().translate(x, y).scale(scale, scale)
+		return createTranslateScaleMatrix(x, y, scale)
 	})
 
 	return (
@@ -72,9 +96,8 @@ function Root() {
 
 	const progress = useLoop({ duration: 3000 })
 
-	const matrix = useMemo(() => Skia.Matrix(), [])
-	useDerivedValue(() => {
-		matrix.identity().rotate(mix(progress.value, -Math.PI, 0))
+	const matrix = useDerivedValue(() => {
+		return createRotateMatrix(mix(progress.value, -Math.PI, 0))
 	})
 
 	return (

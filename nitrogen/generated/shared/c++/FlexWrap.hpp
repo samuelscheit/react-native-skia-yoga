@@ -29,8 +29,8 @@ namespace margelo::nitro::RNSkiaYoga {
    * An enum which can be represented as a JavaScript union (FlexWrap).
    */
   enum class FlexWrap {
-    WRAP      SWIFT_NAME(wrap) = 0,
-    NOWRAP      SWIFT_NAME(nowrap) = 1,
+    NOWRAP      SWIFT_NAME(nowrap) = 0,
+    WRAP      SWIFT_NAME(wrap) = 1,
     WRAP_REVERSE      SWIFT_NAME(wrapReverse) = 2,
   } CLOSED_ENUM;
 
@@ -44,8 +44,8 @@ namespace margelo::nitro {
     static inline margelo::nitro::RNSkiaYoga::FlexWrap fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       std::string unionValue = JSIConverter<std::string>::fromJSI(runtime, arg);
       switch (hashString(unionValue.c_str(), unionValue.size())) {
-        case hashString("wrap"): return margelo::nitro::RNSkiaYoga::FlexWrap::WRAP;
         case hashString("nowrap"): return margelo::nitro::RNSkiaYoga::FlexWrap::NOWRAP;
+        case hashString("wrap"): return margelo::nitro::RNSkiaYoga::FlexWrap::WRAP;
         case hashString("wrap-reverse"): return margelo::nitro::RNSkiaYoga::FlexWrap::WRAP_REVERSE;
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert \"" + unionValue + "\" to enum FlexWrap - invalid value!");
@@ -53,8 +53,8 @@ namespace margelo::nitro {
     }
     static inline jsi::Value toJSI(jsi::Runtime& runtime, margelo::nitro::RNSkiaYoga::FlexWrap arg) {
       switch (arg) {
-        case margelo::nitro::RNSkiaYoga::FlexWrap::WRAP: return JSIConverter<std::string>::toJSI(runtime, "wrap");
         case margelo::nitro::RNSkiaYoga::FlexWrap::NOWRAP: return JSIConverter<std::string>::toJSI(runtime, "nowrap");
+        case margelo::nitro::RNSkiaYoga::FlexWrap::WRAP: return JSIConverter<std::string>::toJSI(runtime, "wrap");
         case margelo::nitro::RNSkiaYoga::FlexWrap::WRAP_REVERSE: return JSIConverter<std::string>::toJSI(runtime, "wrap-reverse");
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert FlexWrap to JS - invalid value: "
@@ -67,8 +67,8 @@ namespace margelo::nitro {
       }
       std::string unionValue = JSIConverter<std::string>::fromJSI(runtime, value);
       switch (hashString(unionValue.c_str(), unionValue.size())) {
-        case hashString("wrap"):
         case hashString("nowrap"):
+        case hashString("wrap"):
         case hashString("wrap-reverse"):
           return true;
         default:

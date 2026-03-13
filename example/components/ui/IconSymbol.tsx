@@ -18,6 +18,7 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'sparkles': 'auto-awesome',
   'square.grid.2x2.fill': 'grid-view',
+  'speedometer': 'speed',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
 } as IconMapping;

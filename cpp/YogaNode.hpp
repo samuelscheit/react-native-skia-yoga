@@ -59,6 +59,8 @@ namespace para = skia::textlayout;
 
 namespace detail {
 
+    using CornerRadii = std::array<SkVector, 4>;
+
     struct FamilyCacheKey {
         std::string name;
         bool isDefault = false;
@@ -229,6 +231,13 @@ namespace detail {
         return transform;
     }
 
+    inline SkRRect makeRoundedRect(const YogaNodeLayout& layout, const CornerRadii& radii)
+    {
+        return SkRRect::MakeRectRadii(
+            SkRect::MakeXYWH(0, 0, layout.width, layout.height),
+            radii.data());
+    }
+
 } // namespace detail
 
 class YogaNodeCommand {
@@ -237,6 +246,8 @@ public:
 
     virtual void setLayout(const YogaNodeLayout& layout) = 0;
     virtual void draw(RNSkia::DrawingCtx* ctx) = 0;
+    virtual bool isDynamic() const { return false; }
+    virtual bool rasterizesSubtree() const { return false; }
 
 protected:
     explicit YogaNodeCommand(YogaNode* node)
@@ -280,11 +291,14 @@ public:
     YogaNodeLayout getLayout() override;
     void setLayout(const YogaNodeLayout& layout) override;
     void invalidateLayout();
+    void invalidateRasterCache();
 
     void removeAllChildren() override;
 
     jsi::Value draw(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
     void drawInternal(RNSkia::DrawingCtx& ctx);
+    void drawChildren(RNSkia::DrawingCtx& ctx);
+    bool subtreeHasDynamicRasterContent() const;
 
     std::string getName() const { return "YogaNode"; }
 
@@ -298,11 +312,16 @@ public:
     NodeStyle _style;
     SkPaint _paint;
     std::optional<SkPaint> _layerPaint;
+    bool _clipsToBounds = false;
     std::optional<SkPath> _clipPath;
     std::optional<SkRRect> _clipRRect;
-    std::optional<std::array<SkVector, 4>> _clipRRectRadii;
+    std::optional<detail::CornerRadii> _clipToBoundsRadii;
     std::optional<SkRect> _clipRect;
     std::shared_ptr<SkMatrix> _matrix;
+    sk_sp<SkImage> _rasterCache;
+    bool _rasterCacheDirty = true;
+    int _rasterCacheHeight = 0;
+    int _rasterCacheWidth = 0;
 
     void loadHybridMethods() override
     {
@@ -328,10 +347,17 @@ public:
     }
 
     void draw(RNSkia::DrawingCtx* ctx) override { }
+    bool rasterizesSubtree() const override { return _rasterize; }
+    void updateProps(const GroupCommandData& props)
+    {
+        _rasterize = props.rasterize.value_or(false);
+    }
+
+private:
+    bool _rasterize = false;
 };
 
 struct BlurMaskFilterProps {
-    float blur = 0.0f;
     SkBlurStyle style = SkBlurStyle::kNormal_SkBlurStyle;
     bool respectCTM = false;
 };
@@ -350,14 +376,17 @@ public:
 
     void draw(RNSkia::DrawingCtx* ctx) override
     {
-        auto maskFilter = SkMaskFilter::MakeBlur(_props.style, _props.blur, _props.respectCTM);
+        const auto blur = static_cast<float>(_blur.resolve().value_or(0.0));
+        auto maskFilter = SkMaskFilter::MakeBlur(_props.style, blur, _props.respectCTM);
         ctx->getPaint().setMaskFilter(maskFilter);
     }
+    bool isDynamic() const override { return _blur.isDynamic(); }
 
     void updateProps(const BlurMaskFilterCommandData& props);
 
 private:
     BlurMaskFilterProps _props;
+    AnimatedDouble _blur;
 };
 
 class RectCmd : public RNSkia::RectCmd, public YogaNodeCommand {
@@ -375,6 +404,13 @@ public:
 
     void draw(RNSkia::DrawingCtx* ctx) override
     {
+        if (node->_clipToBoundsRadii.has_value()) {
+            ctx->canvas->drawRRect(
+                detail::makeRoundedRect(node->_layout, *node->_clipToBoundsRadii),
+                ctx->getPaint());
+            return;
+        }
+
         if (!this->props.rect.has_value()) {
             throw std::runtime_error("Call computeLayout before drawing");
         }
@@ -392,8 +428,7 @@ public:
 
     void updateProps(const RoundedRectCommandData& props)
     {
-        auto r = static_cast<float>(props.cornerRadius.value_or(0.0));
-        this->props.r = RNSkia::Radius { .rX = r, .rY = r };
+        _cornerRadius = props.cornerRadius;
     }
 
     void setLayout(const YogaNodeLayout& layout) override
@@ -402,7 +437,20 @@ public:
         this->props.rect = SkRRect::MakeRectXY(SkRect::MakeXYWH(0, 0, layout.width, layout.height), radius.rX, radius.rY);
     }
 
-    void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::RRectCmd::draw(ctx); }
+    void draw(RNSkia::DrawingCtx* ctx) override
+    {
+        const auto radius = static_cast<float>(_cornerRadius.resolve().value_or(0.0));
+        this->props.r = RNSkia::Radius { .rX = radius, .rY = radius };
+        this->props.rect = SkRRect::MakeRectXY(
+            SkRect::MakeXYWH(0, 0, node->_layout.width, node->_layout.height),
+            radius,
+            radius);
+        RNSkia::RRectCmd::draw(ctx);
+    }
+    bool isDynamic() const override { return _cornerRadius.isDynamic(); }
+
+private:
+    AnimatedDouble _cornerRadius;
 };
 
 class OvalCmd : public RNSkia::OvalCmd, public YogaNodeCommand {
@@ -439,13 +487,7 @@ public:
 
     void updateProps(const CircleCommandData& props)
     {
-        if (props.radius.has_value()) {
-            setRadius(static_cast<float>(props.radius.value()));
-        } else {
-            clearRadius();
-        }
-
-        setLayout(node->_layout);
+        _radius = props.radius;
     }
 
     void setLayout(const YogaNodeLayout& layout) override
@@ -466,8 +508,16 @@ public:
 
     void draw(RNSkia::DrawingCtx* ctx) override
     {
+        const auto resolvedRadius = _radius.resolve();
+        if (resolvedRadius.has_value()) {
+            setRadius(static_cast<float>(resolvedRadius.value()));
+        } else {
+            clearRadius();
+            setLayout(node->_layout);
+        }
         RNSkia::CircleCmd::draw(ctx);
     }
+    bool isDynamic() const override { return _radius.isDynamic(); }
 
 
     void setRadius(float radius)
@@ -485,6 +535,7 @@ public:
     bool hasExplicitRadius() const { return _hasExplicitRadius; }
 
 private:
+    AnimatedDouble _radius;
     bool _hasExplicitRadius = false;
 };
 
@@ -580,10 +631,21 @@ public:
 
     void setBasePath(const SkPath& path) { _basePath = path; }
 
-    void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::PathCmd::draw(ctx); }
+    void draw(RNSkia::DrawingCtx* ctx) override
+    {
+        this->props.start = static_cast<float>(_trimStart.resolve().value_or(0.0));
+        this->props.end = static_cast<float>(_trimEnd.resolve().value_or(1.0));
+        RNSkia::PathCmd::draw(ctx);
+    }
+    bool isDynamic() const override
+    {
+        return _trimStart.isDynamic() || _trimEnd.isDynamic();
+    }
 
 private:
     SkPath _basePath;
+    AnimatedDouble _trimEnd;
+    AnimatedDouble _trimStart;
 };
 
 class LineCmd : public RNSkia::LineCmd, public YogaNodeCommand {

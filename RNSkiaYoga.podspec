@@ -28,14 +28,21 @@ Pod::Spec.new do |s|
       '"$(PODS_TARGET_SRCROOT)/cpp/**"',
       '"$(PODS_TARGET_SRCROOT)/nitrogen/generated/shared/c++"',
       '"$(PODS_TARGET_SRCROOT)/nitrogen/generated/ios/c++"',
+      '"$(PODS_ROOT)/Headers/Public/RNWorklets"',
       '"$(PODS_ROOT)/../../node_modules/@shopify"',
       '"$(PODS_ROOT)/../../node_modules/@shopify/react-native-skia/cpp/**"',
       '"$(PODS_ROOT)/../../node_modules/@shopify/react-native-skia/cpp/skia"',
       '"$(PODS_ROOT)/../../node_modules/@shopify/react-native-skia/cpp/skia/**"',
+      '"$(PODS_ROOT)/../../node_modules/react-native-worklets/Common/cpp"',
+      '"$(PODS_ROOT)/../../node_modules/react-native-worklets/Common/cpp/worklets"',
+      '"$(PODS_ROOT)/../../node_modules/react-native-worklets/apple"',
       '"$(PODS_ROOT)/../../../node_modules/@shopify"',
       '"$(PODS_ROOT)/../../../node_modules/@shopify/react-native-skia/cpp/**"',
       '"$(PODS_ROOT)/../../../node_modules/@shopify/react-native-skia/cpp/skia"',
       '"$(PODS_ROOT)/../../../node_modules/@shopify/react-native-skia/cpp/skia/**"',
+      '"$(PODS_ROOT)/../../../node_modules/react-native-worklets/Common/cpp"',
+      '"$(PODS_ROOT)/../../../node_modules/react-native-worklets/Common/cpp/worklets"',
+      '"$(PODS_ROOT)/../../../node_modules/react-native-worklets/apple"',
     ].join(' '),
 	'CLANG_CXX_LANGUAGE_STANDARD' => 'c++20',
 	'CLANG_CXX_LIBRARY' => 'libc++',
@@ -66,5 +73,6 @@ Pod::Spec.new do |s|
   # s.dependency 'react-native-yoga-jsi'
   s.dependency 'React-jsi'
   s.dependency 'React-callinvoker'
+  s.dependency 'RNWorklets'
   install_modules_dependencies(s)
 end

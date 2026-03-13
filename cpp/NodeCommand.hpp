@@ -1,6 +1,7 @@
 #pragma once
 
 #include "JsiSkParagraph.h"
+#include "JSIConverter+AnimatedDouble.hpp"
 #include "SkiaGlue.hpp"
 #include <include/core/SkBlurTypes.h>
 #include <include/core/SkFont.h>
@@ -36,8 +37,12 @@ enum class NodeCommandKind {
 struct EmptyNodeCommandData {
 };
 
+struct GroupCommandData {
+    std::optional<bool> rasterize;
+};
+
 struct RoundedRectCommandData {
-    std::optional<double> cornerRadius;
+    AnimatedDouble cornerRadius;
 };
 
 struct TextCommandData {
@@ -63,8 +68,8 @@ struct PathCommandData {
         std::optional<SkPaint::Cap> cap;
     };
     std::optional<StrokeOptsData> stroke;
-    std::optional<double> trimEnd;
-    std::optional<double> trimStart;
+    AnimatedDouble trimEnd;
+    AnimatedDouble trimStart;
 };
 
 struct LineCommandData {
@@ -78,13 +83,13 @@ struct PointsCommandData {
 };
 
 struct BlurMaskFilterCommandData {
-    std::optional<double> blur;
+    AnimatedDouble blur;
     std::optional<SkBlurStyle> blurStyle;
     std::optional<bool> respectCTM;
 };
 
 struct CircleCommandData {
-    std::optional<double> radius;
+    AnimatedDouble radius;
 };
 
 struct ImageCommandData {
@@ -95,6 +100,7 @@ struct ImageCommandData {
 
 using NodeCommandPayload = std::variant<
     EmptyNodeCommandData,
+    GroupCommandData,
     RoundedRectCommandData,
     TextCommandData,
     ParagraphCommandData,

@@ -17,7 +17,7 @@ export type Align =
 	| "center"
 	| "flex-end"
 	| "stretch"
-	| "bseline"
+	| "baseline"
 	| "space-between"
 	| "space-around"
 	| "space-evenly"
@@ -38,7 +38,7 @@ export type Display = "flex" | "none" | "contents"
 
 export type FlexDirection = "column" | "column-reverse" | "row" | "row-reverse"
 
-export type FlexWrap = "wrap" | "nowrap" | "wrap-reverse"
+export type FlexWrap = "nowrap" | "wrap" | "wrap-reverse"
 
 export type Overflow = "visible" | "hidden" | "scroll"
 
@@ -99,6 +99,39 @@ export type SkPaintNative = CustomType<
 		canBePassedByReference: true
 	}
 >
+
+export type MatrixArray9 = [
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+]
+
+export type MatrixArray16 = [
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+]
+
+export type MatrixArray = MatrixArray9 | MatrixArray16
 
 export type TransformRotateX = { rotateX: number }
 export type TransformRotateY = { rotateY: number }
@@ -219,7 +252,7 @@ export type NodeStyle = {
 	/* Skia transform properties */
 	transform?: Transform
 	origin?: [number, number]
-	matrix?: SkMatrixNative
+	matrix?: SkMatrixNative | MatrixArray
 	clip?: SkPathNative | SkRRectNative | SkRectNative
 	invertClip?: boolean
 	layer?: SkColorNative

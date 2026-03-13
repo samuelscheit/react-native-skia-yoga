@@ -1,11 +1,14 @@
 import { type CanvasProps, type SkPicture } from "@shopify/react-native-skia"
 import "@shopify/react-native-skia/lib/typescript/src/views/api.d.ts"
-import React, { useEffect, useLayoutEffect, useMemo } from "react"
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react"
 import type { LayoutChangeEvent } from "react-native"
-import { useSharedValue } from "react-native-reanimated"
 import { NodeCommandKind } from "./specs/SkiaYoga.nitro"
 import { type YogaRootContainer, reconciler } from "./Reconciler"
 import { createYogaNode } from "./util"
+
+type YogaCanvasProps = CanvasProps & {
+	animationBindingMode?: "native" | "js"
+}
 
 const { default: SkiaPictureViewNativeComponent } =
 	require("@shopify/react-native-skia/src/specs/SkiaPictureViewNativeComponent") as typeof import("@shopify/react-native-skia/lib/typescript/src/specs/SkiaPictureViewNativeComponent")
@@ -29,25 +32,85 @@ export function YogaCanvas({
 	opaque,
 	debug,
 	colorSpace,
-}: CanvasProps) {
+	animationBindingMode = "native",
+}: YogaCanvasProps) {
 	const nativeId = useMemo(() => {
 		return SkiaViewNativeId.current++
 	}, [])
+	const drawNodePictureRef = useRef<() => void>(noop)
+	const activeContinuousNodesRef = useRef(new Set<object>())
+	const pendingDrawRef = useRef(false)
+	const scheduledDrawRef = useRef<number | null>(null)
+	const continuousFrameRef = useRef<number | null>(null)
+
+	const performDraw = useCallback(() => {
+		pendingDrawRef.current = false
+		drawNodePictureRef.current()
+	}, [])
+
+	const scheduleDraw = useCallback(() => {
+		pendingDrawRef.current = true
+		if (activeContinuousNodesRef.current.size > 0) {
+			return
+		}
+		if (scheduledDrawRef.current != null) {
+			return
+		}
+
+		scheduledDrawRef.current = requestAnimationFrame(() => {
+			scheduledDrawRef.current = null
+			if (activeContinuousNodesRef.current.size === 0 && pendingDrawRef.current) {
+				performDraw()
+			}
+		})
+	}, [performDraw])
+
+	const stopContinuousLoop = useCallback(() => {
+		if (continuousFrameRef.current != null) {
+			cancelAnimationFrame(continuousFrameRef.current)
+			continuousFrameRef.current = null
+		}
+	}, [])
+
+	const startContinuousLoop = useCallback(() => {
+		if (continuousFrameRef.current != null) {
+			return
+		}
+
+		const frame = () => {
+			if (activeContinuousNodesRef.current.size === 0) {
+				continuousFrameRef.current = null
+				return
+			}
+
+			performDraw()
+			continuousFrameRef.current = requestAnimationFrame(frame)
+		}
+
+		continuousFrameRef.current = requestAnimationFrame(frame)
+	}, [performDraw])
 
 	const { node, root } = useMemo(() => {
 		const node = createYogaNode()
 		node.setCommand({ type: NodeCommandKind.Group, data: {} })
 
-		const picture = node.draw() as SkPicture
-		presentPicture(nativeId, picture)
-
 		const rootContainer: YogaRootContainer = {
-			// Keep reconciler-driven invalidation disabled here. Mixing ad-hoc invalidation
-			// with the continuous RAF loop below caused out-of-phase picture presents and
-			// visible flicker in the demo.
-			invalidate: noop,
+			invalidate: scheduleDraw,
+			nativeCommandBindingsEnabled: animationBindingMode === "native",
 			node,
-			setContinuousRedraw: noop,
+			setContinuousRedraw: (trackedNode, enabled) => {
+				const activeNodes = activeContinuousNodesRef.current
+				if (enabled) {
+					activeNodes.add(trackedNode)
+					startContinuousLoop()
+				} else {
+					activeNodes.delete(trackedNode)
+				}
+				if (activeNodes.size === 0) {
+					stopContinuousLoop()
+					scheduleDraw()
+				}
+			},
 		}
 
 		return {
@@ -66,12 +129,14 @@ export function YogaCanvas({
 				null,
 			),
 		}
-	}, [nativeId])
+	}, [animationBindingMode, nativeId, scheduleDraw, startContinuousLoop, stopContinuousLoop])
 
 	function drawNodePicture() {
 		const picture = node.draw() as SkPicture
 		presentPicture(nativeId, picture)
 	}
+
+	drawNodePictureRef.current = drawNodePicture
 
 	function handleLayout(event: LayoutChangeEvent) {
 		const { width, height } = event.nativeEvent.layout
@@ -79,39 +144,8 @@ export function YogaCanvas({
 			width,
 			height,
 		})
-		drawNodePicture()
+		scheduleDraw()
 	}
-
-	const currentlyRunning = useSharedValue(0)
-
-	useEffect(() => {
-		// The demo animates by mutating Skia host objects such as `SkMatrix` in place
-		// inside `useDerivedValue`. Those mutations do not go through React commits or a
-		// shared-value style listener, so an invalidation-only redraw model caused the
-		// canvas to stop animating. Keep a single continuous RAF loop until we have an
-		// explicit animation invalidation contract for mutable Skia objects.
-		const id = Math.random()
-		currentlyRunning.value = id
-		let frameId = 0
-
-		function frame() {
-			if (currentlyRunning.value !== id) {
-				return
-			}
-
-			drawNodePicture()
-			frameId = requestAnimationFrame(frame)
-		}
-
-		frameId = requestAnimationFrame(frame)
-
-		return () => {
-			currentlyRunning.value = 0
-			if (frameId) {
-				cancelAnimationFrame(frameId)
-			}
-		}
-	}, [currentlyRunning, node, nativeId])
 
 	useLayoutEffect(() => {
 		// @ts-ignore
@@ -120,17 +154,23 @@ export function YogaCanvas({
 		reconciler.flushSyncWork()
 		reconciler.flushPassiveEffects()
 
-		drawNodePicture()
-	}, [children, root, nativeId])
+		scheduleDraw()
+	}, [children, root, nativeId, scheduleDraw])
 
 	useEffect(() => {
 		return () => {
+			stopContinuousLoop()
+			activeContinuousNodesRef.current.clear()
+			if (scheduledDrawRef.current != null) {
+				cancelAnimationFrame(scheduledDrawRef.current)
+				scheduledDrawRef.current = null
+			}
 			reconciler.updateContainer(null, root, null, null)
 			// @ts-ignore
 			reconciler.flushSyncWork()
 			reconciler.flushPassiveEffects()
 		}
-	}, [root])
+	}, [root, stopContinuousLoop])
 
 	return (
 		<SkiaPictureViewNativeComponent
