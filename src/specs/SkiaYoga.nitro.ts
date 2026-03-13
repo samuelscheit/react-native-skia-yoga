@@ -1,5 +1,6 @@
 import type { HybridObject } from "react-native-nitro-modules";
-import type { NodeCommand } from "./commands";
+import type { NodeCommandNative } from "./commands";
+export { NodeCommandKind } from "./commands";
 import type { NodeStyle } from "./style";
 
 export type {
@@ -15,6 +16,7 @@ export type {
 	LineCommand,
 	LineCommandPayload,
 	NodeCommand,
+	NodeCommandNative,
 	NodeType,
 	ParagraphCommand,
 	ParagraphCommandPayload,
@@ -45,7 +47,7 @@ export interface YogaNodeLayout {
 
 
 export interface YogaNode extends HybridObject<{ ios: "c++"; android: "c++" }> {
-	setCommand(command: NodeCommand): void
+	setCommand(command: NodeCommandNative): void
 	setStyle(style: NodeStyle): void
 	insertChild(child: YogaNode, index?: number | YogaNode): void
 	removeChild(child: YogaNode): void

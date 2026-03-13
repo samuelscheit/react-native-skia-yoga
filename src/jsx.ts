@@ -14,6 +14,7 @@ import type {
 	StrokeOpts,
 } from "@shopify/react-native-skia"
 import type { ReactNode } from "react"
+import type { SharedValue } from "react-native-reanimated"
 import type {
 	BlurStyleName,
 	PathFillType,
@@ -40,6 +41,7 @@ export type YogaTextStyle = Omit<
 }
 
 export type YogaParagraphStyle = YogaTextStyle & SkParagraphStyle
+export type YogaAnimatedProp<T> = T | SharedValue<T>
 
 export interface YogaStyleProps {
 	style?: YogaNodeStyle
@@ -54,55 +56,55 @@ export interface YogaGroupProps extends YogaContainerProps {}
 export interface YogaRectProps extends YogaContainerProps {}
 
 export interface YogaRoundedRectProps extends YogaContainerProps {
-	cornerRadius?: number
+	cornerRadius?: YogaAnimatedProp<number>
 }
 
 export interface YogaCircleProps extends YogaContainerProps {
-	radius?: number
+	radius?: YogaAnimatedProp<number>
 }
 
 export interface YogaOvalProps extends YogaContainerProps {}
 
 export interface YogaTextProps extends YogaStyleProps {
-	font?: SkFont
-	text?: string
-	textStyle?: YogaTextStyle
+	font?: YogaAnimatedProp<SkFont>
+	text?: YogaAnimatedProp<string>
+	textStyle?: YogaAnimatedProp<YogaTextStyle>
 }
 
 export interface YogaParagraphProps extends YogaStyleProps {
-	paragraph?: SkParagraph | null
-	paragraphStyle?: YogaParagraphStyle
-	text?: string
+	paragraph?: YogaAnimatedProp<SkParagraph | null>
+	paragraphStyle?: YogaAnimatedProp<YogaParagraphStyle>
+	text?: YogaAnimatedProp<string>
 }
 
 export interface YogaPathProps extends YogaContainerProps {
-	fillType?: YogaPathFillType
-	path: SkPath
-	stroke?: StrokeOpts
-	trimEnd?: number
-	trimStart?: number
+	fillType?: YogaAnimatedProp<YogaPathFillType>
+	path: YogaAnimatedProp<SkPath>
+	stroke?: YogaAnimatedProp<StrokeOpts>
+	trimEnd?: YogaAnimatedProp<number>
+	trimStart?: YogaAnimatedProp<number>
 }
 
 export interface YogaLineProps extends YogaContainerProps {
-	from: SkPoint
-	to: SkPoint
+	from: YogaAnimatedProp<SkPoint>
+	to: YogaAnimatedProp<SkPoint>
 }
 
 export interface YogaPointsProps extends YogaContainerProps {
-	pointMode?: YogaPointMode
-	points: SkPoint[]
+	pointMode?: YogaAnimatedProp<YogaPointMode>
+	points: YogaAnimatedProp<SkPoint[]>
 }
 
 export interface YogaImageProps extends YogaContainerProps {
-	fit?: Fit
-	image?: SkImage | null
-	sampling?: SamplingOptions
+	fit?: YogaAnimatedProp<Fit>
+	image?: YogaAnimatedProp<SkImage | null>
+	sampling?: YogaAnimatedProp<SamplingOptions>
 }
 
 export interface YogaBlurMaskFilterProps extends YogaContainerProps {
-	blur?: number
-	blurStyle?: YogaBlurStyle
-	respectCTM?: boolean
+	blur?: YogaAnimatedProp<number>
+	blurStyle?: YogaAnimatedProp<YogaBlurStyle>
+	respectCTM?: YogaAnimatedProp<boolean>
 }
 
 export interface YogaIntrinsicElements {

@@ -1,5 +1,6 @@
 import { BlurStyle, FillType, PointMode } from "@shopify/react-native-skia"
 import { NitroModules } from "react-native-nitro-modules"
+import { NodeCommandKind } from "./specs/SkiaYoga.nitro"
 import type {
 	BlurStyleName,
 	NodeCommand,
@@ -29,18 +30,22 @@ type YogaNodeProps = Record<string, unknown> & {
 	text?: unknown
 }
 
-type AnimatedStyleListener = {
+type AnimatedListener = {
 	id: number
 	value: SharedValue<unknown>
 }
 
+type AnimatedValuesMap = Map<string, unknown>
+
 type NodeState = {
 	boxedNode: any
 	continuousRedraw: boolean
+	commandAnimatedValues: AnimatedValuesMap
+	commandListeners: Map<string, AnimatedListener>
 	invalidate: () => void
 	lastProps: YogaNodeProps
 	setContinuousRedraw: (node: YogaNodeFinal, enabled: boolean) => void
-	styleListeners: Map<string, AnimatedStyleListener>
+	styleListeners: Map<string, AnimatedListener>
 	type: NodeType
 }
 
@@ -48,6 +53,21 @@ const nodeStates = new WeakMap<YogaNodeFinal, NodeState>()
 
 let priority = DefaultEventPriority
 let nextListenerId = 1
+
+const commandPropKeys: Record<NodeType, readonly string[]> = {
+	blurMaskFilter: ["blur", "blurStyle", "respectCTM"],
+	circle: ["radius"],
+	group: [],
+	image: ["fit", "image", "sampling"],
+	line: ["from", "to"],
+	oval: [],
+	paragraph: ["paragraph", "paragraphStyle", "text"],
+	path: ["fillType", "path", "stroke", "trimEnd", "trimStart"],
+	points: ["pointMode", "points"],
+	rect: [],
+	rrect: ["cornerRadius"],
+	text: ["font", "text", "textStyle"],
+}
 
 function isStyleObject(value: unknown): value is NodeStyle {
 	return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -84,6 +104,8 @@ function getNodeState(
 	const state: NodeState = {
 		boxedNode: NitroModules.box(node),
 		continuousRedraw: false,
+		commandAnimatedValues: new Map(),
+		commandListeners: new Map(),
 		invalidate: invalidate ?? (() => {}),
 		lastProps: {},
 		setContinuousRedraw: setContinuousRedraw ?? (() => {}),
@@ -95,8 +117,8 @@ function getNodeState(
 	return state
 }
 
-function removeAnimatedStyleListeners(state: NodeState) {
-	for (const { id, value } of state.styleListeners.values()) {
+function removeAnimatedListeners(listeners: Map<string, AnimatedListener>) {
+	for (const { id, value } of listeners.values()) {
 		executeOnUIRuntimeSync(
 			(sharedValue: SharedValue<unknown>, listenerId: number) => {
 				"worklet"
@@ -105,51 +127,87 @@ function removeAnimatedStyleListeners(state: NodeState) {
 		)(value, id)
 	}
 
-	state.styleListeners.clear()
+	listeners.clear()
 }
 
-function resolveAnimatedStyle(state: NodeState, props: YogaNodeProps) {
-	removeAnimatedStyleListeners(state)
+function resetAnimatedState(
+	listeners: Map<string, AnimatedListener>,
+	values?: AnimatedValuesMap,
+) {
+	removeAnimatedListeners(listeners)
+	values?.clear()
+}
 
-	if (!isStyleObject(props.style)) {
-		return {}
-	}
+function addAnimatedListener(
+	value: SharedValue<unknown>,
+	key: string,
+	listeners: Map<string, AnimatedListener>,
+	onUpdate: (listenerKey: string, nextValue: unknown) => void,
+) {
+	const listenerId = nextListenerId++
+	listeners.set(key, { id: listenerId, value })
 
-	const resolvedStyle: Record<string, unknown> = { ...props.style }
+	executeOnUIRuntimeSync(
+		(
+			sharedValue: SharedValue<unknown>,
+			listenerKey: string,
+			currentListenerId: number,
+			onUpdateOnJS: (listenerKey: string, nextValue: unknown) => void,
+		) => {
+			"worklet"
+			sharedValue.addListener(currentListenerId, (nextValue: unknown) => {
+				runOnJS(onUpdateOnJS as (listenerKey: string, nextValue: unknown) => void)(
+					listenerKey,
+					nextValue,
+				)
+			})
+		},
+	)(value, key, listenerId, onUpdate)
+}
 
-	for (const [key, value] of Object.entries(props.style)) {
+function resolveAnimatedProps(
+	props: Record<string, unknown>,
+	keys: Iterable<string>,
+	listeners: Map<string, AnimatedListener>,
+	onUpdate: (listenerKey: string, nextValue: unknown) => void,
+	values?: AnimatedValuesMap,
+) {
+	resetAnimatedState(listeners, values)
+
+	const resolvedProps: Record<string, unknown> = { ...props }
+
+	for (const key of keys) {
+		const value = props[key]
 		if (!isSharedValue(value)) {
 			continue
 		}
 
-		const listenerId = nextListenerId++
-		const invalidate = state.invalidate
-
-		resolvedStyle[key] = value.value
-		state.styleListeners.set(key, { id: listenerId, value })
-
-		executeOnUIRuntimeSync(
-			(
-				boxedNode: any,
-				sharedValue: SharedValue<unknown>,
-				listenerKey: string,
-				currentListenerId: number,
-				invalidateOnJS: () => void,
-			) => {
-				"worklet"
-				const node = boxedNode.unbox()
-
-				sharedValue.addListener(currentListenerId, (nextValue: unknown) => {
-					node.setStyle({
-						[listenerKey]: nextValue,
-					})
-					runOnJS(invalidateOnJS as () => void)()
-				})
-			},
-		)(state.boxedNode, value, key, listenerId, invalidate)
+		resolvedProps[key] = value.value
+		values?.set(key, value.value)
+		addAnimatedListener(value, key, listeners, onUpdate)
 	}
 
-	return resolvedStyle as NodeStyle
+	return resolvedProps
+}
+
+function resolveAnimatedStyle(state: NodeState, props: YogaNodeProps) {
+	if (!isStyleObject(props.style)) {
+		resetAnimatedState(state.styleListeners)
+		return {}
+	}
+
+	const style = props.style as Record<string, unknown>
+	return resolveAnimatedProps(
+		style,
+		Object.keys(style),
+		state.styleListeners,
+		(listenerKey, nextValue) => {
+			state.boxedNode.unbox().setStyle({
+				[listenerKey]: nextValue,
+			})
+			state.invalidate()
+		},
+	) as NodeStyle
 }
 
 function shouldUseContinuousRedraw(style: unknown) {
@@ -233,93 +291,160 @@ function normalizePathFillType(value: unknown): PathFillType | undefined {
 	}
 }
 
+function optionalNumber(value: unknown) {
+	return typeof value === "number" ? value : undefined
+}
+
+function optionalBoolean(value: unknown) {
+	return typeof value === "boolean" ? value : undefined
+}
+
+function createCommand<TData extends Record<string, unknown>>(
+	type: NodeCommandKind,
+	data: TData,
+): NodeCommand {
+	return { type, data } as NodeCommand
+}
+
 function buildNodeCommand(type: NodeType, props: YogaNodeProps): NodeCommand {
 	switch (type) {
 		case "group":
-			return { group: {} }
+			return createCommand(NodeCommandKind.Group, {})
 		case "rect":
-			return { rect: {} }
+			return createCommand(NodeCommandKind.Rect, {})
 		case "rrect":
-			return {
-				rrect: {
-					cornerRadius:
-						typeof props.cornerRadius === "number" ? props.cornerRadius : undefined,
-				},
-			}
+			return createCommand(NodeCommandKind.RoundedRect, {
+				cornerRadius: optionalNumber(props.cornerRadius),
+			})
 		case "circle":
-			return {
-				circle: {
-					radius: typeof props.radius === "number" ? props.radius : undefined,
-				},
-			}
+			return createCommand(NodeCommandKind.Circle, {
+				radius: optionalNumber(props.radius),
+			})
 		case "oval":
-			return { oval: {} }
+			return createCommand(NodeCommandKind.Oval, {})
 		case "text":
-			return {
-				text: {
-					font: props.font as any,
-					text: typeof props.text === "string" ? props.text : undefined,
-					textStyle: props.textStyle as any,
-				},
-			}
+			return createCommand(NodeCommandKind.Text, {
+				font: props.font as any,
+				text: typeof props.text === "string" ? props.text : undefined,
+				textStyle: props.textStyle as any,
+			})
 		case "paragraph":
-			return {
-				paragraph: {
-					paragraph: props.paragraph == null ? null : (props.paragraph as any),
-					paragraphStyle: props.paragraphStyle as any,
-					text: typeof props.text === "string" ? props.text : undefined,
-				},
-			}
+			return createCommand(NodeCommandKind.Paragraph, {
+				paragraph: props.paragraph == null ? null : (props.paragraph as any),
+				paragraphStyle: props.paragraphStyle as any,
+				text: typeof props.text === "string" ? props.text : undefined,
+			})
 		case "path":
-			return {
-				path: {
-					fillType: normalizePathFillType(props.fillType),
-					path: requireProp<any>(type, props, "path"),
-					stroke: props.stroke as any,
-					trimEnd:
-						typeof props.trimEnd === "number" ? props.trimEnd : undefined,
-					trimStart:
-						typeof props.trimStart === "number" ? props.trimStart : undefined,
-				},
-			}
+			return createCommand(NodeCommandKind.Path, {
+				fillType: normalizePathFillType(props.fillType),
+				path: requireProp<any>(type, props, "path"),
+				stroke: props.stroke as any,
+				trimEnd: optionalNumber(props.trimEnd),
+				trimStart: optionalNumber(props.trimStart),
+			})
 		case "line":
-			return {
-				line: {
-					from: requireProp<any>(type, props, "from"),
-					to: requireProp<any>(type, props, "to"),
-				},
-			}
+			return createCommand(NodeCommandKind.Line, {
+				from: requireProp<any>(type, props, "from"),
+				to: requireProp<any>(type, props, "to"),
+			})
 		case "points":
-			return {
-				points: {
-					pointMode: normalizePointMode(props.pointMode),
-					points: requireProp<any>(type, props, "points"),
-				},
-			}
+			return createCommand(NodeCommandKind.Points, {
+				pointMode: normalizePointMode(props.pointMode),
+				points: requireProp<any>(type, props, "points"),
+			})
 		case "image":
-			return {
-				image: {
-					fit: props.fit as any,
-					image: props.image == null ? null : (props.image as any),
-					sampling: props.sampling as any,
-				},
-			}
+			return createCommand(NodeCommandKind.Image, {
+				fit: props.fit as any,
+				image: props.image == null ? null : (props.image as any),
+				sampling: props.sampling as any,
+			})
 		case "blurMaskFilter":
-			return {
-				blurMaskFilter: {
-					blur: typeof props.blur === "number" ? props.blur : undefined,
-					blurStyle: normalizeBlurStyle(props.blurStyle),
-					respectCTM:
-						typeof props.respectCTM === "boolean"
-							? props.respectCTM
-							: undefined,
-				},
-			}
+			return createCommand(NodeCommandKind.BlurMaskFilter, {
+				blur: optionalNumber(props.blur),
+				blurStyle: normalizeBlurStyle(props.blurStyle),
+				respectCTM: optionalBoolean(props.respectCTM),
+			})
 		default: {
 			const exhaustiveType: never = type
 			throw new Error(`Unsupported node type: ${exhaustiveType}`)
 		}
 	}
+}
+
+function resolveCommandProps(
+	type: NodeType,
+	props: YogaNodeProps,
+	animatedValues: Map<string, unknown>,
+): YogaNodeProps {
+	const resolvedProps: YogaNodeProps = { ...props }
+
+	for (const key of commandPropKeys[type]) {
+		if (animatedValues.has(key)) {
+			resolvedProps[key] = animatedValues.get(key)
+		}
+	}
+
+	return resolvedProps
+}
+
+function applyResolvedCommand(instance: YogaNodeFinal, state: NodeState) {
+	setNodeCommand(
+		instance,
+		state.type,
+		buildNodeCommand(
+			state.type,
+			resolveCommandProps(state.type, state.lastProps, state.commandAnimatedValues),
+		),
+	)
+}
+
+function formatCommandForError(command: NodeCommand) {
+	const data = command.data
+	return {
+		commandType: command.type,
+		dataIsArray: Array.isArray(data),
+		dataKeys:
+			typeof data === "object" && data !== null ? Object.keys(data) : undefined,
+		dataType: data === null ? "null" : typeof data,
+	}
+}
+
+function setNodeCommand(
+	instance: YogaNodeFinal,
+	type: NodeType,
+	command: NodeCommand,
+) {
+	try {
+		instance.setCommand(command)
+	} catch (error) {
+		const details = formatCommandForError(command)
+		throw new Error(
+			[
+				`Failed to set command for <${type}>.`,
+				`command=${JSON.stringify(command)}`,
+				`details=${JSON.stringify(details)}`,
+				`cause=${error instanceof Error ? error.message : String(error)}`,
+			].join(" "),
+		)
+	}
+}
+
+function resolveAnimatedCommand(
+	instance: YogaNodeFinal,
+	state: NodeState,
+	props: YogaNodeProps,
+) {
+	return resolveAnimatedProps(
+		props,
+		commandPropKeys[state.type],
+		state.commandListeners,
+		(listenerKey, nextValue) => {
+			state.commandAnimatedValues.set(listenerKey, nextValue)
+			applyResolvedCommand(instance, state)
+			state.invalidate()
+		},
+		state.commandAnimatedValues,
+	) as YogaNodeProps
 }
 
 function applyProps(
@@ -331,6 +456,9 @@ function applyProps(
 ) {
 	const nextProps = sanitizeProps(props)
 	const state = getNodeState(instance, type, invalidate, setContinuousRedraw)
+	state.lastProps = nextProps
+
+	const resolvedCommandProps = resolveAnimatedCommand(instance, state, nextProps)
 	const resolvedStyle = resolveAnimatedStyle(state, nextProps)
 	const needsContinuousRedraw = shouldUseContinuousRedraw(nextProps.style)
 
@@ -339,8 +467,7 @@ function applyProps(
 		state.setContinuousRedraw(instance, needsContinuousRedraw)
 	}
 
-	state.lastProps = nextProps
-	instance.setCommand(buildNodeCommand(type, nextProps))
+	setNodeCommand(instance, type, buildNodeCommand(type, resolvedCommandProps))
 	instance.setStyle(resolvedStyle)
 }
 
@@ -364,7 +491,8 @@ function cleanupNode(node: YogaNodeFinal) {
 		if (state.continuousRedraw) {
 			state.setContinuousRedraw(node, false)
 		}
-		removeAnimatedStyleListeners(state)
+		resetAnimatedState(state.commandListeners, state.commandAnimatedValues)
+		resetAnimatedState(state.styleListeners)
 		nodeStates.delete(node)
 	}
 

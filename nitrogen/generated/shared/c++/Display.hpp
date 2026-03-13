@@ -29,8 +29,8 @@ namespace margelo::nitro::RNSkiaYoga {
    * An enum which can be represented as a JavaScript union (Display).
    */
   enum class Display {
-    NONE      SWIFT_NAME(none) = 0,
-    FLEX      SWIFT_NAME(flex) = 1,
+    FLEX      SWIFT_NAME(flex) = 0,
+    NONE      SWIFT_NAME(none) = 1,
     CONTENTS      SWIFT_NAME(contents) = 2,
   } CLOSED_ENUM;
 
@@ -44,8 +44,8 @@ namespace margelo::nitro {
     static inline margelo::nitro::RNSkiaYoga::Display fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       std::string unionValue = JSIConverter<std::string>::fromJSI(runtime, arg);
       switch (hashString(unionValue.c_str(), unionValue.size())) {
-        case hashString("none"): return margelo::nitro::RNSkiaYoga::Display::NONE;
         case hashString("flex"): return margelo::nitro::RNSkiaYoga::Display::FLEX;
+        case hashString("none"): return margelo::nitro::RNSkiaYoga::Display::NONE;
         case hashString("contents"): return margelo::nitro::RNSkiaYoga::Display::CONTENTS;
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert \"" + unionValue + "\" to enum Display - invalid value!");
@@ -53,8 +53,8 @@ namespace margelo::nitro {
     }
     static inline jsi::Value toJSI(jsi::Runtime& runtime, margelo::nitro::RNSkiaYoga::Display arg) {
       switch (arg) {
-        case margelo::nitro::RNSkiaYoga::Display::NONE: return JSIConverter<std::string>::toJSI(runtime, "none");
         case margelo::nitro::RNSkiaYoga::Display::FLEX: return JSIConverter<std::string>::toJSI(runtime, "flex");
+        case margelo::nitro::RNSkiaYoga::Display::NONE: return JSIConverter<std::string>::toJSI(runtime, "none");
         case margelo::nitro::RNSkiaYoga::Display::CONTENTS: return JSIConverter<std::string>::toJSI(runtime, "contents");
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert Display to JS - invalid value: "
@@ -67,8 +67,8 @@ namespace margelo::nitro {
       }
       std::string unionValue = JSIConverter<std::string>::fromJSI(runtime, value);
       switch (hashString(unionValue.c_str(), unionValue.size())) {
-        case hashString("none"):
         case hashString("flex"):
+        case hashString("none"):
         case hashString("contents"):
           return true;
         default:

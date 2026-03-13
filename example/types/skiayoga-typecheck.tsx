@@ -1,4 +1,5 @@
 import { BlurStyle, PointMode, Skia } from "@shopify/react-native-skia"
+import type { SharedValue } from "react-native-reanimated"
 import { YogaCanvas } from "react-native-skia-yoga"
 
 const demoPath = (() => {
@@ -14,6 +15,11 @@ const demoPath = (() => {
 })()
 
 export function SkiaYogaTypecheck() {
+	const sharedRadius = null as unknown as SharedValue<number>
+	const sharedTrimEnd = null as unknown as SharedValue<number>
+	const sharedBlur = null as unknown as SharedValue<number>
+	const sharedText = null as unknown as SharedValue<string>
+
 	const invalidChildren = (
 		// @ts-expect-error raw text children are unsupported
 		<text>Hello</text>
@@ -137,6 +143,26 @@ export function SkiaYogaTypecheck() {
 						fontSize: 14,
 					}}
 				/>
+				<circle
+					radius={sharedRadius}
+					style={{
+						backgroundColor: "#caffbf",
+						height: 32,
+						width: 32,
+					}}
+				/>
+				<path
+					path={demoPath}
+					trimEnd={sharedTrimEnd}
+					style={{
+						backgroundColor: "#ffd6a5",
+						height: 80,
+						width: 160,
+					}}
+				/>
+				<blurMaskFilter blur={sharedBlur}>
+					<text text={sharedText} />
+				</blurMaskFilter>
 				<rrect
 					cornerRadius={12}
 					style={{

@@ -100,8 +100,21 @@ export type StrokeOptsNative = CustomType<
 	}
 >
 
-export interface EmptyCommandPayload {
-	noop?: boolean
+export interface EmptyCommandPayload {}
+
+export enum NodeCommandKind {
+	Rect = "rect",
+	RoundedRect = "rrect",
+	Text = "text",
+	Group = "group",
+	BlurMaskFilter = "blurMaskFilter",
+	Image = "image",
+	Path = "path",
+	Paragraph = "paragraph",
+	Circle = "circle",
+	Line = "line",
+	Oval = "oval",
+	Points = "points",
 }
 
 export interface RoundedRectCommandPayload {
@@ -155,51 +168,63 @@ export interface ImageCommandPayload {
 }
 
 export interface GroupCommand {
-	group: EmptyCommandPayload
+	type: NodeCommandKind.Group
+	data: EmptyCommandPayload
 }
 
 export interface RectCommand {
-	rect: EmptyCommandPayload
+	type: NodeCommandKind.Rect
+	data: EmptyCommandPayload
 }
 
 export interface RoundedRectCommand {
-	rrect: RoundedRectCommandPayload
+	type: NodeCommandKind.RoundedRect
+	data: RoundedRectCommandPayload
 }
 
 export interface TextCommand {
-	text: TextCommandPayload
+	type: NodeCommandKind.Text
+	data: TextCommandPayload
 }
 
 export interface ParagraphCommand {
-	paragraph: ParagraphCommandPayload
+	type: NodeCommandKind.Paragraph
+	data: ParagraphCommandPayload
 }
 
 export interface PathCommand {
-	path: PathCommandPayload
+	type: NodeCommandKind.Path
+	data: PathCommandPayload
 }
 
 export interface LineCommand {
-	line: LineCommandPayload
+	type: NodeCommandKind.Line
+	data: LineCommandPayload
 }
 
 export interface PointsCommand {
-	points: PointsCommandPayload
+	type: NodeCommandKind.Points
+	data: PointsCommandPayload
 }
 
 export interface BlurMaskFilterCommand {
-	blurMaskFilter: BlurMaskFilterCommandPayload
+	type: NodeCommandKind.BlurMaskFilter
+	data: BlurMaskFilterCommandPayload
 }
 
 export interface OvalCommand {
-	oval: EmptyCommandPayload
+	type: NodeCommandKind.Oval
+	data: EmptyCommandPayload
 }
 
 export interface CircleCommand {
-	circle: CircleCommandPayload
+	type: NodeCommandKind.Circle
+	data: CircleCommandPayload
 }
 
 export interface ImageCommand {
-	image: ImageCommandPayload
+	type: NodeCommandKind.Image
+	data: ImageCommandPayload
 }
 
 export type NodeCommand =
@@ -215,3 +240,16 @@ export type NodeCommand =
 	| LineCommand
 	| OvalCommand
 	| PointsCommand
+
+export interface NodeCommandTransport {
+	type: NodeCommandKind
+	data: object
+}
+
+export type NodeCommandNative = CustomType<
+	NodeCommandTransport,
+	"margelo::nitro::RNSkiaYoga::NodeCommand",
+	{
+		include: "JSIConverter+NodeCommand.hpp"
+	}
+>

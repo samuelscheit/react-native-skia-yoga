@@ -6,6 +6,7 @@
 #include "JSIConverter+SkFont.hpp"
 #include "JSIConverter+SkImage.hpp"
 #include "JSIConverter+SkMatrix.hpp"
+#include "JSIConverter+NodeCommand.hpp"
 #include "JSIConverter+SkPaint.hpp"
 #include "JSIConverter+SkParagraph.hpp"
 #include "JSIConverter+SkParagraphStyle.hpp"
@@ -21,6 +22,7 @@
 
 
 #include "ColorParser.hpp"
+#include "NodeCommand.hpp"
 #include "JsiSkRuntimeEffect.h"
 #include "Drawings.h"
 #include "JsiSkFontMgr.h"
@@ -266,7 +268,7 @@ public:
     YogaNode();
     ~YogaNode();
     void setStyle(const NodeStyle& style) override;
-    void setCommand(const std::variant<RectCommand, RoundedRectCommand, TextCommand, GroupCommand, BlurMaskFilterCommand, ImageCommand, PathCommand, ParagraphCommand, CircleCommand, LineCommand, OvalCommand, PointsCommand>& command) override;
+    void setCommand(NodeCommand command) override;
     void insertChild(const std::shared_ptr<HybridYogaNodeSpec>& child, const std::optional<std::variant<double, std::shared_ptr<HybridYogaNodeSpec>>>& index) override;
     void removeChild(const std::shared_ptr<HybridYogaNodeSpec>& child) override;
 
@@ -351,7 +353,7 @@ public:
         ctx->getPaint().setMaskFilter(maskFilter);
     }
 
-    void updateProps(const BlurMaskFilterCommandPayload& props);
+    void updateProps(const BlurMaskFilterCommandData& props);
 
 private:
     BlurMaskFilterProps _props;
@@ -387,7 +389,7 @@ public:
     {
     }
 
-    void updateProps(const RoundedRectCommandPayload& props)
+    void updateProps(const RoundedRectCommandData& props)
     {
         auto r = static_cast<float>(props.cornerRadius.value_or(0.0));
         this->props.r = RNSkia::Radius { .rX = r, .rY = r };
@@ -434,7 +436,7 @@ public:
     {
     }
 
-    void updateProps(const CircleCommandPayload& props)
+    void updateProps(const CircleCommandData& props)
     {
         if (props.radius.has_value()) {
             setRadius(static_cast<float>(props.radius.value()));
@@ -510,7 +512,7 @@ public:
         this->props.font = *sDefaultFont;
     }
 
-    void updateProps(const TextCommandPayload& props);
+    void updateProps(const TextCommandData& props);
 
     void setLayout(const YogaNodeLayout& layout) override
     {
@@ -537,7 +539,7 @@ public:
         this->props.y = 0;
     }
 
-    void updateProps(const ImageCommandPayload& props);
+    void updateProps(const ImageCommandData& props);
 
     void setLayout(const YogaNodeLayout& layout) override
     {
@@ -562,7 +564,7 @@ public:
         this->props.end = 1.0f;
     }
 
-    void updateProps(const PathCommandPayload& props);
+    void updateProps(const PathCommandData& props);
 
     void setLayout(const YogaNodeLayout& layout) override
     {
@@ -593,7 +595,7 @@ public:
     {
     }
 
-    void updateProps(const LineCommandPayload& props);
+    void updateProps(const LineCommandData& props);
 
     void setLayout(const YogaNodeLayout& layout) override
     {
@@ -631,7 +633,7 @@ public:
         this->props.mode = SkCanvas::PointMode::kPoints_PointMode;
     }
 
-    void updateProps(const PointsCommandPayload& props);
+    void updateProps(const PointsCommandData& props);
 
     void setLayout(const YogaNodeLayout& layout) override
     {
@@ -699,7 +701,7 @@ public:
         this->props.y = 0;
     }
 
-    void updateProps(const ParagraphCommandPayload& props);
+    void updateProps(const ParagraphCommandData& props);
 
     void setLayout(const YogaNodeLayout& layout) override
     {

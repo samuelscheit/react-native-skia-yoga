@@ -9,9 +9,8 @@
 #include <jsi/jsi.h>
 
 #include "SkiaGlue.hpp"
-#include "JsiSkFontStyle.h"
 #include "JsiSkParagraphStyle.h"
-#include "JsiSkTextStyle.h"
+#include "JSIConverter+SkTextStyle.hpp"
 
 namespace margelo::nitro {
 
@@ -24,10 +23,13 @@ struct JSIConverter<skia::textlayout::ParagraphStyle> final {
       const jsi::Value& arg) {
     auto paragraphStyle = RNSkia::JsiSkParagraphStyle::fromValue(runtime, arg);
 
-    // Preserve the existing flattened API where text style fields are passed
-    // directly on the paragraphStyle object instead of nested under textStyle.
+    // Preserve the flattened JSX API: text-style fields are allowed directly on
+    // the paragraphStyle object, and they should accept the same value shapes as
+    // <text textStyle={...} />, including CSS color strings.
     if (arg.isObject()) {
-      paragraphStyle.setTextStyle(RNSkia::JsiSkTextStyle::fromValue(runtime, arg));
+      auto textStyle = paragraphStyle.getTextStyle();
+      applyTextStyle(runtime, arg, textStyle);
+      paragraphStyle.setTextStyle(textStyle);
     }
 
     return paragraphStyle;

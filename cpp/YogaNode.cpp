@@ -38,77 +38,15 @@ std::optional<para::ParagraphStyle> ParagraphCmd::sDefaultParagraphStyle;
 
 namespace {
 
-template <typename T>
-struct AlwaysFalse : std::false_type {
-};
-
-::SkPoint toNativePoint(const margelo::nitro::RNSkiaYoga::SkPoint& point)
+RNSkia::StrokeOpts toNativeStrokeOpts(const PathCommandData::StrokeOptsData& stroke)
 {
-    return ::SkPoint::Make(static_cast<float>(point.x), static_cast<float>(point.y));
-}
-
-SkBlurStyle toNativeBlurStyle(BlurStyleName style)
-{
-    switch (style) {
-    case BlurStyleName::NORMAL:
-        return SkBlurStyle::kNormal_SkBlurStyle;
-    case BlurStyleName::SOLID:
-        return SkBlurStyle::kSolid_SkBlurStyle;
-    case BlurStyleName::OUTER:
-        return SkBlurStyle::kOuter_SkBlurStyle;
-    case BlurStyleName::INNER:
-        return SkBlurStyle::kInner_SkBlurStyle;
-    }
-    return SkBlurStyle::kNormal_SkBlurStyle;
-}
-
-SkPathFillType toNativePathFillType(PathFillType fillType)
-{
-    switch (fillType) {
-    case PathFillType::WINDING:
-        return SkPathFillType::kWinding;
-    case PathFillType::EVENODD:
-        return SkPathFillType::kEvenOdd;
-    case PathFillType::INVERSEWINDING:
-        return SkPathFillType::kInverseWinding;
-    case PathFillType::INVERSEEVENODD:
-        return SkPathFillType::kInverseEvenOdd;
-    }
-    return SkPathFillType::kWinding;
-}
-
-SkCanvas::PointMode toNativePointMode(PointModeName mode)
-{
-    switch (mode) {
-    case PointModeName::POINTS:
-        return SkCanvas::PointMode::kPoints_PointMode;
-    case PointModeName::LINES:
-        return SkCanvas::PointMode::kLines_PointMode;
-    case PointModeName::POLYGON:
-        return SkCanvas::PointMode::kPolygon_PointMode;
-    }
-    return SkCanvas::PointMode::kPoints_PointMode;
-}
-
-std::string toNativeImageFit(ImageFit fit)
-{
-    switch (fit) {
-    case ImageFit::COVER:
-        return "cover";
-    case ImageFit::CONTAIN:
-        return "contain";
-    case ImageFit::FILL:
-        return "fill";
-    case ImageFit::FITHEIGHT:
-        return "fitHeight";
-    case ImageFit::FITWIDTH:
-        return "fitWidth";
-    case ImageFit::NONE:
-        return "none";
-    case ImageFit::SCALEDOWN:
-        return "scaleDown";
-    }
-    return "contain";
+    RNSkia::StrokeOpts nativeStroke;
+    nativeStroke.width = stroke.width;
+    nativeStroke.miter_limit = stroke.miterLimit;
+    nativeStroke.precision = stroke.precision;
+    nativeStroke.join = stroke.join;
+    nativeStroke.cap = stroke.cap;
+    return nativeStroke;
 }
 
 } // namespace
@@ -748,7 +686,7 @@ void YogaNode::removeAllChildren()
     invalidateLayout();
 }
 
-void YogaNode::setCommand(const std::variant<RectCommand, RoundedRectCommand, TextCommand, GroupCommand, BlurMaskFilterCommand, ImageCommand, PathCommand, ParagraphCommand, CircleCommand, LineCommand, OvalCommand, PointsCommand>& command)
+void YogaNode::setCommand(NodeCommand command)
 {
     auto* runtime = RNJsi::BaseRuntimeAwareCache::getMainJsRuntime();
     if (runtime == nullptr) {
@@ -756,109 +694,114 @@ void YogaNode::setCommand(const std::variant<RectCommand, RoundedRectCommand, Te
     }
 
     RNSkia::Variables variables; // TODO: save reanimated shared values
-    std::visit(
-        [&](const auto& nextCommand) {
-            using CommandT = std::decay_t<decltype(nextCommand)>;
-
-            if constexpr (std::is_same_v<CommandT, RectCommand>) {
-                if (_commandKind == YogaNodeCommandKind::NONE) {
-                    _command = std::make_unique<RectCmd>(this, *runtime, variables);
-                    _commandKind = YogaNodeCommandKind::RECT;
-                } else if (_commandKind != YogaNodeCommandKind::RECT) {
-                    throw std::runtime_error("YogaNode command type cannot change after initialization.");
-                }
-            } else if constexpr (std::is_same_v<CommandT, RoundedRectCommand>) {
-                if (_commandKind == YogaNodeCommandKind::NONE) {
-                    _command = std::make_unique<RRectCmd>(this, *runtime, variables);
-                    _commandKind = YogaNodeCommandKind::RRECT;
-                } else if (_commandKind != YogaNodeCommandKind::RRECT) {
-                    throw std::runtime_error("YogaNode command type cannot change after initialization.");
-                }
-                static_cast<RRectCmd*>(_command.get())->updateProps(nextCommand.rrect);
-            } else if constexpr (std::is_same_v<CommandT, TextCommand>) {
-                if (_commandKind == YogaNodeCommandKind::NONE) {
-                    _command = std::make_unique<TextCmd>(this, *runtime, variables);
-                    _commandKind = YogaNodeCommandKind::TEXT;
-                } else if (_commandKind != YogaNodeCommandKind::TEXT) {
-                    throw std::runtime_error("YogaNode command type cannot change after initialization.");
-                }
-                static_cast<TextCmd*>(_command.get())->updateProps(nextCommand.text);
-            } else if constexpr (std::is_same_v<CommandT, GroupCommand>) {
-                if (_commandKind == YogaNodeCommandKind::NONE) {
-                    _command = std::make_unique<GroupCmd>(this);
-                    _commandKind = YogaNodeCommandKind::GROUP;
-                } else if (_commandKind != YogaNodeCommandKind::GROUP) {
-                    throw std::runtime_error("YogaNode command type cannot change after initialization.");
-                }
-            } else if constexpr (std::is_same_v<CommandT, BlurMaskFilterCommand>) {
-                if (_commandKind == YogaNodeCommandKind::NONE) {
-                    _command = std::make_unique<BlurMaskFilterCmd>(this);
-                    _commandKind = YogaNodeCommandKind::BLUR_MASK_FILTER;
-                } else if (_commandKind != YogaNodeCommandKind::BLUR_MASK_FILTER) {
-                    throw std::runtime_error("YogaNode command type cannot change after initialization.");
-                }
-                static_cast<BlurMaskFilterCmd*>(_command.get())->updateProps(nextCommand.blurMaskFilter);
-            } else if constexpr (std::is_same_v<CommandT, ImageCommand>) {
-                if (_commandKind == YogaNodeCommandKind::NONE) {
-                    _command = std::make_unique<ImageCmd>(this, *runtime, variables);
-                    _commandKind = YogaNodeCommandKind::IMAGE;
-                } else if (_commandKind != YogaNodeCommandKind::IMAGE) {
-                    throw std::runtime_error("YogaNode command type cannot change after initialization.");
-                }
-                static_cast<ImageCmd*>(_command.get())->updateProps(nextCommand.image);
-            } else if constexpr (std::is_same_v<CommandT, PathCommand>) {
-                if (_commandKind == YogaNodeCommandKind::NONE) {
-                    _command = std::make_unique<PathCmd>(this, *runtime, variables);
-                    _commandKind = YogaNodeCommandKind::PATH;
-                } else if (_commandKind != YogaNodeCommandKind::PATH) {
-                    throw std::runtime_error("YogaNode command type cannot change after initialization.");
-                }
-                static_cast<PathCmd*>(_command.get())->updateProps(nextCommand.path);
-            } else if constexpr (std::is_same_v<CommandT, ParagraphCommand>) {
-                if (_commandKind == YogaNodeCommandKind::NONE) {
-                    _command = std::make_unique<ParagraphCmd>(this, *runtime, variables);
-                    _commandKind = YogaNodeCommandKind::PARAGRAPH;
-                    YGNodeSetMeasureFunc(_node, margelo::nitro::RNSkiaYoga::ParagraphCmd::measureFunc);
-                } else if (_commandKind != YogaNodeCommandKind::PARAGRAPH) {
-                    throw std::runtime_error("YogaNode command type cannot change after initialization.");
-                }
-                static_cast<ParagraphCmd*>(_command.get())->updateProps(nextCommand.paragraph);
-            } else if constexpr (std::is_same_v<CommandT, CircleCommand>) {
-                if (_commandKind == YogaNodeCommandKind::NONE) {
-                    _command = std::make_unique<CircleCmd>(this, *runtime, variables);
-                    _commandKind = YogaNodeCommandKind::CIRCLE;
-                } else if (_commandKind != YogaNodeCommandKind::CIRCLE) {
-                    throw std::runtime_error("YogaNode command type cannot change after initialization.");
-                }
-                static_cast<CircleCmd*>(_command.get())->updateProps(nextCommand.circle);
-            } else if constexpr (std::is_same_v<CommandT, LineCommand>) {
-                if (_commandKind == YogaNodeCommandKind::NONE) {
-                    _command = std::make_unique<LineCmd>(this, *runtime, variables);
-                    _commandKind = YogaNodeCommandKind::LINE;
-                } else if (_commandKind != YogaNodeCommandKind::LINE) {
-                    throw std::runtime_error("YogaNode command type cannot change after initialization.");
-                }
-                static_cast<LineCmd*>(_command.get())->updateProps(nextCommand.line);
-            } else if constexpr (std::is_same_v<CommandT, OvalCommand>) {
-                if (_commandKind == YogaNodeCommandKind::NONE) {
-                    _command = std::make_unique<OvalCmd>(this, *runtime, variables);
-                    _commandKind = YogaNodeCommandKind::OVAL;
-                } else if (_commandKind != YogaNodeCommandKind::OVAL) {
-                    throw std::runtime_error("YogaNode command type cannot change after initialization.");
-                }
-            } else if constexpr (std::is_same_v<CommandT, PointsCommand>) {
-                if (_commandKind == YogaNodeCommandKind::NONE) {
-                    _command = std::make_unique<PointsCmd>(this, *runtime, variables);
-                    _commandKind = YogaNodeCommandKind::POINTS;
-                } else if (_commandKind != YogaNodeCommandKind::POINTS) {
-                    throw std::runtime_error("YogaNode command type cannot change after initialization.");
-                }
-                static_cast<PointsCmd*>(_command.get())->updateProps(nextCommand.points);
-            } else {
-                static_assert(AlwaysFalse<CommandT>::value, "Unsupported YogaNode command.");
-            }
-        },
-        command);
+    switch (command.type) {
+    case NodeCommandKind::RECT:
+        if (_commandKind == YogaNodeCommandKind::NONE) {
+            _command = std::make_unique<RectCmd>(this, *runtime, variables);
+            _commandKind = YogaNodeCommandKind::RECT;
+        } else if (_commandKind != YogaNodeCommandKind::RECT) {
+            throw std::runtime_error("YogaNode command type cannot change after initialization.");
+        }
+        break;
+    case NodeCommandKind::RRECT:
+        if (_commandKind == YogaNodeCommandKind::NONE) {
+            _command = std::make_unique<RRectCmd>(this, *runtime, variables);
+            _commandKind = YogaNodeCommandKind::RRECT;
+        } else if (_commandKind != YogaNodeCommandKind::RRECT) {
+            throw std::runtime_error("YogaNode command type cannot change after initialization.");
+        }
+        static_cast<RRectCmd*>(_command.get())->updateProps(std::get<RoundedRectCommandData>(command.data));
+        break;
+    case NodeCommandKind::TEXT:
+        if (_commandKind == YogaNodeCommandKind::NONE) {
+            _command = std::make_unique<TextCmd>(this, *runtime, variables);
+            _commandKind = YogaNodeCommandKind::TEXT;
+        } else if (_commandKind != YogaNodeCommandKind::TEXT) {
+            throw std::runtime_error("YogaNode command type cannot change after initialization.");
+        }
+        static_cast<TextCmd*>(_command.get())->updateProps(std::get<TextCommandData>(command.data));
+        break;
+    case NodeCommandKind::GROUP:
+        if (_commandKind == YogaNodeCommandKind::NONE) {
+            _command = std::make_unique<GroupCmd>(this);
+            _commandKind = YogaNodeCommandKind::GROUP;
+        } else if (_commandKind != YogaNodeCommandKind::GROUP) {
+            throw std::runtime_error("YogaNode command type cannot change after initialization.");
+        }
+        break;
+    case NodeCommandKind::BLUR_MASK_FILTER:
+        if (_commandKind == YogaNodeCommandKind::NONE) {
+            _command = std::make_unique<BlurMaskFilterCmd>(this);
+            _commandKind = YogaNodeCommandKind::BLUR_MASK_FILTER;
+        } else if (_commandKind != YogaNodeCommandKind::BLUR_MASK_FILTER) {
+            throw std::runtime_error("YogaNode command type cannot change after initialization.");
+        }
+        static_cast<BlurMaskFilterCmd*>(_command.get())->updateProps(std::get<BlurMaskFilterCommandData>(command.data));
+        break;
+    case NodeCommandKind::IMAGE:
+        if (_commandKind == YogaNodeCommandKind::NONE) {
+            _command = std::make_unique<ImageCmd>(this, *runtime, variables);
+            _commandKind = YogaNodeCommandKind::IMAGE;
+        } else if (_commandKind != YogaNodeCommandKind::IMAGE) {
+            throw std::runtime_error("YogaNode command type cannot change after initialization.");
+        }
+        static_cast<ImageCmd*>(_command.get())->updateProps(std::get<ImageCommandData>(command.data));
+        break;
+    case NodeCommandKind::PATH:
+        if (_commandKind == YogaNodeCommandKind::NONE) {
+            _command = std::make_unique<PathCmd>(this, *runtime, variables);
+            _commandKind = YogaNodeCommandKind::PATH;
+        } else if (_commandKind != YogaNodeCommandKind::PATH) {
+            throw std::runtime_error("YogaNode command type cannot change after initialization.");
+        }
+        static_cast<PathCmd*>(_command.get())->updateProps(std::get<PathCommandData>(command.data));
+        break;
+    case NodeCommandKind::PARAGRAPH:
+        if (_commandKind == YogaNodeCommandKind::NONE) {
+            _command = std::make_unique<ParagraphCmd>(this, *runtime, variables);
+            _commandKind = YogaNodeCommandKind::PARAGRAPH;
+            YGNodeSetMeasureFunc(_node, margelo::nitro::RNSkiaYoga::ParagraphCmd::measureFunc);
+        } else if (_commandKind != YogaNodeCommandKind::PARAGRAPH) {
+            throw std::runtime_error("YogaNode command type cannot change after initialization.");
+        }
+        static_cast<ParagraphCmd*>(_command.get())->updateProps(std::get<ParagraphCommandData>(command.data));
+        break;
+    case NodeCommandKind::CIRCLE:
+        if (_commandKind == YogaNodeCommandKind::NONE) {
+            _command = std::make_unique<CircleCmd>(this, *runtime, variables);
+            _commandKind = YogaNodeCommandKind::CIRCLE;
+        } else if (_commandKind != YogaNodeCommandKind::CIRCLE) {
+            throw std::runtime_error("YogaNode command type cannot change after initialization.");
+        }
+        static_cast<CircleCmd*>(_command.get())->updateProps(std::get<CircleCommandData>(command.data));
+        break;
+    case NodeCommandKind::LINE:
+        if (_commandKind == YogaNodeCommandKind::NONE) {
+            _command = std::make_unique<LineCmd>(this, *runtime, variables);
+            _commandKind = YogaNodeCommandKind::LINE;
+        } else if (_commandKind != YogaNodeCommandKind::LINE) {
+            throw std::runtime_error("YogaNode command type cannot change after initialization.");
+        }
+        static_cast<LineCmd*>(_command.get())->updateProps(std::get<LineCommandData>(command.data));
+        break;
+    case NodeCommandKind::OVAL:
+        if (_commandKind == YogaNodeCommandKind::NONE) {
+            _command = std::make_unique<OvalCmd>(this, *runtime, variables);
+            _commandKind = YogaNodeCommandKind::OVAL;
+        } else if (_commandKind != YogaNodeCommandKind::OVAL) {
+            throw std::runtime_error("YogaNode command type cannot change after initialization.");
+        }
+        break;
+    case NodeCommandKind::POINTS:
+        if (_commandKind == YogaNodeCommandKind::NONE) {
+            _command = std::make_unique<PointsCmd>(this, *runtime, variables);
+            _commandKind = YogaNodeCommandKind::POINTS;
+        } else if (_commandKind != YogaNodeCommandKind::POINTS) {
+            throw std::runtime_error("YogaNode command type cannot change after initialization.");
+        }
+        static_cast<PointsCmd*>(_command.get())->updateProps(std::get<PointsCommandData>(command.data));
+        break;
+    }
 }
 
 jsi::Value YogaNode::draw(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
@@ -1003,20 +946,20 @@ void YogaNode::invalidateLayout()
     }
 }
 
-void BlurMaskFilterCmd::updateProps(const BlurMaskFilterCommandPayload& props)
+void BlurMaskFilterCmd::updateProps(const BlurMaskFilterCommandData& props)
 {
     if (props.blur.has_value()) {
         _props.blur = static_cast<float>(props.blur.value());
     }
     if (props.blurStyle.has_value()) {
-        _props.style = toNativeBlurStyle(props.blurStyle.value());
+        _props.style = props.blurStyle.value();
     }
     if (props.respectCTM.has_value()) {
         _props.respectCTM = props.respectCTM.value();
     }
 }
 
-void TextCmd::updateProps(const TextCommandPayload& props)
+void TextCmd::updateProps(const TextCommandData& props)
 {
     this->props.text = props.text.value_or("");
 
@@ -1034,21 +977,25 @@ void TextCmd::updateProps(const TextCommandPayload& props)
     node->_paint.setColor(textStyle.getColor());
 }
 
-void ImageCmd::updateProps(const ImageCommandPayload& props)
+void ImageCmd::updateProps(const ImageCommandData& props)
 {
     this->props.image = props.image;
     this->props.sampling = props.sampling;
-    this->props.fit = props.fit.has_value() ? toNativeImageFit(props.fit.value()) : "contain";
+    this->props.fit = props.fit.value_or("contain");
 }
 
-void PathCmd::updateProps(const PathCommandPayload& props)
+void PathCmd::updateProps(const PathCommandData& props)
 {
     setBasePath(props.path);
     this->props.start = static_cast<float>(props.trimStart.value_or(0.0));
     this->props.end = static_cast<float>(props.trimEnd.value_or(1.0));
-    this->props.stroke = props.stroke;
+    if (props.stroke.has_value()) {
+        this->props.stroke = toNativeStrokeOpts(props.stroke.value());
+    } else {
+        this->props.stroke.reset();
+    }
     if (props.fillType.has_value()) {
-        this->props.fillType = toNativePathFillType(props.fillType.value());
+        this->props.fillType = props.fillType.value();
     } else {
         this->props.fillType.reset();
     }
@@ -1056,29 +1003,23 @@ void PathCmd::updateProps(const PathCommandPayload& props)
     setLayout(node->_layout);
 }
 
-void LineCmd::updateProps(const LineCommandPayload& props)
+void LineCmd::updateProps(const LineCommandData& props)
 {
-    setBasePoint1(toNativePoint(props.from));
-    setBasePoint2(toNativePoint(props.to));
+    setBasePoint1(props.from);
+    setBasePoint2(props.to);
     setLayout(node->_layout);
 }
 
-void PointsCmd::updateProps(const PointsCommandPayload& props)
+void PointsCmd::updateProps(const PointsCommandData& props)
 {
-    std::vector<::SkPoint> nativePoints;
-    nativePoints.reserve(props.points.size());
-    for (const auto& point : props.points) {
-        nativePoints.push_back(toNativePoint(point));
-    }
-
-    setBasePoints(nativePoints);
+    setBasePoints(props.points);
     if (props.pointMode.has_value()) {
-        this->props.mode = toNativePointMode(props.pointMode.value());
+        this->props.mode = props.pointMode.value();
     }
     setLayout(node->_layout);
 }
 
-void ParagraphCmd::updateProps(const ParagraphCommandPayload& props)
+void ParagraphCmd::updateProps(const ParagraphCommandData& props)
 {
     if (props.paragraph.has_value()) {
         this->props.paragraph = props.paragraph.value();

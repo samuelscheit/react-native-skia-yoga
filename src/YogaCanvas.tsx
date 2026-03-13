@@ -3,6 +3,7 @@ import "@shopify/react-native-skia/lib/typescript/src/views/api.d.ts"
 import React, { useEffect, useLayoutEffect, useMemo } from "react"
 import type { LayoutChangeEvent } from "react-native"
 import { useSharedValue } from "react-native-reanimated"
+import { NodeCommandKind } from "./specs/SkiaYoga.nitro"
 import { type YogaRootContainer, reconciler } from "./Reconciler"
 import { createYogaNode } from "./util"
 
@@ -35,7 +36,7 @@ export function YogaCanvas({
 
 	const { node, root } = useMemo(() => {
 		const node = createYogaNode()
-		node.setCommand({ group: {} })
+		node.setCommand({ type: NodeCommandKind.Group, data: {} })
 
 		const picture = node.draw() as SkPicture
 		presentPicture(nativeId, picture)
