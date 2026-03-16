@@ -24,6 +24,7 @@ import type {
 	PathFillType,
 	PointModeName,
 } from "./specs/SkiaYoga.nitro"
+import type { YogaInteractiveProps } from "./interactivity"
 import type { NodeStyle } from "./specs/style"
 
 export type YogaElementChildren = ReactNode
@@ -57,16 +58,20 @@ type YogaOpaqueValue =
 	| SkRRect
 	| SamplingOptions
 
-export type YogaDeepAnimated<T> =
-	T extends string | number | boolean | null | undefined
+export type YogaDeepAnimated<T> = T extends
+	| string
+	| number
+	| boolean
+	| null
+	| undefined
+	? T | SharedValue<T>
+	: T extends YogaOpaqueValue
 		? T | SharedValue<T>
-		: T extends YogaOpaqueValue
-			? T | SharedValue<T>
-			: T extends readonly (infer U)[]
-				? YogaDeepAnimated<U>[] | SharedValue<T>
-				: T extends object
-					? { [K in keyof T]: YogaDeepAnimated<T[K]> } | SharedValue<T>
-					: T | SharedValue<T>
+		: T extends readonly (infer U)[]
+			? YogaDeepAnimated<U>[] | SharedValue<T>
+			: T extends object
+				? { [K in keyof T]: YogaDeepAnimated<T[K]> } | SharedValue<T>
+				: T | SharedValue<T>
 
 export type YogaAnimatedPoint = {
 	x: YogaAnimatedProp<number>
@@ -85,7 +90,7 @@ export type YogaAnimatedParagraphStyleProps = {
 	[K in keyof YogaParagraphStyle]: YogaDeepAnimated<YogaParagraphStyle[K]>
 }
 
-export interface YogaStyleProps {
+export interface YogaStyleProps extends YogaInteractiveProps {
 	style?: YogaDeepAnimated<YogaNodeStyle>
 }
 
@@ -117,7 +122,9 @@ export interface YogaTextProps extends YogaStyleProps {
 
 export interface YogaParagraphProps extends YogaStyleProps {
 	paragraph?: YogaDeepAnimated<SkParagraph | null>
-	paragraphStyle?: YogaAnimatedParagraphStyleProps | YogaAnimatedProp<YogaParagraphStyle>
+	paragraphStyle?:
+		| YogaAnimatedParagraphStyleProps
+		| YogaAnimatedProp<YogaParagraphStyle>
 	text?: YogaDeepAnimated<string>
 }
 

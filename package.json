@@ -68,6 +68,7 @@
 		"typescript": "^5.5.4"
 	},
 	"peerDependencies": {
+		"react-native-gesture-handler": "*",
 		"react": "*",
 		"react-native": "*",
 		"react-native-reanimated": "^4",

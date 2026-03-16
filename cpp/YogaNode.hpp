@@ -238,6 +238,75 @@ namespace detail {
             radii.data());
     }
 
+    inline bool pointInRoundedRect(const ::SkPoint& point, const SkRect& rect, const CornerRadii& radii)
+    {
+        if (!rect.contains(point.fX, point.fY)) {
+            return false;
+        }
+
+        const auto testCorner = [&](float minX, float minY, float maxX, float maxY, float centerX, float centerY, const SkVector& radius) {
+            const auto radiusX = radius.fX;
+            const auto radiusY = radius.fY;
+            if (radiusX <= 0.0f || radiusY <= 0.0f) {
+                return true;
+            }
+
+            if (point.fX < minX || point.fX > maxX || point.fY < minY || point.fY > maxY) {
+                return true;
+            }
+
+            const auto normalizedX = (point.fX - centerX) / radiusX;
+            const auto normalizedY = (point.fY - centerY) / radiusY;
+            return (normalizedX * normalizedX) + (normalizedY * normalizedY) <= 1.0f;
+        };
+
+        if (!testCorner(
+                rect.left(),
+                rect.top(),
+                rect.left() + radii[SkRRect::kUpperLeft_Corner].fX,
+                rect.top() + radii[SkRRect::kUpperLeft_Corner].fY,
+                rect.left() + radii[SkRRect::kUpperLeft_Corner].fX,
+                rect.top() + radii[SkRRect::kUpperLeft_Corner].fY,
+                radii[SkRRect::kUpperLeft_Corner])) {
+            return false;
+        }
+
+        if (!testCorner(
+                rect.right() - radii[SkRRect::kUpperRight_Corner].fX,
+                rect.top(),
+                rect.right(),
+                rect.top() + radii[SkRRect::kUpperRight_Corner].fY,
+                rect.right() - radii[SkRRect::kUpperRight_Corner].fX,
+                rect.top() + radii[SkRRect::kUpperRight_Corner].fY,
+                radii[SkRRect::kUpperRight_Corner])) {
+            return false;
+        }
+
+        if (!testCorner(
+                rect.right() - radii[SkRRect::kLowerRight_Corner].fX,
+                rect.bottom() - radii[SkRRect::kLowerRight_Corner].fY,
+                rect.right(),
+                rect.bottom(),
+                rect.right() - radii[SkRRect::kLowerRight_Corner].fX,
+                rect.bottom() - radii[SkRRect::kLowerRight_Corner].fY,
+                radii[SkRRect::kLowerRight_Corner])) {
+            return false;
+        }
+
+        if (!testCorner(
+                rect.left(),
+                rect.bottom() - radii[SkRRect::kLowerLeft_Corner].fY,
+                rect.left() + radii[SkRRect::kLowerLeft_Corner].fX,
+                rect.bottom(),
+                rect.left() + radii[SkRRect::kLowerLeft_Corner].fX,
+                rect.bottom() - radii[SkRRect::kLowerLeft_Corner].fY,
+                radii[SkRRect::kLowerLeft_Corner])) {
+            return false;
+        }
+
+        return true;
+    }
+
 } // namespace detail
 
 class YogaNodeCommand {
@@ -248,6 +317,12 @@ public:
     virtual void draw(RNSkia::DrawingCtx* ctx) = 0;
     virtual bool isDynamic() const { return false; }
     virtual bool rasterizesSubtree() const { return false; }
+    virtual bool supportsPreciseHitTesting() const { return false; }
+    virtual bool containsLocalPoint(const ::SkPoint& point) const
+    {
+        (void)point;
+        return false;
+    }
 
 protected:
     explicit YogaNodeCommand(YogaNode* node)
@@ -274,6 +349,20 @@ enum class YogaNodeCommandKind {
     POINTS,
 };
 
+enum class PointerEventsMode {
+    AUTO,
+    NONE,
+    BOX_ONLY,
+    BOX_NONE,
+};
+
+struct HitSlopInsets {
+    float top = 0.0f;
+    float right = 0.0f;
+    float bottom = 0.0f;
+    float left = 0.0f;
+};
+
 class YogaNode : public HybridYogaNodeSpec {
 public:
     // This default constructor is required for autolinking in RNSkiaYogaAutolinking.mm
@@ -296,9 +385,18 @@ public:
     void removeAllChildren() override;
 
     jsi::Value draw(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
+    jsi::Value hitTest(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
+    jsi::Value setStyleRaw(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
+    jsi::Value setInteractionConfig(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
     void drawInternal(RNSkia::DrawingCtx& ctx);
     void drawChildren(RNSkia::DrawingCtx& ctx);
     bool subtreeHasDynamicRasterContent() const;
+    double hitTestTagAt(float x, float y);
+    double hitTestInternal(const ::SkPoint& parentPoint) const;
+    bool containsSelfAtPoint(const ::SkPoint& point) const;
+    bool pointPassesClipping(const ::SkPoint& point) const;
+    void updateSelfInteractionState(bool isInteractive);
+    void adjustInteractiveDescendantCount(int delta);
 
     std::string getName() const { return "YogaNode"; }
 
@@ -322,6 +420,12 @@ public:
     bool _rasterCacheDirty = true;
     int _rasterCacheHeight = 0;
     int _rasterCacheWidth = 0;
+    PointerEventsMode _pointerEvents = PointerEventsMode::AUTO;
+    HitSlopInsets _hitSlop;
+    bool _preciseHit = false;
+    bool _selfInteractive = false;
+    int _interactiveDescendantCount = 0;
+    double _eventTag = 0.0;
 
     void loadHybridMethods() override
     {
@@ -331,6 +435,9 @@ public:
         registerHybrids(this, [](Prototype& prototype) {
             prototype.registerRawHybridMethod("draw", 0, &YogaNode::draw);
             prototype.registerRawHybridMethod("getChildren", 0, &YogaNode::getChildren);
+            prototype.registerRawHybridMethod("hitTest", 2, &YogaNode::hitTest);
+            prototype.registerRawHybridMethod("setStyle", 1, &YogaNode::setStyleRaw);
+            prototype.registerRawHybridMethod("setInteractionConfig", 1, &YogaNode::setInteractionConfig);
         });
     }
 };
@@ -352,6 +459,7 @@ public:
     {
         _rasterize = props.rasterize.value_or(false);
     }
+    bool supportsPreciseHitTesting() const override { return false; }
 
 private:
     bool _rasterize = false;
@@ -416,6 +524,11 @@ public:
         }
         RNSkia::RectCmd::draw(ctx);
     }
+    bool supportsPreciseHitTesting() const override { return true; }
+    bool containsLocalPoint(const ::SkPoint& point) const override
+    {
+        return this->props.rect.has_value() && this->props.rect->contains(point.fX, point.fY);
+    }
 };
 
 class RRectCmd : public RNSkia::RRectCmd, public YogaNodeCommand {
@@ -448,6 +561,17 @@ public:
         RNSkia::RRectCmd::draw(ctx);
     }
     bool isDynamic() const override { return _cornerRadius.isDynamic(); }
+    bool supportsPreciseHitTesting() const override { return true; }
+    bool containsLocalPoint(const ::SkPoint& point) const override
+    {
+        if (!this->props.rect.has_value()) {
+            return false;
+        }
+
+        SkPath path;
+        path.addRRect(*this->props.rect);
+        return path.contains(point.fX, point.fY);
+    }
 
 private:
     AnimatedDouble _cornerRadius;
@@ -472,6 +596,26 @@ public:
     {
 
         RNSkia::OvalCmd::draw(ctx);
+    }
+    bool supportsPreciseHitTesting() const override { return true; }
+    bool containsLocalPoint(const ::SkPoint& point) const override
+    {
+        if (!this->props.rect.has_value()) {
+            return false;
+        }
+
+        const auto rect = *this->props.rect;
+        const auto radiusX = rect.width() * 0.5f;
+        const auto radiusY = rect.height() * 0.5f;
+        if (radiusX <= 0.0f || radiusY <= 0.0f) {
+            return false;
+        }
+
+        const auto centerX = rect.left() + radiusX;
+        const auto centerY = rect.top() + radiusY;
+        const auto normalizedX = (point.fX - centerX) / radiusX;
+        const auto normalizedY = (point.fY - centerY) / radiusY;
+        return (normalizedX * normalizedX) + (normalizedY * normalizedY) <= 1.0f;
     }
 
 private:
@@ -518,6 +662,15 @@ public:
         RNSkia::CircleCmd::draw(ctx);
     }
     bool isDynamic() const override { return _radius.isDynamic(); }
+    bool supportsPreciseHitTesting() const override { return true; }
+    bool containsLocalPoint(const ::SkPoint& point) const override
+    {
+        const auto radius = this->props.r;
+        const auto center = this->props.c.value_or(::SkPoint { 0.0f, 0.0f });
+        const auto dx = point.fX - center.fX;
+        const auto dy = point.fY - center.fY;
+        return (dx * dx) + (dy * dy) <= radius * radius;
+    }
 
 
     void setRadius(float radius)
@@ -641,6 +794,11 @@ public:
     {
         return _trimStart.isDynamic() || _trimEnd.isDynamic();
     }
+    bool supportsPreciseHitTesting() const override { return true; }
+    bool containsLocalPoint(const ::SkPoint& point) const override
+    {
+        return this->props.path.contains(point.fX, point.fY);
+    }
 
 private:
     SkPath _basePath;
@@ -680,6 +838,30 @@ public:
     const ::SkPoint& basePoint2() const { return _baseP2; }
 
     void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::LineCmd::draw(ctx); }
+    bool supportsPreciseHitTesting() const override { return true; }
+    bool containsLocalPoint(const ::SkPoint& point) const override
+    {
+        const auto from = this->props.p1;
+        const auto to = this->props.p2;
+        const auto dx = to.x() - from.x();
+        const auto dy = to.y() - from.y();
+        const auto lengthSquared = (dx * dx) + (dy * dy);
+        if (lengthSquared <= 0.0f) {
+            const auto pointDx = point.fX - from.x();
+            const auto pointDy = point.fY - from.y();
+            return (pointDx * pointDx) + (pointDy * pointDy) <= 36.0f;
+        }
+
+        const auto projected = std::clamp(
+            ((point.fX - from.x()) * dx + (point.fY - from.y()) * dy) / lengthSquared,
+            0.0f,
+            1.0f);
+        const auto projectedX = from.x() + projected * dx;
+        const auto projectedY = from.y() + projected * dy;
+        const auto distanceX = point.fX - projectedX;
+        const auto distanceY = point.fY - projectedY;
+        return (distanceX * distanceX) + (distanceY * distanceY) <= 36.0f;
+    }
 
 private:
     ::SkPoint _baseP1;
@@ -724,6 +906,19 @@ public:
     const std::vector<::SkPoint>& basePoints() const { return _basePoints; }
 
     void draw(RNSkia::DrawingCtx* ctx) override { RNSkia::PointsCmd::draw(ctx); }
+    bool supportsPreciseHitTesting() const override { return true; }
+    bool containsLocalPoint(const ::SkPoint& point) const override
+    {
+        constexpr float kToleranceSquared = 36.0f;
+        for (const auto& candidate : this->props.points) {
+            const auto dx = point.fX - candidate.x();
+            const auto dy = point.fY - candidate.y();
+            if ((dx * dx) + (dy * dy) <= kToleranceSquared) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 private:
     static SkRect computeBounds(const std::vector<::SkPoint>& points)

@@ -4,11 +4,12 @@ import { previewFrame, styleScene } from "./style-demo-builders"
 
 export const transformSections = [
 	{
-		description: "2D and 3D transform stacks plus explicit matrix overrides.",
+		description:
+			"2D and 3D transform stacks plus explicit matrix overrides.",
 		properties: [
 			{
 				example:
-					'transform: [{ translateX: 24 }, { rotateZ: 0.4 }, { scale: 0.9 }]',
+					"transform: [{ translateX: 24 }, { rotateZ: 0.4 }, { scale: 0.9 }]",
 				name: "transform",
 				preview: styleScene(
 					previewFrame(

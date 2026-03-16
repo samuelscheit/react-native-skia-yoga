@@ -6,12 +6,16 @@ import type {
 	SkiaYoga as SkiaYogaType,
 	YogaNode,
 } from "./specs/SkiaYoga.nitro"
+import type { YogaNodeInteractionConfig } from "./interactivity"
 
 let turboModule: Spec | undefined
 try {
-  turboModule = TurboModuleRegistry.getEnforcing<Spec>('SkiaYoga')
+	turboModule = TurboModuleRegistry.getEnforcing<Spec>("SkiaYoga")
 } catch (e) {
-  throw new Error("SkiaYoga TurboModule is not available. Make sure you have linked the react-native-skia-yoga native module correctly. " + e)
+	throw new Error(
+		"SkiaYoga TurboModule is not available. Make sure you have linked the react-native-skia-yoga native module correctly. " +
+			e,
+	)
 }
 
 turboModule.install()
@@ -20,7 +24,8 @@ console.log("react-native-skia-yoga initialized")
 
 // NativeModules.SkiaYogaModule?.install?.()
 
-export const SkiaYoga = NitroModules.createHybridObject<SkiaYogaType>("SkiaYoga")
+export const SkiaYoga =
+	NitroModules.createHybridObject<SkiaYogaType>("SkiaYoga")
 
 // @ts-ignore
 globalThis.SkiaYoga = SkiaYoga
@@ -29,8 +34,11 @@ export interface YogaNodeFinal extends YogaNode {
 	setCommand(command: NodeCommand): void
 	draw(): any
 	getChildren(): YogaNodeFinal[]
+	hitTest(x: number, y: number): number
+	setInteractionConfig(config: YogaNodeInteractionConfig): void
 }
 
+export * from "./interactivity"
 export * from "./Reconciler"
 export * from "./jsx"
 export * from "./util"

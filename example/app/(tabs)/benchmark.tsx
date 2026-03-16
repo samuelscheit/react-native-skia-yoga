@@ -8,7 +8,10 @@ import {
 	withRepeat,
 	withTiming,
 } from "react-native-reanimated"
-import { YogaCanvas } from "react-native-skia-yoga"
+import {
+	YogaCanvas,
+	type YogaCanvasProfileSample,
+} from "react-native-skia-yoga"
 
 type BenchmarkMode = "native" | "js" | "static"
 
@@ -275,6 +278,8 @@ function OptionRow<T extends string | number>({
 export default function BenchmarkScreen() {
 	const [count, setCount] = useState<number>(COUNT_OPTIONS[1])
 	const [mode, setMode] = useState<BenchmarkMode>("native")
+	const [profileSample, setProfileSample] =
+		useState<YogaCanvasProfileSample | null>(null)
 	const [runId, setRunId] = useState(0)
 	const [running, setRunning] = useState(false)
 
@@ -292,6 +297,10 @@ export default function BenchmarkScreen() {
 	useEffect(() => {
 		setRunning(false)
 	}, [count, mode])
+
+	useEffect(() => {
+		setProfileSample(null)
+	}, [count, mode, runId])
 
 	const canvasKey = useMemo(
 		() => `${mode}:${count}:${runId}`,
@@ -314,6 +323,8 @@ export default function BenchmarkScreen() {
 			<YogaCanvas
 				key={canvasKey}
 				animationBindingMode={mode === "js" ? "js" : "native"}
+				onProfileSample={setProfileSample}
+				profilingEnabled
 				style={{
 					flex: 1,
 				}}
@@ -325,6 +336,7 @@ export default function BenchmarkScreen() {
 				pointerEvents="box-none"
 				style={{
 					flex: 0,
+					minHeight: 600,
 				}}
 			>
 				<View style={styles.panel}>
@@ -406,6 +418,33 @@ export default function BenchmarkScreen() {
 						</Text>
 						<Text style={styles.metricLine}>
 							Frames: {summary?.frameCount ?? 0}
+						</Text>
+						<Text style={styles.metricLine}>
+							Yoga draw:{" "}
+							{formatMetric(profileSample?.avgDrawMs ?? 0)} ms
+						</Text>
+						<Text style={styles.metricLine}>
+							Present:{" "}
+							{formatMetric(profileSample?.avgPresentMs ?? 0, 2)}{" "}
+							ms
+						</Text>
+						<Text style={styles.metricLine}>
+							Invalidates/frame:{" "}
+							{formatMetric(
+								profileSample && profileSample.frames > 0
+									? profileSample.rawInvalidateCalls /
+											profileSample.frames
+									: 0,
+								1,
+							)}
+						</Text>
+						<Text style={styles.metricLine}>
+							Scheduled invalidates:{" "}
+							{profileSample?.scheduledInvalidateCalls ?? 0}
+						</Text>
+						<Text style={styles.metricLine}>
+							Coalesced invalidates:{" "}
+							{profileSample?.skippedInvalidateCalls ?? 0}
 						</Text>
 					</View>
 				</View>

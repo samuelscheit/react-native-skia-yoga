@@ -92,6 +92,101 @@ RNSkia::StrokeOpts toNativeStrokeOpts(const PathCommandData::StrokeOptsData& str
     return nativeStroke;
 }
 
+float getNumericProperty(jsi::Runtime& runtime, const jsi::Object& object, const char* key, float fallback)
+{
+    if (!object.hasProperty(runtime, key)) {
+        return fallback;
+    }
+
+    const auto value = object.getProperty(runtime, key);
+    if (!value.isNumber()) {
+        return fallback;
+    }
+
+    return static_cast<float>(value.asNumber());
+}
+
+PointerEventsMode parsePointerEventsMode(const std::string& value)
+{
+    if (value == "none") {
+        return PointerEventsMode::NONE;
+    }
+    if (value == "box-only") {
+        return PointerEventsMode::BOX_ONLY;
+    }
+    if (value == "box-none") {
+        return PointerEventsMode::BOX_NONE;
+    }
+    return PointerEventsMode::AUTO;
+}
+
+std::string describeJSIValue(jsi::Runtime& runtime, const jsi::Value& value, int depth = 0)
+{
+    if (value.isUndefined()) {
+        return "undefined";
+    }
+    if (value.isNull()) {
+        return "null";
+    }
+    if (value.isBool()) {
+        return value.getBool() ? "true" : "false";
+    }
+    if (value.isNumber()) {
+        return std::to_string(value.asNumber());
+    }
+    if (value.isString()) {
+        return "\"" + value.asString(runtime).utf8(runtime) + "\"";
+    }
+    if (!value.isObject()) {
+        return "[unknown]";
+    }
+
+    auto object = value.asObject(runtime);
+    if (object.isArray(runtime)) {
+        auto array = object.asArray(runtime);
+        if (depth >= 1) {
+            return "[Array(" + std::to_string(array.size(runtime)) + ")]";
+        }
+
+        std::string result = "[";
+        const auto length = std::min<size_t>(array.size(runtime), 5);
+        for (size_t index = 0; index < length; ++index) {
+            if (index > 0) {
+                result += ", ";
+            }
+            result += describeJSIValue(runtime, array.getValueAtIndex(runtime, index), depth + 1);
+        }
+        if (array.size(runtime) > length) {
+            result += ", ...";
+        }
+        result += "]";
+        return result;
+    }
+
+    if (depth >= 2) {
+        return "[Object]";
+    }
+
+    auto propertyNames = object.getPropertyNames(runtime);
+    std::string result = "{";
+    const auto length = std::min<size_t>(propertyNames.size(runtime), 8);
+    for (size_t index = 0; index < length; ++index) {
+        if (index > 0) {
+            result += ", ";
+        }
+
+        const auto keyValue = propertyNames.getValueAtIndex(runtime, index);
+        const auto key = keyValue.isString() ? keyValue.asString(runtime).utf8(runtime) : "<non-string>";
+        result += key + ": ";
+        result += describeJSIValue(runtime, object.getProperty(runtime, key.c_str()), depth + 1);
+    }
+    if (propertyNames.size(runtime) > length) {
+        result += ", ...";
+    }
+    result += "}";
+    return result;
+}
+
 } // namespace
 
 YogaNode::~YogaNode()
@@ -657,6 +752,33 @@ void YogaNode::setStyle(const NodeStyle& style)
     }
 }
 
+jsi::Value YogaNode::setStyleRaw(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
+{
+    (void)thisArg;
+
+    if (count < 1) {
+        throw jsi::JSError(runtime, "YogaNode.setStyle(style) expects a style object.");
+    }
+
+    try {
+        const auto style = JSIConverter<NodeStyle>::fromJSI(runtime, args[0]);
+        setStyle(style);
+        return jsi::Value::undefined();
+    } catch (const jsi::JSError&) {
+        throw;
+    } catch (const std::exception& error) {
+        throw jsi::JSError(
+            runtime,
+            "YogaNode.setStyle(style) failed. style=" + describeJSIValue(runtime, args[0]) +
+                " cause=" + error.what());
+    } catch (...) {
+        throw jsi::JSError(
+            runtime,
+            "YogaNode.setStyle(style) failed. style=" + describeJSIValue(runtime, args[0]) +
+                " cause=Unknown native error");
+    }
+}
+
 void YogaNode::insertChild(const std::shared_ptr<HybridYogaNodeSpec>& child, const std::optional<std::variant<double, std::shared_ptr<HybridYogaNodeSpec>>>& index)
 {
     if (!child) {
@@ -707,8 +829,8 @@ void YogaNode::insertChild(const std::shared_ptr<HybridYogaNodeSpec>& child, con
     YGNodeInsertChild(_node, yogaNode->_node, insertIndex);
     yogaNode->_parent = this;
 
-    // Store the child in our vector for easy access later
-    _children.push_back(yogaNode);
+    _children.insert(_children.begin() + static_cast<std::ptrdiff_t>(insertIndex), yogaNode);
+    adjustInteractiveDescendantCount(yogaNode->_interactiveDescendantCount);
     invalidateLayout();
 }
 
@@ -720,12 +842,14 @@ void YogaNode::removeChild(const std::shared_ptr<HybridYogaNodeSpec>& c)
     YGNodeRemoveChild(_node, child->_node);
     child->_parent = nullptr;
     _children.erase(std::remove(_children.begin(), _children.end(), child), _children.end());
+    adjustInteractiveDescendantCount(-child->_interactiveDescendantCount);
     invalidateLayout();
 }
 
 void YogaNode::removeAllChildren()
 {
     for (auto& child : _children) {
+        adjustInteractiveDescendantCount(-child->_interactiveDescendantCount);
         child->_parent = nullptr;
     }
     YGNodeRemoveAllChildren(_node);
@@ -1066,6 +1190,204 @@ void YogaNode::invalidateRasterCache()
     if (_parent != nullptr) {
         _parent->invalidateRasterCache();
     }
+}
+
+void YogaNode::adjustInteractiveDescendantCount(int delta)
+{
+    if (delta == 0) {
+        return;
+    }
+
+    _interactiveDescendantCount += delta;
+
+    if (_parent != nullptr) {
+        _parent->adjustInteractiveDescendantCount(delta);
+    }
+}
+
+void YogaNode::updateSelfInteractionState(bool isInteractive)
+{
+    if (_selfInteractive == isInteractive) {
+        return;
+    }
+
+    _selfInteractive = isInteractive;
+    adjustInteractiveDescendantCount(isInteractive ? 1 : -1);
+}
+
+bool YogaNode::pointPassesClipping(const ::SkPoint& point) const
+{
+    if (_clipsToBounds) {
+        const auto bounds = SkRect::MakeXYWH(0.0f, 0.0f, _layout.width, _layout.height);
+        if (_clipToBoundsRadii.has_value()) {
+            if (!detail::pointInRoundedRect(point, bounds, *_clipToBoundsRadii)) {
+                return false;
+            }
+        } else if (!bounds.contains(point.fX, point.fY)) {
+            return false;
+        }
+    }
+
+    bool hasExplicitClip = false;
+    bool explicitClipContains = true;
+    if (_clipPath.has_value()) {
+        hasExplicitClip = true;
+        explicitClipContains = _clipPath->contains(point.fX, point.fY);
+    } else if (_clipRect.has_value()) {
+        hasExplicitClip = true;
+        explicitClipContains = _clipRect->contains(point.fX, point.fY);
+    } else if (_clipRRect.has_value()) {
+        hasExplicitClip = true;
+        SkPath clipPath;
+        clipPath.addRRect(*_clipRRect);
+        explicitClipContains = clipPath.contains(point.fX, point.fY);
+    }
+
+    if (hasExplicitClip && _style.invertClip.value_or(false)) {
+        explicitClipContains = !explicitClipContains;
+    }
+
+    return explicitClipContains;
+}
+
+bool YogaNode::containsSelfAtPoint(const ::SkPoint& point) const
+{
+    const auto bounds = SkRect::MakeLTRB(
+        -_hitSlop.left,
+        -_hitSlop.top,
+        static_cast<float>(_layout.width) + _hitSlop.right,
+        static_cast<float>(_layout.height) + _hitSlop.bottom);
+
+    if (!bounds.contains(point.fX, point.fY)) {
+        return false;
+    }
+
+    if (!_preciseHit || !_command || !_command->supportsPreciseHitTesting()) {
+        return true;
+    }
+
+    return _command->containsLocalPoint(point);
+}
+
+double YogaNode::hitTestInternal(const ::SkPoint& parentPoint) const
+{
+    if (_interactiveDescendantCount == 0 || _pointerEvents == PointerEventsMode::NONE) {
+        return 0.0;
+    }
+
+    auto localPoint = parentPoint;
+    localPoint.offset(-static_cast<float>(_layout.left), -static_cast<float>(_layout.top));
+
+    if (_matrix != nullptr) {
+        SkMatrix inverse;
+        if (!_matrix->invert(&inverse)) {
+            return 0.0;
+        }
+        localPoint = inverse.mapPoint(localPoint);
+    }
+
+    if (!pointPassesClipping(localPoint)) {
+        return 0.0;
+    }
+
+    if (_pointerEvents != PointerEventsMode::BOX_ONLY) {
+        for (auto it = _children.rbegin(); it != _children.rend(); ++it) {
+            if (const auto tag = (*it)->hitTestInternal(localPoint); tag > 0.0) {
+                return tag;
+            }
+        }
+    }
+
+    if (_pointerEvents != PointerEventsMode::BOX_NONE && _selfInteractive && containsSelfAtPoint(localPoint)) {
+        return _eventTag;
+    }
+
+    return 0.0;
+}
+
+double YogaNode::hitTestTagAt(float x, float y)
+{
+    if (!_hasLayoutBeenComputed) {
+        computeLayout(std::nullopt, std::nullopt);
+    }
+
+    return hitTestInternal(::SkPoint::Make(x, y));
+}
+
+jsi::Value YogaNode::hitTest(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
+{
+    (void)thisArg;
+
+    if (count < 2 || !args[0].isNumber() || !args[1].isNumber()) {
+        throw jsi::JSError(runtime, "YogaNode.hitTest(x, y) expects numeric x and y arguments.");
+    }
+
+    const auto x = static_cast<float>(args[0].asNumber());
+    const auto y = static_cast<float>(args[1].asNumber());
+    return jsi::Value(hitTestTagAt(x, y));
+}
+
+jsi::Value YogaNode::setInteractionConfig(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
+{
+    (void)thisArg;
+
+    if (count < 1 || !args[0].isObject()) {
+        throw jsi::JSError(runtime, "YogaNode.setInteractionConfig(config) expects a config object.");
+    }
+
+    const auto config = args[0].asObject(runtime);
+
+    auto pointerEvents = PointerEventsMode::AUTO;
+    if (config.hasProperty(runtime, "pointerEvents")) {
+        const auto value = config.getProperty(runtime, "pointerEvents");
+        if (value.isString()) {
+            pointerEvents = parsePointerEventsMode(value.asString(runtime).utf8(runtime));
+        }
+    }
+
+    HitSlopInsets hitSlop;
+    if (config.hasProperty(runtime, "hitSlop")) {
+        const auto hitSlopValue = config.getProperty(runtime, "hitSlop");
+        if (hitSlopValue.isNumber()) {
+            const auto inset = static_cast<float>(hitSlopValue.asNumber());
+            hitSlop.top = inset;
+            hitSlop.right = inset;
+            hitSlop.bottom = inset;
+            hitSlop.left = inset;
+        } else if (hitSlopValue.isObject()) {
+            const auto hitSlopObject = hitSlopValue.asObject(runtime);
+            hitSlop.left = getNumericProperty(runtime, hitSlopObject, "left", 0.0f);
+            hitSlop.right = getNumericProperty(runtime, hitSlopObject, "right", 0.0f);
+            hitSlop.top = getNumericProperty(runtime, hitSlopObject, "top", 0.0f);
+            hitSlop.bottom = getNumericProperty(runtime, hitSlopObject, "bottom", 0.0f);
+
+            const auto horizontal = getNumericProperty(runtime, hitSlopObject, "horizontal", 0.0f);
+            const auto vertical = getNumericProperty(runtime, hitSlopObject, "vertical", 0.0f);
+            hitSlop.left += horizontal;
+            hitSlop.right += horizontal;
+            hitSlop.top += vertical;
+            hitSlop.bottom += vertical;
+        }
+    }
+
+    _pointerEvents = pointerEvents;
+    _hitSlop = hitSlop;
+    _preciseHit =
+        config.hasProperty(runtime, "preciseHit") &&
+        config.getProperty(runtime, "preciseHit").isBool() &&
+        config.getProperty(runtime, "preciseHit").getBool();
+
+    double nextEventTag = 0.0;
+    if (config.hasProperty(runtime, "eventTag")) {
+        const auto value = config.getProperty(runtime, "eventTag");
+        if (value.isNumber()) {
+            nextEventTag = value.asNumber();
+        }
+    }
+
+    _eventTag = nextEventTag;
+    updateSelfInteractionState(_eventTag > 0.0);
+    return jsi::Value::undefined();
 }
 
 void BlurMaskFilterCmd::updateProps(const BlurMaskFilterCommandData& props)

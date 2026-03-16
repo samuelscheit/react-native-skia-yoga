@@ -45,6 +45,19 @@ export default function TabLayout() {
 				}}
 			/>
 			<Tabs.Screen
+				name="interactivity"
+				options={{
+					title: "Interact",
+					tabBarIcon: ({ color }) => (
+						<IconSymbol
+							size={28}
+							name="hand.tap.fill"
+							color={color}
+						/>
+					),
+				}}
+			/>
+			<Tabs.Screen
 				name="components"
 				options={{
 					title: "Components",
@@ -75,7 +88,11 @@ export default function TabLayout() {
 				options={{
 					title: "Benchmark",
 					tabBarIcon: ({ color }) => (
-						<IconSymbol size={28} name="speedometer" color={color} />
+						<IconSymbol
+							size={28}
+							name="speedometer"
+							color={color}
+						/>
 					),
 				}}
 			/>

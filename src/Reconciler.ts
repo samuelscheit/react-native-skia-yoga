@@ -18,6 +18,7 @@ import {
 import Reconciler from "react-reconciler"
 import { DefaultEventPriority } from "react-reconciler/constants"
 import type { YogaNodeFinal } from "./index"
+import type { YogaInteractionRegistry } from "./interactivity"
 import type { NodeStyle } from "./specs/style"
 import { createYogaNode } from "./util"
 
@@ -25,6 +26,7 @@ export type SkiaYogaHostContext = any
 
 export interface YogaRootContainer {
 	invalidate: () => void
+	interactions: YogaInteractionRegistry
 	nativeCommandBindingsEnabled: boolean
 	node: YogaNodeFinal
 	setContinuousRedraw: (node: YogaNodeFinal, enabled: boolean) => void
@@ -54,6 +56,7 @@ type NodeState = {
 	commandListeners: Map<string, AnimatedListener>
 	commandNativeBindings: Map<string, NativeAnimatedBinding>
 	invalidate: () => void
+	interactions?: YogaInteractionRegistry
 	lastProps: YogaNodeProps
 	nativeCommandBindingsEnabled: boolean
 	setContinuousRedraw: (node: YogaNodeFinal, enabled: boolean) => void
@@ -149,6 +152,7 @@ function getNodeState(
 	invalidate?: () => void,
 	setContinuousRedraw?: (node: YogaNodeFinal, enabled: boolean) => void,
 	nativeCommandBindingsEnabled?: boolean,
+	interactions?: YogaInteractionRegistry,
 ): NodeState {
 	const existing = nodeStates.get(node)
 	if (existing) {
@@ -162,6 +166,9 @@ function getNodeState(
 		if (nativeCommandBindingsEnabled != null) {
 			existing.nativeCommandBindingsEnabled = nativeCommandBindingsEnabled
 		}
+		if (interactions) {
+			existing.interactions = interactions
+		}
 		return existing
 	}
 
@@ -171,6 +178,7 @@ function getNodeState(
 		commandListeners: new Map(),
 		commandNativeBindings: new Map(),
 		invalidate: invalidate ?? (() => {}),
+		interactions,
 		lastProps: {},
 		nativeCommandBindingsEnabled: nativeCommandBindingsEnabled ?? true,
 		setContinuousRedraw: setContinuousRedraw ?? (() => {}),
@@ -196,7 +204,9 @@ function removeAnimatedListeners(listeners: Map<string, AnimatedListener>) {
 	listeners.clear()
 }
 
-function removeNativeAnimatedBindings(bindings: Map<string, NativeAnimatedBinding>) {
+function removeNativeAnimatedBindings(
+	bindings: Map<string, NativeAnimatedBinding>,
+) {
 	for (const { id, value } of bindings.values()) {
 		executeOnUIRuntimeSync(
 			(sharedValue: SharedValue<unknown>, listenerId: number) => {
@@ -217,7 +227,9 @@ function resetAnimatedState(
 	values?.clear()
 }
 
-function resetNativeAnimatedBindings(bindings: Map<string, NativeAnimatedBinding>) {
+function resetNativeAnimatedBindings(
+	bindings: Map<string, NativeAnimatedBinding>,
+) {
 	removeNativeAnimatedBindings(bindings)
 }
 
@@ -263,10 +275,12 @@ function addAnimatedListener(
 		) => {
 			"worklet"
 			sharedValue.addListener(currentListenerId, (nextValue: unknown) => {
-				runOnJS(onUpdateOnJS as (listenerKey: string, nextValue: unknown) => void)(
-					listenerKey,
-					nextValue,
-				)
+				runOnJS(
+					onUpdateOnJS as (
+						listenerKey: string,
+						nextValue: unknown,
+					) => void,
+				)(listenerKey, nextValue)
 			})
 		},
 	)(value, key, listenerId, onUpdate)
@@ -339,7 +353,12 @@ function bindAnimatedValues(
 			invalidate &&
 			supportsNativeCommandBinding(type, path)
 		) {
-			return createNativeAnimatedBinding(value, key, nativeBindings, invalidate)
+			return createNativeAnimatedBinding(
+				value,
+				key,
+				nativeBindings,
+				invalidate,
+			)
 		}
 		values.set(key, value.value)
 		addAnimatedListener(value, key, listeners, onUpdate)
@@ -362,10 +381,7 @@ function bindAnimatedValues(
 				type,
 				invalidate,
 				nativeCommandBindingsEnabled,
-				[
-				...path,
-				String(index),
-				],
+				[...path, String(index)],
 			),
 		)
 	}
@@ -409,7 +425,10 @@ function resolveAnimatedSnapshot(
 
 	if (Array.isArray(value)) {
 		return value.map((entry, index) =>
-			resolveAnimatedSnapshot(entry, values, nestedRoots, [...path, String(index)]),
+			resolveAnimatedSnapshot(entry, values, nestedRoots, [
+				...path,
+				String(index),
+			]),
 		)
 	}
 
@@ -446,9 +465,9 @@ function getResolvedStyle(state: NodeState) {
 
 	return normalizeStyle(
 		resolveAnimatedSnapshot(
-		state.lastProps.style,
-		state.styleAnimatedValues,
-		styleNestedRoots,
+			state.lastProps.style,
+			state.styleAnimatedValues,
+			styleNestedRoots,
 		) as NodeStyle,
 	)
 }
@@ -467,19 +486,19 @@ function resolveAnimatedStyle(
 	const style = props.style as Record<string, unknown>
 	return normalizeStyle(
 		bindAnimatedValues(
-		style,
-		state.styleListeners,
-		new Map<string, NativeAnimatedBinding>(),
-		state.styleAnimatedValues,
-		(listenerKey, nextValue) => {
-			state.styleAnimatedValues.set(listenerKey, nextValue)
-			instance.setStyle(getResolvedStyle(state))
-			state.invalidate()
-		},
-		styleNestedRoots,
-		undefined,
-		undefined,
-		true,
+			style,
+			state.styleListeners,
+			new Map<string, NativeAnimatedBinding>(),
+			state.styleAnimatedValues,
+			(listenerKey, nextValue) => {
+				state.styleAnimatedValues.set(listenerKey, nextValue)
+				instance.setStyle(getResolvedStyle(state))
+				state.invalidate()
+			},
+			styleNestedRoots,
+			undefined,
+			undefined,
+			true,
 		) as NodeStyle,
 	)
 }
@@ -611,7 +630,10 @@ function buildNodeCommand(type: NodeType, props: YogaNodeProps): NodeCommand {
 			})
 		case "paragraph":
 			return createCommand(NodeCommandKind.Paragraph, {
-				paragraph: props.paragraph == null ? undefined : (props.paragraph as any),
+				paragraph:
+					props.paragraph == null
+						? undefined
+						: (props.paragraph as any),
 				paragraphStyle: props.paragraphStyle as any,
 				text: typeof props.text === "string" ? props.text : undefined,
 			})
@@ -661,7 +683,11 @@ function getResolvedCommandProps(state: NodeState): YogaNodeProps {
 }
 
 function applyResolvedCommand(instance: YogaNodeFinal, state: NodeState) {
-	setNodeCommand(instance, state.type, buildNodeCommand(state.type, getResolvedCommandProps(state)))
+	setNodeCommand(
+		instance,
+		state.type,
+		buildNodeCommand(state.type, getResolvedCommandProps(state)),
+	)
 }
 
 function formatCommandForError(command: NodeCommand) {
@@ -670,7 +696,9 @@ function formatCommandForError(command: NodeCommand) {
 		commandType: command.type,
 		dataIsArray: Array.isArray(data),
 		dataKeys:
-			typeof data === "object" && data !== null ? Object.keys(data) : undefined,
+			typeof data === "object" && data !== null
+				? Object.keys(data)
+				: undefined,
 		dataType: data === null ? "null" : typeof data,
 	}
 }
@@ -726,6 +754,7 @@ function applyProps(
 	invalidate?: () => void,
 	setContinuousRedraw?: (node: YogaNodeFinal, enabled: boolean) => void,
 	nativeCommandBindingsEnabled?: boolean,
+	interactions?: YogaInteractionRegistry,
 ) {
 	const nextProps = sanitizeProps(props)
 	const normalizedStyle = isStyleObject(nextProps.style)
@@ -737,6 +766,7 @@ function applyProps(
 		invalidate,
 		setContinuousRedraw,
 		nativeCommandBindingsEnabled,
+		interactions,
 	)
 	state.lastProps =
 		normalizedStyle === nextProps.style
@@ -746,9 +776,15 @@ function applyProps(
 					style: normalizedStyle,
 				}
 
-	const resolvedCommandProps = resolveAnimatedCommand(instance, state, state.lastProps)
+	const resolvedCommandProps = resolveAnimatedCommand(
+		instance,
+		state,
+		state.lastProps,
+	)
 	const resolvedStyle = resolveAnimatedStyle(instance, state, state.lastProps)
-	const needsContinuousRedraw = shouldUseContinuousRedraw(state.lastProps.style)
+	const needsContinuousRedraw = shouldUseContinuousRedraw(
+		state.lastProps.style,
+	)
 
 	if (state.continuousRedraw !== needsContinuousRedraw) {
 		state.continuousRedraw = needsContinuousRedraw
@@ -757,6 +793,7 @@ function applyProps(
 
 	setNodeCommand(instance, type, buildNodeCommand(type, resolvedCommandProps))
 	instance.setStyle(resolvedStyle)
+	state.interactions?.configureNode(instance, state.lastProps)
 }
 
 function updateTextContent(instance: YogaNodeFinal, text: string) {
@@ -770,6 +807,9 @@ function updateTextContent(instance: YogaNodeFinal, text: string) {
 			text,
 		},
 		state?.invalidate,
+		state?.setContinuousRedraw,
+		state?.nativeCommandBindingsEnabled,
+		state?.interactions,
 	)
 }
 
@@ -782,6 +822,7 @@ function cleanupNode(node: YogaNodeFinal) {
 		resetAnimatedState(state.commandListeners, state.commandAnimatedValues)
 		resetNativeAnimatedBindings(state.commandNativeBindings)
 		resetAnimatedState(state.styleListeners, state.styleAnimatedValues)
+		state.interactions?.unregisterNode(node)
 		nodeStates.delete(node)
 	}
 
@@ -806,6 +847,7 @@ const config: SkiaYogaHostContext = {
 			rootContainer.invalidate,
 			rootContainer.setContinuousRedraw,
 			rootContainer.nativeCommandBindingsEnabled,
+			rootContainer.interactions,
 		)
 		return node
 	},
@@ -821,9 +863,14 @@ const config: SkiaYogaHostContext = {
 		queueMicrotask(fn)
 	},
 	createTextInstance(_text: string) {
-		throw new Error('Use the "text" prop on <text> and <paragraph>; raw text children are unsupported.')
+		throw new Error(
+			'Use the "text" prop on <text> and <paragraph>; raw text children are unsupported.',
+		)
 	},
-	removeChildFromContainer(container: YogaRootContainer, child: YogaNodeFinal) {
+	removeChildFromContainer(
+		container: YogaRootContainer,
+		child: YogaNodeFinal,
+	) {
 		container.node.removeChild(child)
 	},
 	appendChildToContainer(container: YogaRootContainer, child: YogaNodeFinal) {
@@ -893,7 +940,11 @@ const config: SkiaYogaHostContext = {
 	resetTextContent(instance: YogaNodeFinal) {
 		updateTextContent(instance, "")
 	},
-	commitTextUpdate(textInstance: YogaNodeFinal, _oldText: string, newText: string) {
+	commitTextUpdate(
+		textInstance: YogaNodeFinal,
+		_oldText: string,
+		newText: string,
+	) {
 		updateTextContent(textInstance, newText)
 	},
 	commitMount(
@@ -917,6 +968,7 @@ const config: SkiaYogaHostContext = {
 			state?.invalidate,
 			state?.setContinuousRedraw,
 			state?.nativeCommandBindingsEnabled,
+			state?.interactions,
 		)
 	},
 	clearContainer(container: YogaRootContainer) {
