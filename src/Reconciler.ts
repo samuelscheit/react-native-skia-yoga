@@ -1,24 +1,24 @@
 import { BlurStyle, FillType, PointMode } from "@shopify/react-native-skia"
-import { NodeCommandKind } from "./specs/SkiaYoga.nitro"
-import type {
-	BlurStyleName,
-	NodeCommand,
-	NodeType,
-	PathFillType,
-	PointModeName,
-} from "./specs/SkiaYoga.nitro"
 import type { SharedValue } from "react-native-reanimated"
 import { isSharedValue } from "react-native-reanimated"
 import {
-	createSynchronizable,
-	executeOnUIRuntimeSync,
-	runOnJS,
-	type Synchronizable,
+    createSynchronizable,
+    executeOnUIRuntimeSync,
+    runOnJS,
+    type Synchronizable,
 } from "react-native-worklets"
 import Reconciler from "react-reconciler"
 import { DefaultEventPriority } from "react-reconciler/constants"
 import type { YogaNodeFinal } from "./index"
 import type { YogaInteractionRegistry } from "./interactivity"
+import type {
+    BlurStyleName,
+    NodeCommand,
+    NodeType,
+    PathFillType,
+    PointModeName,
+} from "./specs/SkiaYoga.nitro"
+import { NodeCommandKind } from "./specs/SkiaYoga.nitro"
 import type { NodeStyle } from "./specs/style"
 import { createYogaNode } from "./util"
 
@@ -29,6 +29,7 @@ export interface YogaRootContainer {
 	interactions: YogaInteractionRegistry
 	nativeCommandBindingsEnabled: boolean
 	node: YogaNodeFinal
+	setNativeAnimationActive: (node: YogaNodeFinal, enabled: boolean) => void
 	setContinuousRedraw: (node: YogaNodeFinal, enabled: boolean) => void
 }
 
@@ -43,7 +44,14 @@ type AnimatedListener = {
 }
 
 type NativeAnimatedBinding = {
+	shared: SharedNativeBindingState
+	synchronizable: Synchronizable<unknown>
+	value: SharedValue<unknown>
+}
+
+type SharedNativeBindingState = {
 	id: number
+	refCount: number
 	synchronizable: Synchronizable<unknown>
 	value: SharedValue<unknown>
 }
@@ -58,7 +66,10 @@ type NodeState = {
 	invalidate: () => void
 	interactions?: YogaInteractionRegistry
 	lastProps: YogaNodeProps
+	nativeAnimationActive: boolean
+	nativeBindingCount: number
 	nativeCommandBindingsEnabled: boolean
+	setNativeAnimationActive: (node: YogaNodeFinal, enabled: boolean) => void
 	setContinuousRedraw: (node: YogaNodeFinal, enabled: boolean) => void
 	styleAnimatedValues: AnimatedValuesMap
 	styleListeners: Map<string, AnimatedListener>
@@ -69,6 +80,10 @@ const nodeStates = new WeakMap<YogaNodeFinal, NodeState>()
 
 let priority = DefaultEventPriority
 let nextListenerId = 1
+const sharedNativeBindingStates = new WeakMap<
+	SharedValue<unknown>,
+	SharedNativeBindingState
+>()
 
 const commandPropKeys: Record<NodeType, readonly string[]> = {
 	blurMaskFilter: ["blur", "blurStyle", "respectCTM"],
@@ -150,6 +165,7 @@ function getNodeState(
 	node: YogaNodeFinal,
 	type: NodeType,
 	invalidate?: () => void,
+	setNativeAnimationActive?: (node: YogaNodeFinal, enabled: boolean) => void,
 	setContinuousRedraw?: (node: YogaNodeFinal, enabled: boolean) => void,
 	nativeCommandBindingsEnabled?: boolean,
 	interactions?: YogaInteractionRegistry,
@@ -159,6 +175,9 @@ function getNodeState(
 		existing.type = type
 		if (invalidate) {
 			existing.invalidate = invalidate
+		}
+		if (setNativeAnimationActive) {
+			existing.setNativeAnimationActive = setNativeAnimationActive
 		}
 		if (setContinuousRedraw) {
 			existing.setContinuousRedraw = setContinuousRedraw
@@ -180,7 +199,10 @@ function getNodeState(
 		invalidate: invalidate ?? (() => {}),
 		interactions,
 		lastProps: {},
+		nativeAnimationActive: false,
+		nativeBindingCount: 0,
 		nativeCommandBindingsEnabled: nativeCommandBindingsEnabled ?? true,
+		setNativeAnimationActive: setNativeAnimationActive ?? (() => {}),
 		setContinuousRedraw: setContinuousRedraw ?? (() => {}),
 		styleAnimatedValues: new Map(),
 		styleListeners: new Map(),
@@ -207,13 +229,20 @@ function removeAnimatedListeners(listeners: Map<string, AnimatedListener>) {
 function removeNativeAnimatedBindings(
 	bindings: Map<string, NativeAnimatedBinding>,
 ) {
-	for (const { id, value } of bindings.values()) {
+	for (const { shared } of bindings.values()) {
+		shared.refCount = Math.max(0, shared.refCount - 1)
+		if (shared.refCount > 0) {
+			continue
+		}
+
 		executeOnUIRuntimeSync(
 			(sharedValue: SharedValue<unknown>, listenerId: number) => {
 				"worklet"
 				sharedValue.removeListener(listenerId)
 			},
-		)(value, id)
+		)(shared.value, shared.id)
+
+		sharedNativeBindingStates.delete(shared.value)
 	}
 
 	bindings.clear()
@@ -309,28 +338,44 @@ function createNativeAnimatedBinding(
 	value: SharedValue<unknown>,
 	key: string,
 	bindings: Map<string, NativeAnimatedBinding>,
-	invalidate: () => void,
 ) {
-	const listenerId = nextListenerId++
-	const synchronizable = createSynchronizable(value.value)
+	let shared = sharedNativeBindingStates.get(value)
+	if (!shared) {
+		const listenerId = nextListenerId++
+		const synchronizable = createSynchronizable(value.value)
 
-	executeOnUIRuntimeSync(
-		(
-			sharedValue: SharedValue<unknown>,
-			mirror: Synchronizable<unknown>,
-			currentListenerId: number,
-			invalidateOnJS: () => void,
-		) => {
-			"worklet"
-			sharedValue.addListener(currentListenerId, (nextValue: unknown) => {
-				mirror.setBlocking(nextValue)
-				runOnJS(invalidateOnJS)()
-			})
-		},
-	)(value, synchronizable, listenerId, invalidate)
+		executeOnUIRuntimeSync(
+			(
+				sharedValue: SharedValue<unknown>,
+				mirror: Synchronizable<unknown>,
+				currentListenerId: number,
+			) => {
+				"worklet"
+				sharedValue.addListener(
+					currentListenerId,
+					(nextValue: unknown) => {
+						mirror.setBlocking(nextValue)
+					},
+				)
+			},
+		)(value, synchronizable, listenerId)
 
-	bindings.set(key, { id: listenerId, synchronizable, value })
-	return synchronizable
+		shared = {
+			id: listenerId,
+			refCount: 0,
+			synchronizable,
+			value,
+		}
+		sharedNativeBindingStates.set(value, shared)
+	}
+
+	shared.refCount += 1
+	bindings.set(key, {
+		shared,
+		synchronizable: shared.synchronizable,
+		value,
+	})
+	return shared.synchronizable
 }
 
 function bindAnimatedValues(
@@ -341,7 +386,6 @@ function bindAnimatedValues(
 	onUpdate: (listenerKey: string, nextValue: unknown) => void,
 	nestedRoots: ReadonlySet<string>,
 	type?: NodeType,
-	invalidate?: () => void,
 	nativeCommandBindingsEnabled = true,
 	path: readonly string[] = [],
 ): unknown {
@@ -350,15 +394,9 @@ function bindAnimatedValues(
 		if (
 			nativeCommandBindingsEnabled &&
 			type &&
-			invalidate &&
 			supportsNativeCommandBinding(type, path)
 		) {
-			return createNativeAnimatedBinding(
-				value,
-				key,
-				nativeBindings,
-				invalidate,
-			)
+			return createNativeAnimatedBinding(value, key, nativeBindings)
 		}
 		values.set(key, value.value)
 		addAnimatedListener(value, key, listeners, onUpdate)
@@ -379,7 +417,6 @@ function bindAnimatedValues(
 				onUpdate,
 				nestedRoots,
 				type,
-				invalidate,
 				nativeCommandBindingsEnabled,
 				[...path, String(index)],
 			),
@@ -397,7 +434,6 @@ function bindAnimatedValues(
 				onUpdate,
 				nestedRoots,
 				type,
-				invalidate,
 				nativeCommandBindingsEnabled,
 				[...path, key],
 			)
@@ -496,7 +532,6 @@ function resolveAnimatedStyle(
 				state.invalidate()
 			},
 			styleNestedRoots,
-			undefined,
 			undefined,
 			true,
 		) as NodeStyle,
@@ -690,6 +725,23 @@ function applyResolvedCommand(instance: YogaNodeFinal, state: NodeState) {
 	)
 }
 
+function syncNativeAnimationState(
+	instance: YogaNodeFinal,
+	state: NodeState,
+	nextBindingCount: number,
+) {
+	const nextActive = nextBindingCount > 0
+	state.nativeBindingCount = nextBindingCount
+
+	if (state.nativeAnimationActive === nextActive) {
+		return
+	}
+
+	state.nativeAnimationActive = nextActive
+	state.setNativeAnimationActive(instance, nextActive)
+	state.invalidate()
+}
+
 function formatCommandForError(command: NodeCommand) {
 	const data = command.data
 	return {
@@ -730,7 +782,7 @@ function resolveAnimatedCommand(
 ) {
 	resetAnimatedState(state.commandListeners, state.commandAnimatedValues)
 	resetNativeAnimatedBindings(state.commandNativeBindings)
-	return bindAnimatedValues(
+	const resolvedProps = bindAnimatedValues(
 		pickProps(props, commandPropKeys[state.type]),
 		state.commandListeners,
 		state.commandNativeBindings,
@@ -742,9 +794,12 @@ function resolveAnimatedCommand(
 		},
 		commandNestedRoots,
 		state.type,
-		state.invalidate,
 		state.nativeCommandBindingsEnabled,
 	) as YogaNodeProps
+
+	syncNativeAnimationState(instance, state, state.commandNativeBindings.size)
+
+	return resolvedProps
 }
 
 function applyProps(
@@ -752,6 +807,7 @@ function applyProps(
 	type: NodeType,
 	props: YogaNodeProps | null | undefined,
 	invalidate?: () => void,
+	setNativeAnimationActive?: (node: YogaNodeFinal, enabled: boolean) => void,
 	setContinuousRedraw?: (node: YogaNodeFinal, enabled: boolean) => void,
 	nativeCommandBindingsEnabled?: boolean,
 	interactions?: YogaInteractionRegistry,
@@ -764,6 +820,7 @@ function applyProps(
 		instance,
 		type,
 		invalidate,
+		setNativeAnimationActive,
 		setContinuousRedraw,
 		nativeCommandBindingsEnabled,
 		interactions,
@@ -807,6 +864,7 @@ function updateTextContent(instance: YogaNodeFinal, text: string) {
 			text,
 		},
 		state?.invalidate,
+		state?.setNativeAnimationActive,
 		state?.setContinuousRedraw,
 		state?.nativeCommandBindingsEnabled,
 		state?.interactions,
@@ -816,6 +874,11 @@ function updateTextContent(instance: YogaNodeFinal, text: string) {
 function cleanupNode(node: YogaNodeFinal) {
 	const state = nodeStates.get(node)
 	if (state) {
+		if (state.nativeAnimationActive) {
+			state.nativeAnimationActive = false
+			state.nativeBindingCount = 0
+			state.setNativeAnimationActive(node, false)
+		}
 		if (state.continuousRedraw) {
 			state.setContinuousRedraw(node, false)
 		}
@@ -845,6 +908,7 @@ const config: SkiaYogaHostContext = {
 			type,
 			props,
 			rootContainer.invalidate,
+			rootContainer.setNativeAnimationActive,
 			rootContainer.setContinuousRedraw,
 			rootContainer.nativeCommandBindingsEnabled,
 			rootContainer.interactions,
@@ -966,6 +1030,7 @@ const config: SkiaYogaHostContext = {
 			type,
 			nextProps,
 			state?.invalidate,
+			state?.setNativeAnimationActive,
 			state?.setContinuousRedraw,
 			state?.nativeCommandBindingsEnabled,
 			state?.interactions,

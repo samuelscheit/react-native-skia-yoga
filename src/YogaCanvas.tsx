@@ -1,4 +1,4 @@
-import { type CanvasProps, type SkPicture } from "@shopify/react-native-skia"
+import { type CanvasProps } from "@shopify/react-native-skia"
 import "@shopify/react-native-skia/lib/typescript/src/views/api.d.ts"
 import React, {
 	useCallback,
@@ -10,8 +10,10 @@ import React, {
 import type { LayoutChangeEvent } from "react-native"
 import { GestureDetector, type GestureType } from "react-native-gesture-handler"
 import { YogaInteractionRegistry } from "./interactivity"
-import { NodeCommandKind } from "./specs/SkiaYoga.nitro"
 import { type YogaRootContainer, reconciler } from "./Reconciler"
+import { SkiaYoga } from "./SkiaYogaObject"
+import { NodeCommandKind } from "./specs/SkiaYoga.nitro"
+import SkiaYogaViewNativeComponent from "./specs/SkiaYogaViewNativeComponent"
 import { useCanvasGestures } from "./useCanvasGestures"
 import { createYogaNode } from "./util"
 
@@ -34,8 +36,17 @@ export type YogaCanvasProfileSample = {
 	skippedInvalidateCalls: number
 }
 
-const { default: SkiaPictureViewNativeComponent } =
-	require("@shopify/react-native-skia/src/specs/SkiaPictureViewNativeComponent") as typeof import("@shopify/react-native-skia/lib/typescript/src/specs/SkiaPictureViewNativeComponent")
+const INITIAL_RENDER_RETRY_FRAMES = 8
+
+type NativeProfilePayload = {
+	avgDrawMs?: unknown
+	avgPresentMs?: unknown
+	frames?: unknown
+	maxDrawMs?: unknown
+	maxPresentMs?: unknown
+	sampleDurationMs?: unknown
+}
+
 const { SkiaViewNativeId } =
 	require("@shopify/react-native-skia/src/views/SkiaViewNativeId") as typeof import("@shopify/react-native-skia/lib/typescript/src/views/SkiaViewNativeId")
 
@@ -45,16 +56,31 @@ function reportError(error: Error) {
 
 function noop() {}
 
-function presentPicture(nativeId: number, picture: SkPicture) {
-	SkiaViewApi.setJsiProperty(nativeId, "picture", picture)
-	SkiaViewApi.requestRedraw(nativeId)
+function toFiniteNumber(value: unknown) {
+	return typeof value === "number" && Number.isFinite(value) ? value : 0
+}
+
+function parseNativeProfileSample(raw: string): NativeProfilePayload {
+	if (!raw) {
+		return {}
+	}
+
+	try {
+		const parsed = JSON.parse(raw) as unknown
+		if (typeof parsed !== "object" || parsed == null) {
+			return {}
+		}
+		return parsed as NativeProfilePayload
+	} catch {
+		return {}
+	}
 }
 
 export function YogaCanvas({
 	children,
 	style,
 	opaque,
-	debug,
+	debug = true,
 	colorSpace,
 	animationBindingMode = "native",
 	gesture,
@@ -64,17 +90,13 @@ export function YogaCanvas({
 	const nativeId = useMemo(() => {
 		return SkiaViewNativeId.current++
 	}, [])
-	const drawNodePictureRef = useRef<() => void>(noop)
 	const activeContinuousNodesRef = useRef(new Set<object>())
-	const pendingDrawRef = useRef(false)
-	const scheduledDrawRef = useRef<number | null>(null)
-	const continuousFrameRef = useRef<number | null>(null)
+	const activeNativeAnimationNodesRef = useRef(new Set<object>())
+	const rootNodeRef = useRef<ReturnType<typeof createYogaNode> | null>(null)
+	const initialRenderRetryFrameRef = useRef<number | null>(null)
+	const initialRenderRetryCountRef = useRef(0)
 	const profileRef = useRef({
-		drawMsTotal: 0,
 		frames: 0,
-		maxDrawMs: 0,
-		maxPresentMs: 0,
-		presentMsTotal: 0,
 		rawInvalidateCalls: 0,
 		sampleStartTime: 0,
 		scheduledInvalidateCalls: 0,
@@ -93,44 +115,100 @@ export function YogaCanvas({
 			const profile = profileRef.current
 			const now = performance.now()
 			const sampleStartTime = profile.sampleStartTime || now
-			const sampleDurationMs = now - sampleStartTime
+			const nativeSample = parseNativeProfileSample(
+				SkiaYoga.consumeViewProfileSample(nativeId),
+			)
+			const nativeFrames = toFiniteNumber(nativeSample.frames)
+			const fallbackDurationMs = now - sampleStartTime
+			const sampleDurationMs =
+				toFiniteNumber(nativeSample.sampleDurationMs) ||
+				fallbackDurationMs
 			if (!force && sampleDurationMs < 1000) {
 				return
 			}
 
-			const frames = profile.frames
+			const frames = nativeFrames > 0 ? nativeFrames : profile.frames
 			onProfileSample({
-				avgDrawMs: frames > 0 ? profile.drawMsTotal / frames : 0,
-				avgPresentMs: frames > 0 ? profile.presentMsTotal / frames : 0,
+				avgDrawMs: toFiniteNumber(nativeSample.avgDrawMs),
+				avgPresentMs: toFiniteNumber(nativeSample.avgPresentMs),
 				frames,
-				maxDrawMs: profile.maxDrawMs,
-				maxPresentMs: profile.maxPresentMs,
+				maxDrawMs: toFiniteNumber(nativeSample.maxDrawMs),
+				maxPresentMs: toFiniteNumber(nativeSample.maxPresentMs),
 				rawInvalidateCalls: profile.rawInvalidateCalls,
 				sampleDurationMs,
 				scheduledInvalidateCalls: profile.scheduledInvalidateCalls,
 				skippedInvalidateCalls: profile.skippedInvalidateCalls,
 			})
 
-			profile.drawMsTotal = 0
 			profile.frames = 0
-			profile.maxDrawMs = 0
-			profile.maxPresentMs = 0
-			profile.presentMsTotal = 0
 			profile.rawInvalidateCalls = 0
 			profile.sampleStartTime = now
 			profile.scheduledInvalidateCalls = 0
 			profile.skippedInvalidateCalls = 0
 		},
-		[onProfileSample, profilingEnabled],
+		[nativeId, onProfileSample, profilingEnabled],
 	)
 
-	const performDraw = useCallback(() => {
-		pendingDrawRef.current = false
-		drawNodePictureRef.current()
-		if (profilingEnabled) {
-			flushProfileSample()
+	const hasActiveAnimationNodes = useCallback(() => {
+		return (
+			activeContinuousNodesRef.current.size > 0 ||
+			activeNativeAnimationNodesRef.current.size > 0
+		)
+	}, [])
+
+	const syncNativeAnimationState = useCallback(() => {
+		const rootNode = rootNodeRef.current
+		if (!rootNode) {
+			return
 		}
-	}, [flushProfileSample, profilingEnabled])
+
+		SkiaYoga.attachViewRoot(nativeId, rootNode)
+		SkiaYoga.setViewAnimating(nativeId, hasActiveAnimationNodes())
+	}, [hasActiveAnimationNodes, nativeId])
+
+	const requestNativeRender = useCallback(() => {
+		const rootNode = rootNodeRef.current
+		if (!rootNode) {
+			if (profilingEnabled) {
+				profileRef.current.skippedInvalidateCalls += 1
+			}
+			return
+		}
+
+		SkiaYoga.attachViewRoot(nativeId, rootNode)
+		if (profilingEnabled) {
+			profileRef.current.scheduledInvalidateCalls += 1
+		}
+		SkiaYoga.requestViewRender(nativeId)
+	}, [nativeId, profilingEnabled])
+
+	const clearInitialRenderRetry = useCallback(() => {
+		if (initialRenderRetryFrameRef.current != null) {
+			cancelAnimationFrame(initialRenderRetryFrameRef.current)
+			initialRenderRetryFrameRef.current = null
+		}
+	}, [])
+
+	const startInitialRenderRetry = useCallback(() => {
+		clearInitialRenderRetry()
+		initialRenderRetryCountRef.current = 0
+
+		const tick = () => {
+			if (
+				initialRenderRetryCountRef.current >=
+				INITIAL_RENDER_RETRY_FRAMES
+			) {
+				initialRenderRetryFrameRef.current = null
+				return
+			}
+
+			initialRenderRetryCountRef.current += 1
+			requestNativeRender()
+			initialRenderRetryFrameRef.current = requestAnimationFrame(tick)
+		}
+
+		initialRenderRetryFrameRef.current = requestAnimationFrame(tick)
+	}, [clearInitialRenderRetry, requestNativeRender])
 
 	const scheduleDraw = useCallback(() => {
 		if (profilingEnabled) {
@@ -141,58 +219,8 @@ export function YogaCanvas({
 			}
 		}
 
-		pendingDrawRef.current = true
-		if (activeContinuousNodesRef.current.size > 0) {
-			if (profilingEnabled) {
-				profileRef.current.skippedInvalidateCalls += 1
-			}
-			return
-		}
-		if (scheduledDrawRef.current != null) {
-			if (profilingEnabled) {
-				profileRef.current.skippedInvalidateCalls += 1
-			}
-			return
-		}
-		if (profilingEnabled) {
-			profileRef.current.scheduledInvalidateCalls += 1
-		}
-
-		scheduledDrawRef.current = requestAnimationFrame(() => {
-			scheduledDrawRef.current = null
-			if (
-				activeContinuousNodesRef.current.size === 0 &&
-				pendingDrawRef.current
-			) {
-				performDraw()
-			}
-		})
-	}, [performDraw])
-
-	const stopContinuousLoop = useCallback(() => {
-		if (continuousFrameRef.current != null) {
-			cancelAnimationFrame(continuousFrameRef.current)
-			continuousFrameRef.current = null
-		}
-	}, [])
-
-	const startContinuousLoop = useCallback(() => {
-		if (continuousFrameRef.current != null) {
-			return
-		}
-
-		const frame = () => {
-			if (activeContinuousNodesRef.current.size === 0) {
-				continuousFrameRef.current = null
-				return
-			}
-
-			performDraw()
-			continuousFrameRef.current = requestAnimationFrame(frame)
-		}
-
-		continuousFrameRef.current = requestAnimationFrame(frame)
-	}, [performDraw])
+		requestNativeRender()
+	}, [profilingEnabled, requestNativeRender])
 
 	const { node, root } = useMemo(() => {
 		const node = createYogaNode()
@@ -207,14 +235,19 @@ export function YogaCanvas({
 				const activeNodes = activeContinuousNodesRef.current
 				if (enabled) {
 					activeNodes.add(trackedNode)
-					startContinuousLoop()
 				} else {
 					activeNodes.delete(trackedNode)
 				}
-				if (activeNodes.size === 0) {
-					stopContinuousLoop()
-					scheduleDraw()
+				syncNativeAnimationState()
+			},
+			setNativeAnimationActive: (trackedNode, enabled) => {
+				const activeNodes = activeNativeAnimationNodesRef.current
+				if (enabled) {
+					activeNodes.add(trackedNode)
+				} else {
+					activeNodes.delete(trackedNode)
 				}
+				syncNativeAnimationState()
 			},
 		}
 
@@ -238,9 +271,19 @@ export function YogaCanvas({
 		animationBindingMode,
 		interactions,
 		scheduleDraw,
-		startContinuousLoop,
-		stopContinuousLoop,
+		syncNativeAnimationState,
 	])
+	rootNodeRef.current = node
+
+	const attachViewRoot = useCallback(() => {
+		const rootNode = rootNodeRef.current
+		if (!rootNode) {
+			return
+		}
+
+		SkiaYoga.attachViewRoot(nativeId, rootNode)
+		syncNativeAnimationState()
+	}, [nativeId, syncNativeAnimationState])
 
 	const canvasGesture = useCanvasGestures({
 		externalGesture: gesture,
@@ -248,36 +291,15 @@ export function YogaCanvas({
 		node,
 	})
 
-	function drawNodePicture() {
-		const drawStartTime = profilingEnabled ? performance.now() : 0
-		const picture = node.draw() as SkPicture
-		if (profilingEnabled) {
-			const drawDurationMs = performance.now() - drawStartTime
-			const profile = profileRef.current
-			profile.drawMsTotal += drawDurationMs
-			profile.frames += 1
-			profile.maxDrawMs = Math.max(profile.maxDrawMs, drawDurationMs)
-		}
-
-		const presentStartTime = profilingEnabled ? performance.now() : 0
-		presentPicture(nativeId, picture)
-		if (profilingEnabled) {
-			const presentDurationMs = performance.now() - presentStartTime
-			const profile = profileRef.current
-			profile.presentMsTotal += presentDurationMs
-			profile.maxPresentMs = Math.max(profile.maxPresentMs, presentDurationMs)
-		}
-	}
-
-	drawNodePictureRef.current = drawNodePicture
-
 	function handleLayout(event: LayoutChangeEvent) {
 		const { width, height } = event.nativeEvent.layout
 		node.setStyle({
 			width,
 			height,
 		})
+		attachViewRoot()
 		scheduleDraw()
+		startInitialRenderRetry()
 	}
 
 	useLayoutEffect(() => {
@@ -288,27 +310,41 @@ export function YogaCanvas({
 		reconciler.flushPassiveEffects()
 
 		scheduleDraw()
-	}, [children, root, nativeId, scheduleDraw])
+		startInitialRenderRetry()
+	}, [children, root, scheduleDraw, startInitialRenderRetry])
+
+	useEffect(() => {
+		if (!profilingEnabled || !onProfileSample) {
+			return
+		}
+
+		const intervalId = setInterval(() => {
+			flushProfileSample()
+		}, 1000)
+
+		return () => {
+			clearInterval(intervalId)
+		}
+	}, [flushProfileSample, onProfileSample, profilingEnabled])
 
 	useEffect(() => {
 		return () => {
+			clearInitialRenderRetry()
 			flushProfileSample(true)
-			stopContinuousLoop()
 			activeContinuousNodesRef.current.clear()
-			if (scheduledDrawRef.current != null) {
-				cancelAnimationFrame(scheduledDrawRef.current)
-				scheduledDrawRef.current = null
-			}
+			activeNativeAnimationNodesRef.current.clear()
+			SkiaYoga.setViewAnimating(nativeId, false)
+			SkiaYoga.detachViewRoot(nativeId)
 			reconciler.updateContainer(null, root, null, null)
 			// @ts-ignore
 			reconciler.flushSyncWork()
 			reconciler.flushPassiveEffects()
 		}
-	}, [flushProfileSample, root, stopContinuousLoop])
+	}, [clearInitialRenderRetry, flushProfileSample, nativeId, root])
 
 	return (
 		<GestureDetector gesture={canvasGesture}>
-			<SkiaPictureViewNativeComponent
+			<SkiaYogaViewNativeComponent
 				collapsable={false}
 				debug={debug}
 				opaque={opaque}

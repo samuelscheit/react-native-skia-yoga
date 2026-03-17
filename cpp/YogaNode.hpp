@@ -42,6 +42,7 @@
 #include <modules/skparagraph/include/ParagraphBuilder.h>
 #include <modules/skparagraph/include/ParagraphStyle.h>
 #include <algorithm>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -388,6 +389,7 @@ public:
     jsi::Value hitTest(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
     jsi::Value setStyleRaw(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
     jsi::Value setInteractionConfig(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
+    void renderToContext(RNSkia::DrawingCtx& ctx);
     void drawInternal(RNSkia::DrawingCtx& ctx);
     void drawChildren(RNSkia::DrawingCtx& ctx);
     bool subtreeHasDynamicRasterContent() const;

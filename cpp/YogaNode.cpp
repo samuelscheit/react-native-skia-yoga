@@ -6,8 +6,10 @@
 #include "SkiaYoga.hpp"
 #include <array>
 #include <cmath>
+#include <functional>
 #include <jsi/jsi.h>
 #include <optional>
+#include <string>
 #include "JsiSkCanvas.h"
 #include "JsiSkFontMgr.h"
 #include "JsiSkFontMgrFactory.h"
@@ -32,6 +34,30 @@ namespace margelo::nitro::RNSkiaYoga {
 using namespace facebook;
 
 namespace {
+
+std::recursive_mutex& yogaTreeMutex()
+{
+    static std::recursive_mutex mutex;
+    return mutex;
+}
+
+template <typename Fn>
+jsi::Value withJsiError(jsi::Runtime& runtime, const char* name, Fn&& fn)
+{
+    try {
+        return fn();
+    } catch (const jsi::JSError&) {
+        throw;
+    } catch (const std::exception& error) {
+        throw jsi::JSError(
+            runtime,
+            std::string(name) + " failed. cause=" + error.what());
+    } catch (...) {
+        throw jsi::JSError(
+            runtime,
+            std::string(name) + " failed. cause=Unknown native error");
+    }
+}
 
 template <typename Tuple, std::size_t... Indices>
 std::array<SkScalar, sizeof...(Indices)> tupleToScalarArrayImpl(const Tuple& tuple, std::index_sequence<Indices...>)
@@ -251,6 +277,7 @@ static void setYGEdgeValue(void (*setter)(YGNodeRef, YGEdge, float),
 
 void YogaNode::setStyle(const NodeStyle& style)
 {
+    std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
     invalidateLayout();
     _style = style;
 
@@ -781,6 +808,7 @@ jsi::Value YogaNode::setStyleRaw(jsi::Runtime& runtime, const jsi::Value& thisAr
 
 void YogaNode::insertChild(const std::shared_ptr<HybridYogaNodeSpec>& child, const std::optional<std::variant<double, std::shared_ptr<HybridYogaNodeSpec>>>& index)
 {
+    std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
     if (!child) {
         return; // No child to insert
     }
@@ -837,6 +865,7 @@ void YogaNode::insertChild(const std::shared_ptr<HybridYogaNodeSpec>& child, con
 // void removeChild(const std::shared_ptr<HybridYogaNodeSpec>& child) override;
 void YogaNode::removeChild(const std::shared_ptr<HybridYogaNodeSpec>& c)
 {
+    std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
     auto child = std::dynamic_pointer_cast<YogaNode>(c);
 
     YGNodeRemoveChild(_node, child->_node);
@@ -848,6 +877,7 @@ void YogaNode::removeChild(const std::shared_ptr<HybridYogaNodeSpec>& c)
 
 void YogaNode::removeAllChildren()
 {
+    std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
     for (auto& child : _children) {
         adjustInteractiveDescendantCount(-child->_interactiveDescendantCount);
         child->_parent = nullptr;
@@ -859,6 +889,7 @@ void YogaNode::removeAllChildren()
 
 void YogaNode::setCommand(NodeCommand command)
 {
+    std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
     invalidateRasterCache();
 
     auto* runtime = RNJsi::BaseRuntimeAwareCache::getMainJsRuntime();
@@ -980,24 +1011,38 @@ void YogaNode::setCommand(NodeCommand command)
 
 jsi::Value YogaNode::draw(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
 {
-    (void)thisArg;
-    (void)args;
-    (void)count;
-    jsi::Object props = jsi::Object(runtime);
-    SkPictureRecorder pictureRecorder;
-    SkISize size = SkISize::Make(2'000'000, 2'000'000);
-    SkRect rect = SkRect::Make(size);
-    auto canvas = pictureRecorder.beginRecording(rect, nullptr);
-    RNSkia::DrawingCtx ctx(canvas);
+    return withJsiError(runtime, "YogaNode.draw()", [&]() -> jsi::Value {
+        std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
+        (void)thisArg;
+        (void)args;
+        (void)count;
+        jsi::Object props = jsi::Object(runtime);
+        SkPictureRecorder pictureRecorder;
+        SkISize size = SkISize::Make(2'000'000, 2'000'000);
+        SkRect rect = SkRect::Make(size);
+        auto canvas = pictureRecorder.beginRecording(rect, nullptr);
+        RNSkia::DrawingCtx ctx(canvas);
+
+        if (!_command) {
+            return jsi::Value::undefined();
+        }
+
+        drawInternal(ctx);
+
+        auto picture = pictureRecorder.finishRecordingAsPicture();
+        return jsi::Object::createFromHostObject(runtime, std::make_shared<RNSkia::JsiSkPicture>(margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext(), picture));
+    });
+}
+
+void YogaNode::renderToContext(RNSkia::DrawingCtx& ctx)
+{
+    std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
 
     if (!_command) {
-        return jsi::Value::undefined();
+        return;
     }
 
     drawInternal(ctx);
-
-    auto picture = pictureRecorder.finishRecordingAsPicture();
-    return jsi::Object::createFromHostObject(runtime, std::make_shared<RNSkia::JsiSkPicture>(margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext(), picture));
 }
 
 void YogaNode::drawInternal(RNSkia::DrawingCtx& ctx)
@@ -1137,16 +1182,22 @@ bool YogaNode::subtreeHasDynamicRasterContent() const
 
 jsi::Value YogaNode::getChildren(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
 {
-    jsi::Array arr = jsi::Array(runtime, _children.size());
-    for (size_t i = 0; i < _children.size(); ++i) {
-        auto obj = JSIConverter<std::shared_ptr<margelo::nitro::RNSkiaYoga::YogaNode>>::toJSI(runtime, _children[i]);
-        arr.setValueAtIndex(runtime, i, obj);
-    }
-    return arr;
+    return withJsiError(runtime, "YogaNode.getChildren()", [&]() -> jsi::Value {
+        (void)thisArg;
+        (void)args;
+        (void)count;
+        jsi::Array arr = jsi::Array(runtime, _children.size());
+        for (size_t i = 0; i < _children.size(); ++i) {
+            auto obj = JSIConverter<std::shared_ptr<margelo::nitro::RNSkiaYoga::YogaNode>>::toJSI(runtime, _children[i]);
+            arr.setValueAtIndex(runtime, i, obj);
+        }
+        return arr;
+    });
 }
 
 void YogaNode::computeLayout(std::optional<double> width, std::optional<double> height)
 {
+    std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
     float w = width.has_value() ? static_cast<float>(width.value()) : YGUndefined;
     float h = height.has_value() ? static_cast<float>(height.value()) : YGUndefined;
 
@@ -1316,78 +1367,84 @@ double YogaNode::hitTestTagAt(float x, float y)
 
 jsi::Value YogaNode::hitTest(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
 {
-    (void)thisArg;
+    return withJsiError(runtime, "YogaNode.hitTest(x, y)", [&]() -> jsi::Value {
+        std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
+        (void)thisArg;
 
-    if (count < 2 || !args[0].isNumber() || !args[1].isNumber()) {
-        throw jsi::JSError(runtime, "YogaNode.hitTest(x, y) expects numeric x and y arguments.");
-    }
+        if (count < 2 || !args[0].isNumber() || !args[1].isNumber()) {
+            throw jsi::JSError(runtime, "YogaNode.hitTest(x, y) expects numeric x and y arguments.");
+        }
 
-    const auto x = static_cast<float>(args[0].asNumber());
-    const auto y = static_cast<float>(args[1].asNumber());
-    return jsi::Value(hitTestTagAt(x, y));
+        const auto x = static_cast<float>(args[0].asNumber());
+        const auto y = static_cast<float>(args[1].asNumber());
+        return jsi::Value(hitTestTagAt(x, y));
+    });
 }
 
 jsi::Value YogaNode::setInteractionConfig(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
 {
-    (void)thisArg;
+    return withJsiError(runtime, "YogaNode.setInteractionConfig(config)", [&]() -> jsi::Value {
+        std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
+        (void)thisArg;
 
-    if (count < 1 || !args[0].isObject()) {
-        throw jsi::JSError(runtime, "YogaNode.setInteractionConfig(config) expects a config object.");
-    }
-
-    const auto config = args[0].asObject(runtime);
-
-    auto pointerEvents = PointerEventsMode::AUTO;
-    if (config.hasProperty(runtime, "pointerEvents")) {
-        const auto value = config.getProperty(runtime, "pointerEvents");
-        if (value.isString()) {
-            pointerEvents = parsePointerEventsMode(value.asString(runtime).utf8(runtime));
+        if (count < 1 || !args[0].isObject()) {
+            throw jsi::JSError(runtime, "YogaNode.setInteractionConfig(config) expects a config object.");
         }
-    }
 
-    HitSlopInsets hitSlop;
-    if (config.hasProperty(runtime, "hitSlop")) {
-        const auto hitSlopValue = config.getProperty(runtime, "hitSlop");
-        if (hitSlopValue.isNumber()) {
-            const auto inset = static_cast<float>(hitSlopValue.asNumber());
-            hitSlop.top = inset;
-            hitSlop.right = inset;
-            hitSlop.bottom = inset;
-            hitSlop.left = inset;
-        } else if (hitSlopValue.isObject()) {
-            const auto hitSlopObject = hitSlopValue.asObject(runtime);
-            hitSlop.left = getNumericProperty(runtime, hitSlopObject, "left", 0.0f);
-            hitSlop.right = getNumericProperty(runtime, hitSlopObject, "right", 0.0f);
-            hitSlop.top = getNumericProperty(runtime, hitSlopObject, "top", 0.0f);
-            hitSlop.bottom = getNumericProperty(runtime, hitSlopObject, "bottom", 0.0f);
+        const auto config = args[0].asObject(runtime);
 
-            const auto horizontal = getNumericProperty(runtime, hitSlopObject, "horizontal", 0.0f);
-            const auto vertical = getNumericProperty(runtime, hitSlopObject, "vertical", 0.0f);
-            hitSlop.left += horizontal;
-            hitSlop.right += horizontal;
-            hitSlop.top += vertical;
-            hitSlop.bottom += vertical;
+        auto pointerEvents = PointerEventsMode::AUTO;
+        if (config.hasProperty(runtime, "pointerEvents")) {
+            const auto value = config.getProperty(runtime, "pointerEvents");
+            if (value.isString()) {
+                pointerEvents = parsePointerEventsMode(value.asString(runtime).utf8(runtime));
+            }
         }
-    }
 
-    _pointerEvents = pointerEvents;
-    _hitSlop = hitSlop;
-    _preciseHit =
-        config.hasProperty(runtime, "preciseHit") &&
-        config.getProperty(runtime, "preciseHit").isBool() &&
-        config.getProperty(runtime, "preciseHit").getBool();
+        HitSlopInsets hitSlop;
+        if (config.hasProperty(runtime, "hitSlop")) {
+            const auto hitSlopValue = config.getProperty(runtime, "hitSlop");
+            if (hitSlopValue.isNumber()) {
+                const auto inset = static_cast<float>(hitSlopValue.asNumber());
+                hitSlop.top = inset;
+                hitSlop.right = inset;
+                hitSlop.bottom = inset;
+                hitSlop.left = inset;
+            } else if (hitSlopValue.isObject()) {
+                const auto hitSlopObject = hitSlopValue.asObject(runtime);
+                hitSlop.left = getNumericProperty(runtime, hitSlopObject, "left", 0.0f);
+                hitSlop.right = getNumericProperty(runtime, hitSlopObject, "right", 0.0f);
+                hitSlop.top = getNumericProperty(runtime, hitSlopObject, "top", 0.0f);
+                hitSlop.bottom = getNumericProperty(runtime, hitSlopObject, "bottom", 0.0f);
 
-    double nextEventTag = 0.0;
-    if (config.hasProperty(runtime, "eventTag")) {
-        const auto value = config.getProperty(runtime, "eventTag");
-        if (value.isNumber()) {
-            nextEventTag = value.asNumber();
+                const auto horizontal = getNumericProperty(runtime, hitSlopObject, "horizontal", 0.0f);
+                const auto vertical = getNumericProperty(runtime, hitSlopObject, "vertical", 0.0f);
+                hitSlop.left += horizontal;
+                hitSlop.right += horizontal;
+                hitSlop.top += vertical;
+                hitSlop.bottom += vertical;
+            }
         }
-    }
 
-    _eventTag = nextEventTag;
-    updateSelfInteractionState(_eventTag > 0.0);
-    return jsi::Value::undefined();
+        _pointerEvents = pointerEvents;
+        _hitSlop = hitSlop;
+        _preciseHit =
+            config.hasProperty(runtime, "preciseHit") &&
+            config.getProperty(runtime, "preciseHit").isBool() &&
+            config.getProperty(runtime, "preciseHit").getBool();
+
+        double nextEventTag = 0.0;
+        if (config.hasProperty(runtime, "eventTag")) {
+            const auto value = config.getProperty(runtime, "eventTag");
+            if (value.isNumber()) {
+                nextEventTag = value.asNumber();
+            }
+        }
+
+        _eventTag = nextEventTag;
+        updateSelfInteractionState(_eventTag > 0.0);
+        return jsi::Value::undefined();
+    });
 }
 
 void BlurMaskFilterCmd::updateProps(const BlurMaskFilterCommandData& props)

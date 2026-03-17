@@ -14,7 +14,11 @@ namespace margelo::nitro::RNSkiaYoga {
     HybridObject::loadHybridMethods();
     // load custom methods/properties
     registerHybrids(this, [](Prototype& prototype) {
-      
+      prototype.registerHybridMethod("attachViewRoot", &HybridSkiaYogaSpec::attachViewRoot);
+      prototype.registerHybridMethod("detachViewRoot", &HybridSkiaYogaSpec::detachViewRoot);
+      prototype.registerHybridMethod("requestViewRender", &HybridSkiaYogaSpec::requestViewRender);
+      prototype.registerHybridMethod("setViewAnimating", &HybridSkiaYogaSpec::setViewAnimating);
+      prototype.registerHybridMethod("consumeViewProfileSample", &HybridSkiaYogaSpec::consumeViewProfileSample);
     });
   }
 

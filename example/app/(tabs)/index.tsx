@@ -133,7 +133,7 @@ function Root() {
 
 export default function HomeScreen() {
 	return (
-		<YogaCanvas style={{ flex: 1 }}>
+		<YogaCanvas debug style={{ flex: 1, marginTop: 50 }}>
 			<Root />
 		</YogaCanvas>
 	)

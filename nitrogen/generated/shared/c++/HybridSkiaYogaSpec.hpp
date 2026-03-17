@@ -13,9 +13,12 @@
 #error NitroModules cannot be found! Are you sure you installed NitroModules properly?
 #endif
 
+// Forward declaration of `HybridYogaNodeSpec` to properly resolve imports.
+namespace margelo::nitro::RNSkiaYoga { class HybridYogaNodeSpec; }
 
-
-
+#include <memory>
+#include "HybridYogaNodeSpec.hpp"
+#include <string>
 
 namespace margelo::nitro::RNSkiaYoga {
 
@@ -48,7 +51,11 @@ namespace margelo::nitro::RNSkiaYoga {
 
     public:
       // Methods
-      
+      virtual void attachViewRoot(double nativeId, const std::shared_ptr<HybridYogaNodeSpec>& root) = 0;
+      virtual void detachViewRoot(double nativeId) = 0;
+      virtual void requestViewRender(double nativeId) = 0;
+      virtual void setViewAnimating(double nativeId, bool animating) = 0;
+      virtual std::string consumeViewProfileSample(double nativeId) = 0;
 
     protected:
       // Hybrid Setup

@@ -21,7 +21,8 @@ class SkiaYogaPackage : BaseReactPackage() {
     return module;
   }
 
-  override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> = emptyList()
+  override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> =
+    listOf(SkiaYogaViewManager())
 
   override fun getReactModuleInfoProvider() = ReactModuleInfoProvider {
     mapOf(

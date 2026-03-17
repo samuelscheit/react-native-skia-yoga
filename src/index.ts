@@ -1,34 +1,9 @@
-import { TurboModuleRegistry } from "react-native"
-import { NitroModules } from "react-native-nitro-modules"
-import type { Spec } from "./specs/NativeSkiaYoga"
 import type {
 	NodeCommand,
-	SkiaYoga as SkiaYogaType,
 	YogaNode,
 } from "./specs/SkiaYoga.nitro"
 import type { YogaNodeInteractionConfig } from "./interactivity"
-
-let turboModule: Spec | undefined
-try {
-	turboModule = TurboModuleRegistry.getEnforcing<Spec>("SkiaYoga")
-} catch (e) {
-	throw new Error(
-		"SkiaYoga TurboModule is not available. Make sure you have linked the react-native-skia-yoga native module correctly. " +
-			e,
-	)
-}
-
-turboModule.install()
-
-console.log("react-native-skia-yoga initialized")
-
-// NativeModules.SkiaYogaModule?.install?.()
-
-export const SkiaYoga =
-	NitroModules.createHybridObject<SkiaYogaType>("SkiaYoga")
-
-// @ts-ignore
-globalThis.SkiaYoga = SkiaYoga
+export { SkiaYoga } from "./SkiaYogaObject"
 
 export interface YogaNodeFinal extends YogaNode {
 	setCommand(command: NodeCommand): void

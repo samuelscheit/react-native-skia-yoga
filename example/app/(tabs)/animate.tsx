@@ -112,7 +112,7 @@ function AnimatedCommandPropsDemo() {
 
 export default function AnimateScreen() {
 	return (
-		<YogaCanvas style={{ flex: 1 }}>
+		<YogaCanvas debug style={{ flex: 1 }}>
 			<AnimatedCommandPropsDemo />
 		</YogaCanvas>
 	)

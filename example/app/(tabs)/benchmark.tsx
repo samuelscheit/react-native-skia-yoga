@@ -306,6 +306,10 @@ export default function BenchmarkScreen() {
 		() => `${mode}:${count}:${runId}`,
 		[count, mode, runId],
 	)
+	const sceneElement = useMemo(
+		() => <BenchmarkScene count={count} mode={mode} running={running} />,
+		[count, mode, running],
+	)
 
 	const benchmarkModeLabel =
 		mode === "native"
@@ -314,22 +318,32 @@ export default function BenchmarkScreen() {
 				? "JS command rebuilds"
 				: "Static baseline"
 
+	const nativeFps = useMemo(() => {
+		if (!profileSample || profileSample.sampleDurationMs <= 0) {
+			return 0
+		}
+
+		return (profileSample.frames * 1000) / profileSample.sampleDurationMs
+	}, [profileSample])
+
 	return (
 		<View
 			style={{
 				flex: 1,
+				paddingTop: 40,
 			}}
 		>
 			<YogaCanvas
 				key={canvasKey}
 				animationBindingMode={mode === "js" ? "js" : "native"}
+				debug
 				onProfileSample={setProfileSample}
 				profilingEnabled
 				style={{
 					flex: 1,
 				}}
 			>
-				<BenchmarkScene count={count} mode={mode} running={running} />
+				{sceneElement}
 			</YogaCanvas>
 
 			<View
@@ -394,7 +408,10 @@ export default function BenchmarkScreen() {
 									: "idle"}
 						</Text>
 						<Text style={styles.metricLine}>
-							FPS: {formatMetric(summary?.fps ?? 0)}
+							JS FPS: {formatMetric(summary?.fps ?? 0)}
+						</Text>
+						<Text style={styles.metricLine}>
+							Native FPS: {formatMetric(nativeFps)}
 						</Text>
 						<Text style={styles.metricLine}>
 							Avg frame: {formatMetric(summary?.avgFrameMs ?? 0)}{" "}
@@ -418,6 +435,10 @@ export default function BenchmarkScreen() {
 						</Text>
 						<Text style={styles.metricLine}>
 							Frames: {summary?.frameCount ?? 0}
+						</Text>
+						<Text style={styles.metricLine}>
+							Native frames/sample:{" "}
+							{formatMetric(profileSample?.frames ?? 0, 0)}
 						</Text>
 						<Text style={styles.metricLine}>
 							Yoga draw:{" "}

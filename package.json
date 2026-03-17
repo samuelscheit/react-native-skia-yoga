@@ -77,10 +77,15 @@
 	},
 	"codegenConfig": {
 		"name": "RNSkiaYogaSpec",
-		"type": "modules",
+		"type": "all",
 		"jsSrcsDir": "./src/specs",
 		"android": {
 			"javaPackageName": "com.margelo.nitro.skiayoga"
+		},
+		"ios": {
+			"componentProvider": {
+				"SkiaYogaView": "SkiaYogaView"
+			}
 		}
 	},
 	"prettier": {
