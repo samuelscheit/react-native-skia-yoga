@@ -128,10 +128,26 @@ Last updated: 2026-05-09
 - Committed the accepted worker 008/009/010 integration batch to `main`.
 - Killed completed `rnskia-*` worker 008 tmux sessions and left the unrelated `fast-react-*` session untouched.
 - Removed accepted worker worktrees and branches for workers 008, 009, and 010 after merge and verification.
+- Created `worker-011-yoganode-parent-lifetime` from current `main` and launched `rnskia-worker-011-yoganode-parent-lifetime` as a top-level tmux subprocess for the raw `_parent` lifetime and single-parent invariant implementation.
+- Worker 011 passed the visible `GOAL_CREATED: ...` gate before any commands or nested subagent work.
+- Worker 011 original pass hit a usage limit after applying a partial C++ lifetime patch.
+- Launched `rnskia-worker-011-yoganode-parent-lifetime-fixup`; it passed the visible goal gate and spawned a nested read-only reviewer. The nested reviewer found the remaining partial-insert/count bug in `detachChildFromParent()` and confirmed `HybridObject::shared_cast<YogaNode>()` was the correct ownership source. The fixup worker hit a usage limit before applying the reviewer fix.
+- Launched `rnskia-worker-011-yoganode-parent-lifetime-fixup-v2` as a smaller-model tmux worker after documenting the usage-limit exception. It passed the visible goal gate, applied the final exact-count/vector-first insertion fix, and wrote a draft report before hitting a usage limit before `update_goal`.
+- Applied only the accepted worker-owned `cpp/YogaNode.cpp` and `cpp/YogaNode.hpp` patch into main. The worker worktree's `bun.lock` drift from dependency installation was intentionally excluded.
+- Wrote the accepted worker 011 report in `worker-progress/worker-011-yoganode-parent-lifetime.md`.
+- Main verification after worker 011 integration:
+  - `git diff --check`: passed.
+  - `git diff --cached --check`: passed.
+  - `bun run specs`: passed.
+  - `npm run typecheck`: passed.
+  - `bun run check:install-isolation`: passed.
+  - `npm pack --dry-run`: passed.
+  - Focused `clang++ -std=c++20 -fsyntax-only -include cpp/polyfill.h ... cpp/YogaNode.cpp`: passed with a temporary Nitro include shim and explicit React Native, Yoga, React Native Skia, and Worklets include roots.
+- Killed completed/failed `rnskia-*` worker 011 tmux sessions and left the unrelated `fast-react-*` session untouched.
 
 ## Active Workers
 
-None.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -160,10 +176,11 @@ Accepted worker reports:
 - `worker-progress/worker-008-reset-semantics.md`
 - `worker-progress/worker-009-origin-animated-contract.md`
 - `worker-progress/worker-010-yoganode-parent-lifetime-audit.md`
+- `worker-progress/worker-011-yoganode-parent-lifetime.md`
 
 ## Pending Workers
 
-- Later implementation worker for raw `_parent` lifetime fixes, after worker 010 reports and to avoid overlapping `YogaNode.*` edits with worker 008.
+- None beyond the active worker 011 lifetime implementation.
 
 ## Decisions
 
@@ -180,12 +197,12 @@ Accepted worker reports:
 
 - JS/API: package metadata and JSX runtime declarations originally pointed at missing `lib` output; README still shows legacy `Canvas`/`View`/`Text` usage. The unsupported public `origin` field and overly broad nested animated style typing have been addressed in the main worktree by worker 009.
 - Native reset semantics: optional native style and command prop omission now resets to defaults instead of preserving stale native state. Worker 008 also preserves the text fallback color contract: `backgroundColor` wins, explicit `opacity` controls alpha, and fallback text alpha is preserved when opacity is omitted.
-- Native: platform context ownership is split between `SkiaYoga::platformContext` and `PlatformContextAccessor`; iOS and Android initialize different stores; shared C++ reads both. Raw `_parent` pointers in `YogaNode` create a lifetime risk when child nodes outlive parent/root teardown.
+- Native: platform context ownership was unified by worker 006. Raw `_parent` pointers in `YogaNode` were replaced by weak parent links by worker 011, and child reparenting now enforces a single-parent invariant with exact interactive-descendant count updates.
 - Verification: `scripts/sync-example-links.mjs` clobbers root dependency/bin/type resolution with example symlinks. This breaks `specs`, muddies `typecheck`/`lint-ci`, hides root-only packages, and makes validation untrustworthy until root/example dependency boundaries are fixed.
 
 ## Next Implementation Candidates
 
-- Continue deeper native lifetime cleanup, especially raw `_parent` pointer risks in `YogaNode`.
+- Add a focused native lifetime regression harness for retained descendant teardown and reparenting once native test infrastructure is available.
 
 ## Known Hygiene Notes
 

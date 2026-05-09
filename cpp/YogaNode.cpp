@@ -109,6 +109,118 @@ void resetYogaStyle(YGNodeRef node)
     YGNodeCopyStyle(node, defaultYogaStyleNode());
 }
 
+std::shared_ptr<YogaNode> sharedYogaNodeForInsert(YogaNode& node)
+{
+    try {
+        return node.shared_cast<YogaNode>();
+    } catch (const std::exception& error) {
+        throw std::runtime_error(
+            std::string("YogaNode.insertChild() requires the parent YogaNode to be shared-owned. cause=") + error.what());
+    }
+}
+
+std::optional<size_t> findChildIndex(const YogaNode& parent, const YogaNode& child)
+{
+    for (size_t i = 0; i < parent._children.size(); ++i) {
+        if (parent._children[i].get() == &child) {
+            return i;
+        }
+    }
+    return std::nullopt;
+}
+
+bool isAncestorOrSelf(const YogaNode& maybeAncestor, const YogaNode& node)
+{
+    if (&maybeAncestor == &node) {
+        return true;
+    }
+
+    auto parent = node._parent.lock();
+    while (parent) {
+        if (parent.get() == &maybeAncestor) {
+            return true;
+        }
+        parent = parent->_parent.lock();
+    }
+
+    return false;
+}
+
+size_t eraseChildReferences(YogaNode& parent, const std::shared_ptr<YogaNode>& child)
+{
+    const auto oldSize = parent._children.size();
+    parent._children.erase(
+        std::remove_if(
+            parent._children.begin(),
+            parent._children.end(),
+            [&](const std::shared_ptr<YogaNode>& candidate) {
+                return candidate.get() == child.get();
+            }),
+        parent._children.end());
+    return oldSize - parent._children.size();
+}
+
+size_t detachChildFromParent(YogaNode& parent, const std::shared_ptr<YogaNode>& child)
+{
+    if (!child) {
+        return 0;
+    }
+
+    const bool hadYogaParent = parent._node != nullptr && child->_node != nullptr && YGNodeGetParent(child->_node) == parent._node;
+    const auto currentParent = child->_parent.lock();
+    const bool hadParentLink = currentParent && currentParent.get() == &parent;
+    const auto removedCount = eraseChildReferences(parent, child);
+    if (hadYogaParent) {
+        YGNodeRemoveChild(parent._node, child->_node);
+    }
+
+    if (removedCount == 0 && !hadYogaParent && !hadParentLink) {
+        return 0;
+    }
+
+    if (hadYogaParent || hadParentLink || removedCount > 0) {
+        child->_parent.reset();
+    }
+
+    if (removedCount > 0) {
+        const auto removedInteractiveDescendants = child->_interactiveDescendantCount * static_cast<int>(removedCount);
+        parent.adjustInteractiveDescendantCount(-removedInteractiveDescendants);
+    }
+    parent.invalidateLayout();
+    return removedCount;
+}
+
+void detachAllChildren(YogaNode& parent, bool propagateInvalidation)
+{
+    int removedInteractiveDescendants = 0;
+    for (const auto& child : parent._children) {
+        if (!child) {
+            continue;
+        }
+        removedInteractiveDescendants += child->_interactiveDescendantCount;
+        if (!propagateInvalidation) {
+            child->_parent.reset();
+        } else if (auto currentParent = child->_parent.lock()) {
+            if (currentParent.get() == &parent) {
+                child->_parent.reset();
+            }
+        } else {
+            child->_parent.reset();
+        }
+    }
+
+    if (parent._node != nullptr) {
+        YGNodeRemoveAllChildren(parent._node);
+    }
+
+    parent._children.clear();
+
+    if (propagateInvalidation) {
+        parent.adjustInteractiveDescendantCount(-removedInteractiveDescendants);
+        parent.invalidateLayout();
+    }
+}
+
 } // namespace
 
 std::optional<SkFont> TextCmd::sDefaultFont;
@@ -229,6 +341,8 @@ std::string describeJSIValue(jsi::Runtime& runtime, const jsi::Value& value, int
 
 YogaNode::~YogaNode()
 {
+    std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
+    detachAllChildren(*this, false);
     if (_node != nullptr) {
         YGNodeFree(_node);
         _node = nullptr;
@@ -836,7 +950,25 @@ void YogaNode::insertChild(const std::shared_ptr<HybridYogaNodeSpec>& child, con
         throw std::runtime_error("Child is not a YogaNode");
     }
 
-    size_t insertIndex = 0;
+    if (_node == nullptr || yogaNode->_node == nullptr) {
+        throw std::runtime_error("Cannot insert a disposed YogaNode");
+    }
+
+    if (isAncestorOrSelf(*yogaNode, *this)) {
+        throw std::runtime_error("Cannot insert a YogaNode into itself or one of its descendants");
+    }
+
+    auto parentSelf = sharedYogaNodeForInsert(*this);
+
+    enum class InsertTargetKind {
+        Append,
+        NumericIndex,
+        BeforeNode,
+    };
+
+    InsertTargetKind targetKind = InsertTargetKind::Append;
+    size_t requestedIndex = 0;
+    std::shared_ptr<YogaNode> beforeYogaNode;
 
     if (index.has_value()) {
         if (std::holds_alternative<double>(index.value())) {
@@ -844,37 +976,69 @@ void YogaNode::insertChild(const std::shared_ptr<HybridYogaNodeSpec>& child, con
             if (idx < 0 || idx >= YGNodeGetChildCount(_node)) {
                 throw std::out_of_range("Index out of range for YogaNode children");
             }
-            insertIndex = static_cast<uint32_t>(idx);
+            requestedIndex = static_cast<size_t>(idx);
+            targetKind = InsertTargetKind::NumericIndex;
         } else if (std::holds_alternative<std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>>(index.value())) {
             auto indexNode = std::get<std::shared_ptr<margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec>>(index.value());
             auto indexYogaNode = std::dynamic_pointer_cast<YogaNode>(indexNode);
             if (!indexYogaNode) {
                 throw std::runtime_error("Index is not a YogaNode");
             }
-            // Insert before the given index node
-            uint32_t childCount = YGNodeGetChildCount(_node);
-            bool found = false;
-            for (uint32_t i = 0; i < childCount; ++i) {
-                if (YGNodeGetChild(_node, i) == indexYogaNode->_node) {
-                    insertIndex = i;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
+
+            if (!findChildIndex(*this, *indexYogaNode).has_value()) {
                 throw std::runtime_error("Index node is not a child of this YogaNode");
             }
+
+            if (indexYogaNode.get() == yogaNode.get()) {
+                return;
+            }
+
+            beforeYogaNode = indexYogaNode;
+            targetKind = InsertTargetKind::BeforeNode;
         } else {
             throw std::runtime_error("Invalid index type for YogaNode insertion");
         }
-    } else {
-        insertIndex = YGNodeGetChildCount(_node);
     }
 
-    YGNodeInsertChild(_node, yogaNode->_node, insertIndex);
-    yogaNode->_parent = this;
+    if (auto oldParent = yogaNode->_parent.lock()) {
+        detachChildFromParent(*oldParent, yogaNode);
+    } else if (YGNodeGetParent(yogaNode->_node) != nullptr) {
+        throw std::runtime_error("Cannot insert YogaNode because its Yoga owner has no live YogaNode parent link");
+    }
+
+    size_t insertIndex = _children.size();
+    switch (targetKind) {
+    case InsertTargetKind::Append:
+        insertIndex = _children.size();
+        break;
+    case InsertTargetKind::NumericIndex:
+        if (requestedIndex > _children.size()) {
+            throw std::out_of_range("Index out of range for YogaNode children after reparenting");
+        }
+        insertIndex = requestedIndex;
+        break;
+    case InsertTargetKind::BeforeNode: {
+        const auto beforeIndex = findChildIndex(*this, *beforeYogaNode);
+        if (!beforeIndex.has_value()) {
+            throw std::runtime_error("Index node is not a child of this YogaNode after reparenting");
+        }
+        insertIndex = *beforeIndex;
+        break;
+    }
+    }
 
     _children.insert(_children.begin() + static_cast<std::ptrdiff_t>(insertIndex), yogaNode);
+    try {
+        YGNodeInsertChild(_node, yogaNode->_node, insertIndex);
+    } catch (...) {
+        _children.erase(_children.begin() + static_cast<std::ptrdiff_t>(insertIndex));
+        if (YGNodeGetParent(yogaNode->_node) == _node) {
+            YGNodeRemoveChild(_node, yogaNode->_node);
+        }
+        throw;
+    }
+
+    yogaNode->_parent = parentSelf;
     adjustInteractiveDescendantCount(yogaNode->_interactiveDescendantCount);
     invalidateLayout();
 }
@@ -883,25 +1047,22 @@ void YogaNode::insertChild(const std::shared_ptr<HybridYogaNodeSpec>& child, con
 void YogaNode::removeChild(const std::shared_ptr<HybridYogaNodeSpec>& c)
 {
     std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
-    auto child = std::dynamic_pointer_cast<YogaNode>(c);
+    if (!c) {
+        return;
+    }
 
-    YGNodeRemoveChild(_node, child->_node);
-    child->_parent = nullptr;
-    _children.erase(std::remove(_children.begin(), _children.end(), child), _children.end());
-    adjustInteractiveDescendantCount(-child->_interactiveDescendantCount);
-    invalidateLayout();
+    auto child = std::dynamic_pointer_cast<YogaNode>(c);
+    if (!child) {
+        throw std::runtime_error("Child is not a YogaNode");
+    }
+
+    detachChildFromParent(*this, child);
 }
 
 void YogaNode::removeAllChildren()
 {
     std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
-    for (auto& child : _children) {
-        adjustInteractiveDescendantCount(-child->_interactiveDescendantCount);
-        child->_parent = nullptr;
-    }
-    YGNodeRemoveAllChildren(_node);
-    _children.clear();
-    invalidateLayout();
+    detachAllChildren(*this, true);
 }
 
 void YogaNode::setCommand(NodeCommand command)
@@ -1258,8 +1419,8 @@ void YogaNode::invalidateLayout()
     _hasLayoutBeenComputed = false;
     _rasterCacheDirty = true;
     _rasterCache.reset();
-    if (_parent != nullptr) {
-        _parent->invalidateLayout();
+    if (auto parent = _parent.lock()) {
+        parent->invalidateLayout();
     }
 }
 
@@ -1268,8 +1429,8 @@ void YogaNode::invalidateRasterCache()
     _rasterCacheDirty = true;
     _rasterCache.reset();
 
-    if (_parent != nullptr) {
-        _parent->invalidateRasterCache();
+    if (auto parent = _parent.lock()) {
+        parent->invalidateRasterCache();
     }
 }
 
@@ -1281,8 +1442,8 @@ void YogaNode::adjustInteractiveDescendantCount(int delta)
 
     _interactiveDescendantCount += delta;
 
-    if (_parent != nullptr) {
-        _parent->adjustInteractiveDescendantCount(delta);
+    if (auto parent = _parent.lock()) {
+        parent->adjustInteractiveDescendantCount(delta);
     }
 }
 

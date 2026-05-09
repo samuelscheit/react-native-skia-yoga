@@ -43,6 +43,7 @@
 #include <modules/skparagraph/include/ParagraphBuilder.h>
 #include <modules/skparagraph/include/ParagraphStyle.h>
 #include <algorithm>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <unordered_map>
@@ -409,7 +410,7 @@ public:
     bool _hasLayoutBeenComputed = false;
     YogaNodeLayout _layout;
     std::unique_ptr<YogaNodeCommand> _command;
-    YogaNode* _parent = nullptr;
+    std::weak_ptr<YogaNode> _parent;
     std::vector<std::shared_ptr<YogaNode>> _children;
     NodeStyle _style;
     SkPaint _paint;
