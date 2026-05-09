@@ -70,7 +70,7 @@ Acceptance criteria:
 
 ## Phase 2: Root-Cause Implementation
 
-Status: second implementation wave integrated through native parent lifetime, reparenting fixes, focused native lifetime verifier coverage, and linked native runtime smoke coverage
+Status: second implementation wave integrated through native parent lifetime, reparenting fixes, focused native lifetime verifier coverage, linked native runtime smoke coverage, and hardened RN Skia macOS archive discovery
 
 Candidate areas to prioritize after evidence:
 
@@ -132,10 +132,11 @@ Accepted package-hygiene implementation:
 - `worker-018-next-backlog-audit`: audited the post-worker-017 backlog, rechecked local toolchain blockers, verified the currently feasible package/example checks, and identified package install lifecycle hygiene as the strongest unblocked root-cause task.
 - `worker-019-package-lifecycle-hygiene`: removed the consumer-facing root `postinstall`, kept local/example header sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added package lifecycle verification proving a tarball consumer install succeeds with lifecycle scripts enabled and Bun hidden from `PATH`.
 - `worker-020-next-root-cause-audit`: audited the post-lifecycle backlog, confirmed platform-native build/run remains locally blocked, and identified the `check:yoganode-native-runtime` archive discovery failure as the strongest unblocked root-cause task.
+- `worker-021-runtime-smoke-archive-discovery`: restored and hardened `check:yoganode-native-runtime` by discovering the current optional-package RN Skia macOS archive layout, validating expected archive basenames before selection, and keeping the old in-package layout as a fallback.
 
-Next root-cause target:
+Current next step:
 
-- Restore and harden `check:yoganode-native-runtime` so it discovers the current RN Skia macOS archive packaging as well as the old in-package layout. Continue platform-native build/run verification once local prerequisites are available.
+- Run the next unblocked root-cause audit from current `main`. Continue platform-native build/run verification once local prerequisites are available.
 
 Acceptance criteria:
 

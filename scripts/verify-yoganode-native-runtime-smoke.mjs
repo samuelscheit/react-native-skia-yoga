@@ -1,12 +1,43 @@
 #!/usr/bin/env node
 
-import { mkdtempSync, rmSync, writeFileSync, mkdirSync, symlinkSync, unlinkSync, existsSync, readdirSync, statSync } from "node:fs"
+import { mkdtempSync, rmSync, writeFileSync, mkdirSync, symlinkSync, unlinkSync, existsSync, readdirSync, statSync, realpathSync } from "node:fs"
 import { tmpdir } from "node:os"
 import path from "node:path"
 import { spawnSync } from "node:child_process"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
 const tmpDir = mkdtempSync(path.join(tmpdir(), "rnskia-yoganode-runtime-"))
+const expectedSkiaArchiveBasenames = [
+	"libskia.a",
+	"libskottie.a",
+	"libskparagraph.a",
+	"libsksg.a",
+	"libskshaper.a",
+	"libskunicode_core.a",
+	"libskunicode_libgrapheme.a",
+	"libsvg.a",
+]
+const skiaArchiveLayouts = [
+	{
+		name: "optional react-native-skia-apple-macos xcframework archives",
+		root: projectPath("node_modules/react-native-skia-apple-macos/libs"),
+		archivePattern: "*.xcframework/macos*/*.a",
+		matchesArchive: createMacosXcframeworkArchiveMatcher(projectPath("node_modules/react-native-skia-apple-macos/libs")),
+		followSymlinks: true,
+	},
+	{
+		name: "current bundled RN Skia macOS xcframework archives",
+		root: projectPath("node_modules/@shopify/react-native-skia/libs/apple/macos"),
+		archivePattern: "*.xcframework/macos*/*.a",
+		matchesArchive: createMacosXcframeworkArchiveMatcher(projectPath("node_modules/@shopify/react-native-skia/libs/apple/macos")),
+	},
+	{
+		name: "legacy bundled RN Skia macOS archives",
+		root: projectPath("node_modules/@shopify/react-native-skia/libs/macos"),
+		archivePattern: "**/*.a",
+		matchesArchive: (entryPath) => entryPath.endsWith(".a"),
+	},
+]
 
 try {
 	createNitroModulesShim(tmpDir)
@@ -121,8 +152,32 @@ function yogaSourcePaths() {
 }
 
 function skiaArchivePaths() {
-	const skiaLibDir = projectPath("node_modules/@shopify/react-native-skia/libs/macos")
-	return walkFiles(skiaLibDir, (entryPath) => entryPath.endsWith(".a")).sort()
+	const attempts = skiaArchiveLayouts.map((layout) => ({
+		...layout,
+		archivePaths: walkFiles(layout.root, layout.matchesArchive, {
+			required: false,
+			followSymlinks: layout.followSymlinks,
+		}).sort(),
+		resolvedRoot: resolveExistingPath(layout.root),
+	}))
+
+	for (const attempt of attempts) {
+		attempt.archiveBasenames = attempt.archivePaths.map((archivePath) => path.basename(archivePath))
+		attempt.missingExpectedArchives = expectedSkiaArchiveBasenames.filter((archiveName) => !attempt.archiveBasenames.includes(archiveName))
+		attempt.isValid = attempt.missingExpectedArchives.length === 0
+	}
+
+	const selectedLayout = attempts.find((attempt) => attempt.isValid)
+	if (selectedLayout) {
+		return selectedLayout.archivePaths
+	}
+
+	throw new Error([
+		"Unable to locate RN Skia macOS archives required for YogaNode native runtime smoke.",
+		`Expected archive basenames: ${expectedSkiaArchiveBasenames.join(", ")}`,
+		"Checked archive layouts:",
+		...attempts.map(formatArchiveLayoutAttempt),
+	].join("\n"))
 }
 
 function createNitroModulesShim(baseDir) {
@@ -139,22 +194,78 @@ function createNitroModulesShim(baseDir) {
 	}
 }
 
-function walkFiles(directory, predicate) {
+function createMacosXcframeworkArchiveMatcher(root) {
+	return (entryPath) => {
+		if (!entryPath.endsWith(".a")) {
+			return false
+		}
+
+		const relativePath = path.relative(root, entryPath)
+		if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+			return false
+		}
+
+		const segments = relativePath.split(path.sep)
+		return segments.length === 3 && segments[0].endsWith(".xcframework") && segments[1].startsWith("macos")
+	}
+}
+
+function walkFiles(directory, predicate, options = {}) {
+	const { required = true, followSymlinks = false } = options
 	if (!existsSync(directory) || !statSync(directory).isDirectory()) {
-		throw new Error(`Missing required directory: ${path.relative(rootDir, directory)}`)
+		if (required) {
+			throw new Error(`Missing required directory: ${path.relative(rootDir, directory)}`)
+		}
+
+		return []
 	}
 
 	const files = []
 	for (const entry of readdirSync(directory, { withFileTypes: true })) {
 		const entryPath = path.join(directory, entry.name)
-		if (entry.isDirectory()) {
-			files.push(...walkFiles(entryPath, predicate))
-		} else if (entry.isFile() && predicate(entryPath)) {
+		if (entry.isDirectory() || (followSymlinks && entry.isSymbolicLink() && statSync(entryPath).isDirectory())) {
+			files.push(...walkFiles(entryPath, predicate, options))
+		} else if ((entry.isFile() || (followSymlinks && entry.isSymbolicLink() && statSync(entryPath).isFile())) && predicate(entryPath)) {
 			files.push(entryPath)
 		}
 	}
 
 	return files
+}
+
+function resolveExistingPath(targetPath) {
+	if (!existsSync(targetPath)) {
+		return null
+	}
+
+	return realpathSync(targetPath)
+}
+
+function formatArchiveLayoutAttempt(attempt) {
+	const details = [
+		`- ${attempt.name}`,
+		`  root: ${path.relative(rootDir, attempt.root)}`,
+		`  expected archives: ${attempt.archivePattern}`,
+	]
+
+	if (attempt.resolvedRoot != null) {
+		details.push(`  resolved root: ${path.relative(rootDir, attempt.resolvedRoot)}`)
+	} else {
+		details.push("  resolved root: missing")
+	}
+
+	details.push(`  archives found: ${attempt.archivePaths.length}`)
+	details.push(`  matched basenames: ${attempt.archiveBasenames.length > 0 ? attempt.archiveBasenames.join(", ") : "none"}`)
+	details.push(`  missing expected archives: ${attempt.missingExpectedArchives.length > 0 ? attempt.missingExpectedArchives.join(", ") : "none"}`)
+	details.push("  matched archive paths:")
+	if (attempt.archivePaths.length === 0) {
+		details.push("    none")
+	} else {
+		for (const archivePath of attempt.archivePaths) {
+			details.push(`    ${path.relative(rootDir, archivePath)}`)
+		}
+	}
+	return details.join("\n")
 }
 
 function includeFlags(shimDir) {
