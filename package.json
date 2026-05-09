@@ -37,8 +37,8 @@
 		"check:package-lifecycle": "node ./scripts/verify-package-lifecycle.mjs",
 		"check:yoganode-native-runtime": "node ./scripts/verify-yoganode-native-runtime-smoke.mjs",
 		"clean": "rm -rf android/build node_modules/**/android/build lib",
-		"lint": "eslint \"**/*.{js,ts,tsx}\" --fix",
-		"lint-ci": "eslint \"**/*.{js,ts,tsx}\" -f @jamesacarr/github-actions",
+		"lint": "eslint --resolve-plugins-relative-to ./node_modules/@react-native/eslint-config \".eslintrc.js\" \"**/*.{js,mjs,ts,tsx}\" --fix",
+		"lint-ci": "eslint --resolve-plugins-relative-to ./node_modules/@react-native/eslint-config \".eslintrc.js\" \"**/*.{js,mjs,ts,tsx}\"",
 		"typescript": "tsc",
 		"specs": "nitrogen --logLevel=\"debug\"",
 		"sync:example-links": "node ./scripts/sync-example-links.mjs --root --example"

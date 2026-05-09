@@ -221,14 +221,14 @@ export function YogaCanvas({
 	}, [profilingEnabled, requestNativeRender])
 
 	const { node, root } = useMemo(() => {
-		const node = createYogaNode()
-		node.setCommand({ type: NodeCommandKind.Group, data: {} })
+		const rootNode = createYogaNode()
+		rootNode.setCommand({ type: NodeCommandKind.Group, data: {} })
 
 		const rootContainer: YogaRootContainer = {
 			invalidate: scheduleDraw,
 			interactions,
 			nativeCommandBindingsEnabled: animationBindingMode === "native",
-			node,
+			node: rootNode,
 			setContinuousRedraw: (trackedNode, enabled) => {
 				const activeNodes = activeContinuousNodesRef.current
 				if (enabled) {
@@ -250,7 +250,7 @@ export function YogaCanvas({
 		}
 
 		return {
-			node,
+			node: rootNode,
 			root: reconciler.createContainer(
 				rootContainer,
 				0,
@@ -325,11 +325,14 @@ export function YogaCanvas({
 	}, [flushProfileSample, onProfileSample, profilingEnabled])
 
 	useEffect(() => {
+		const activeContinuousNodes = activeContinuousNodesRef.current
+		const activeNativeAnimationNodes = activeNativeAnimationNodesRef.current
+
 		return () => {
 			clearInitialRenderRetry()
 			flushProfileSample(true)
-			activeContinuousNodesRef.current.clear()
-			activeNativeAnimationNodesRef.current.clear()
+			activeContinuousNodes.clear()
+			activeNativeAnimationNodes.clear()
 			SkiaYoga.setViewAnimating(nativeId, false)
 			SkiaYoga.detachViewRoot(nativeId)
 			reconciler.updateContainer(null, root, null, null)
