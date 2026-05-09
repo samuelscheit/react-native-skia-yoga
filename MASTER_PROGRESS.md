@@ -173,10 +173,19 @@ Last updated: 2026-05-09
   - `npm pack --dry-run`: passed; generated tarball removed afterward.
 - Created `worker-014-platform-runtime-readiness` from current `main`, symlinked root and example `node_modules` from the main worktree, and launched `rnskia-worker-014-platform-runtime-readiness` as a top-level tmux subprocess to audit the example app platform runtime/build feedback loop.
 - Worker 014 passed the visible `GOAL_CREATED: ...` gate before any commands or nested subagent work.
+- Worker 014 spawned a nested read-only challenger, but the log only proves challenger creation, not a completed challenger result before the worker hit a Codex usage limit.
+- Worker 014 local probes found no committed `example/ios` or `example/android`, missing CocoaPods, unset Android SDK variables, and no Gradle/ADB/CMake/Ninja on `PATH`. `expo config --type introspect --json` succeeded, while `react-native config` failed because `@react-native-community/cli` is missing, `expo install --check` reported Expo 55 dependency skew, and `cd example && bun run typecheck` failed before native generation.
+- Killed the sleeping `rnskia-worker-014-platform-runtime-readiness` wrapper after the usage-limit exit.
+- Launched `rnskia-worker-014-platform-runtime-readiness-finalize` with a smaller model for report recovery. It passed the visible goal gate, wrote `worker-progress/worker-014-platform-runtime-readiness.md`, and completed.
+- Launched `rnskia-worker-014-platform-runtime-readiness-report-correction` to correct the nested-challenger wording. It passed the visible goal gate, updated only the report, ran `git diff --check`, and completed.
+- Accepted worker 014 as a no-product-change platform readiness report. The next root-cause implementation target is example workspace readiness: align Expo 55 dependencies, add the missing React Native CLI dependency needed for `react-native config`, preserve install isolation, then use generated native projects for real iOS/Android verification when local platform prerequisites are available.
+- Main verification after worker 014 report integration:
+  - `git diff --check`: passed.
+  - `git diff --cached --check`: passed.
 
 ## Active Workers
 
-- `rnskia-worker-014-platform-runtime-readiness`: example app platform runtime/build readiness audit and next root-cause implementation target selection.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -208,6 +217,7 @@ Accepted worker reports:
 - `worker-progress/worker-011-yoganode-parent-lifetime.md`
 - `worker-progress/worker-012-native-lifetime-regression.md`
 - `worker-progress/worker-013-native-runtime-smoke.md`
+- `worker-progress/worker-014-platform-runtime-readiness.md`
 
 ## Pending Workers
 
@@ -230,10 +240,11 @@ Accepted worker reports:
 - Native reset semantics: optional native style and command prop omission now resets to defaults instead of preserving stale native state. Worker 008 also preserves the text fallback color contract: `backgroundColor` wins, explicit `opacity` controls alpha, and fallback text alpha is preserved when opacity is omitted.
 - Native: platform context ownership was unified by worker 006. Raw `_parent` pointers in `YogaNode` were replaced by weak parent links by worker 011, and child reparenting now enforces a single-parent invariant with exact interactive-descendant count updates.
 - Verification: worker 004 fixed the root/example install-isolation bug that let `scripts/sync-example-links.mjs` clobber root dependency/bin/type resolution. `bun run check:install-isolation` now guards that boundary. Worker 012 added `bun run check:yoganode-native-lifetime`, a focused syntax/source-invariant verifier for the YogaNode weak-parent and reparenting invariants. Worker 013 added `bun run check:yoganode-native-runtime`, a linked host-native runtime smoke that executes retained-descendant teardown and reparenting ownership assertions. The current main verification set passes.
+- Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Local native build prerequisites are missing, managed Expo config introspection succeeds, and the immediate root-cause blockers are missing `@react-native-community/cli`, Expo 55 dependency skew, and example typecheck failures from ambient globals plus duplicate root/example React Native type resolution.
 
 ## Next Implementation Candidates
 
-- Add broader platform runtime coverage through the iOS/Android app build paths once native test infrastructure is available.
+- Align example workspace readiness for Expo 55: add the missing React Native CLI dependency, update the example dependency set expected by `expo install --check`, keep root/example install isolation intact, and then generate native projects for iOS/Android build verification once local platform prerequisites are available.
 
 ## Known Hygiene Notes
 
