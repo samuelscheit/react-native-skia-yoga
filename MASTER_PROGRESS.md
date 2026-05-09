@@ -160,10 +160,21 @@ Last updated: 2026-05-09
   - `bun run specs`: passed; generated files were unchanged.
 - Created `worker-013-native-runtime-smoke` from current `main` and launched `rnskia-worker-013-native-runtime-smoke` as a top-level tmux subprocess to determine whether true linked runtime smoke coverage is feasible for retained-descendant teardown and reparenting.
 - Worker 013 passed the visible `GOAL_CREATED: ...` gate before any commands or nested subagent work.
+- Worker 013 proved a linked runtime smoke harness was feasible only with real `YogaNode.cpp`, real upstream Yoga sources, real RN Skia macOS archives, and a narrow set of helper sources; it obtained a nested read-only challenger result and then hit a Codex usage limit before writing files.
+- Killed the sleeping `rnskia-worker-013-native-runtime-smoke` wrapper and relaunched `rnskia-worker-013-native-runtime-smoke-finalize` in the same worktree with a smaller model. The finalizer passed the visible `GOAL_CREATED: ...` gate, authored the runtime smoke script and package hook, ran the new check successfully, and then hit a Codex usage limit before writing the report.
+- Recovered `worker-progress/worker-013-native-runtime-smoke.md` from the tmux JSON logs and worker-authored diff, explicitly documenting that the report was completed by orchestration after worker usage-limit failure.
+- Applied the accepted worker 013 patch into the main worktree as `8e32465 Add YogaNode native runtime smoke`.
+- Main verification after worker 013 integration:
+  - `bun run check:yoganode-native-runtime`: passed.
+  - `bun run check:yoganode-native-lifetime`: passed.
+  - `git diff --check`: passed.
+  - `bun run check:install-isolation`: passed.
+  - `npm run typecheck`: passed.
+  - `npm pack --dry-run`: passed; generated tarball removed afterward.
 
 ## Active Workers
 
-- `rnskia-worker-013-native-runtime-smoke`: linked native runtime smoke coverage feasibility for YogaNode retained-descendant teardown and reparenting.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -194,10 +205,11 @@ Accepted worker reports:
 - `worker-progress/worker-010-yoganode-parent-lifetime-audit.md`
 - `worker-progress/worker-011-yoganode-parent-lifetime.md`
 - `worker-progress/worker-012-native-lifetime-regression.md`
+- `worker-progress/worker-013-native-runtime-smoke.md`
 
 ## Pending Workers
 
-- None beyond active worker 013.
+- None.
 
 ## Decisions
 
@@ -215,11 +227,11 @@ Accepted worker reports:
 - JS/API: package metadata and JSX runtime declarations originally pointed at missing `lib` output; worker 005 aligned the source-first entrypoints and JSX runtime declarations. The README now shows the current `YogaCanvas` plus lowercase intrinsic-node API. The unsupported public `origin` field and overly broad nested animated style typing were addressed by worker 009.
 - Native reset semantics: optional native style and command prop omission now resets to defaults instead of preserving stale native state. Worker 008 also preserves the text fallback color contract: `backgroundColor` wins, explicit `opacity` controls alpha, and fallback text alpha is preserved when opacity is omitted.
 - Native: platform context ownership was unified by worker 006. Raw `_parent` pointers in `YogaNode` were replaced by weak parent links by worker 011, and child reparenting now enforces a single-parent invariant with exact interactive-descendant count updates.
-- Verification: worker 004 fixed the root/example install-isolation bug that let `scripts/sync-example-links.mjs` clobber root dependency/bin/type resolution. `bun run check:install-isolation` now guards that boundary. Worker 012 added `bun run check:yoganode-native-lifetime`, a focused syntax/source-invariant verifier for the YogaNode weak-parent and reparenting invariants. The current main verification set passes.
+- Verification: worker 004 fixed the root/example install-isolation bug that let `scripts/sync-example-links.mjs` clobber root dependency/bin/type resolution. `bun run check:install-isolation` now guards that boundary. Worker 012 added `bun run check:yoganode-native-lifetime`, a focused syntax/source-invariant verifier for the YogaNode weak-parent and reparenting invariants. Worker 013 added `bun run check:yoganode-native-runtime`, a linked host-native runtime smoke that executes retained-descendant teardown and reparenting ownership assertions. The current main verification set passes.
 
 ## Next Implementation Candidates
 
-- Add a linked native runtime smoke test for retained descendant teardown and reparenting once native test infrastructure is available.
+- Add broader platform runtime coverage through the iOS/Android app build paths once native test infrastructure is available.
 
 ## Known Hygiene Notes
 
