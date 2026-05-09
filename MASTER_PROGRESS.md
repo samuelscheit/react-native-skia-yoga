@@ -180,7 +180,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- None beyond the active worker 011 lifetime implementation.
+- None.
 
 ## Decisions
 
@@ -195,10 +195,10 @@ Accepted worker reports:
 
 ## Evidence Summary
 
-- JS/API: package metadata and JSX runtime declarations originally pointed at missing `lib` output; README still shows legacy `Canvas`/`View`/`Text` usage. The unsupported public `origin` field and overly broad nested animated style typing have been addressed in the main worktree by worker 009.
+- JS/API: package metadata and JSX runtime declarations originally pointed at missing `lib` output; worker 005 aligned the source-first entrypoints and JSX runtime declarations. The README now shows the current `YogaCanvas` plus lowercase intrinsic-node API. The unsupported public `origin` field and overly broad nested animated style typing were addressed by worker 009.
 - Native reset semantics: optional native style and command prop omission now resets to defaults instead of preserving stale native state. Worker 008 also preserves the text fallback color contract: `backgroundColor` wins, explicit `opacity` controls alpha, and fallback text alpha is preserved when opacity is omitted.
 - Native: platform context ownership was unified by worker 006. Raw `_parent` pointers in `YogaNode` were replaced by weak parent links by worker 011, and child reparenting now enforces a single-parent invariant with exact interactive-descendant count updates.
-- Verification: `scripts/sync-example-links.mjs` clobbers root dependency/bin/type resolution with example symlinks. This breaks `specs`, muddies `typecheck`/`lint-ci`, hides root-only packages, and makes validation untrustworthy until root/example dependency boundaries are fixed.
+- Verification: worker 004 fixed the root/example install-isolation bug that let `scripts/sync-example-links.mjs` clobber root dependency/bin/type resolution. `bun run check:install-isolation` now guards that boundary, and the current main verification set passes.
 
 ## Next Implementation Candidates
 
