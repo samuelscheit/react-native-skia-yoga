@@ -229,6 +229,25 @@ Last updated: 2026-05-09
   - `git diff --check`: passed.
   - `git diff --cached --check`: passed.
 - Worker 018 selected package install lifecycle hygiene as the next unblocked root-cause target: remove the dev-local root package `postinstall` from the consumer-facing package contract, make local example/header sync explicit and safe, and prove the package tarball installs in a temporary consumer project with lifecycle scripts enabled and Bun hidden from `PATH`.
+- Created `worker-019-package-lifecycle-hygiene` from current `main`, symlinked root and example `node_modules` from the main worktree, and launched `rnskia-worker-019-package-lifecycle-hygiene` as a top-level tmux subprocess to remove the consumer-facing root package lifecycle hook.
+- Worker 019 passed the visible `GOAL_CREATED: ...` gate before any commands, todos, or nested subagent work.
+- Worker 019 original pass obtained a completed nested challenger result proving that removing the root `postinstall` was the root-cause fix and that adding `scripts/` to the package files would only patch the symptom. It then hit a usage limit before editing.
+- Launched `rnskia-worker-019-package-lifecycle-hygiene-finalize` with `gpt-5.4-mini`/high. It passed the visible goal gate, removed the root consumer `postinstall`, made local/example sync explicit and Node-based, moved codegen-only `nitrogen` to `devDependencies`, added `check:package-lifecycle`, wrote `worker-progress/worker-019-package-lifecycle-hygiene.md`, and ran the required feasible checks.
+- Orchestrator review found two follow-up issues before merge: dangling symlink repair needed `lstatSync`-based path inspection instead of `existsSync`, and the Bun-hidden proof needed an explicit PATH shim rather than heuristic path filtering.
+- Launched `rnskia-worker-019-package-lifecycle-review-fix`; it passed the visible goal gate and used a nested read-only check to validate the PATH-shim approach, then hit a usage limit before editing. Applied the accepted review fix through tmux shell workers using `apply_patch` in the worker worktree and verified the focused temp sync regression plus lifecycle verifier.
+- Applied the accepted worker 019 patch into the main worktree.
+- Main verification after worker 019 integration:
+  - `git diff --check`: passed.
+  - `npm run typecheck`: passed, with npm's existing `minimum-release-age` warning.
+  - `bun run check:install-isolation`: passed.
+  - `bun run check:yoganode-native-lifetime`: passed.
+  - temp-directory `scripts/sync-example-links.mjs --example` regression passed for root symlink, other-target symlink, dangling symlink, and non-symlink refusal.
+  - `bun run check:package-lifecycle`: passed and proved the verifier PATH shim keeps `bun` unavailable while preserving `node`, `npm`, and `tar`.
+  - `npm pack --dry-run --json`: passed; parsed 87 packed files and confirmed no `scripts/` entries.
+  - `npm pack --dry-run`: passed and left no repo-root `.tgz` artifact.
+  - `cd example && bun --bun ./node_modules/.bin/expo install --check`: passed.
+  - Parsed `cd example && bun --bun ./node_modules/.bin/react-native config`: passed and confirmed iOS `podspecPath`, Android `sourceDir`, and `new SkiaYogaPackage()`.
+  - `git status --short --ignored example/ios example/android` showed only the known ignored local `example/android/` and `example/ios/` directories; no tracked native example folders were introduced.
 
 ## Active Workers
 
@@ -269,6 +288,7 @@ Accepted worker reports:
 - `worker-progress/worker-016-platform-native-verification.md`
 - `worker-progress/worker-017-package-plugin-hygiene.md`
 - `worker-progress/worker-018-next-backlog-audit.md`
+- `worker-progress/worker-019-package-lifecycle-hygiene.md`
 
 ## Pending Workers
 
@@ -291,12 +311,12 @@ Accepted worker reports:
 - Native reset semantics: optional native style and command prop omission now resets to defaults instead of preserving stale native state. Worker 008 also preserves the text fallback color contract: `backgroundColor` wins, explicit `opacity` controls alpha, and fallback text alpha is preserved when opacity is omitted.
 - Native: platform context ownership was unified by worker 006. Raw `_parent` pointers in `YogaNode` were replaced by weak parent links by worker 011, and child reparenting now enforces a single-parent invariant with exact interactive-descendant count updates.
 - Verification: worker 004 fixed the root/example install-isolation bug that let `scripts/sync-example-links.mjs` clobber root dependency/bin/type resolution. `bun run check:install-isolation` now guards that boundary. Worker 012 added `bun run check:yoganode-native-lifetime`, a focused syntax/source-invariant verifier for the YogaNode weak-parent and reparenting invariants. Worker 013 added `bun run check:yoganode-native-runtime`, a linked host-native runtime smoke that executes retained-descendant teardown and reparenting ownership assertions. The current main verification set passes.
-- Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the next unblocked root-cause task: root `package.json` still publishes a Bun-based dev-local `postinstall` hook while `scripts/` is not in the packed files, and the underlying fix is to remove consumer-facing install lifecycle coupling rather than ship the local sync script.
+- Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the next unblocked root-cause task, and worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`.
 
 ## Next Implementation Candidates
 
-- Remove the dev-local root package `postinstall` from the consumer-facing package contract, make local example/header sync explicit and safe, and prove the package tarball installs in a temporary consumer project with lifecycle scripts enabled and Bun hidden from `PATH`.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
+- Select the next unblocked root-cause task from the open API/native/testability questions with a read-only audit worker if platform toolchain prerequisites remain unavailable.
 
 ## Known Hygiene Notes
 

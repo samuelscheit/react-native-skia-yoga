@@ -105,7 +105,7 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, and package plugin hygiene resolved
+Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, and package metadata/install lifecycle hygiene resolved
 
 Goals:
 
@@ -130,10 +130,11 @@ Accepted package-hygiene implementation:
 
 - `worker-017-package-plugin-hygiene`: proved that the missing `app.plugin.js` entry was stale package metadata rather than a real Expo config-plugin contract, then removed that entry from `package.json.files` while preserving the native autolinking surface.
 - `worker-018-next-backlog-audit`: audited the post-worker-017 backlog, rechecked local toolchain blockers, verified the currently feasible package/example checks, and identified package install lifecycle hygiene as the strongest unblocked root-cause task.
+- `worker-019-package-lifecycle-hygiene`: removed the consumer-facing root `postinstall`, kept local/example header sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added package lifecycle verification proving a tarball consumer install succeeds with lifecycle scripts enabled and Bun hidden from `PATH`.
 
 Next root-cause target:
 
-- Remove the dev-local root package `postinstall` from the consumer-facing package contract, make local example/header sync explicit and safe, and prove the package tarball installs in a temporary consumer project with lifecycle scripts enabled and Bun hidden from `PATH`.
+- Continue platform-native build/run verification once local prerequisites are available. Until then, select the next unblocked root-cause task from the open API/native/testability questions with a read-only audit worker.
 
 Acceptance criteria:
 
