@@ -129,14 +129,17 @@ Accepted native-generation verification:
 Accepted package-hygiene implementation:
 
 - `worker-017-package-plugin-hygiene`: proved that the missing `app.plugin.js` entry was stale package metadata rather than a real Expo config-plugin contract, then removed that entry from `package.json.files` while preserving the native autolinking surface.
+- `worker-018-next-backlog-audit`: audited the post-worker-017 backlog, rechecked local toolchain blockers, verified the currently feasible package/example checks, and identified package install lifecycle hygiene as the strongest unblocked root-cause task.
 
 Next root-cause target:
 
-- Continue deeper platform-native build/run verification when local prerequisites are available.
+- Remove the dev-local root package `postinstall` from the consumer-facing package contract, make local example/header sync explicit and safe, and prove the package tarball installs in a temporary consumer project with lifecycle scripts enabled and Bun hidden from `PATH`.
 
 Acceptance criteria:
 
 - Example app runs or has documented environment blockers.
+- Published package metadata has no consumer lifecycle hook that depends on repo-local scripts or local workspace layout.
+- A temporary tarball consumer install passes with scripts enabled and without Bun on `PATH`.
 - Android/iOS build paths are verified to the extent available locally.
 - Cleanup removes stale worktrees, tmux sessions, logs, and temporary build outputs.
 

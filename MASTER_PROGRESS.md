@@ -220,6 +220,15 @@ Last updated: 2026-05-09
   - Parsed `cd example && bun --bun ./node_modules/.bin/react-native config`: passed and confirmed `react-native-skia-yoga` still has iOS `podspecPath`, Android `sourceDir`, and `new SkiaYogaPackage()` autolinking metadata.
   - Parsed `cd example && bun --bun ./node_modules/.bin/expo config --type introspect --json`: passed and confirmed `react-native-skia-yoga` is not in Expo plugin history.
   - `git ls-files example/ios example/android`: no tracked native example folders.
+- Created `worker-018-next-backlog-audit` from current `main`, symlinked root and example `node_modules` from the main worktree, and launched `rnskia-worker-018-next-backlog-audit` as a read-only top-level tmux subprocess to audit the remaining backlog after worker 017.
+- Worker 018 passed the visible `GOAL_CREATED: ...` gate before any commands, todos, or nested subagent work.
+- Worker 018 original pass audited packaging/runtime/example/native surfaces, rechecked the local platform toolchain blockers, ran the feasible verification checks, obtained a completed nested challenger result, and then hit a usage limit before writing the report.
+- Launched `rnskia-worker-018-next-backlog-audit-finalize` with `gpt-5.4-mini`/high. It passed the visible goal gate, recovered the original log and challenger result, wrote `worker-progress/worker-018-next-backlog-audit.md`, ran light final checks, and completed.
+- Accepted worker 018 as a report-only backlog audit. No product files changed.
+- Main verification after worker 018 report integration:
+  - `git diff --check`: passed.
+  - `git diff --cached --check`: passed.
+- Worker 018 selected package install lifecycle hygiene as the next unblocked root-cause target: remove the dev-local root package `postinstall` from the consumer-facing package contract, make local example/header sync explicit and safe, and prove the package tarball installs in a temporary consumer project with lifecycle scripts enabled and Bun hidden from `PATH`.
 
 ## Active Workers
 
@@ -259,6 +268,7 @@ Accepted worker reports:
 - `worker-progress/worker-015-example-workspace-readiness.md`
 - `worker-progress/worker-016-platform-native-verification.md`
 - `worker-progress/worker-017-package-plugin-hygiene.md`
+- `worker-progress/worker-018-next-backlog-audit.md`
 
 ## Pending Workers
 
@@ -281,10 +291,11 @@ Accepted worker reports:
 - Native reset semantics: optional native style and command prop omission now resets to defaults instead of preserving stale native state. Worker 008 also preserves the text fallback color contract: `backgroundColor` wins, explicit `opacity` controls alpha, and fallback text alpha is preserved when opacity is omitted.
 - Native: platform context ownership was unified by worker 006. Raw `_parent` pointers in `YogaNode` were replaced by weak parent links by worker 011, and child reparenting now enforces a single-parent invariant with exact interactive-descendant count updates.
 - Verification: worker 004 fixed the root/example install-isolation bug that let `scripts/sync-example-links.mjs` clobber root dependency/bin/type resolution. `bun run check:install-isolation` now guards that boundary. Worker 012 added `bun run check:yoganode-native-lifetime`, a focused syntax/source-invariant verifier for the YogaNode weak-parent and reparenting invariants. Worker 013 added `bun run check:yoganode-native-runtime`, a linked host-native runtime smoke that executes retained-descendant teardown and reparenting ownership assertions. The current main verification set passes.
-- Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact.
+- Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the next unblocked root-cause task: root `package.json` still publishes a Bun-based dev-local `postinstall` hook while `scripts/` is not in the packed files, and the underlying fix is to remove consumer-facing install lifecycle coupling rather than ship the local sync script.
 
 ## Next Implementation Candidates
 
+- Remove the dev-local root package `postinstall` from the consumer-facing package contract, make local example/header sync explicit and safe, and prove the package tarball installs in a temporary consumer project with lifecycle scripts enabled and Bun hidden from `PATH`.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
