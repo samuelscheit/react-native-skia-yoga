@@ -131,10 +131,11 @@ Accepted package-hygiene implementation:
 - `worker-017-package-plugin-hygiene`: proved that the missing `app.plugin.js` entry was stale package metadata rather than a real Expo config-plugin contract, then removed that entry from `package.json.files` while preserving the native autolinking surface.
 - `worker-018-next-backlog-audit`: audited the post-worker-017 backlog, rechecked local toolchain blockers, verified the currently feasible package/example checks, and identified package install lifecycle hygiene as the strongest unblocked root-cause task.
 - `worker-019-package-lifecycle-hygiene`: removed the consumer-facing root `postinstall`, kept local/example header sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added package lifecycle verification proving a tarball consumer install succeeds with lifecycle scripts enabled and Bun hidden from `PATH`.
+- `worker-020-next-root-cause-audit`: audited the post-lifecycle backlog, confirmed platform-native build/run remains locally blocked, and identified the `check:yoganode-native-runtime` archive discovery failure as the strongest unblocked root-cause task.
 
 Next root-cause target:
 
-- Continue platform-native build/run verification once local prerequisites are available. Until then, select the next unblocked root-cause task from the open API/native/testability questions with a read-only audit worker.
+- Restore and harden `check:yoganode-native-runtime` so it discovers the current RN Skia macOS archive packaging as well as the old in-package layout. Continue platform-native build/run verification once local prerequisites are available.
 
 Acceptance criteria:
 
