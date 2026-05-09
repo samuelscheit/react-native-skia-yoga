@@ -158,10 +158,12 @@ Last updated: 2026-05-09
   - `npm run typecheck`: passed.
   - `npm pack --dry-run`: passed; generated tarball removed afterward.
   - `bun run specs`: passed; generated files were unchanged.
+- Created `worker-013-native-runtime-smoke` from current `main` and launched `rnskia-worker-013-native-runtime-smoke` as a top-level tmux subprocess to determine whether true linked runtime smoke coverage is feasible for retained-descendant teardown and reparenting.
+- Worker 013 passed the visible `GOAL_CREATED: ...` gate before any commands or nested subagent work.
 
 ## Active Workers
 
-- None.
+- `rnskia-worker-013-native-runtime-smoke`: linked native runtime smoke coverage feasibility for YogaNode retained-descendant teardown and reparenting.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -195,7 +197,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- None.
+- None beyond active worker 013.
 
 ## Decisions
 
