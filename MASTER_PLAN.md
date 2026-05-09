@@ -105,7 +105,7 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, and example lint-contract cleanup selected next
+Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, and example lint-contract cleanup integrated
 
 Goals:
 
@@ -140,10 +140,11 @@ Accepted package-hygiene implementation:
 - `worker-026-next-root-cause-audit`: audited the post-worker-025 backlog, confirmed `lint-ci` now passes with 180 warnings, classified the warning backlog as 178 example warnings plus 2 product-source React Native deep-import warnings, confirmed platform-native work is still locally blocked, and selected the product-source deep imports as the next unblocked repo-owned target.
 - `worker-027-react-native-deep-imports`: replaced the two product-source React Native deep imports in `src/specs/SkiaYogaViewNativeComponent.ts` with supported top-level `react-native` exports, kept `CodegenTypes` as a type-only import, verified Nitro artifacts were unchanged, and reduced `lint-ci` to the remaining 178 example/demo warnings.
 - `worker-028-next-root-cause-audit`: audited the post-worker-027 backlog, confirmed all feasible package/native/example readiness checks are green, classified the 178 remaining lint warnings as all under `example/`, confirmed platform-native build/run remains locally blocked, and selected example lint-contract cleanup as the next unblocked repo-owned target.
+- `worker-029-example-lint-contract`: scoped the example inline-style lint override to demo/typecheck fixture paths, fixed the root example shell inline style directly, hoisted stable tab icon renderers, preserved typecheck sentinel intent without `void`, removed stale Babel config plumbing, and brought `npm run lint-ci` to 0 warnings and 0 errors.
 
 Current next step:
 
-- Launch a focused implementation worker to make the example lint contract match demo/typecheck fixture intent, weighted toward scoped `react-native/no-inline-styles` overrides plus targeted cleanup of the small real leftovers. Continue platform-native build/run verification once local prerequisites are available.
+- Launch a read-only next-root-cause audit worker after the example lint-contract cleanup to rank the remaining unblocked backlog. Continue platform-native build/run verification once local prerequisites are available.
 
 Acceptance criteria:
 
