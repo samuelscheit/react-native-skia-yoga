@@ -182,10 +182,12 @@ Last updated: 2026-05-09
 - Main verification after worker 014 report integration:
   - `git diff --check`: passed.
   - `git diff --cached --check`: passed.
+- Created `worker-015-example-workspace-readiness` from current `main`, symlinked root and example `node_modules` from the main worktree, and launched `rnskia-worker-015-example-workspace-readiness` as a top-level tmux subprocess to fix the example Expo dependency, React Native CLI config, and prebuild-safe verification blockers.
+- Worker 015 passed the visible `GOAL_CREATED: ...` gate before any commands or nested subagent work.
 
 ## Active Workers
 
-- None.
+- `rnskia-worker-015-example-workspace-readiness`: example Expo dependency alignment, React Native CLI config, and prebuild-safe readiness verification.
 
 Invalid/stale tmux sessions cleaned up:
 
