@@ -1,6 +1,5 @@
 #include "SkiaYoga.hpp"
 #include "JsiPromises.h"
-#include "PlatformContextAccessor.hpp"
 #include "RNSkJsiViewApi.h"
 #include "RNSkYogaView.hpp"
 #include "YogaNode.hpp"
@@ -11,17 +10,6 @@
 namespace margelo::nitro::RNSkiaYoga {
 
 using namespace facebook;
-
-// Define static member (base platform context)
-std::shared_ptr<RNSkia::RNSkPlatformContext> SkiaYoga::platformContext = nullptr;
-// keep accessor in sync if someone sets platformContext directly
-static struct SyncAccessorInit {
-    SyncAccessorInit()
-    {
-        if (SkiaYoga::platformContext)
-            SetPlatformContext(SkiaYoga::platformContext);
-    }
-} s_syncAccessorInit;
 
 SkiaYoga::SkiaYoga()
     : HybridObject(HybridSkiaYogaSpec::TAG) // wichtig: TAG der Spezifikation

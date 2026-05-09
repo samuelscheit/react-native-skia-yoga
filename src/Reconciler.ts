@@ -24,6 +24,27 @@ import { createYogaNode } from "./util"
 
 export type SkiaYogaHostContext = any
 
+type ReconcilerCreateContainerErrorInfo = unknown
+type ReconcilerCreateContainerTransitionCallbacks = unknown
+type ReconcilerCreateContainerHydrationCallbacks = unknown
+type ReconcilerCreateContainerRootTag = 0 | 1 | 2
+type ReconcilerCreateContainerOpaqueRoot = unknown
+
+type ReconcilerCompat = ReturnType<typeof Reconciler> & {
+	createContainer: (
+		containerInfo: YogaRootContainer,
+		tag: ReconcilerCreateContainerRootTag,
+		hydrationCallbacks: ReconcilerCreateContainerHydrationCallbacks,
+		isStrictMode: boolean,
+		concurrentUpdatesByDefaultOverride: boolean | null,
+		identifierPrefix: string,
+		onUncaughtError: (error: Error, errorInfo: ReconcilerCreateContainerErrorInfo) => void,
+		onCaughtError: (error: Error, errorInfo: ReconcilerCreateContainerErrorInfo) => void,
+		onRecoverableError: (error: Error, errorInfo: ReconcilerCreateContainerErrorInfo) => void,
+		transitionCallbacks: ReconcilerCreateContainerTransitionCallbacks,
+	) => ReconcilerCreateContainerOpaqueRoot
+	}
+
 export interface YogaRootContainer {
 	invalidate: () => void
 	interactions: YogaInteractionRegistry
@@ -1050,4 +1071,4 @@ const config: SkiaYogaHostContext = {
 	},
 }
 
-export const reconciler = Reconciler(config)
+export const reconciler = Reconciler(config) as ReconcilerCompat

@@ -11,7 +11,7 @@
 namespace jsi = facebook::jsi;
 
 @implementation SkiaYogaModule {
-  // Raw pointer view; lifetime held by global shared_ptr inside C++ layer (SkiaYoga::platformContext)
+  // Lifetime is held by the shared native platform-context store in C++.
   std::shared_ptr<facebook::react::CallInvoker> _jsInvoker;
 }
 

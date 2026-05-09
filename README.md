@@ -8,14 +8,14 @@ A React Native C++ library that combines the [Yoga](https://www.yogalayout.dev/)
 ## Usage
 
 ```tsx
-import { Canvas, View, Text } from "react-native-skia-yoga"
+import { YogaCanvas } from "react-native-skia-yoga"
 
 function Example() {
 	return (
-		<Canvas
+		<YogaCanvas
 			style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
 		>
-			<View
+			<rect
 				style={{
 					width: 100,
 					height: 100,
@@ -25,17 +25,15 @@ function Example() {
 					alignItems: "center",
 				}}
 			>
-				<Text
-					style={{
-						fontSize: 20,
+				<text
+					text="Hello, world!"
+					textStyle={{
 						color: "white",
-						textAlign: "center",
+						fontSize: 20,
 					}}
-				>
-					Hello, world!
-				</Text>
-			</View>
-		</Canvas>
+				/>
+			</rect>
+		</YogaCanvas>
 	)
 }
 ```

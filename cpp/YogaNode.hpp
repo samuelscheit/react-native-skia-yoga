@@ -1,5 +1,6 @@
 #pragma once
 
+#include "PlatformContextAccessor.hpp"
 #include "SkiaGlue.hpp"
 #include "SkiaYoga.hpp"
 // Ensure JSIConverter specializations are visible before Nitro-generated headers
@@ -704,7 +705,7 @@ public:
         this->props.y = 0;
 
         if (!sDefaultFont) {
-            auto context = margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext();
+            auto context = margelo::nitro::RNSkiaYoga::GetPlatformContext();
             auto fontMgr = RNSkia::JsiSkFontMgrFactory::getFontMgr(context);
             const auto style = SkFontStyle::Normal();
 
@@ -739,7 +740,7 @@ private:
 class ImageCmd : public RNSkia::ImageCmd, public YogaNodeCommand {
 public:
     ImageCmd(YogaNode* node, jsi::Runtime& runtime, RNSkia::Variables& variables)
-        : RNSkia::ImageCmd(SkiaYoga::getPlatformContext(), runtime, jsi::Object(runtime), variables)
+        : RNSkia::ImageCmd(GetPlatformContext(), runtime, jsi::Object(runtime), variables)
         , YogaNodeCommand(node)
     {
         this->props.x = 0;

@@ -3,12 +3,26 @@
 namespace margelo::nitro::RNSkiaYoga {
 
 namespace {
-  // Backing storage, avoids including SkiaYoga.hpp here
-  std::shared_ptr<RNSkia::RNSkPlatformContext> g_platformContext;
+std::shared_ptr<RNSkia::RNSkPlatformContext>& platformContextStorage()
+{
+  static std::shared_ptr<RNSkia::RNSkPlatformContext> platformContext;
+  return platformContext;
+}
 }
 
-std::shared_ptr<RNSkia::RNSkPlatformContext> GetPlatformContext() { return g_platformContext; }
-void SetPlatformContext(std::shared_ptr<RNSkia::RNSkPlatformContext> ctx) { g_platformContext = std::move(ctx); }
+std::shared_ptr<RNSkia::RNSkPlatformContext> GetPlatformContext()
+{
+  return platformContextStorage();
+}
+
+void SetPlatformContext(std::shared_ptr<RNSkia::RNSkPlatformContext> ctx)
+{
+  platformContextStorage() = std::move(ctx);
+}
+
+void ClearPlatformContext()
+{
+  platformContextStorage().reset();
+}
 
 } // namespace margelo::nitro::RNSkiaYoga
-

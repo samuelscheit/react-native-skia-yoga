@@ -22,6 +22,7 @@
 #include "DrawingCtx.h"
 #include "RNSkManager.h"
 #include "RuntimeAwareCache.h"
+#include "PlatformContextAccessor.hpp"
 #include <modules/skparagraph/include/FontCollection.h>
 #include <modules/skparagraph/include/ParagraphBuilder.h>
 #include <modules/skparagraph/include/ParagraphStyle.h>
@@ -1030,7 +1031,7 @@ jsi::Value YogaNode::draw(jsi::Runtime& runtime, const jsi::Value& thisArg, cons
         drawInternal(ctx);
 
         auto picture = pictureRecorder.finishRecordingAsPicture();
-        return jsi::Object::createFromHostObject(runtime, std::make_shared<RNSkia::JsiSkPicture>(margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext(), picture));
+        return jsi::Object::createFromHostObject(runtime, std::make_shared<RNSkia::JsiSkPicture>(GetPlatformContext(), picture));
     });
 }
 
@@ -1539,7 +1540,7 @@ void ParagraphCmd::updateProps(const ParagraphCommandData& props)
     }
     paragraphStyle.setTextStyle(textStyle);
 
-    auto context = margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext();
+    auto context = GetPlatformContext();
     auto fontCollection = sk_make_sp<para::FontCollection>();
     auto fontMgr = RNSkia::JsiSkFontMgrFactory::getFontMgr(context);
     fontCollection->setDefaultFontManager(fontMgr);
@@ -1582,7 +1583,7 @@ void ParagraphCmd::ensureDefaultParagraphResources()
     }
 
     sDefaultFontCollection = sk_make_sp<para::FontCollection>();
-    auto context = margelo::nitro::RNSkiaYoga::SkiaYoga::getPlatformContext();
+    auto context = GetPlatformContext();
     auto fontMgr = RNSkia::JsiSkFontMgrFactory::getFontMgr(context);
     if (fontMgr) {
         sDefaultFontCollection->setDefaultFontManager(fontMgr);

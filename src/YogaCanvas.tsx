@@ -54,8 +54,6 @@ function reportError(error: Error) {
 	console.error(error)
 }
 
-function noop() {}
-
 function toFiniteNumber(value: unknown) {
 	return typeof value === "number" && Number.isFinite(value) ? value : 0
 }
@@ -263,7 +261,6 @@ export function YogaCanvas({
 				reportError,
 				reportError,
 				reportError,
-				noop,
 				null,
 			),
 		}

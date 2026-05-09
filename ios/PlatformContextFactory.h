@@ -8,7 +8,8 @@
 extern "C" {
 #endif
 
-// Creates (or recreates) the global platform context and returns the raw pointer.
+// Creates (or recreates) the shared platform context, installs it into the
+// native platform-context store, and returns the raw pointer view.
 // Parameters:
 //   bridge                - (RCTBridge*) passed as void*
 //   callInvokerSharedPtr  - (std::shared_ptr<facebook::react::CallInvoker>*) passed as void*
@@ -16,7 +17,7 @@ extern "C" {
 //   RNSkia::RNSkApplePlatformContext* as void* (cast on the caller side)
 void* SkiaYogaCreatePlatformContext(void* bridge, void* callInvokerSharedPtr);
 
-// Resets the stored shared_ptr and clears the global platform context reference.
+// Clears the shared platform-context store.
 void SkiaYogaDestroyPlatformContext(void);
 
 #ifdef __cplusplus

@@ -1,1 +1,1 @@
-export * from "./lib/jsx-dev-runtime"
+export * from "./src/jsx-dev-runtime"

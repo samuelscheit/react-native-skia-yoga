@@ -121,9 +121,8 @@ Java_com_margelo_nitro_skiayoga_SkiaYogaModule_nativeInstall(
 extern "C" JNIEXPORT void JNICALL
 Java_com_margelo_nitro_skiayoga_SkiaYogaModule_nativeInvalidate(
     JNIEnv * /*env*/, jclass /*clazz*/) {
-  SetPlatformContext(nullptr);
+  ClearPlatformContext();
   RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(nullptr);
 }
 
 } // namespace margelo::nitro::RNSkiaYoga
-
