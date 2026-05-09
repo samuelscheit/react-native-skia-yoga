@@ -206,10 +206,12 @@ Last updated: 2026-05-09
 - Accepted worker 016 as a report-only native-generation verification. No product files changed.
 - Main verification after worker 016 report integration:
   - `git diff --check`: passed.
+- Created `worker-017-package-plugin-hygiene` from current `main`, symlinked root and example `node_modules` from the main worktree, and launched `rnskia-worker-017-package-plugin-hygiene` as a top-level tmux subprocess to resolve the stale/missing `app.plugin.js` package-files issue.
+- Worker 017 passed the visible `GOAL_CREATED: ...` gate before any commands, todos, or nested subagent work.
 
 ## Active Workers
 
-- None.
+- `rnskia-worker-017-package-plugin-hygiene`: determine whether `app.plugin.js` should be a real config plugin or removed from `package.json.files`, then implement the root-cause fix if warranted.
 
 Invalid/stale tmux sessions cleaned up:
 
