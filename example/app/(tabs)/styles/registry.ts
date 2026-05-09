@@ -52,7 +52,7 @@ export const styleShowcases = [
 	},
 	{
 		description:
-			"Transform arrays, explicit origins, and raw matrix application.",
+			"Transform arrays and raw matrix application.",
 		href: "/styles/transform",
 		sections: transformSections,
 		slug: "transform",

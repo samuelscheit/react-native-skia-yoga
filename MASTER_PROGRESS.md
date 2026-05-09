@@ -6,7 +6,7 @@ Last updated: 2026-05-09
 
 - Active role: orchestrator.
 - Goal state: active; do not mark complete.
-- Product code changes by orchestrator: none.
+- Product code changes authored by orchestrator: none; product changes are accepted worker patches only.
 - Main worktree status at startup: clean on `main` tracking `origin/main`.
 - Existing tmux sessions at startup: one unrelated `fast-react-*` session, left untouched.
 
@@ -79,6 +79,55 @@ Last updated: 2026-05-09
   - `git diff --cached --check`: passed.
   - `clang++ -std=c++20 -fsyntax-only cpp/PlatformContextAccessor.cpp -Icpp`: passed.
 - Killed completed worker 007 `rnskia-*` tmux sessions.
+- Committed accepted first root-cause fixes to `main` as `cab1cf1 Integrate first root-cause fixes`.
+- Removed stale accepted worker worktrees `worker-000` through `worker-007` and deleted their old `worker/*` branches after confirming they had no worker-specific commits beyond accepted artifacts.
+- Created fresh worktrees from `cab1cf1`:
+  - `worker-008-reset-semantics`
+  - `worker-009-origin-animated-contract`
+  - `worker-010-yoganode-parent-lifetime-audit`
+- Launched Phase 2 workers 008, 009, and 010 as top-level tmux subprocesses with `gpt-5.5`/`xhigh`. The orchestrator did not use tool-managed workers/subagents.
+- Workers 008, 009, and 010 each passed the visible `GOAL_CREATED: ...` gate before any commands or nested subagent work.
+- `rnskia-worker-008-reset-semantics` hit a `gpt-5.5` usage limit during native evidence gathering before implementation or report. No worker 008 changes were present in its worktree at failure.
+- `rnskia-worker-010-yoganode-parent-lifetime-audit` hit a `gpt-5.5` usage limit after gathering useful read-only evidence and one completed nested explorer result, but before writing its report.
+- Killed failed sleeping tmux sessions for workers 008 and 010.
+- Launched `rnskia-worker-008-reset-semantics-fixup` with `gpt-5.4`/high because `gpt-5.5` usage exhaustion blocked implementation; it passed the visible goal gate.
+- Launched `rnskia-worker-010-yoganode-parent-lifetime-report` with `gpt-5.4-mini`/low for report finalization only; it passed the visible goal gate.
+- `rnskia-worker-009-origin-animated-contract` hit a `gpt-5.5` usage limit after applying a partial JS/TS contract patch but before examples/generated artifacts/verification/report.
+- `rnskia-worker-010-yoganode-parent-lifetime-report` completed and wrote `worker-progress/worker-010-yoganode-parent-lifetime-audit.md` in its worktree.
+- Killed completed/failed sleeping tmux sessions for worker 009 original and worker 010 report.
+- Launched `rnskia-worker-009-origin-animated-contract-fixup` with `gpt-5.4`/high because `gpt-5.5` usage exhaustion blocked completion; it passed the visible goal gate and is responsible for finishing the partial patch.
+- `rnskia-worker-009-origin-animated-contract-fixup` hit a usage limit after partial verification work.
+- Launched `rnskia-worker-009-origin-animated-contract-finalize` with `gpt-5.4-mini`/medium because prior larger-model attempts exhausted usage; it passed the visible goal gate, finished the contract patch, ran `bun run specs`, ran `npm run typecheck`, wrote `worker-progress/worker-009-origin-animated-contract.md`, and completed.
+- `rnskia-worker-008-reset-semantics-fixup` hit a usage limit after adding an incomplete `cpp/YogaNode.hpp` helper sketch. No report or verification was produced.
+- Killed the completed/failed sleeping tmux sessions for worker 009 finalizer and worker 008 fixup.
+- Launched `rnskia-worker-008-reset-semantics-finalize` with `gpt-5.4-mini`/medium because larger-model attempts repeatedly exhausted usage; it passed the visible goal gate and is responsible for completing or reverting the partial worker-owned reset/default semantics patch.
+- Applied the accepted worker 009 origin/animated contract patch into the main worktree.
+- Copied accepted worker reports 009 and 010 into `react-native-skia-yoga/worker-progress/`.
+- Main verification after worker 009 integration:
+  - `bun run specs`: passed.
+  - `npm run typecheck`: passed.
+  - `rg -n "origin" src example nitrogen/generated --hidden`: only the intentional runtime guard and negative typecheck coverage remain.
+  - `git diff --check`: passed.
+  - `git diff --cached --check`: passed.
+- `rnskia-worker-008-reset-semantics-finalize` produced the reset/default semantics product patch after prior worker attempts exhausted usage.
+- Rejected `rnskia-worker-008-reset-semantics-report` as an accepted report worker because its first visible assistant message came before the required `GOAL_CREATED:` gate.
+- Launched `rnskia-worker-008-reset-semantics-report-v2` with `gpt-5.4-mini`/low; it passed the visible goal gate, wrote the report, ran `git diff --check`, and completed.
+- Orchestrator review found a real text fallback alpha regression in the worker 008 patch before merge: applying fallback color in `drawInternal()` after style opacity could overwrite the explicit opacity.
+- Launched `rnskia-worker-008-reset-semantics-opacity-fix`; it passed the visible goal gate and fixed explicit opacity preservation, but orchestrator review found the fix was too broad because it discarded fallback text alpha when `style.opacity` was absent.
+- Launched `rnskia-worker-008-reset-semantics-fallback-alpha-fix`; it passed the visible goal gate, narrowed fallback alpha handling to the explicit `style.opacity` case, updated `worker-progress/worker-008-reset-semantics.md`, ran `git diff --check`, and completed.
+- Applied the accepted worker 008 reset/default semantics patch into the main worktree.
+- Copied accepted worker report 008 into `react-native-skia-yoga/worker-progress/`.
+- Main verification after worker 008 integration:
+  - `bun run specs`: passed.
+  - `npm run typecheck`: passed.
+  - `bun run check:install-isolation`: passed.
+  - `npm pack --dry-run`: passed.
+  - `git diff --check`: passed.
+  - `git diff --cached --check`: passed.
+  - Focused `clang++ -std=c++20 -fsyntax-only cpp/YogaNode.cpp ...` progressed through local Skia include paths, then stopped at generated Nitro headers requiring `<NitroModules/...>` include layout; this is an environment/include-layout blocker, not an error in the edited reset/default logic.
+- Committed the accepted worker 008/009/010 integration batch to `main`.
+- Killed completed `rnskia-*` worker 008 tmux sessions and left the unrelated `fast-react-*` session untouched.
+- Removed accepted worker worktrees and branches for workers 008, 009, and 010 after merge and verification.
 
 ## Active Workers
 
@@ -108,10 +157,13 @@ Accepted worker reports:
 - `worker-progress/worker-005-package-entrypoints.md`
 - `worker-progress/worker-006-platform-context.md`
 - `worker-progress/worker-007-typecheck-yogacanvas.md`
+- `worker-progress/worker-008-reset-semantics.md`
+- `worker-progress/worker-009-origin-animated-contract.md`
+- `worker-progress/worker-010-yoganode-parent-lifetime-audit.md`
 
 ## Pending Workers
 
-None.
+- Later implementation worker for raw `_parent` lifetime fixes, after worker 010 reports and to avoid overlapping `YogaNode.*` edits with worker 008.
 
 ## Decisions
 
@@ -126,14 +178,13 @@ None.
 
 ## Evidence Summary
 
-- JS/API: package metadata and JSX runtime declarations point at missing `lib` output; README still shows legacy `Canvas`/`View`/`Text` usage; optional style/command removal semantics can leave stale native state; `origin` is public but not implemented natively; animated typing admits unsupported nested shapes.
+- JS/API: package metadata and JSX runtime declarations originally pointed at missing `lib` output; README still shows legacy `Canvas`/`View`/`Text` usage. The unsupported public `origin` field and overly broad nested animated style typing have been addressed in the main worktree by worker 009.
+- Native reset semantics: optional native style and command prop omission now resets to defaults instead of preserving stale native state. Worker 008 also preserves the text fallback color contract: `backgroundColor` wins, explicit `opacity` controls alpha, and fallback text alpha is preserved when opacity is omitted.
 - Native: platform context ownership is split between `SkiaYoga::platformContext` and `PlatformContextAccessor`; iOS and Android initialize different stores; shared C++ reads both. Raw `_parent` pointers in `YogaNode` create a lifetime risk when child nodes outlive parent/root teardown.
 - Verification: `scripts/sync-example-links.mjs` clobbers root dependency/bin/type resolution with example symlinks. This breaks `specs`, muddies `typecheck`/`lint-ci`, hides root-only packages, and makes validation untrustworthy until root/example dependency boundaries are fixed.
 
 ## Next Implementation Candidates
 
-- Define and implement reset/default semantics for optional style and command props.
-- Decide whether `origin` and broad nested animated style shapes are supported or should be removed/narrowed as breaking changes.
 - Continue deeper native lifetime cleanup, especially raw `_parent` pointer risks in `YogaNode`.
 
 ## Known Hygiene Notes

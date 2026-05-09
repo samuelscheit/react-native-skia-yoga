@@ -135,7 +135,6 @@ const styleNestedRoots = new Set([
 	"borderBottomRightRadius",
 	"borderTopLeftRadius",
 	"borderTopRightRadius",
-	"origin",
 	"transform",
 ])
 
@@ -146,16 +145,110 @@ const scalarCornerRadiusKeys = [
 	"borderTopRightRadius",
 ] as const
 
+function isPointLike(value: unknown): value is { x: unknown; y: unknown } {
+	return (
+		typeof value === "object" &&
+		value !== null &&
+		"x" in value &&
+		"y" in value
+	)
+}
+
+function isResolvedPointLike(value: unknown) {
+	return (
+		isPointLike(value) &&
+		typeof value.x === "number" &&
+		typeof value.y === "number"
+	)
+}
+
+function isAnimatedNumber(value: unknown) {
+	return (
+		typeof value === "number" ||
+		(isSharedValue(value) && typeof value.value === "number")
+	)
+}
+
+function assertSupportedCornerRadiusValue(
+	key: (typeof scalarCornerRadiusKeys)[number],
+	value: unknown,
+) {
+	if (value == null || typeof value === "number") {
+		return
+	}
+
+	if (isSharedValue(value)) {
+		const currentValue = value.value
+		if (typeof currentValue === "number" || isResolvedPointLike(currentValue)) {
+			return
+		}
+
+		throw new Error(
+			`style.${key} only supports number, SkPoint, SharedValue<number>, SharedValue<SkPoint>, or { x, y } with numeric animated leaves.`,
+		)
+	}
+
+	if (isPointLike(value)) {
+		if (isAnimatedNumber(value.x) && isAnimatedNumber(value.y)) {
+			return
+		}
+
+		throw new Error(
+			`style.${key} point values must use numeric x/y values or SharedValue<number> x/y leaves.`,
+		)
+	}
+
+	throw new Error(
+		`style.${key} only supports number, SkPoint, SharedValue<number>, SharedValue<SkPoint>, or { x, y } with numeric animated leaves.`,
+	)
+}
+
+function assertSupportedMatrixValue(value: unknown) {
+	const matrixValue = isSharedValue(value) ? value.value : value
+	if (!Array.isArray(matrixValue)) {
+		return
+	}
+
+	if (matrixValue.some((entry) => isSharedValue(entry))) {
+		throw new Error(
+			"style.matrix does not support SharedValue entries inside matrix arrays. Use a SharedValue for the whole matrix instead.",
+		)
+	}
+}
+
+function assertSupportedStyleShape(style: Record<string, unknown>) {
+	if ("origin" in style) {
+		throw new Error(
+			"style.origin is not supported. Use explicit translate transforms or a precomputed matrix.",
+		)
+	}
+
+	assertSupportedMatrixValue(style.matrix)
+
+	for (const key of scalarCornerRadiusKeys) {
+		assertSupportedCornerRadiusValue(key, style[key])
+	}
+}
+
+function shouldExpandScalarCornerRadius(value: unknown) {
+	return (
+		typeof value === "number" ||
+		(isSharedValue(value) && typeof value.value === "number")
+	)
+}
+
 function isStyleObject(value: unknown): value is NodeStyle {
 	return typeof value === "object" && value !== null && !Array.isArray(value)
 }
 
 function normalizeStyle(style: Record<string, unknown>): NodeStyle {
+	assertSupportedStyleShape(style)
+
 	let nextStyle: Record<string, unknown> | undefined
 
 	for (const key of scalarCornerRadiusKeys) {
 		const value = style[key]
-		if (typeof value !== "number" && !isSharedValue(value)) {
+		if (!shouldExpandScalarCornerRadius(value)) {
 			continue
 		}
 

@@ -320,6 +320,7 @@ public:
     virtual bool isDynamic() const { return false; }
     virtual bool rasterizesSubtree() const { return false; }
     virtual bool supportsPreciseHitTesting() const { return false; }
+    virtual std::optional<SkColor> fallbackPaintColor() const { return std::nullopt; }
     virtual bool containsLocalPoint(const ::SkPoint& point) const
     {
         (void)point;
@@ -732,9 +733,11 @@ public:
 
         RNSkia::TextCmd::draw(ctx);
     }
+    std::optional<SkColor> fallbackPaintColor() const override { return _fallbackPaintColor; }
 
 private:
     static std::optional<SkFont> sDefaultFont;
+    SkColor _fallbackPaintColor = SkPaint().getColor();
 };
 
 class ImageCmd : public RNSkia::ImageCmd, public YogaNodeCommand {

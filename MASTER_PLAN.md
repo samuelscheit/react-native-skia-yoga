@@ -25,7 +25,7 @@ Breaking changes are acceptable when they remove root causes instead of preservi
 ## Current Repository Baseline
 
 - Main branch: `main`
-- Current HEAD: `50149e5 wip`
+- Current HEAD: latest `main` integration commit; previous accepted baseline before the current batch was `cab1cf1 Integrate first root-cause fixes`.
 - Package manager evidence: `bun.lock` is present and `node_modules/` already exists.
 - Public package entrypoints are TypeScript-first under `src/`, with generated Nitro artifacts under `nitrogen/`.
 - Native implementation spans shared C++ plus iOS Objective-C++ and Android JNI/Kotlin/Java layers.
@@ -70,7 +70,7 @@ Acceptance criteria:
 
 ## Phase 2: Root-Cause Implementation
 
-Status: first implementation wave accepted into main worktree
+Status: second implementation wave partially integrated; native lifetime implementation pending
 
 Candidate areas to prioritize after evidence:
 
@@ -86,6 +86,12 @@ Accepted first implementation wave:
 - `worker-005-package-entrypoints`: fixed public package/type/JSX runtime entrypoints so fresh consumers do not depend on ignored or missing `lib` artifacts.
 - `worker-006-platform-context`: removed the duplicated shared C++ platform-context store and routed shared non-view C++ paths through `PlatformContextAccessor`.
 - `worker-007-typecheck-yogacanvas`: fixed the repo-wide `npm run typecheck` failure by aligning `YogaCanvas` root creation with the installed `react-reconciler` runtime shape through a local typed adapter.
+- `worker-009-origin-animated-contract`: removed unsupported `origin` from the public style contract, kept the runtime guard, narrowed animated style typing, and regenerated the Nitro contract.
+- `worker-008-reset-semantics`: made optional native style and command prop omission reset to defaults, including Yoga style, paint/clip/matrix/layer state, text fallback color, blur mask props, text font, and points mode.
+
+Accepted report-only audit:
+
+- `worker-010-yoganode-parent-lifetime-audit`: accepted report-only audit; implementation is pending a later worker after reset/default semantics settles.
 
 Acceptance criteria:
 

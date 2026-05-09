@@ -22,6 +22,10 @@ export function SkiaYogaTypecheck() {
 	const sharedFontSize = null as unknown as SharedValue<number>
 	const sharedStrokeWidth = null as unknown as SharedValue<number>
 	const sharedLineX = null as unknown as SharedValue<number>
+	const sharedCornerPoint = null as unknown as SharedValue<{
+		x: number
+		y: number
+	}>
 
 	const invalidChildren = (
 		// @ts-expect-error raw text children are unsupported
@@ -61,6 +65,14 @@ export function SkiaYogaTypecheck() {
 			{
 				// @ts-expect-error paragraph uses text/paragraphStyle now
 				<paragraph style={{ color: "#fff" }}>legacy</paragraph>
+			}
+			{
+				// @ts-expect-error origin is not part of the public style contract
+				<rect style={{ origin: [80, 40] }} />
+			}
+			{
+				// @ts-expect-error matrix arrays cannot contain nested SharedValue entries
+				<rect style={{ matrix: [1, 0, sharedLineX, 0, 1, 0, 0, 0, 1] }} />
 			}
 		</>
 	)
@@ -170,6 +182,8 @@ export function SkiaYogaTypecheck() {
 					cornerRadius={12}
 					style={{
 						backgroundColor: "#2b333b",
+						borderBottomRightRadius: sharedCornerPoint,
+						borderTopLeftRadius: { x: sharedLineX, y: 12 },
 						height: 48,
 						width: 96,
 					}}

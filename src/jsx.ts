@@ -78,6 +78,47 @@ export type YogaAnimatedPoint = {
 	y: YogaAnimatedProp<number>
 }
 
+type YogaStyleCornerRadiusKey =
+	| "borderBottomLeftRadius"
+	| "borderBottomRightRadius"
+	| "borderTopLeftRadius"
+	| "borderTopRightRadius"
+
+type YogaStyleMatrix = NonNullable<YogaNodeStyle["matrix"]>
+type YogaStyleTransform = NonNullable<YogaNodeStyle["transform"]>
+type YogaStyleTransformEntry = YogaStyleTransform[number]
+
+type YogaAnimatedTransformEntry<T> = T extends object
+	? { [K in keyof T]: YogaAnimatedProp<T[K]> }
+	: never
+
+export type YogaAnimatedCornerRadius =
+	| YogaAnimatedProp<number>
+	| SkPoint
+	| SharedValue<SkPoint>
+	| YogaAnimatedPoint
+
+export type YogaAnimatedTransform =
+	| YogaAnimatedTransformEntry<YogaStyleTransformEntry>[]
+	| SharedValue<YogaStyleTransform>
+
+type YogaAnimatedStyleValue<K extends keyof YogaNodeStyle> =
+	K extends YogaStyleCornerRadiusKey
+		? YogaAnimatedCornerRadius
+		: K extends "matrix"
+			? YogaAnimatedProp<YogaStyleMatrix>
+			: K extends "transform"
+				? YogaAnimatedTransform
+				: YogaAnimatedProp<YogaNodeStyle[K]>
+
+export type YogaAnimatedStyleObject = {
+	[K in keyof YogaNodeStyle]?: YogaAnimatedStyleValue<K>
+}
+
+export type YogaAnimatedStyle =
+	| YogaAnimatedStyleObject
+	| SharedValue<YogaNodeStyle>
+
 export type YogaAnimatedStrokeOpts = {
 	[K in keyof StrokeOpts]: YogaDeepAnimated<StrokeOpts[K]>
 }
@@ -91,7 +132,7 @@ export type YogaAnimatedParagraphStyleProps = {
 }
 
 export interface YogaStyleProps extends YogaInteractiveProps {
-	style?: YogaDeepAnimated<YogaNodeStyle>
+	style?: YogaAnimatedStyle
 }
 
 export interface YogaContainerProps extends YogaStyleProps {

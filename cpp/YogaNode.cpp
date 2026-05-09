@@ -98,6 +98,17 @@ std::shared_ptr<SkMatrix> makeMatrixPointer(const MatrixStyleValue& matrixValue)
         matrixValue);
 }
 
+YGNodeRef defaultYogaStyleNode()
+{
+    static YGNodeRef defaultNode = YGNodeNew();
+    return defaultNode;
+}
+
+void resetYogaStyle(YGNodeRef node)
+{
+    YGNodeCopyStyle(node, defaultYogaStyleNode());
+}
+
 } // namespace
 
 std::optional<SkFont> TextCmd::sDefaultFont;
@@ -281,6 +292,15 @@ void YogaNode::setStyle(const NodeStyle& style)
     std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
     invalidateLayout();
     _style = style;
+    resetYogaStyle(_node);
+    _paint = SkPaint();
+    _layerPaint.reset();
+    _clipsToBounds = false;
+    _clipToBoundsRadii.reset();
+    _clipPath.reset();
+    _clipRect.reset();
+    _clipRRect.reset();
+    _matrix.reset();
 
     // Layout properties - using references to avoid multiple value() calls
     if (const auto& value = style.justifyContent) {
@@ -704,12 +724,6 @@ void YogaNode::setStyle(const NodeStyle& style)
         _clipRect.reset();
     }
 
-    if (const auto& value = style.matrix) {
-        _matrix = makeMatrixPointer(*value);
-    } else if (!style.transform.has_value()) {
-        _matrix.reset();
-    }
-
     if (const auto& value = style.transform) {
         SkM44 matrix;
         matrix.setIdentity();
@@ -777,6 +791,8 @@ void YogaNode::setStyle(const NodeStyle& style)
         } else {
             _matrix.reset();
         }
+    } else if (const auto& value = style.matrix) {
+        _matrix = makeMatrixPointer(*value);
     }
 }
 
@@ -1093,10 +1109,23 @@ void YogaNode::drawInternal(RNSkia::DrawingCtx& ctx)
         ctx.canvas->clipRRect(*_clipRRect, op, true);
     }
 
-    auto maskFilter = ctx.getPaint().refMaskFilter();
-    _paint.setMaskFilter(maskFilter);
+    auto paint = _paint;
+    // Command-specific text color is only used when the current style snapshot
+    // did not supply its own paint color. Style still wins when it is explicit.
+    if (!_style.backgroundColor.has_value()) {
+        if (const auto fallbackColor = _command->fallbackPaintColor()) {
+            if (_style.opacity.has_value()) {
+                paint.setColor(SkColorSetA(*fallbackColor, SkColorGetA(paint.getColor())));
+            } else {
+                paint.setColor(*fallbackColor);
+            }
+        }
+    }
 
-    ctx.pushPaint(_paint);
+    auto maskFilter = ctx.getPaint().refMaskFilter();
+    paint.setMaskFilter(maskFilter);
+
+    ctx.pushPaint(paint);
 
     _command->draw(&ctx);
 
@@ -1450,6 +1479,7 @@ jsi::Value YogaNode::setInteractionConfig(jsi::Runtime& runtime, const jsi::Valu
 
 void BlurMaskFilterCmd::updateProps(const BlurMaskFilterCommandData& props)
 {
+    _props = BlurMaskFilterProps {};
     _blur = props.blur;
     if (props.blurStyle.has_value()) {
         _props.style = props.blurStyle.value();
@@ -1462,6 +1492,7 @@ void BlurMaskFilterCmd::updateProps(const BlurMaskFilterCommandData& props)
 void TextCmd::updateProps(const TextCommandData& props)
 {
     this->props.text = props.text.value_or("");
+    this->props.font = *sDefaultFont;
 
     if (props.font.has_value()) {
         this->props.font = props.font.value();
@@ -1474,7 +1505,7 @@ void TextCmd::updateProps(const TextCommandData& props)
         this->props.font = font;
     }
 
-    node->_paint.setColor(textStyle.getColor());
+    _fallbackPaintColor = textStyle.getColor();
 }
 
 void ImageCmd::updateProps(const ImageCommandData& props)
@@ -1513,9 +1544,7 @@ void LineCmd::updateProps(const LineCommandData& props)
 void PointsCmd::updateProps(const PointsCommandData& props)
 {
     setBasePoints(props.points);
-    if (props.pointMode.has_value()) {
-        this->props.mode = props.pointMode.value();
-    }
+    this->props.mode = props.pointMode.value_or(SkCanvas::PointMode::kPoints_PointMode);
     setLayout(node->_layout);
 }
 

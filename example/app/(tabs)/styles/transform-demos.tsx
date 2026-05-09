@@ -36,23 +36,6 @@ export const transformSections = [
 				),
 			},
 			{
-				example: "origin: [80, 40]",
-				name: "origin",
-				preview: styleScene(
-					previewFrame(
-						<rect
-							style={{
-								backgroundColor: "#34d399",
-								height: 68,
-								origin: [80, 40],
-								transform: [{ rotateZ: 0.45 }],
-								width: 122,
-							}}
-						/>,
-					),
-				),
-			},
-			{
 				example: "matrix: [1, 0, 24, 0, 1, -12, 0, 0, 1]",
 				name: "matrix",
 				preview: styleScene(

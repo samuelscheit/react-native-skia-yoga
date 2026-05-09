@@ -251,7 +251,6 @@ export type NodeStyle = {
 
 	/* Skia transform properties */
 	transform?: Transform
-	origin?: [number, number]
 	matrix?: SkMatrixNative | MatrixArray
 	clip?: SkPathNative | SkRRectNative | SkRectNative
 	invertClip?: boolean
