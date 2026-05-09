@@ -70,7 +70,7 @@ Acceptance criteria:
 
 ## Phase 2: Root-Cause Implementation
 
-Status: second implementation wave integrated through native parent lifetime and reparenting fixes
+Status: second implementation wave integrated through native parent lifetime, reparenting fixes, and focused native lifetime verifier coverage
 
 Candidate areas to prioritize after evidence:
 
@@ -89,6 +89,7 @@ Accepted first implementation wave:
 - `worker-009-origin-animated-contract`: removed unsupported `origin` from the public style contract, kept the runtime guard, narrowed animated style typing, and regenerated the Nitro contract.
 - `worker-008-reset-semantics`: made optional native style and command prop omission reset to defaults, including Yoga style, paint/clip/matrix/layer state, text fallback color, blur mask props, text font, and points mode.
 - `worker-011-yoganode-parent-lifetime`: replaced raw YogaNode parent pointers with weak links, enforced detach-before-reparent semantics, centralized child detach cleanup, and fixed interactive-descendant count updates for partial insert cleanup.
+- `worker-012-native-lifetime-regression`: added a focused reusable verifier for the worker 011 YogaNode parent lifetime and reparenting invariants, with explicit syntax/source-shape coverage limits.
 
 Accepted report-only audit:
 

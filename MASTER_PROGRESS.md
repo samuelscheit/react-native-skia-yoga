@@ -147,10 +147,21 @@ Last updated: 2026-05-09
 - Corrected stale progress-summary lines after verifying the README already reflects the current `YogaCanvas` plus lowercase intrinsic-node API.
 - Created `worker-012-native-lifetime-regression` from current `main` and launched `rnskia-worker-012-native-lifetime-regression` as a top-level tmux subprocess to add focused regression coverage for the YogaNode native lifetime/reparenting invariants.
 - Worker 012 passed the visible `GOAL_CREATED: ...` gate before any commands or nested subagent work.
+- Worker 012 original pass added a reusable native lifetime verifier script after proving the `clang++ -fsyntax-only` include path, then hit a usage limit before package wiring, report, or final verification.
+- Launched `rnskia-worker-012-native-lifetime-regression-fixup`; it passed the visible goal gate, obtained a nested read-only challenge result, and then hit a usage limit before edits. The nested challenger correctly identified that the verifier is source/syntax coverage, not runtime proof.
+- Launched `rnskia-worker-012-native-lifetime-regression-finalize`; it passed the visible goal gate, added the package script, wrote the report, ran verification, and completed. Its isolated worktree `npm run typecheck` failed because TypeScript resolved React Native types through both root and example `node_modules`; the same command passed in the main worktree after applying the accepted patch.
+- Applied the accepted worker 012 package/script/report patch into the main worktree.
+- Main verification after worker 012 integration:
+  - `bun run check:yoganode-native-lifetime`: passed.
+  - `git diff --check`: passed.
+  - `bun run check:install-isolation`: passed.
+  - `npm run typecheck`: passed.
+  - `npm pack --dry-run`: passed; generated tarball removed afterward.
+  - `bun run specs`: passed; generated files were unchanged.
 
 ## Active Workers
 
-- `rnskia-worker-012-native-lifetime-regression`: focused regression coverage for retained-descendant teardown and reparenting invariants.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -180,10 +191,11 @@ Accepted worker reports:
 - `worker-progress/worker-009-origin-animated-contract.md`
 - `worker-progress/worker-010-yoganode-parent-lifetime-audit.md`
 - `worker-progress/worker-011-yoganode-parent-lifetime.md`
+- `worker-progress/worker-012-native-lifetime-regression.md`
 
 ## Pending Workers
 
-- None beyond active worker 012.
+- None.
 
 ## Decisions
 
@@ -201,11 +213,11 @@ Accepted worker reports:
 - JS/API: package metadata and JSX runtime declarations originally pointed at missing `lib` output; worker 005 aligned the source-first entrypoints and JSX runtime declarations. The README now shows the current `YogaCanvas` plus lowercase intrinsic-node API. The unsupported public `origin` field and overly broad nested animated style typing were addressed by worker 009.
 - Native reset semantics: optional native style and command prop omission now resets to defaults instead of preserving stale native state. Worker 008 also preserves the text fallback color contract: `backgroundColor` wins, explicit `opacity` controls alpha, and fallback text alpha is preserved when opacity is omitted.
 - Native: platform context ownership was unified by worker 006. Raw `_parent` pointers in `YogaNode` were replaced by weak parent links by worker 011, and child reparenting now enforces a single-parent invariant with exact interactive-descendant count updates.
-- Verification: worker 004 fixed the root/example install-isolation bug that let `scripts/sync-example-links.mjs` clobber root dependency/bin/type resolution. `bun run check:install-isolation` now guards that boundary, and the current main verification set passes.
+- Verification: worker 004 fixed the root/example install-isolation bug that let `scripts/sync-example-links.mjs` clobber root dependency/bin/type resolution. `bun run check:install-isolation` now guards that boundary. Worker 012 added `bun run check:yoganode-native-lifetime`, a focused syntax/source-invariant verifier for the YogaNode weak-parent and reparenting invariants. The current main verification set passes.
 
 ## Next Implementation Candidates
 
-- Add a focused native lifetime regression harness for retained descendant teardown and reparenting once native test infrastructure is available.
+- Add a linked native runtime smoke test for retained descendant teardown and reparenting once native test infrastructure is available.
 
 ## Known Hygiene Notes
 
