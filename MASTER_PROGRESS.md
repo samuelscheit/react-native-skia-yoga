@@ -184,10 +184,25 @@ Last updated: 2026-05-09
   - `git diff --cached --check`: passed.
 - Created `worker-015-example-workspace-readiness` from current `main`, symlinked root and example `node_modules` from the main worktree, and launched `rnskia-worker-015-example-workspace-readiness` as a top-level tmux subprocess to fix the example Expo dependency, React Native CLI config, and prebuild-safe verification blockers.
 - Worker 015 passed the visible `GOAL_CREATED: ...` gate before any commands or nested subagent work.
+- Worker 015 original pass reproduced the missing CLI, Expo dependency skew, and example typecheck failures, then hit a `gpt-5.5` usage limit while waiting on an incomplete nested challenger result.
+- Launched `rnskia-worker-015-example-workspace-readiness-fixup`; it passed the visible goal gate, reproduced the failures again, spawned a nested challenger, and hit a `gpt-5.5` usage limit before tracked edits.
+- Launched `rnskia-worker-015-example-workspace-readiness-finalize` with `gpt-5.4`/high because `gpt-5.5` usage was exhausted. It passed the visible goal gate, completed the example metadata/config patch, regenerated `example/bun.lock`, wrote `worker-progress/worker-015-example-workspace-readiness.md`, and completed.
+- Applied the accepted worker 015 patch into the main worktree.
+- Main verification after worker 015 integration:
+  - `bun install --minimum-release-age=0` in `example/`: passed and refreshed local example install state from the accepted lockfile.
+  - `git diff --check`: passed.
+  - `bun run check:install-isolation`: passed.
+  - `cd example && bun --bun ./node_modules/.bin/expo install --check`: passed.
+  - `cd example && bun --bun ./node_modules/.bin/react-native config`: passed.
+  - `cd example && bun run typecheck`: passed.
+  - `npm run typecheck`: passed.
+  - `npm pack --dry-run`: passed; generated tarball removed afterward.
+  - `git ls-files example/ios example/android`: no tracked native example folders.
+- Main checkout has ignored local `example/ios/` and `example/android/` directories from prior/generated local state. They were left untouched; the accepted worker worktree had no generated native folders.
 
 ## Active Workers
 
-- `rnskia-worker-015-example-workspace-readiness`: example Expo dependency alignment, React Native CLI config, and prebuild-safe readiness verification.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -220,10 +235,11 @@ Accepted worker reports:
 - `worker-progress/worker-012-native-lifetime-regression.md`
 - `worker-progress/worker-013-native-runtime-smoke.md`
 - `worker-progress/worker-014-platform-runtime-readiness.md`
+- `worker-progress/worker-015-example-workspace-readiness.md`
 
 ## Pending Workers
 
-- None beyond active worker 014.
+- None.
 
 ## Decisions
 
@@ -242,14 +258,15 @@ Accepted worker reports:
 - Native reset semantics: optional native style and command prop omission now resets to defaults instead of preserving stale native state. Worker 008 also preserves the text fallback color contract: `backgroundColor` wins, explicit `opacity` controls alpha, and fallback text alpha is preserved when opacity is omitted.
 - Native: platform context ownership was unified by worker 006. Raw `_parent` pointers in `YogaNode` were replaced by weak parent links by worker 011, and child reparenting now enforces a single-parent invariant with exact interactive-descendant count updates.
 - Verification: worker 004 fixed the root/example install-isolation bug that let `scripts/sync-example-links.mjs` clobber root dependency/bin/type resolution. `bun run check:install-isolation` now guards that boundary. Worker 012 added `bun run check:yoganode-native-lifetime`, a focused syntax/source-invariant verifier for the YogaNode weak-parent and reparenting invariants. Worker 013 added `bun run check:yoganode-native-runtime`, a linked host-native runtime smoke that executes retained-descendant teardown and reparenting ownership assertions. The current main verification set passes.
-- Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Local native build prerequisites are missing, managed Expo config introspection succeeds, and the immediate root-cause blockers are missing `@react-native-community/cli`, Expo 55 dependency skew, and example typecheck failures from ambient globals plus duplicate root/example React Native type resolution.
+- Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Local native build prerequisites are missing. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`.
 
 ## Next Implementation Candidates
 
-- Align example workspace readiness for Expo 55: add the missing React Native CLI dependency, update the example dependency set expected by `expo install --check`, keep root/example install isolation intact, and then generate native projects for iOS/Android build verification once local platform prerequisites are available.
+- Continue platform-native verification from the now-clean example workspace: use generated native projects for iOS/Android build checks once local prerequisites such as CocoaPods and Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
 
 - Do not delete or modify the unrelated `fast-react-*` tmux session.
 - `node_modules/` exists in the main worktree and should not be treated as a worker artifact.
+- Ignored local `example/ios/` and `example/android/` directories exist in the main checkout. They are not tracked and were left untouched.
 - `tsconfig.tsbuildinfo` exists in the main worktree before orchestration; do not remove it without explicit evidence it is generated noise owned by this project state.

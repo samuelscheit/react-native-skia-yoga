@@ -105,7 +105,7 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; platform readiness audit accepted and next example-readiness implementation target selected
+Status: active; platform readiness audit accepted and prebuild-safe example workspace blockers fixed
 
 Goals:
 
@@ -118,9 +118,13 @@ Accepted audit:
 
 - `worker-014-platform-runtime-readiness`: audited the example app runtime/build feedback loop. Full iOS/Android app verification is blocked locally because the example has no committed native project folders, CocoaPods is unavailable, Android SDK variables are unset, and Gradle/ADB/CMake/Ninja are absent from `PATH`. The managed Expo config introspection path succeeds, but `react-native config` is blocked by missing `@react-native-community/cli`, `expo install --check` reports Expo 55 dependency skew, and example typecheck fails before native generation.
 
+Accepted implementation:
+
+- `worker-015-example-workspace-readiness`: aligned the example dependency set to Expo SDK 55 expected versions, added the missing React Native CLI dependency required for `react-native config`, regenerated `example/bun.lock`, and fixed the example typecheck config so linked package source resolves peers from `example/node_modules` while preserving Expo-provided DOM globals.
+
 Next root-cause target:
 
-- Align example workspace readiness before deeper platform-native verification: update the example dependency set to Expo 55 expected versions, add the missing React Native CLI dependency required for `react-native config`, keep install isolation intact, then generate native projects for real iOS/Android build checks when local prerequisites are available.
+- Continue deeper platform-native verification from the now-clean example workspace: generate/use native projects for real iOS/Android build checks when local prerequisites are available.
 
 Acceptance criteria:
 

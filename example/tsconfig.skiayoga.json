@@ -1,9 +1,28 @@
 {
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
+		"baseUrl": ".",
 		"jsx": "react-jsx",
 		"jsxImportSource": "react-native-skia-yoga",
-		"lib": ["ESNext"],
+		"paths": {
+			"@/*": ["./*"],
+			"react-native-skia-yoga": ["../"],
+			"react": ["./node_modules/@types/react"],
+			"react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime"],
+			"react/jsx-dev-runtime": ["./node_modules/@types/react/jsx-dev-runtime"],
+			"react-native": ["./node_modules/react-native"],
+			"react-native/*": ["./node_modules/react-native/*"],
+			"@shopify/react-native-skia": ["./node_modules/@shopify/react-native-skia"],
+			"@shopify/react-native-skia/*": ["./node_modules/@shopify/react-native-skia/*"],
+			"react-native-reanimated": ["./node_modules/react-native-reanimated"],
+			"react-native-reanimated/*": ["./node_modules/react-native-reanimated/*"],
+			"react-native-worklets": ["./node_modules/react-native-worklets"],
+			"react-native-worklets/*": ["./node_modules/react-native-worklets/*"],
+			"react-native-nitro-modules": ["./node_modules/react-native-nitro-modules"],
+			"react-native-nitro-modules/*": ["./node_modules/react-native-nitro-modules/*"],
+			"react-native-gesture-handler": ["./node_modules/react-native-gesture-handler"],
+			"react-native-gesture-handler/*": ["./node_modules/react-native-gesture-handler/*"]
+		},
 		"types": ["react", "react-native"]
 	},
 	"include": ["types/skiayoga-typecheck.tsx"]
