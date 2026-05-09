@@ -7,6 +7,40 @@ import { Colors } from "@/constants/Colors"
 import { useColorScheme } from "@/hooks/useColorScheme"
 import { Tabs } from "expo-router"
 
+type TabBarIconProps = {
+	color: string
+}
+
+function BreathTabIcon({ color }: TabBarIconProps) {
+	return <IconSymbol size={28} name="house.fill" color={color} />
+}
+
+function AnimateTabIcon({ color }: TabBarIconProps) {
+	return <IconSymbol size={28} name="sparkles" color={color} />
+}
+
+function InteractivityTabIcon({ color }: TabBarIconProps) {
+	return <IconSymbol size={28} name="hand.tap.fill" color={color} />
+}
+
+function ComponentsTabIcon({ color }: TabBarIconProps) {
+	return <IconSymbol size={28} name="square.grid.2x2.fill" color={color} />
+}
+
+function StylesTabIcon({ color }: TabBarIconProps) {
+	return (
+		<IconSymbol
+			size={28}
+			name="chevron.left.forwardslash.chevron.right"
+			color={color}
+		/>
+	)
+}
+
+function BenchmarkTabIcon({ color }: TabBarIconProps) {
+	return <IconSymbol size={28} name="speedometer" color={color} />
+}
+
 export default function TabLayout() {
 	const colorScheme = useColorScheme()
 
@@ -30,70 +64,42 @@ export default function TabLayout() {
 				name="index"
 				options={{
 					title: "Breath",
-					tabBarIcon: ({ color }) => (
-						<IconSymbol size={28} name="house.fill" color={color} />
-					),
+					tabBarIcon: BreathTabIcon,
 				}}
 			/>
 			<Tabs.Screen
 				name="animate"
 				options={{
 					title: "Animate",
-					tabBarIcon: ({ color }) => (
-						<IconSymbol size={28} name="sparkles" color={color} />
-					),
+					tabBarIcon: AnimateTabIcon,
 				}}
 			/>
 			<Tabs.Screen
 				name="interactivity"
 				options={{
 					title: "Interact",
-					tabBarIcon: ({ color }) => (
-						<IconSymbol
-							size={28}
-							name="hand.tap.fill"
-							color={color}
-						/>
-					),
+					tabBarIcon: InteractivityTabIcon,
 				}}
 			/>
 			<Tabs.Screen
 				name="components"
 				options={{
 					title: "Components",
-					tabBarIcon: ({ color }) => (
-						<IconSymbol
-							size={28}
-							name="square.grid.2x2.fill"
-							color={color}
-						/>
-					),
+					tabBarIcon: ComponentsTabIcon,
 				}}
 			/>
 			<Tabs.Screen
 				name="styles"
 				options={{
 					title: "Styles",
-					tabBarIcon: ({ color }) => (
-						<IconSymbol
-							size={28}
-							name="chevron.left.forwardslash.chevron.right"
-							color={color}
-						/>
-					),
+					tabBarIcon: StylesTabIcon,
 				}}
 			/>
 			<Tabs.Screen
 				name="benchmark"
 				options={{
 					title: "Benchmark",
-					tabBarIcon: ({ color }) => (
-						<IconSymbol
-							size={28}
-							name="speedometer"
-							color={color}
-						/>
-					),
+					tabBarIcon: BenchmarkTabIcon,
 				}}
 			/>
 		</Tabs>

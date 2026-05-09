@@ -42,6 +42,14 @@ module.exports = {
 			parser: reactNativeTypeScriptParser,
 		},
 		{
+			files: ["example/app/(tabs)/**/*.tsx", "example/types/**/*.tsx"],
+			rules: {
+				// Example screens and typecheck fixtures intentionally keep
+				// inline style objects visible as part of the documentation.
+				"react-native/no-inline-styles": "off",
+			},
+		},
+		{
 			files: [
 				".eslintrc.js",
 				"**/*.config.js",

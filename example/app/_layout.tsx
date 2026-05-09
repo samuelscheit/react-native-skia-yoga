@@ -8,9 +8,16 @@ import { Stack } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import "react-native-reanimated"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
+import { StyleSheet } from "react-native"
 import "../components/polyfill"
 
 import { useColorScheme } from "@/hooks/useColorScheme"
+
+const styles = StyleSheet.create({
+	root: {
+		flex: 1,
+	},
+})
 
 export default function RootLayout() {
 	const colorScheme = useColorScheme()
@@ -24,7 +31,7 @@ export default function RootLayout() {
 	}
 
 	return (
-		<GestureHandlerRootView style={{ flex: 1 }}>
+		<GestureHandlerRootView style={styles.root}>
 			<ThemeProvider
 				value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
 			>

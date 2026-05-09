@@ -79,8 +79,6 @@ type CoveredStyleProperty =
 
 type MissingStyleProperty = Exclude<StylePropertyName, CoveredStyleProperty>
 
-const _allStylePropertiesCovered: MissingStyleProperty extends never
+export const allStylePropertiesCoveredForTypecheck: MissingStyleProperty extends never
 	? true
 	: never = true
-
-void _allStylePropertiesCovered

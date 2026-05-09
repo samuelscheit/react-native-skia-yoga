@@ -14,6 +14,12 @@ const demoPath = (() => {
 	return path
 })()
 
+function assertTypecheckFixtures(...fixtures: readonly unknown[]) {
+	if (fixtures.length === 0) {
+		throw new Error("Expected typecheck fixtures")
+	}
+}
+
 export function SkiaYogaTypecheck() {
 	const sharedRadius = null as unknown as SharedValue<number>
 	const sharedTrimEnd = null as unknown as SharedValue<number>
@@ -27,12 +33,12 @@ export function SkiaYogaTypecheck() {
 		y: number
 	}>
 
-	const invalidChildren = (
+	const rawTextChildrenAreRejected = (
 		// @ts-expect-error raw text children are unsupported
 		<text>Hello</text>
 	)
 
-	const invalidLegacyProps = (
+	const legacyPropsAreRejected = (
 		<>
 			{
 				// @ts-expect-error blurMaskFilter uses blurStyle now
@@ -76,9 +82,7 @@ export function SkiaYogaTypecheck() {
 			}
 		</>
 	)
-
-	void invalidChildren
-	void invalidLegacyProps
+	assertTypecheckFixtures(rawTextChildrenAreRejected, legacyPropsAreRejected)
 
 	return (
 		<YogaCanvas style={{ flex: 1 }}>
