@@ -199,10 +199,12 @@ Last updated: 2026-05-09
   - `npm pack --dry-run`: passed; generated tarball removed afterward.
   - `git ls-files example/ios example/android`: no tracked native example folders.
 - Main checkout has ignored local `example/ios/` and `example/android/` directories from prior/generated local state. They were left untouched; the accepted worker worktree had no generated native folders.
+- Created `worker-016-platform-native-verification` from current `main`, symlinked root and example `node_modules` from the main worktree, and launched `rnskia-worker-016-platform-native-verification` as a top-level tmux subprocess to verify generated iOS/Android readiness after worker 015.
+- Worker 016 passed the visible `GOAL_CREATED: ...` gate before any commands, todos, or nested subagent work.
 
 ## Active Workers
 
-- None.
+- `rnskia-worker-016-platform-native-verification`: generated native iOS/Android readiness and local native verification after example workspace fixes.
 
 Invalid/stale tmux sessions cleaned up:
 
