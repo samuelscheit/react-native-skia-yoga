@@ -32,6 +32,7 @@
 	"scripts": {
 		"typecheck": "tsc --noEmit",
 		"check:install-isolation": "node ./scripts/verify-install-isolation.mjs",
+		"check:android-skia-archives": "node ./scripts/verify-android-skia-archives.mjs",
 		"check:yoganode-native-lifetime": "node ./scripts/verify-yoganode-native-lifetime.mjs",
 		"check:package-lifecycle": "node ./scripts/verify-package-lifecycle.mjs",
 		"check:yoganode-native-runtime": "node ./scripts/verify-yoganode-native-runtime-smoke.mjs",

@@ -90,10 +90,67 @@ target_include_directories(${PACKAGE_NAME} PRIVATE
   "${RN_SKIA_DIR}/android/cpp/rnskia-android" # contains "gl/Display.h"
 )
 
-file(GLOB skiaLibraries "${RN_SKIA_DIR}/libs/android/${ANDROID_ABI}/*.a")
-foreach(skiaLibrary ${skiaLibraries})
-  message("react-native-skia-yoga: Linking ${skiaLibrary}...")
-  target_link_libraries(${PACKAGE_NAME} "${skiaLibrary}")
+set(RN_SKIA_EXPECTED_ANDROID_ARCHIVE_BASENAMES
+  "libjsonreader.a"
+  "libskia.a"
+  "libskottie.a"
+  "libskparagraph.a"
+  "libsksg.a"
+  "libskshaper.a"
+  "libskunicode_core.a"
+  "libskunicode_icu.a"
+  "libsvg.a"
+)
+
+set(RN_SKIA_ANDROID_ARCHIVE_CANDIDATE_DIRS
+  "${NODE_MODULES_DIR}/react-native-skia-android/libs/${ANDROID_ABI}"
+  "${RN_SKIA_DIR}/libs/android/${ANDROID_ABI}"
+)
+
+set(RN_SKIA_ANDROID_ARCHIVE_DIR "")
+set(RN_SKIA_ANDROID_ARCHIVES "")
+set(RN_SKIA_ANDROID_ARCHIVE_ATTEMPTS "")
+
+foreach(RN_SKIA_ANDROID_ARCHIVE_CANDIDATE_DIR IN LISTS RN_SKIA_ANDROID_ARCHIVE_CANDIDATE_DIRS)
+  set(RN_SKIA_MISSING_ANDROID_ARCHIVES "")
+  set(RN_SKIA_CANDIDATE_ANDROID_ARCHIVES "")
+
+  foreach(RN_SKIA_ARCHIVE_BASENAME IN LISTS RN_SKIA_EXPECTED_ANDROID_ARCHIVE_BASENAMES)
+    set(RN_SKIA_ANDROID_ARCHIVE_PATH "${RN_SKIA_ANDROID_ARCHIVE_CANDIDATE_DIR}/${RN_SKIA_ARCHIVE_BASENAME}")
+    if(EXISTS "${RN_SKIA_ANDROID_ARCHIVE_PATH}")
+      list(APPEND RN_SKIA_CANDIDATE_ANDROID_ARCHIVES "${RN_SKIA_ANDROID_ARCHIVE_PATH}")
+    else()
+      list(APPEND RN_SKIA_MISSING_ANDROID_ARCHIVES "${RN_SKIA_ARCHIVE_BASENAME}")
+    endif()
+  endforeach()
+
+  if(NOT RN_SKIA_MISSING_ANDROID_ARCHIVES)
+    set(RN_SKIA_ANDROID_ARCHIVE_DIR "${RN_SKIA_ANDROID_ARCHIVE_CANDIDATE_DIR}")
+    set(RN_SKIA_ANDROID_ARCHIVES ${RN_SKIA_CANDIDATE_ANDROID_ARCHIVES})
+    break()
+  endif()
+
+  string(REPLACE ";" ", " RN_SKIA_MISSING_ANDROID_ARCHIVES_DISPLAY "${RN_SKIA_MISSING_ANDROID_ARCHIVES}")
+  if(EXISTS "${RN_SKIA_ANDROID_ARCHIVE_CANDIDATE_DIR}")
+    list(APPEND RN_SKIA_ANDROID_ARCHIVE_ATTEMPTS "${RN_SKIA_ANDROID_ARCHIVE_CANDIDATE_DIR}: missing ${RN_SKIA_MISSING_ANDROID_ARCHIVES_DISPLAY}")
+  else()
+    list(APPEND RN_SKIA_ANDROID_ARCHIVE_ATTEMPTS "${RN_SKIA_ANDROID_ARCHIVE_CANDIDATE_DIR}: directory not found; missing ${RN_SKIA_MISSING_ANDROID_ARCHIVES_DISPLAY}")
+  endif()
+endforeach()
+
+if(NOT RN_SKIA_ANDROID_ARCHIVE_DIR)
+  string(REPLACE ";" ", " RN_SKIA_EXPECTED_ANDROID_ARCHIVE_BASENAMES_DISPLAY "${RN_SKIA_EXPECTED_ANDROID_ARCHIVE_BASENAMES}")
+  set(RN_SKIA_ANDROID_ARCHIVE_ATTEMPT_DETAILS "")
+  foreach(RN_SKIA_ANDROID_ARCHIVE_ATTEMPT IN LISTS RN_SKIA_ANDROID_ARCHIVE_ATTEMPTS)
+    string(APPEND RN_SKIA_ANDROID_ARCHIVE_ATTEMPT_DETAILS "\n  - ${RN_SKIA_ANDROID_ARCHIVE_ATTEMPT}")
+  endforeach()
+  message(FATAL_ERROR "react-native-skia-yoga: Unable to find a complete RN Skia Android static archive set for ABI ${ANDROID_ABI}.\nExpected archive basenames: ${RN_SKIA_EXPECTED_ANDROID_ARCHIVE_BASENAMES_DISPLAY}\nChecked archive directories:${RN_SKIA_ANDROID_ARCHIVE_ATTEMPT_DETAILS}")
+endif()
+
+message(STATUS "react-native-skia-yoga: selected RN Skia Android archive directory for ${ANDROID_ABI}: ${RN_SKIA_ANDROID_ARCHIVE_DIR}")
+foreach(RN_SKIA_ANDROID_ARCHIVE IN LISTS RN_SKIA_ANDROID_ARCHIVES)
+  message(STATUS "react-native-skia-yoga: Linking ${RN_SKIA_ANDROID_ARCHIVE}...")
+  target_link_libraries(${PACKAGE_NAME} "${RN_SKIA_ANDROID_ARCHIVE}")
 endforeach()
 
 # 4. Import and link RN Skia's JNI shared library (librnskia.so) to satisfy
