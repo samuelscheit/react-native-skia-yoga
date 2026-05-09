@@ -275,6 +275,23 @@ Last updated: 2026-05-10
 - Accepted worker 022 as a report-only root-cause audit. No product files changed.
 - Main verification after worker 022 report integration:
   - `git diff --check`: passed.
+- Created `worker-023-android-skia-archive-discovery` from current `main`, symlinked root and example `node_modules` from the main worktree, and launched `rnskia-worker-023-android-skia-archive-discovery` as a top-level tmux subprocess to fix Android RN Skia archive discovery.
+- Worker 023 original pass passed the visible `GOAL_CREATED: ...` gate and applied the CMake/package/verifier patch, then hit a usage limit before nested challenge, verification, and report.
+- Rejected `rnskia-worker-023-android-skia-archive-discovery-fixup` because its first visible gate text had a trailing newline in JSON and therefore failed the strict gate.
+- `rnskia-worker-023-android-skia-archive-discovery-fixup-v2` passed the visible gate, ran verification, and spawned a nested read-only challenger that found two verifier robustness issues: whole-file archive-name matching and whole-file path-order matching instead of checking the actual CMake list bodies. It then hit a usage limit before applying the fixes/reporting.
+- `rnskia-worker-023-android-skia-archive-discovery-fixup-v3` passed the visible gate and applied the verifier parser/list assertion fix, then hit a usage limit before verification/report.
+- `rnskia-worker-023-android-skia-archive-discovery-finalize-v4` passed the visible gate, verified the patch, wrote `worker-progress/worker-023-android-skia-archive-discovery.md`, and completed. It left the goal active as instructed and did not call `update_goal`.
+- Accepted worker 023 as a root-cause implementation for Android RN Skia archive discovery.
+- Main verification after worker 023 integration:
+  - `bun run check:android-skia-archives`: passed.
+  - `git diff --check`: passed.
+  - `bun run check:yoganode-native-runtime`: passed.
+  - `bun run check:yoganode-native-lifetime`: passed.
+  - `npm run typecheck`: passed, with npm's existing `minimum-release-age` warning.
+  - `bun run check:install-isolation`: passed.
+  - `bun run check:package-lifecycle`: passed.
+  - `bun run specs`: passed.
+  - `npm pack --dry-run --json`: passed; no `.tgz` artifact was left behind.
 
 ## Active Workers
 
@@ -319,6 +336,7 @@ Accepted worker reports:
 - `worker-progress/worker-020-next-root-cause-audit.md`
 - `worker-progress/worker-021-runtime-smoke-archive-discovery.md`
 - `worker-progress/worker-022-next-root-cause-audit.md`
+- `worker-progress/worker-023-android-skia-archive-discovery.md`
 
 ## Pending Workers
 
@@ -340,12 +358,12 @@ Accepted worker reports:
 - JS/API: package metadata and JSX runtime declarations originally pointed at missing `lib` output; worker 005 aligned the source-first entrypoints and JSX runtime declarations. The README now shows the current `YogaCanvas` plus lowercase intrinsic-node API. The unsupported public `origin` field and overly broad nested animated style typing were addressed by worker 009.
 - Native reset semantics: optional native style and command prop omission now resets to defaults instead of preserving stale native state. Worker 008 also preserves the text fallback color contract: `backgroundColor` wins, explicit `opacity` controls alpha, and fallback text alpha is preserved when opacity is omitted.
 - Native: platform context ownership was unified by worker 006. Raw `_parent` pointers in `YogaNode` were replaced by weak parent links by worker 011, and child reparenting now enforces a single-parent invariant with exact interactive-descendant count updates.
-- Verification: worker 004 fixed the root/example install-isolation bug that let `scripts/sync-example-links.mjs` clobber root dependency/bin/type resolution. `bun run check:install-isolation` now guards that boundary. Worker 012 added `bun run check:yoganode-native-lifetime`, a focused syntax/source-invariant verifier for the YogaNode weak-parent and reparenting invariants. Worker 013 added `bun run check:yoganode-native-runtime`, a linked host-native runtime smoke that executes retained-descendant teardown and reparenting ownership assertions. Worker 021 restored that runtime smoke for the current RN Skia macOS packaging by preferring optional/current xcframework layouts, validating the expected archive basenames, and retaining legacy `libs/macos` discovery as fallback. Worker 022 confirmed the currently feasible main checks pass and selected Android RN Skia archive discovery as the next unblocked native-build feedback-loop target.
-- Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the package lifecycle root-cause task, worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`. Worker 020 found the runtime-smoke archive discovery target, worker 021 completed it, and worker 022 found the Android CMake archive-layout analogue.
+- Verification: worker 004 fixed the root/example install-isolation bug that let `scripts/sync-example-links.mjs` clobber root dependency/bin/type resolution. `bun run check:install-isolation` now guards that boundary. Worker 012 added `bun run check:yoganode-native-lifetime`, a focused syntax/source-invariant verifier for the YogaNode weak-parent and reparenting invariants. Worker 013 added `bun run check:yoganode-native-runtime`, a linked host-native runtime smoke that executes retained-descendant teardown and reparenting ownership assertions. Worker 021 restored that runtime smoke for the current RN Skia macOS packaging by preferring optional/current xcframework layouts, validating the expected archive basenames, and retaining legacy `libs/macos` discovery as fallback. Worker 022 confirmed the currently feasible main checks pass and selected Android RN Skia archive discovery as the next unblocked native-build feedback-loop target. Worker 023 fixed that Android archive discovery path in `android/CMakeLists.txt` and added `bun run check:android-skia-archives` to guard the current optional-package Android archive layout and exact CMake candidate-list ordering.
+- Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the package lifecycle root-cause task, worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`. Worker 020 found the runtime-smoke archive discovery target, worker 021 completed it, worker 022 found the Android CMake archive-layout analogue, and worker 023 completed it.
 
 ## Next Implementation Candidates
 
-- Fix Android RN Skia archive discovery in `android/CMakeLists.txt`: prefer `node_modules/react-native-skia-android/libs/${ANDROID_ABI}` for current installs, keep the legacy `@shopify/react-native-skia/libs/android/${ANDROID_ABI}` fallback, validate expected archive basenames per ABI, and add a source-level verifier while full Android builds remain locally blocked.
+- Select the next unblocked root-cause target from the remaining backlog. `lint-ci` remains a real tooling/configuration problem, while full platform-native build/run verification remains blocked by local native prerequisites.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes

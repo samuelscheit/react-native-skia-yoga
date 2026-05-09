@@ -105,7 +105,7 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, and Android RN Skia archive discovery selected as the next root-cause implementation target
+Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, and Android RN Skia archive discovery fixed with source-level verification
 
 Goals:
 
@@ -134,10 +134,11 @@ Accepted package-hygiene implementation:
 - `worker-020-next-root-cause-audit`: audited the post-lifecycle backlog, confirmed platform-native build/run remains locally blocked, and identified the `check:yoganode-native-runtime` archive discovery failure as the strongest unblocked root-cause task.
 - `worker-021-runtime-smoke-archive-discovery`: restored and hardened `check:yoganode-native-runtime` by discovering the current optional-package RN Skia macOS archive layout, validating expected archive basenames before selection, and keeping the old in-package layout as a fallback.
 - `worker-022-next-root-cause-audit`: audited the post-runtime-smoke backlog, confirmed the feasible package/native smoke checks are green, and identified Android RN Skia archive discovery in `android/CMakeLists.txt` as the strongest unblocked root-cause task.
+- `worker-023-android-skia-archive-discovery`: fixed Android RN Skia static archive discovery by preferring the current `react-native-skia-android/libs/${ANDROID_ABI}` optional package layout, keeping the legacy fallback, validating expected archive basenames before linking, and adding `check:android-skia-archives`.
 
 Current next step:
 
-- Launch a focused implementation worker to fix Android RN Skia archive discovery in `android/CMakeLists.txt`, preferring `react-native-skia-android/libs/${ANDROID_ABI}` while keeping legacy fallback and clear validation failures. Continue platform-native build/run verification once local prerequisites are available.
+- Select the next unblocked root-cause target from the remaining backlog. Continue platform-native build/run verification once local prerequisites are available.
 
 Acceptance criteria:
 
