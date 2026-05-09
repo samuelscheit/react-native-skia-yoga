@@ -208,10 +208,22 @@ Last updated: 2026-05-09
   - `git diff --check`: passed.
 - Created `worker-017-package-plugin-hygiene` from current `main`, symlinked root and example `node_modules` from the main worktree, and launched `rnskia-worker-017-package-plugin-hygiene` as a top-level tmux subprocess to resolve the stale/missing `app.plugin.js` package-files issue.
 - Worker 017 passed the visible `GOAL_CREATED: ...` gate before any commands, todos, or nested subagent work.
+- Worker 017 original pass confirmed the stale `app.plugin.js` entry, obtained a completed nested challenger result, and then hit a Codex usage limit before editing/reporting.
+- Launched `rnskia-worker-017-package-plugin-hygiene-finalize` with `gpt-5.4-mini`/medium. It passed the visible goal gate, inherited and documented the completed challenger result, removed the stale `app.plugin.js` entry from `package.json.files`, wrote `worker-progress/worker-017-package-plugin-hygiene.md`, ran the scoped checks, and completed.
+- Applied the accepted worker 017 package-hygiene patch into the main worktree.
+- Main verification after worker 017 integration:
+  - `git diff --check`: passed.
+  - `npm run typecheck`: passed.
+  - `bun run check:install-isolation`: passed.
+  - `npm pack --dry-run`: passed; no `.tgz` artifact was left behind.
+  - `cd example && bun --bun ./node_modules/.bin/expo install --check`: passed.
+  - Parsed `cd example && bun --bun ./node_modules/.bin/react-native config`: passed and confirmed `react-native-skia-yoga` still has iOS `podspecPath`, Android `sourceDir`, and `new SkiaYogaPackage()` autolinking metadata.
+  - Parsed `cd example && bun --bun ./node_modules/.bin/expo config --type introspect --json`: passed and confirmed `react-native-skia-yoga` is not in Expo plugin history.
+  - `git ls-files example/ios example/android`: no tracked native example folders.
 
 ## Active Workers
 
-- `rnskia-worker-017-package-plugin-hygiene`: determine whether `app.plugin.js` should be a real config plugin or removed from `package.json.files`, then implement the root-cause fix if warranted.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -246,6 +258,7 @@ Accepted worker reports:
 - `worker-progress/worker-014-platform-runtime-readiness.md`
 - `worker-progress/worker-015-example-workspace-readiness.md`
 - `worker-progress/worker-016-platform-native-verification.md`
+- `worker-progress/worker-017-package-plugin-hygiene.md`
 
 ## Pending Workers
 
@@ -268,11 +281,10 @@ Accepted worker reports:
 - Native reset semantics: optional native style and command prop omission now resets to defaults instead of preserving stale native state. Worker 008 also preserves the text fallback color contract: `backgroundColor` wins, explicit `opacity` controls alpha, and fallback text alpha is preserved when opacity is omitted.
 - Native: platform context ownership was unified by worker 006. Raw `_parent` pointers in `YogaNode` were replaced by weak parent links by worker 011, and child reparenting now enforces a single-parent invariant with exact interactive-descendant count updates.
 - Verification: worker 004 fixed the root/example install-isolation bug that let `scripts/sync-example-links.mjs` clobber root dependency/bin/type resolution. `bun run check:install-isolation` now guards that boundary. Worker 012 added `bun run check:yoganode-native-lifetime`, a focused syntax/source-invariant verifier for the YogaNode weak-parent and reparenting invariants. Worker 013 added `bun run check:yoganode-native-runtime`, a linked host-native runtime smoke that executes retained-descendant teardown and reparenting ownership assertions. The current main verification set passes.
-- Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state.
+- Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact.
 
 ## Next Implementation Candidates
 
-- Resolve package hygiene around the root `package.json` `files` entry for missing `app.plugin.js`: determine whether a config plugin should exist or the stale package entry should be removed.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes

@@ -105,7 +105,7 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, and Node-run CNG native generation verified
+Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, and package plugin hygiene resolved
 
 Goals:
 
@@ -126,9 +126,12 @@ Accepted native-generation verification:
 
 - `worker-016-platform-native-verification`: verified that Expo CNG native project generation succeeds when invoked through Node, produced a NUL-free parseable iOS project, confirmed generated React Native config and Expo autolinking include `react-native-skia-yoga` on iOS and Android, and documented that full build/run verification is currently blocked by missing local CocoaPods, full Xcode selection, Java, Android SDK variables, and Android build tools.
 
+Accepted package-hygiene implementation:
+
+- `worker-017-package-plugin-hygiene`: proved that the missing `app.plugin.js` entry was stale package metadata rather than a real Expo config-plugin contract, then removed that entry from `package.json.files` while preserving the native autolinking surface.
+
 Next root-cause target:
 
-- Resolve package hygiene around the root `package.json` `files` entry for missing `app.plugin.js`: determine whether a config plugin should exist or the stale package entry should be removed.
 - Continue deeper platform-native build/run verification when local prerequisites are available.
 
 Acceptance criteria:
