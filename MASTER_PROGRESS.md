@@ -144,10 +144,13 @@ Last updated: 2026-05-09
   - `npm pack --dry-run`: passed.
   - Focused `clang++ -std=c++20 -fsyntax-only -include cpp/polyfill.h ... cpp/YogaNode.cpp`: passed with a temporary Nitro include shim and explicit React Native, Yoga, React Native Skia, and Worklets include roots.
 - Killed completed/failed `rnskia-*` worker 011 tmux sessions and left the unrelated `fast-react-*` session untouched.
+- Corrected stale progress-summary lines after verifying the README already reflects the current `YogaCanvas` plus lowercase intrinsic-node API.
+- Created `worker-012-native-lifetime-regression` from current `main` and launched `rnskia-worker-012-native-lifetime-regression` as a top-level tmux subprocess to add focused regression coverage for the YogaNode native lifetime/reparenting invariants.
+- Worker 012 passed the visible `GOAL_CREATED: ...` gate before any commands or nested subagent work.
 
 ## Active Workers
 
-- None.
+- `rnskia-worker-012-native-lifetime-regression`: focused regression coverage for retained-descendant teardown and reparenting invariants.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -180,7 +183,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- None.
+- None beyond active worker 012.
 
 ## Decisions
 
