@@ -105,7 +105,7 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, and lint-ci root-cause repair selected next
+Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, and root lint-ci configuration/formatter wiring repaired
 
 Goals:
 
@@ -136,10 +136,11 @@ Accepted package-hygiene implementation:
 - `worker-022-next-root-cause-audit`: audited the post-runtime-smoke backlog, confirmed the feasible package/native smoke checks are green, and identified Android RN Skia archive discovery in `android/CMakeLists.txt` as the strongest unblocked root-cause task.
 - `worker-023-android-skia-archive-discovery`: fixed Android RN Skia static archive discovery by preferring the current `react-native-skia-android/libs/${ANDROID_ABI}` optional package layout, keeping the legacy fallback, validating expected archive basenames before linking, and adding `check:android-skia-archives`.
 - `worker-024-next-root-cause-audit`: audited the post-worker-023 backlog, confirmed the feasible package/native checks are green, confirmed platform-native build/run remains locally blocked, and selected root `lint-ci` repair as the next unblocked repo-owned target.
+- `worker-025-lint-ci-root-config`: added an explicit root ESLint config, resolved React Native lint plugins/parser relative to the installed React Native config package, removed the missing `@jamesacarr/github-actions` formatter from `lint-ci`, included `.mjs` verifier scripts in lint scope, and fixed the narrow source lint findings needed for `npm run lint-ci` to pass.
 
 Current next step:
 
-- Launch a focused implementation worker to fix root `lint-ci` so ESLint loads a deliberate root configuration and uses available or explicitly declared CI formatter wiring. Continue platform-native build/run verification once local prerequisites are available.
+- Launch a read-only tmux audit worker to identify the next unblocked root-cause target after lint-ci repair. Continue platform-native build/run verification once local prerequisites are available.
 
 Acceptance criteria:
 
