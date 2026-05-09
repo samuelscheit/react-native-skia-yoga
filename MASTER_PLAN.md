@@ -105,7 +105,7 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; platform readiness audit accepted and prebuild-safe example workspace blockers fixed
+Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, and Node-run CNG native generation verified
 
 Goals:
 
@@ -122,9 +122,14 @@ Accepted implementation:
 
 - `worker-015-example-workspace-readiness`: aligned the example dependency set to Expo SDK 55 expected versions, added the missing React Native CLI dependency required for `react-native config`, regenerated `example/bun.lock`, and fixed the example typecheck config so linked package source resolves peers from `example/node_modules` while preserving Expo-provided DOM globals.
 
+Accepted native-generation verification:
+
+- `worker-016-platform-native-verification`: verified that Expo CNG native project generation succeeds when invoked through Node, produced a NUL-free parseable iOS project, confirmed generated React Native config and Expo autolinking include `react-native-skia-yoga` on iOS and Android, and documented that full build/run verification is currently blocked by missing local CocoaPods, full Xcode selection, Java, Android SDK variables, and Android build tools.
+
 Next root-cause target:
 
-- Continue deeper platform-native verification from the now-clean example workspace: generate/use native projects for real iOS/Android build checks when local prerequisites are available.
+- Resolve package hygiene around the root `package.json` `files` entry for missing `app.plugin.js`: determine whether a config plugin should exist or the stale package entry should be removed.
+- Continue deeper platform-native build/run verification when local prerequisites are available.
 
 Acceptance criteria:
 

@@ -201,10 +201,15 @@ Last updated: 2026-05-09
 - Main checkout has ignored local `example/ios/` and `example/android/` directories from prior/generated local state. They were left untouched; the accepted worker worktree had no generated native folders.
 - Created `worker-016-platform-native-verification` from current `main`, symlinked root and example `node_modules` from the main worktree, and launched `rnskia-worker-016-platform-native-verification` as a top-level tmux subprocess to verify generated iOS/Android readiness after worker 015.
 - Worker 016 passed the visible `GOAL_CREATED: ...` gate before any commands, todos, or nested subagent work.
+- Worker 016 original pass confirmed post-worker-015 baseline checks, found Bun-run Expo prebuild generated a NUL-padded iOS `project.pbxproj`, reran through Node successfully, obtained a completed nested challenger result, and then hit a `gpt-5.5` usage limit before cleanup/report.
+- Launched `rnskia-worker-016-platform-native-verification-finalize` with `gpt-5.4`/high. It passed the visible goal gate, revalidated Node-run CNG prebuild from a clean example native state, proved the generated iOS project was NUL-free and parser-valid, confirmed `react-native-skia-yoga` autolinking on iOS and Android, documented local native toolchain blockers, removed generated native folders, wrote the report, and completed.
+- Accepted worker 016 as a report-only native-generation verification. No product files changed.
+- Main verification after worker 016 report integration:
+  - `git diff --check`: passed.
 
 ## Active Workers
 
-- `rnskia-worker-016-platform-native-verification`: generated native iOS/Android readiness and local native verification after example workspace fixes.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -238,6 +243,7 @@ Accepted worker reports:
 - `worker-progress/worker-013-native-runtime-smoke.md`
 - `worker-progress/worker-014-platform-runtime-readiness.md`
 - `worker-progress/worker-015-example-workspace-readiness.md`
+- `worker-progress/worker-016-platform-native-verification.md`
 
 ## Pending Workers
 
@@ -260,11 +266,12 @@ Accepted worker reports:
 - Native reset semantics: optional native style and command prop omission now resets to defaults instead of preserving stale native state. Worker 008 also preserves the text fallback color contract: `backgroundColor` wins, explicit `opacity` controls alpha, and fallback text alpha is preserved when opacity is omitted.
 - Native: platform context ownership was unified by worker 006. Raw `_parent` pointers in `YogaNode` were replaced by weak parent links by worker 011, and child reparenting now enforces a single-parent invariant with exact interactive-descendant count updates.
 - Verification: worker 004 fixed the root/example install-isolation bug that let `scripts/sync-example-links.mjs` clobber root dependency/bin/type resolution. `bun run check:install-isolation` now guards that boundary. Worker 012 added `bun run check:yoganode-native-lifetime`, a focused syntax/source-invariant verifier for the YogaNode weak-parent and reparenting invariants. Worker 013 added `bun run check:yoganode-native-runtime`, a linked host-native runtime smoke that executes retained-descendant teardown and reparenting ownership assertions. The current main verification set passes.
-- Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Local native build prerequisites are missing. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`.
+- Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state.
 
 ## Next Implementation Candidates
 
-- Continue platform-native verification from the now-clean example workspace: use generated native projects for iOS/Android build checks once local prerequisites such as CocoaPods and Android SDK/Gradle/ADB/CMake/Ninja are available.
+- Resolve package hygiene around the root `package.json` `files` entry for missing `app.plugin.js`: determine whether a config plugin should exist or the stale package entry should be removed.
+- Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
 
