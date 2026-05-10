@@ -2,14 +2,30 @@
 
 import assert from "node:assert/strict"
 import { existsSync, readFileSync } from "node:fs"
+import { createRequire } from "node:module"
 import path from "node:path"
 import vm from "node:vm"
 import ts from "typescript"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
+const require = createRequire(import.meta.url)
+const { transformSync } = require("@babel/core")
+const transformTypescriptPlugin = require("@babel/plugin-transform-typescript")
+const workletsPlugin = require("react-native-worklets/plugin")
+const ignoredAstKeys = new Set([
+	"comments",
+	"end",
+	"extra",
+	"leadingComments",
+	"loc",
+	"range",
+	"start",
+	"trailingComments",
+])
 
 verifyPublicImportIsLazy()
 verifyCreateYogaNodeAccessIsLazyAndCached()
+verifyCreateYogaNodeWorkletsTransformUsesLazyAccessor()
 verifyYogaCanvasRuntimeCreatesRootNodeLazily()
 verifyExplicitAccessIsLazyAndIdempotent()
 verifyMissingNativeErrorIsDeferredAndClear()
@@ -20,6 +36,7 @@ console.log("- Importing the public source entrypoint did not look up/install na
 console.log("- Importing the public source entrypoint did not create native hybrid objects.")
 console.log("- Import-only access did not log or mutate globalThis.SkiaYoga.")
 console.log("- Explicit createYogaNode() access boxed NitroModules once and created YogaNode objects at call time.")
+console.log("- Worklets transform kept createYogaNode() on lazyNitroModulesBox.current.unbox().")
 console.log("- YogaCanvas runtime root creation still creates a YogaNode object lazily.")
 console.log("- Explicit getSkiaYoga() access installed and created the native object exactly once.")
 console.log("- Native-missing failures are reported when getSkiaYoga() is called.")
@@ -132,6 +149,58 @@ function verifyCreateYogaNodeAccessIsLazyAndCached() {
 		hasOwn(harness.global, "SkiaYoga"),
 		false,
 		"createYogaNode should not write globalThis.SkiaYoga",
+	)
+}
+
+function verifyCreateYogaNodeWorkletsTransformUsesLazyAccessor() {
+	const utilPath = projectPath("src/util.ts")
+	const transformed = transformSync(readFileSync(utilPath, "utf8"), {
+		ast: true,
+		babelrc: false,
+		code: true,
+		configFile: false,
+		filename: utilPath,
+		plugins: [transformTypescriptPlugin, workletsPlugin],
+		sourceType: "module",
+	})
+
+	assert.ok(
+		transformed?.ast,
+		"Worklets transform should produce an AST for src/util.ts",
+	)
+
+	const closureKeys = findCreateYogaNodeClosureKeys(transformed.ast)
+
+	assert.ok(
+		closureKeys.includes("lazyNitroModulesBox"),
+		"transformed createYogaNode.__closure must capture lazyNitroModulesBox",
+	)
+	assert.equal(
+		closureKeys.includes("NitroModules"),
+		false,
+		"transformed createYogaNode.__closure must not capture NitroModules directly",
+	)
+	assert.deepEqual(
+		closureKeys,
+		["lazyNitroModulesBox"],
+		"transformed createYogaNode.__closure should only capture the lazy NitroModules box accessor",
+	)
+
+	const workletCode = findCreateYogaNodeWorkletCode(transformed.ast)
+	const workletAst = parseTransformedJavaScript(
+		workletCode,
+		`${utilPath}.worklet.js`,
+	)
+
+	assert.equal(
+		containsIdentifier(workletAst, "NitroModules"),
+		false,
+		"transformed createYogaNode worklet body must not reference NitroModules directly",
+	)
+	assert.equal(
+		containsLazyNitroModulesBoxUnboxCall(workletAst),
+		true,
+		"transformed createYogaNode worklet body must use lazyNitroModulesBox.current.unbox()",
 	)
 }
 
@@ -556,6 +625,189 @@ function normalizePath(filePath) {
 
 function projectPath(...segments) {
 	return normalizePath(path.join(rootDir, ...segments))
+}
+
+function findCreateYogaNodeClosureKeys(ast) {
+	let closureKeys
+
+	walkAst(ast, (node) => {
+		if (closureKeys != null || node.type !== "AssignmentExpression") {
+			return
+		}
+		if (!isStaticMemberExpression(node.left, "createYogaNode", "__closure")) {
+			return
+		}
+
+		assert.equal(
+			node.right.type,
+			"ObjectExpression",
+			"transformed createYogaNode.__closure must be assigned an object literal",
+		)
+		closureKeys = getObjectExpressionKeys(node.right).sort()
+	})
+
+	assert.ok(
+		closureKeys,
+		"Worklets transform should assign createYogaNode.__closure",
+	)
+
+	return closureKeys
+}
+
+function findCreateYogaNodeWorkletCode(ast) {
+	const candidates = []
+
+	walkAst(ast, (node) => {
+		if (
+			node.type !== "ObjectProperty" ||
+			getStaticPropertyName(node.key) !== "code" ||
+			node.value.type !== "StringLiteral" ||
+			!node.value.value.includes("createYogaNode")
+		) {
+			return
+		}
+
+		candidates.push(node.value.value)
+	})
+
+	assert.equal(
+		candidates.length,
+		1,
+		"Worklets transform should emit one createYogaNode initData code string",
+	)
+
+	return candidates[0]
+}
+
+function parseTransformedJavaScript(code, filename) {
+	const parsed = transformSync(code, {
+		ast: true,
+		babelrc: false,
+		code: false,
+		configFile: false,
+		filename,
+		sourceType: "script",
+	})
+
+	assert.ok(parsed?.ast, `Babel should parse transformed JavaScript for ${filename}`)
+
+	return parsed.ast
+}
+
+function containsIdentifier(ast, name) {
+	let found = false
+
+	walkAst(ast, (node) => {
+		if (node.type === "Identifier" && node.name === name) {
+			found = true
+		}
+	})
+
+	return found
+}
+
+function containsLazyNitroModulesBoxUnboxCall(ast) {
+	let found = false
+
+	walkAst(ast, (node) => {
+		if (
+			node.type === "CallExpression" &&
+			isLazyNitroModulesBoxUnboxCallee(node.callee)
+		) {
+			found = true
+		}
+	})
+
+	return found
+}
+
+function isLazyNitroModulesBoxUnboxCallee(node) {
+	if (!isStaticMemberProperty(node, "unbox")) {
+		return false
+	}
+
+	const currentAccess = node.object
+	return (
+		isStaticMemberProperty(currentAccess, "current") &&
+		currentAccess.object.type === "Identifier" &&
+		currentAccess.object.name === "lazyNitroModulesBox"
+	)
+}
+
+function isStaticMemberExpression(node, objectName, propertyName) {
+	return (
+		isStaticMemberProperty(node, propertyName) &&
+		node.object.type === "Identifier" &&
+		node.object.name === objectName
+	)
+}
+
+function isStaticMemberProperty(node, propertyName) {
+	if (node?.type !== "MemberExpression") {
+		return false
+	}
+
+	return getStaticPropertyName(node.property, node.computed) === propertyName
+}
+
+function getObjectExpressionKeys(node) {
+	return node.properties.map((property) => {
+		assert.equal(
+			property.type,
+			"ObjectProperty",
+			"transformed createYogaNode.__closure must only use object properties",
+		)
+
+		const key = getStaticPropertyName(property.key, property.computed)
+		assert.ok(
+			key,
+			"transformed createYogaNode.__closure must use static property names",
+		)
+
+		return key
+	})
+}
+
+function getStaticPropertyName(node, computed = false) {
+	if (node.type === "Identifier" && !computed) {
+		return node.name
+	}
+	if (node.type === "StringLiteral") {
+		return node.value
+	}
+
+	return undefined
+}
+
+function walkAst(value, visitor) {
+	if (value == null || typeof value !== "object") {
+		return
+	}
+	if (Array.isArray(value)) {
+		for (const item of value) {
+			walkAst(item, visitor)
+		}
+		return
+	}
+	if (typeof value.type !== "string") {
+		return
+	}
+
+	visitor(value)
+
+	for (const [key, child] of Object.entries(value)) {
+		if (ignoredAstKeys.has(key)) {
+			continue
+		}
+
+		if (Array.isArray(child)) {
+			for (const item of child) {
+				walkAst(item, visitor)
+			}
+		} else {
+			walkAst(child, visitor)
+		}
+	}
 }
 
 const typescriptDiagnosticHost = {
