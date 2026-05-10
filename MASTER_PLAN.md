@@ -176,10 +176,11 @@ Accepted package-hygiene implementation:
 - `worker-062-gesture-interaction-runtime-verifier`: added `check:gesture-interaction-runtime`, a source-level Node VM verifier for `YogaInteractionRegistry`, `useCanvasGestures`, and selected `YogaCanvas` gesture wiring with local React/RNGH/Reanimated/Worklets stubs.
 - `worker-063-post-062-root-cause-audit`: audited the post-worker-062 state, confirmed the feasible matrix remains green while full platform-native proof is still locally blocked, and selected `YogaCanvas` lifecycle/render/profiling source-level runtime verification as the next strongest unblocked target.
 - `worker-064-yogacanvas-lifecycle-runtime-verifier`: added `check:yogacanvas-lifecycle-runtime`, a source-level Node VM verifier for `YogaCanvas` lazy native IDs, root/container setup, layout effects, `onLayout`, bounded retry RAF, animation callbacks, profiling counters/native sample parsing/fallbacks/forced flush, and unmount cleanup with local stubs.
+- `worker-065-post-064-root-cause-audit`: audited the post-worker-064 state, confirmed the feasible matrix remains green, documented that full native app/device proof remains locally blocked, and selected packed-package React Native codegen/autolinking verification from an installed tarball as the next strongest unblocked target.
 
 Current next step:
 
-- Monitor active worker 065 post-worker-064 root-cause audit, then accept or reject it based on its tmux goal gate, report scope, target-selection evidence, proof-boundary wording, nested challenger documentation, full verification matrix, and cleanup state.
+- Monitor active worker 066 packed-package RN codegen/autolinking verifier, then accept or reject it based on its tmux goal gate, implementation/report scope, installed-tarball verifier evidence, proof-boundary wording, nested challenger documentation, full verification matrix, and cleanup state.
 
 Acceptance criteria:
 
