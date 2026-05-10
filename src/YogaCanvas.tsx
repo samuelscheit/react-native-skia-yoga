@@ -11,7 +11,7 @@ import { GestureDetector, type GestureType } from "react-native-gesture-handler"
 import { YogaInteractionRegistry } from "./interactivity"
 import { allocateYogaCanvasNativeId } from "./nativeId"
 import { type YogaRootContainer, reconciler } from "./Reconciler"
-import { SkiaYoga } from "./SkiaYogaObject"
+import { getSkiaYoga } from "./SkiaYogaObject"
 import { NodeCommandKind } from "./specs/SkiaYoga.nitro"
 import SkiaYogaViewNativeComponent from "./specs/SkiaYogaViewNativeComponent"
 import { useCanvasGestures } from "./useCanvasGestures"
@@ -111,7 +111,7 @@ export function YogaCanvas({
 			const now = performance.now()
 			const sampleStartTime = profile.sampleStartTime || now
 			const nativeSample = parseNativeProfileSample(
-				SkiaYoga.consumeViewProfileSample(nativeId),
+				getSkiaYoga().consumeViewProfileSample(nativeId),
 			)
 			const nativeFrames = toFiniteNumber(nativeSample.frames)
 			const fallbackDurationMs = now - sampleStartTime
@@ -157,8 +157,9 @@ export function YogaCanvas({
 			return
 		}
 
-		SkiaYoga.attachViewRoot(nativeId, rootNode)
-		SkiaYoga.setViewAnimating(nativeId, hasActiveAnimationNodes())
+		const skiaYoga = getSkiaYoga()
+		skiaYoga.attachViewRoot(nativeId, rootNode)
+		skiaYoga.setViewAnimating(nativeId, hasActiveAnimationNodes())
 	}, [hasActiveAnimationNodes, nativeId])
 
 	const requestNativeRender = useCallback(() => {
@@ -170,11 +171,12 @@ export function YogaCanvas({
 			return
 		}
 
-		SkiaYoga.attachViewRoot(nativeId, rootNode)
+		const skiaYoga = getSkiaYoga()
+		skiaYoga.attachViewRoot(nativeId, rootNode)
 		if (profilingEnabled) {
 			profileRef.current.scheduledInvalidateCalls += 1
 		}
-		SkiaYoga.requestViewRender(nativeId)
+		skiaYoga.requestViewRender(nativeId)
 	}, [nativeId, profilingEnabled])
 
 	const clearInitialRenderRetry = useCallback(() => {
@@ -275,7 +277,7 @@ export function YogaCanvas({
 			return
 		}
 
-		SkiaYoga.attachViewRoot(nativeId, rootNode)
+		getSkiaYoga().attachViewRoot(nativeId, rootNode)
 		syncNativeAnimationState()
 	}, [nativeId, syncNativeAnimationState])
 
@@ -330,8 +332,9 @@ export function YogaCanvas({
 			flushProfileSample(true)
 			activeContinuousNodes.clear()
 			activeNativeAnimationNodes.clear()
-			SkiaYoga.setViewAnimating(nativeId, false)
-			SkiaYoga.detachViewRoot(nativeId)
+			const skiaYoga = getSkiaYoga()
+			skiaYoga.setViewAnimating(nativeId, false)
+			skiaYoga.detachViewRoot(nativeId)
 			reconciler.updateContainer(null, root, null, null)
 			// @ts-ignore
 			reconciler.flushSyncWork()
