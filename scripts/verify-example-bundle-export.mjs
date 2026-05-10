@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 
 import { spawn } from "node:child_process"
-import { existsSync, mkdtempSync, realpathSync, rmSync } from "node:fs"
-import { tmpdir } from "node:os"
+import { realpathSync, rmSync } from "node:fs"
 import path from "node:path"
+import {
+	createVerifierTempDir,
+	formatVerifierTempDiagnostics,
+} from "./verifier-temp-utils.mjs"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
 const exampleDir = path.join(rootDir, "example")
 const timeoutMs = 180_000
-const tempParentDir = existsSync("/tmp") ? "/tmp" : tmpdir()
-const outputDir = mkdtempSync(path.join(tempParentDir, "rnskia-example-export."))
+const outputDir = createVerifierTempDir("rnskia-example-export.")
 
 let activeChild = null
 let outputCleaned = false
@@ -101,13 +103,23 @@ function runBounded(command, args, options) {
 			activeChild = null
 
 			if (timedOut) {
-				reject(new Error(`${command} ${args.join(" ")} timed out after ${options.timeoutMs / 1000}s.`))
+				reject(new Error([
+					`${command} ${args.join(" ")} timed out after ${options.timeoutMs / 1000}s.`,
+					`diagnostics:\n${formatVerifierTempDiagnostics([
+						{ label: "example bundle output", targetPath: outputDir },
+					])}`,
+				].join("\n\n")))
 				return
 			}
 
 			if (code !== 0) {
 				const detail = signal === null ? `exit code ${code}` : `signal ${signal}`
-				reject(new Error(`${command} ${args.join(" ")} failed with ${detail}.`))
+				reject(new Error([
+					`${command} ${args.join(" ")} failed with ${detail}.`,
+					`diagnostics:\n${formatVerifierTempDiagnostics([
+						{ label: "example bundle output", targetPath: outputDir },
+					])}`,
+				].join("\n\n")))
 				return
 			}
 

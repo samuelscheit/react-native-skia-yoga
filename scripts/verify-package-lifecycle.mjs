@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 
-import { accessSync, constants, mkdirSync, mkdtempSync, rmSync, symlinkSync } from "node:fs"
-import { tmpdir } from "node:os"
+import { accessSync, constants, mkdirSync, rmSync, symlinkSync } from "node:fs"
 import path from "node:path"
 import { spawnSync } from "node:child_process"
+import {
+	createVerifierTempDir,
+	formatVerifierTempDiagnostics,
+} from "./verifier-temp-utils.mjs"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
-const tmpDir = mkdtempSync(path.join(tmpdir(), "rnskia-package-lifecycle-"))
+const tmpDir = createVerifierTempDir("rnskia-package-lifecycle-")
 
 try {
 	const verifierEnv = createBunHiddenEnv()
@@ -28,6 +31,10 @@ try {
 	const packedTarball = path.join(tmpDir, packedEntry.filename)
 	run("npm", ["pack", "--pack-destination", tmpDir], {
 		cwd: rootDir,
+		diagnostics: () =>
+			formatVerifierTempDiagnostics([
+				{ label: "package lifecycle temp root", targetPath: tmpDir },
+			]),
 		env: verifierEnv,
 	})
 
@@ -39,7 +46,7 @@ try {
 	)
 	assertNoLifecycleHooks(packedPackageJson)
 
-	const consumerDir = mkdtempSync(path.join(tmpdir(), "rnskia-package-consumer-"))
+	const consumerDir = createVerifierTempDir("rnskia-package-consumer-")
 	try {
 		run("npm", ["init", "-y"], {
 			cwd: consumerDir,
@@ -82,8 +89,9 @@ function assertNoLifecycleHooks(packageJson) {
 }
 
 function run(command, args, options) {
+	const { diagnostics, ...spawnOptions } = options
 	const result = spawnSync(command, args, {
-		...options,
+		...spawnOptions,
 		encoding: "utf8",
 	})
 
@@ -96,6 +104,7 @@ function run(command, args, options) {
 		const stderr = result.stderr.trim()
 		throw new Error([
 			`${command} ${args.join(" ")} failed with exit code ${result.status}.`,
+			diagnostics ? `diagnostics:\n${diagnostics()}` : "",
 			stdout ? `stdout:\n${stdout}` : "",
 			stderr ? `stderr:\n${stderr}` : "",
 		].filter(Boolean).join("\n\n"))

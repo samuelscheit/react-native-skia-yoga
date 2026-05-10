@@ -17,15 +17,18 @@ import {
 	writeFileSync,
 } from "node:fs"
 import { createRequire } from "node:module"
-import { tmpdir } from "node:os"
 import path from "node:path"
+import {
+	formatPathDiagnostic,
+	getVerifierTempParent,
+} from "./verifier-temp-utils.mjs"
 
 const checkoutRootDir = path.resolve(import.meta.dirname, "..")
 const checkoutExampleDir = path.join(checkoutRootDir, "example")
 const packageName = "react-native-skia-yoga"
 const timeoutMs = 300_000
 const metadataTimeoutMs = 120_000
-const tempParentDir = existsSync("/tmp") ? "/tmp" : tmpdir()
+const tempParentDir = getVerifierTempParent()
 const preserveLocalProbeArg = "--probe-preserve-local-artifacts"
 
 const sourceEntriesToCopy = [
@@ -602,7 +605,9 @@ function assertExpoReactNativeConfig(workspace, platform) {
 
 function assertDependency(config, label, workspace) {
 	const dependency = config.dependencies?.[packageName]
-	assert.ok(dependency, `${label} did not include ${packageName}.`)
+	if (!dependency) {
+		throw new Error(formatMissingDependencyDiagnostics(config, label, workspace))
+	}
 	assert.equal(
 		dependency.name,
 		packageName,
@@ -616,6 +621,27 @@ function assertDependency(config, label, workspace) {
 		)
 	}
 	return dependency
+}
+
+function formatMissingDependencyDiagnostics(config, label, workspace) {
+	const dependencyKeys = Object.keys(config.dependencies ?? {}).sort()
+	const projectKeys = Object.keys(config.project ?? {}).sort()
+	const packageLinkPath = path.join(
+		workspace.exampleDir,
+		"node_modules",
+		packageName,
+	)
+	return [
+		`${label} did not include ${packageName}.`,
+		`Temporary workspace root: ${workspace.rootDir}`,
+		`Temporary example dir: ${workspace.exampleDir}`,
+		`Config root: ${config.root ?? "(missing)"}`,
+		`Config project keys: ${projectKeys.length === 0 ? "(none)" : projectKeys.join(", ")}`,
+		`Config dependency keys: ${dependencyKeys.length === 0 ? "(none)" : dependencyKeys.join(", ")}`,
+		`Expected dependency root: ${workspace.rootDir}`,
+		formatPathDiagnostic("temporary example node_modules", path.join(workspace.exampleDir, "node_modules")),
+		formatPathDiagnostic("temporary package link", packageLinkPath),
+	].join("\n")
 }
 
 function assertIosPodspec(ios, label, workspace) {
@@ -679,7 +705,7 @@ function assertAndroidAutolinking(android, label, workspace) {
 }
 
 function createSentinelFixtures() {
-	const sentinelName = "__rnskia_native_generation_preservation_sentinel__"
+	const sentinelName = `__rnskia_native_generation_preservation_sentinel__-${process.pid}-${Date.now()}`
 	const fixtures = [
 		{
 			dir: path.join(checkoutExampleDir, "ios"),
@@ -765,8 +791,16 @@ function listDirectoryEntries(dir, ignoredEntryName) {
 		return []
 	}
 	return readdirSync(dir)
-		.filter((entry) => entry !== ignoredEntryName)
+		.filter((entry) => !isPreservationSentinelEntry(entry, ignoredEntryName))
 		.sort()
+}
+
+function isPreservationSentinelEntry(entry, ignoredEntryName) {
+	return (
+		entry === ignoredEntryName ||
+		entry === "__rnskia_native_generation_preservation_sentinel__" ||
+		entry.startsWith("__rnskia_native_generation_preservation_sentinel__-")
+	)
 }
 
 function runCaptured(command, args, options) {
