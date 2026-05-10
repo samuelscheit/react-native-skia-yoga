@@ -166,9 +166,9 @@ try {
 	console.log("YogaNode native command/render verifier passed:")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, AnimatedDouble.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
 	console.log("- The executable created a JSC runtime, installed it as RN Skia's main runtime, converted simple NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), and executed real YogaNode::setCommand().")
-	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, and PathCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
-	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, point drawing, line stroke drawing, oval/circle/rrect fills, bounded blur-mask-filter inheritance, and real JsiSkPath host-object path conversion/rendering.")
-	console.log("- Proof boundary: host-native macOS C++ command construction and raster behavior for deterministic geometry/filter/path commands only. This does not prove Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, RNGH native delivery, dynamic Worklets-backed AnimatedDouble resolution, or text/paragraph/image command fidelity.")
+	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, and ImageCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
+	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, point drawing, line stroke drawing, oval/circle/rrect fills, bounded blur-mask-filter inheritance, real JsiSkPath host-object path conversion/rendering, and real JsiSkImage host-object image conversion/rendering.")
+	console.log("- Proof boundary: host-native macOS C++ command construction and raster behavior for deterministic geometry/filter/path/image commands only. This does not prove Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, RNGH native delivery, dynamic Worklets-backed AnimatedDouble resolution, image decoding/assets/loading, full image-fit coverage, or text/paragraph command fidelity.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -427,6 +427,7 @@ function nativeProbeSource() {
 #include <include/core/SkPath.h>
 #include <include/core/SkPixmap.h>
 #include <include/core/SkRect.h>
+#include <include/core/SkSamplingOptions.h>
 #include <include/core/SkSurface.h>
 #include <jsi/jsi.h>
 #include <yoga/Yoga.h>
@@ -574,6 +575,29 @@ sk_sp<SkSurface> makeSurface(int width, int height, SkColor clearColor = SK_Colo
     return surface;
 }
 
+sk_sp<SkImage> makeQuadrantImage()
+{
+    auto surface = makeSurface(4, 4);
+    auto* canvas = surface->getCanvas();
+    auto paint = colorPaint(SK_ColorRED);
+    canvas->drawRect(SkRect::MakeXYWH(0.0f, 0.0f, 2.0f, 2.0f), paint);
+
+    paint.setColor(SK_ColorGREEN);
+    canvas->drawRect(SkRect::MakeXYWH(2.0f, 0.0f, 2.0f, 2.0f), paint);
+
+    paint.setColor(SK_ColorBLUE);
+    canvas->drawRect(SkRect::MakeXYWH(0.0f, 2.0f, 2.0f, 2.0f), paint);
+
+    paint.setColor(SK_ColorYELLOW);
+    canvas->drawRect(SkRect::MakeXYWH(2.0f, 2.0f, 2.0f, 2.0f), paint);
+
+    auto image = surface->makeImageSnapshot();
+    expect(image != nullptr, "synthetic quadrant SkImage must be created");
+    expect(image->width() == 4, "synthetic quadrant SkImage width");
+    expect(image->height() == 4, "synthetic quadrant SkImage height");
+    return image;
+}
+
 SkColor pixelAt(const sk_sp<SkSurface>& surface, int x, int y)
 {
     SkPixmap pixmap;
@@ -718,6 +742,31 @@ NodeCommand pathCommand(jsi::Runtime& runtime)
 
     jsi::Object command(runtime);
     command.setProperty(runtime, "type", "path");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand imageCommand(jsi::Runtime& runtime)
+{
+    jsi::Object sampling(runtime);
+    sampling.setProperty(
+        runtime,
+        "filter",
+        static_cast<double>(static_cast<int>(SkFilterMode::kNearest)));
+
+    auto imageHostObject = jsi::Object::createFromHostObject(
+        runtime,
+        std::make_shared<RNSkia::JsiSkImage>(
+            margelo::nitro::RNSkiaYoga::GetPlatformContext(),
+            makeQuadrantImage()));
+
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "fit", "fill");
+    data.setProperty(runtime, "image", std::move(imageHostObject));
+    data.setProperty(runtime, "sampling", std::move(sampling));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "image");
     command.setProperty(runtime, "data", std::move(data));
     return convertCommand(runtime, std::move(command));
 }
@@ -926,6 +975,38 @@ void assertPathHostObjectCommandRender(jsi::Runtime& runtime)
     expectColorNear(pixelAt(surface, 22, 14), SK_ColorTRANSPARENT, 0, "path render remains bounded by its scaled path");
 }
 
+void assertImageHostObjectCommandRender(jsi::Runtime& runtime)
+{
+    auto root = makeYogaNode(
+        groupStyle(8.0, 8.0),
+        imageCommand(runtime));
+
+    expect(root->_commandKind == YogaNodeCommandKind::IMAGE, "setCommand constructs a real ImageCmd");
+    auto* imageCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::ImageCmd*>(root->_command.get());
+    expect(imageCmd != nullptr, "installed command has ImageCmd type");
+    expect(imageCmd->props.image.has_value(), "ImageCmd keeps the converted SkImage host object payload");
+    expect(imageCmd->props.image.value() != nullptr, "ImageCmd converted SkImage payload is non-null");
+    expect(imageCmd->props.image.value()->width() == 4, "ImageCmd converted SkImage width");
+    expect(imageCmd->props.image.value()->height() == 4, "ImageCmd converted SkImage height");
+    expect(imageCmd->props.fit == "fill", "ImageCmd keeps the requested fill fit mode");
+
+    auto surface = makeSurface(12, 12);
+    renderNode(root, surface);
+
+    expectNear(root->_layout.width, 8.0, "image layout width");
+    expectNear(root->_layout.height, 8.0, "image layout height");
+    expect(imageCmd->props.rect.has_value(), "ImageCmd layout resolves a draw rect");
+    expectNear(imageCmd->props.rect->width(), 8.0, "ImageCmd draw rect width");
+    expectNear(imageCmd->props.rect->height(), 8.0, "ImageCmd draw rect height");
+
+    expectColorNear(pixelAt(surface, 1, 1), SK_ColorRED, 0, "fill image renders the red source quadrant");
+    expectColorNear(pixelAt(surface, 6, 1), SK_ColorGREEN, 0, "fill image renders the green source quadrant");
+    expectColorNear(pixelAt(surface, 1, 6), SK_ColorBLUE, 0, "fill image renders the blue source quadrant");
+    expectColorNear(pixelAt(surface, 6, 6), SK_ColorYELLOW, 0, "fill image renders the yellow source quadrant");
+    expectColorNear(pixelAt(surface, 9, 1), SK_ColorTRANSPARENT, 0, "image render remains bounded by the Yoga layout width");
+    expectColorNear(pixelAt(surface, 1, 9), SK_ColorTRANSPARENT, 0, "image render remains bounded by the Yoga layout height");
+}
+
 void assertConverterErrorPath(jsi::Runtime& runtime)
 {
     jsi::Object command(runtime);
@@ -946,6 +1027,33 @@ void assertConverterErrorPath(jsi::Runtime& runtime)
     fail("path command conversion without a JsiSkPath host object must fail in this host probe");
 }
 
+void assertConverterErrorImage(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "fit", "fill");
+    data.setProperty(runtime, "image", jsi::Object(runtime));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "image");
+    command.setProperty(runtime, "data", std::move(data));
+    jsi::Value commandValue(runtime, command);
+
+    try {
+        (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
+    } catch (const jsi::JSError& error) {
+        const auto message = error.getMessage();
+        expect(
+            message.find("NodeCommand conversion failed for type \"image\"") != std::string::npos,
+            "image conversion failure should be scoped to NodeCommand payload conversion");
+        expect(
+            message.find("SkImage must be a host object") != std::string::npos,
+            "image conversion failure should require a real JsiSkImage host object");
+        return;
+    }
+
+    fail("image command conversion with a plain JS image object must fail in this host probe");
+}
+
 } // namespace
 
 int main()
@@ -963,7 +1071,9 @@ int main()
     assertRRectCommandRender(*runtime);
     assertBlurMaskFilterCommandRender(*runtime);
     assertPathHostObjectCommandRender(*runtime);
+    assertImageHostObjectCommandRender(*runtime);
     assertConverterErrorPath(*runtime);
+    assertConverterErrorImage(*runtime);
 
     std::cout << "YogaNode native command/render host probe passed\n";
     return 0;
