@@ -39,6 +39,7 @@
 		"check:package-lifecycle": "node ./scripts/verify-package-lifecycle.mjs",
 		"check:package-surface": "node ./scripts/verify-package-surface.mjs",
 		"check:package-typescript-consumer": "node ./scripts/verify-package-typescript-consumer.mjs",
+		"check:package-codegen-autolinking": "node ./scripts/verify-package-codegen-autolinking.mjs",
 		"check:yogacanvas-lifecycle-runtime": "node ./scripts/verify-yogacanvas-lifecycle-runtime.mjs",
 		"check:gesture-interaction-runtime": "node ./scripts/verify-gesture-interaction-runtime.mjs",
 		"check:reconciler-animated-bindings": "node ./scripts/verify-reconciler-animated-bindings.mjs",
