@@ -390,7 +390,6 @@ public:
 
     jsi::Value draw(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
     jsi::Value hitTest(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
-    jsi::Value setStyleRaw(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
     jsi::Value setInteractionConfig(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count);
     void renderToContext(RNSkia::DrawingCtx& ctx);
     void drawInternal(RNSkia::DrawingCtx& ctx);
@@ -441,7 +440,6 @@ public:
             prototype.registerRawHybridMethod("draw", 0, &YogaNode::draw);
             prototype.registerRawHybridMethod("getChildren", 0, &YogaNode::getChildren);
             prototype.registerRawHybridMethod("hitTest", 2, &YogaNode::hitTest);
-            prototype.registerRawHybridMethod("setStyle", 1, &YogaNode::setStyleRaw);
             prototype.registerRawHybridMethod("setInteractionConfig", 1, &YogaNode::setInteractionConfig);
         });
     }
