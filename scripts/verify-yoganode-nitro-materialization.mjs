@@ -171,8 +171,9 @@ try {
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, generated HybridYogaNodeSpec.cpp, Nitro HybridObject/prototype/cache sources, platform ThreadUtils, React Native JSC, upstream Yoga sources, RN Skia macOS archives, Worklets shared-item sources, ColorParser, PlatformContextAccessor, AnimatedDouble, and Nitro/JSI helper sources.")
 	console.log("- The executable created a shared YogaNode, called YogaNode::toObject(runtime), asserted the returned value is a JS object with NativeState wrapping the original YogaNode, and asserted repeated toObject(runtime) returns the cached JS object.")
 	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height), computeLayout(width, height), and the layout getter.")
-	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, NodeStyle width/height state, Yoga layout computation, and generated layout getter values.")
-	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization and selected generated YogaNode method/getter execution only; this does not prove Nitro module registry install, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, RNGH native delivery, dynamic Worklets-backed AnimatedDouble, image assets/decoding/loading, or exact render fidelity.")
+	console.log("- The executable used fresh materialized YogaNode objects to invoke generated JS-facing setCommand(line), setCommand(points), and setCommand(path) wrappers, preserving the native no-command-kind-change invariant.")
+	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, NodeStyle width/height state, Yoga layout computation, and generated layout getter values.")
+	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization and selected generated YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, dynamic Worklets-backed AnimatedDouble, image assets/decoding/loading, or exact render fidelity.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -184,6 +185,12 @@ function assertCurrentGapAndRisk() {
 	)
 	const worker078Report = readProjectFile(
 		"worker-progress/worker-078-yoganode-jsi-raw-methods.md",
+	)
+	const worker088Report = readProjectFile(
+		"worker-progress/worker-088-nitro-yoganode-materialization.md",
+	)
+	const worker099Report = readProjectFile(
+		"worker-progress/worker-099-post-098-root-cause-audit.md",
 	)
 	const generatedSpec = readProjectFile(
 		"nitrogen/generated/shared/c++/HybridYogaNodeSpec.cpp",
@@ -224,6 +231,11 @@ function assertCurrentGapAndRisk() {
 			worker078Report.includes("getRuntimeId") &&
 			worker078Report.includes("HybridObjectPrototype::createPrototype"),
 		"Worker 078 report must retain the prior toObject/prototype crash evidence.",
+	)
+	assert(
+		worker088Report.includes("setCommand({ type: \"group\"") &&
+			worker099Report.includes("current `check:yoganode-nitro-materialization` invokes generated `setCommand(group)` only"),
+		"Accepted reports must retain the pre-expansion generated setCommand(group)-only materialization gap.",
 	)
 	for (const member of ["setCommand", "setStyle", "computeLayout", "layout"]) {
 		assert(
@@ -500,8 +512,13 @@ function nativeProbeSource() {
 #include <memory>
 #include <optional>
 #include <string>
+#include <utility>
 #include <variant>
 
+#include <include/core/SkCanvas.h>
+#include <include/core/SkPaint.h>
+#include <include/core/SkPath.h>
+#include <include/core/SkRect.h>
 #include <jsi/jsi.h>
 #include <yoga/Yoga.h>
 
@@ -512,7 +529,10 @@ function nativeProbeSource() {
 
 using margelo::nitro::RNSkiaYoga::GroupCmd;
 using margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec;
+using margelo::nitro::RNSkiaYoga::LineCmd;
 using margelo::nitro::RNSkiaYoga::NodeStyle;
+using margelo::nitro::RNSkiaYoga::PathCmd;
+using margelo::nitro::RNSkiaYoga::PointsCmd;
 using margelo::nitro::RNSkiaYoga::YogaNode;
 using margelo::nitro::RNSkiaYoga::YogaNodeCommandKind;
 
@@ -532,6 +552,12 @@ void expectNear(double actual, double expected, const char* message)
         std::cerr << "FAIL: " << message << " expected=" << expected << " actual=" << actual << "\n";
         std::abort();
     }
+}
+
+void expectOptionalFloatNear(const std::optional<float>& actual, double expected, const char* message)
+{
+    expect(actual.has_value(), message);
+    expectNear(*actual, expected, message);
 }
 
 std::string errorMessage(const jsi::JSError& error)
@@ -567,6 +593,69 @@ jsi::Object makeGroupCommand(jsi::Runtime& runtime)
     return command;
 }
 
+jsi::Object makePointObject(jsi::Runtime& runtime, double x, double y)
+{
+    jsi::Object point(runtime);
+    point.setProperty(runtime, "x", x);
+    point.setProperty(runtime, "y", y);
+    return point;
+}
+
+jsi::Object makeLineCommand(jsi::Runtime& runtime)
+{
+    jsi::Object command(runtime);
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "from", makePointObject(runtime, 1.0, 2.0));
+    data.setProperty(runtime, "to", makePointObject(runtime, 11.0, 22.0));
+    command.setProperty(runtime, "type", "line");
+    command.setProperty(runtime, "data", data);
+    return command;
+}
+
+jsi::Object makePointsCommand(jsi::Runtime& runtime)
+{
+    jsi::Array points(runtime, 2);
+    points.setValueAtIndex(runtime, 0, jsi::Value(runtime, makePointObject(runtime, 3.0, 4.0)));
+    points.setValueAtIndex(runtime, 1, jsi::Value(runtime, makePointObject(runtime, 13.0, 14.0)));
+
+    jsi::Object command(runtime);
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "pointMode", "lines");
+    data.setProperty(runtime, "points", points);
+    command.setProperty(runtime, "type", "points");
+    command.setProperty(runtime, "data", data);
+    return command;
+}
+
+jsi::Object makePublicPathStrokeCommand(jsi::Runtime& runtime)
+{
+    SkPath path;
+    path.addRect(SkRect::MakeXYWH(0.0f, 0.0f, 10.0f, 6.0f));
+
+    jsi::Object stroke(runtime);
+    stroke.setProperty(runtime, "width", 4.0);
+    stroke.setProperty(runtime, "miter_limit", 7.0);
+    stroke.setProperty(runtime, "precision", 1.25);
+    stroke.setProperty(
+        runtime,
+        "join",
+        static_cast<double>(static_cast<int>(SkPaint::Join::kMiter_Join)));
+    stroke.setProperty(
+        runtime,
+        "cap",
+        static_cast<double>(static_cast<int>(SkPaint::Cap::kSquare_Cap)));
+
+    jsi::Object command(runtime);
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
+    data.setProperty(runtime, "stroke", stroke);
+    data.setProperty(runtime, "trimStart", 0.0);
+    data.setProperty(runtime, "trimEnd", 1.0);
+    command.setProperty(runtime, "type", "path");
+    command.setProperty(runtime, "data", data);
+    return command;
+}
+
 jsi::Object makeInvalidCommand(jsi::Runtime& runtime)
 {
     jsi::Object command(runtime);
@@ -588,6 +677,44 @@ void expectObjectFunction(jsi::Runtime& runtime, const jsi::Object& object, cons
     const auto value = object.getProperty(runtime, name);
     expect(value.isObject(), "generated member must be an object");
     expect(value.asObject(runtime).isFunction(runtime), "generated member must be a function");
+}
+
+void expectNativeStateWrapsOriginal(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const std::shared_ptr<YogaNode>& node)
+{
+    expect(object.hasNativeState(runtime), "materialized YogaNode object must have NativeState");
+
+    auto nativeState = object.getNativeState<jsi::NativeState>(runtime);
+    auto materializedYogaNode = std::dynamic_pointer_cast<YogaNode>(nativeState);
+    expect(materializedYogaNode != nullptr, "NativeState must dynamic_cast to YogaNode");
+    expect(materializedYogaNode.get() == node.get(), "NativeState must wrap the original YogaNode");
+    auto materializedSpec = std::dynamic_pointer_cast<HybridYogaNodeSpec>(nativeState);
+    expect(materializedSpec != nullptr, "NativeState must dynamic_cast to generated HybridYogaNodeSpec");
+}
+
+struct MaterializedYogaNode {
+    std::shared_ptr<YogaNode> node;
+    jsi::Object object;
+};
+
+MaterializedYogaNode materializeYogaNode(jsi::Runtime& runtime)
+{
+    auto node = std::make_shared<YogaNode>();
+    jsi::Value objectValue = node->toObject(runtime);
+    expect(objectValue.isObject(), "YogaNode::toObject(runtime) must return a JS object");
+    jsi::Object object = objectValue.asObject(runtime);
+    expectNativeStateWrapsOriginal(runtime, object, node);
+    return MaterializedYogaNode { std::move(node), std::move(object) };
+}
+
+void disposeMaterializedObject(jsi::Runtime& runtime, const jsi::Object& object)
+{
+    auto dispose = object.getPropertyAsFunction(runtime, "dispose");
+    const jsi::Value* noArgs = nullptr;
+    auto disposeResult = dispose.callWithThis(runtime, object, noArgs, static_cast<size_t>(0));
+    expect(disposeResult.isUndefined(), "generated base dispose must return undefined");
 }
 
 void callFunctionWithOneObject(
@@ -625,6 +752,88 @@ double getNumberProperty(jsi::Runtime& runtime, const jsi::Object& object, const
     const auto value = object.getProperty(runtime, name);
     expect(value.isNumber(), "layout property must be numeric");
     return value.asNumber();
+}
+
+void assertGeneratedLineSetCommand(jsi::Runtime& runtime)
+{
+    auto materialized = materializeYogaNode(runtime);
+    expectObjectFunction(runtime, materialized.object, "setCommand");
+    auto setCommand = materialized.object.getPropertyAsFunction(runtime, "setCommand");
+    auto command = makeLineCommand(runtime);
+    callFunctionWithOneObject(
+        runtime,
+        materialized.object,
+        setCommand,
+        command,
+        "generated setCommand(line) must return undefined");
+
+    expect(materialized.node->_commandKind == YogaNodeCommandKind::LINE, "generated setCommand(line) must install LineCmd kind");
+    expect(materialized.node->_command != nullptr, "generated setCommand(line) must install native command");
+    auto* lineCmd = dynamic_cast<LineCmd*>(materialized.node->_command.get());
+    expect(lineCmd != nullptr, "generated setCommand(line) must install a real LineCmd");
+    expectNear(lineCmd->basePoint1().x(), 1.0, "generated setCommand(line) must keep nested from.x");
+    expectNear(lineCmd->basePoint1().y(), 2.0, "generated setCommand(line) must keep nested from.y");
+    expectNear(lineCmd->basePoint2().x(), 11.0, "generated setCommand(line) must keep nested to.x");
+    expectNear(lineCmd->basePoint2().y(), 22.0, "generated setCommand(line) must keep nested to.y");
+    disposeMaterializedObject(runtime, materialized.object);
+}
+
+void assertGeneratedPointsSetCommand(jsi::Runtime& runtime)
+{
+    auto materialized = materializeYogaNode(runtime);
+    expectObjectFunction(runtime, materialized.object, "setCommand");
+    auto setCommand = materialized.object.getPropertyAsFunction(runtime, "setCommand");
+    auto command = makePointsCommand(runtime);
+    callFunctionWithOneObject(
+        runtime,
+        materialized.object,
+        setCommand,
+        command,
+        "generated setCommand(points) must return undefined");
+
+    expect(materialized.node->_commandKind == YogaNodeCommandKind::POINTS, "generated setCommand(points) must install PointsCmd kind");
+    expect(materialized.node->_command != nullptr, "generated setCommand(points) must install native command");
+    auto* pointsCmd = dynamic_cast<PointsCmd*>(materialized.node->_command.get());
+    expect(pointsCmd != nullptr, "generated setCommand(points) must install a real PointsCmd");
+    expect(pointsCmd->props.mode == SkCanvas::PointMode::kLines_PointMode, "generated setCommand(points) must keep pointMode");
+    const auto& basePoints = pointsCmd->basePoints();
+    expect(basePoints.size() == 2, "generated setCommand(points) must keep array payload size");
+    expectNear(basePoints[0].x(), 3.0, "generated setCommand(points) must keep points[0].x");
+    expectNear(basePoints[0].y(), 4.0, "generated setCommand(points) must keep points[0].y");
+    expectNear(basePoints[1].x(), 13.0, "generated setCommand(points) must keep points[1].x");
+    expectNear(basePoints[1].y(), 14.0, "generated setCommand(points) must keep points[1].y");
+    disposeMaterializedObject(runtime, materialized.object);
+}
+
+void assertGeneratedPublicPathStrokeSetCommand(jsi::Runtime& runtime)
+{
+    auto materialized = materializeYogaNode(runtime);
+    expectObjectFunction(runtime, materialized.object, "setCommand");
+    auto setCommand = materialized.object.getPropertyAsFunction(runtime, "setCommand");
+    auto command = makePublicPathStrokeCommand(runtime);
+    callFunctionWithOneObject(
+        runtime,
+        materialized.object,
+        setCommand,
+        command,
+        "generated setCommand(path public stroke) must return undefined");
+
+    expect(materialized.node->_commandKind == YogaNodeCommandKind::PATH, "generated setCommand(path) must install PathCmd kind");
+    expect(materialized.node->_command != nullptr, "generated setCommand(path) must install native command");
+    auto* pathCmd = dynamic_cast<PathCmd*>(materialized.node->_command.get());
+    expect(pathCmd != nullptr, "generated setCommand(path) must install a real PathCmd");
+    expect(pathCmd->props.stroke.has_value(), "generated setCommand(path) must keep public stroke payload");
+    const auto& stroke = pathCmd->props.stroke.value();
+    expectOptionalFloatNear(stroke.width, 4.0, "generated setCommand(path) must keep stroke.width");
+    expectOptionalFloatNear(stroke.miter_limit, 7.0, "generated setCommand(path) must keep stroke.miter_limit");
+    expectOptionalFloatNear(stroke.precision, 1.25, "generated setCommand(path) must keep stroke.precision");
+    expect(
+        stroke.join.has_value() && stroke.join.value() == SkPaint::Join::kMiter_Join,
+        "generated setCommand(path) must keep stroke.join");
+    expect(
+        stroke.cap.has_value() && stroke.cap.value() == SkPaint::Cap::kSquare_Cap,
+        "generated setCommand(path) must keep stroke.cap");
+    disposeMaterializedObject(runtime, materialized.object);
 }
 
 } // namespace
@@ -728,11 +937,13 @@ int main()
         "NodeCommand.data must be an object",
         "generated setCommand must reject invalid command payload");
 
+    std::cerr << "probe: call generated setCommand breadth cases" << std::endl;
+    assertGeneratedLineSetCommand(*runtime);
+    assertGeneratedPointsSetCommand(*runtime);
+    assertGeneratedPublicPathStrokeSetCommand(*runtime);
+
     std::cerr << "probe: dispose materialized object before runtime teardown" << std::endl;
-    auto dispose = object.getPropertyAsFunction(*runtime, "dispose");
-    const jsi::Value* noArgs = nullptr;
-    auto disposeResult = dispose.callWithThis(*runtime, object, noArgs, static_cast<size_t>(0));
-    expect(disposeResult.isUndefined(), "generated base dispose must return undefined");
+    disposeMaterializedObject(*runtime, object);
     node.reset();
     RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(nullptr);
 
