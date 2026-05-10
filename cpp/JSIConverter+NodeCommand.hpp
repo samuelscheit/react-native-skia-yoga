@@ -42,6 +42,19 @@ inline std::optional<T> getOptionalProperty(jsi::Runtime& runtime, const jsi::Ob
 }
 
 template <typename T>
+inline std::optional<T> getOptionalPropertyWithAlias(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* publicKey,
+    const char* aliasKey)
+{
+    if (object.hasProperty(runtime, publicKey)) {
+        return getOptionalProperty<T>(runtime, object, publicKey);
+    }
+    return getOptionalProperty<T>(runtime, object, aliasKey);
+}
+
+template <typename T>
 inline T getRequiredProperty(jsi::Runtime& runtime, const jsi::Object& object, const char* key)
 {
     return JSIConverter<T>::fromJSI(runtime, object.getProperty(runtime, key));
@@ -244,7 +257,7 @@ inline std::optional<margelo::nitro::RNSkiaYoga::PathCommandData::StrokeOptsData
     auto object = value.asObject(runtime);
     return margelo::nitro::RNSkiaYoga::PathCommandData::StrokeOptsData {
         .width = getOptionalProperty<float>(runtime, object, "width"),
-        .miterLimit = getOptionalProperty<float>(runtime, object, "miterLimit"),
+        .miterLimit = getOptionalPropertyWithAlias<float>(runtime, object, "miter_limit", "miterLimit"),
         .precision = getOptionalProperty<float>(runtime, object, "precision"),
         .join = parseStrokeJoin(runtime, object.getProperty(runtime, "join")),
         .cap = parseStrokeCap(runtime, object.getProperty(runtime, "cap")),
