@@ -1915,10 +1915,28 @@ Last updated: 2026-05-10
   - Killed `rnskia-worker-080-yoganode-native-commands-render`.
   - Removed `../worker-080-yoganode-native-commands-render`.
   - Deleted branch `worker/080-yoganode-native-commands-render`.
+- Created `worker-081-post-080-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and wrote the worker 081 prompt.
+- Launched `rnskia-worker-081-post-080-root-cause-audit` as a read-only top-level tmux subprocess to audit post-worker-080 state and select the next strongest unblocked root-cause target.
+- Worker 081 passed the visible `GOAL_CREATED: Audit post-worker-080 state and select the next strongest unblocked root-cause target.` gate as the first worker message.
+- Worker 081 completed the post-worker-080 audit and wrote `worker-progress/worker-081-post-080-root-cause-audit.md`.
+- Worker 081 reran `npm run check:feasible-matrix` in its worktree; all 26 commands passed in `3m 56s`, including command 17 `npm run check:yoganode-native-commands-render`.
+- Worker 081 reconfirmed local platform-native blockers: Command Line Tools-only Xcode selection, full Xcode unavailable, CocoaPods unavailable, Java runtime missing, `ANDROID_HOME`/`ANDROID_SDK_ROOT` unset, `adb`/`cmake`/`ninja`/`gradle` missing, and no tracked/generated `example/ios`, `example/android`, or `example/.expo` in the worker worktree.
+- Worker 081 selected deterministic host-native YogaNode command/render expansion as the next strongest target: extend worker 080's real `YogaNode::setCommand()` / `renderToContext()` raster proof beyond `rect`/`group`/`points` to stable command classes such as `line`, `oval`, numeric `circle`, numeric `rrect`, bounded `blurMaskFilter`, and real `RNSkia::JsiSkPath` host-object `path` conversion/rendering if stable.
+- Worker 081's first nested challenger attempt was inconclusive and no acceptance evidence was claimed from it; the second nested challenger completed and agreed with deterministic command/render expansion, while warning against path plain-JS false positives, dynamic Worklets overclaims, and broad text/paragraph/image scope.
+- Orchestrator acceptance for worker 081 passed: exact goal gate check, report review, `git diff --check`, and final tracked status with only the intended report before commit.
+- Committed worker 081 as `4ee42e9 Add post-worker-080 root cause audit`.
+- Merged worker 081 into `main` as `b19a1c1 Merge worker 081 post-080 root cause audit`.
+- Main post-merge verification after worker 081 report integration:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - Final main tracked status was clean; known ignored local artifacts were left untouched.
+- Cleanup after worker 081 acceptance:
+  - Killed `rnskia-worker-081-post-080-root-cause-audit`.
+  - Removed `../worker-081-post-080-root-cause-audit`.
+  - Deleted branch `worker/081-post-080-root-cause-audit`.
 
 ## Active Workers
 
-- None after worker 080 cleanup.
+- None after worker 081 cleanup.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2019,10 +2037,11 @@ Accepted worker reports:
 - `worker-progress/worker-078-yoganode-jsi-raw-methods.md`
 - `worker-progress/worker-079-post-078-root-cause-audit.md`
 - `worker-progress/worker-080-yoganode-native-commands-render.md`
+- `worker-progress/worker-081-post-080-root-cause-audit.md`
 
 ## Pending Workers
 
-- `rnskia-worker-081-post-080-root-cause-audit`: planned read-only audit worker for post-worker-080 target selection.
+- `rnskia-worker-082-yoganode-more-native-commands-render`: planned implementation worker for deterministic remaining YogaNode command/render coverage.
 
 ## Decisions
 
@@ -2046,12 +2065,13 @@ Accepted worker reports:
 - YogaNode hybrid/JSI boundary: worker 078 closed the duplicate raw/generated `setStyle` registration target by removing the manual raw owner, adding `check:yoganode-jsi-raw-methods`, and expanding the feasible matrix to 25 commands. Its proof covers source-level raw/generated method ownership plus host-native compile/link and direct host-JSC execution of remaining raw `setInteractionConfig()` / `hitTest()` paths, but not Nitro `toObject()`/prototype materialization or full platform app runtime.
 - Post-worker-078 target selection: worker 079 reconfirmed the 25-command matrix and local platform-native blockers, accepted worker 078's proof boundary, and selected host-native YogaNode command/render verification because current checks still avoid real `YogaNode::setCommand()`, real command classes, and raster rendering assertions.
 - YogaNode command/render verification: worker 080 added `check:yoganode-native-commands-render`, proving selected simple `JSIConverter<NodeCommand>::fromJSI(...)` payloads, real `YogaNode::setCommand()`, real `RectCmd`/`GroupCmd`/`PointsCmd` raster rendering through `renderToContext()`, parent/child Yoga-derived coordinates, group raster-cache reuse/invalidation, and pixel assertions. The feasible matrix now has 26 commands. Orchestrator post-merge verification passed syntax checks, `git diff --check`, the focused verifier, and `npm run check:feasible-matrix` in `4m 35s`.
+- Post-worker-080 target selection: worker 081 reconfirmed the 26-command matrix and local platform-native blockers, accepted worker 080's proof boundary, and selected deterministic command/render expansion because real command coverage still excludes `line`, `oval`, numeric `circle`, numeric `rrect`, bounded `blurMaskFilter`, and real `RNSkia::JsiSkPath` host-object `path` conversion/rendering.
 - Example Worklets transform: worker 051 added the example/Expo Babel-config path to `check:skia-yoga-object-lazy-init`, proving package source `src/util.ts` keeps the same lazy Nitro closure/body contract when transformed through `example/babel.config.js` and the example dependency context.
 - Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the package lifecycle root-cause task, worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`. Worker 020 found the runtime-smoke archive discovery target, worker 021 completed it, worker 022 found the Android CMake archive-layout analogue, worker 023 completed it, worker 024 selected lint-ci root configuration/formatter repair as the next repo-owned feedback-loop fix, worker 025 completed that repair, worker 026 selected the remaining product-source React Native deep imports as the next implementation target, worker 027 completed that target, worker 028 selected example lint-contract cleanup, worker 029 completed it, worker 030 selected public README/API documentation drift, worker 031 completed that contract fix, worker 032 selected native publish-surface completeness, worker 033 completed that package-surface fix, worker 034 selected the unguarded Expo export path plus Metro config dump as the next example feedback-loop target, worker 035 completed that feedback-loop target, worker 036 confirmed platform-native build/run remains blocked by local toolchain gaps rather than a stronger repo-owned target, and worker 037 removed the strongest known unblocked RN Skia private-import target.
 
 ## Next Implementation Candidates
 
-- Launch and monitor worker 081 for a post-worker-080 root-cause audit. It should rerun/challenge the 26-command matrix, review worker 080's proof boundary, reconfirm platform-native blockers, and rank the next unblocked target without making product edits.
+- Launch and monitor worker 082 for deterministic host-native YogaNode command/render expansion beyond worker 080's `rect`/`group`/`points` proof. It should reuse or extend the host-native verifier only after proving standalone stability and should keep text/paragraph/image and dynamic UI-runtime Worklets out unless bounded.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
