@@ -188,10 +188,11 @@ Accepted package-hygiene implementation:
 - `worker-074-post-073-root-cause-audit`: reran the 23-command feasible matrix, reconfirmed local full native build/run blockers, documented the remaining native bridge proof boundary, and selected host-native `SkiaYoga` / `RNSkYogaView` view-registry, render scheduling, and profiling verification as the next strongest unblocked product-runtime target.
 - `worker-075-rnsk-yoga-view-runtime`: added `check:rnsk-yoga-view-runtime`, a host-native verifier that compiles/links a probe against real `SkiaYoga.cpp`, `RNSkYogaView.cpp`, `YogaNode.cpp`, generated Nitro specs, Yoga, RN Skia helper sources, and RN Skia macOS archives, then exercises view registry lookup, attach/request/animate/profile/detach behavior, dirty/idle/animating frame scheduling, profile serialization/reset, missing-view no-ops, and post-detach safety; the verifier is included in `check:feasible-matrix`.
 - `worker-076-post-075-root-cause-audit`: audited the post-worker-075 state, confirmed worker 075 closed the native bridge gap within its host-native boundary, found aggregate `check:feasible-matrix` instability in a worker worktree while affected standalone commands passed, and selected feasible-matrix temp isolation and diagnostics hardening as the next strongest unblocked target.
+- `worker-077-feasible-matrix-temp-isolation`: hardened `check:feasible-matrix` by giving each aggregate run a private `RNSKIA_YOGA_VERIFY_TEMP_PARENT`, making temp-root child verifiers honor that parent, removing shared temp-root scanning from aggregate cleanup, improving missing temp/linker/RN CLI dependency diagnostics, and reconfirming the 24-command matrix in worker and main worktrees.
 
 Current next step:
 
-- Monitor active worker 077 feasible-matrix temp isolation hardening, then accept or reject it based on its tmux goal gate, reproduction/root-cause evidence, implementation scope, standalone verifier evidence, aggregate matrix stability proof, diagnostics quality, cleanup state, and final status.
+- Monitor active worker 078 YogaNode hybrid/JSI raw-method boundary verification, then accept or reject it based on its tmux goal gate, duplicate-registration proof, implementation scope, standalone verifier evidence, feasible-matrix proof, cleanup state, and final status.
 
 Acceptance criteria:
 
