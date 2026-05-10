@@ -105,7 +105,7 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, post-lint root-cause audit accepted, and README/API contract drift fixed
+Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, and post-README root-cause audit accepted
 
 Goals:
 
@@ -143,10 +143,11 @@ Accepted package-hygiene implementation:
 - `worker-029-example-lint-contract`: scoped the example inline-style lint override to demo/typecheck fixture paths, fixed the root example shell inline style directly, hoisted stable tab icon renderers, preserved typecheck sentinel intent without `void`, removed stale Babel config plumbing, and brought `npm run lint-ci` to 0 warnings and 0 errors.
 - `worker-030-next-root-cause-audit`: audited the post-lint-clean backlog, confirmed the feasible checks remain green, confirmed platform-native build/run remains locally blocked, and selected public README/API documentation drift as the next unblocked repo-owned target.
 - `worker-031-readme-api-contract`: documented consumer peer dependencies and the required `jsxImportSource: "react-native-skia-yoga"` TypeScript setup for lowercase intrinsic nodes, corrected stale Nitro package metadata URLs to `SamuelScheit/react-native-skia-yoga`, verified no runtime/type shim changes were needed, and proved package lifecycle verification still passes.
+- `worker-032-next-root-cause-audit`: audited the post-worker-031 backlog, confirmed the feasible checks remain green, and selected native package publish-surface completeness as the next unblocked repo-owned target because the packed npm manifest omits `cpp/` while iOS and Android native build metadata requires it.
 
 Current next step:
 
-- Launch a read-only post-worker-031 root-cause audit to rank the next unblocked repo-owned target now that README/API contract drift is closed. Continue platform-native build/run verification once local prerequisites are available.
+- Launch a scoped native publish-surface worker. It should add `cpp/` to the published files surface, correct stale podspec source metadata, and add or extend a verifier that asserts required native files are present in the `npm pack --dry-run --json` manifest. Continue platform-native build/run verification once local prerequisites are available.
 
 Acceptance criteria:
 
