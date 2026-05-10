@@ -204,7 +204,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch worker 090 to prove or root-cause dynamic Worklets-backed `AnimatedDouble` through `JSIConverter<NodeCommand>::fromJSI(...)` for selected command props in the existing host-native command/render verifier, without claiming UI-runtime Worklets execution or full React Native app runtime.
+- Monitor worker 090 for dynamic Worklets-backed `AnimatedDouble` through `JSIConverter<NodeCommand>::fromJSI(...)` for selected command props in the existing host-native command/render verifier, without claiming UI-runtime Worklets execution or full React Native app runtime.
 
 Acceptance criteria:
 

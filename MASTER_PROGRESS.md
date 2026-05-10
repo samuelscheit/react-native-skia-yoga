@@ -2093,10 +2093,12 @@ Last updated: 2026-05-10
   - Deleted branch `worker/089-animated-double-synchronizable`.
   - Verified no matching verifier temp roots or active matching verifier/debug processes remained.
 - Prepared worker 090 as the next target: dynamic Worklets-backed `AnimatedDouble` through `JSIConverter<NodeCommand>::fromJSI(...)` for selected command props in the existing host-native command/render verifier, bounded to host-JSC/native command conversion and raster behavior.
+- Created `worker-090-animated-double-nodecommand` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-090-animated-double-nodecommand` as a top-level tmux subprocess.
+- Worker 090 passed the visible `GOAL_CREATED: Prove or root-cause dynamic Worklets-backed AnimatedDouble through JSIConverter<NodeCommand>::fromJSI in bounded host-native command/render verification.` gate as the first worker message.
 
 ## Active Workers
 
-- None currently; worker 090 is prepared for launch.
+- `rnskia-worker-090-animated-double-nodecommand`: running from `worker/090-animated-double-nodecommand`; monitoring dynamic `AnimatedDouble` through `NodeCommand` conversion/render proof.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2209,7 +2211,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- Worker 090 is prepared for launch.
+- None; worker 090 is active.
 
 ## Decisions
 
@@ -2245,7 +2247,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Launch worker 090 for dynamic Worklets-backed `AnimatedDouble` through `JSIConverter<NodeCommand>::fromJSI(...)` for selected command props in `check:yoganode-native-commands-render`, bounded to host-JSC/native command conversion and raster assertions.
+- Monitor worker 090 for dynamic Worklets-backed `AnimatedDouble` through `JSIConverter<NodeCommand>::fromJSI(...)` for selected command props in `check:yoganode-native-commands-render`, bounded to host-JSC/native command conversion and raster assertions.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
