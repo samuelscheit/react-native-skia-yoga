@@ -1957,10 +1957,25 @@ Last updated: 2026-05-10
 - Created `worker-083-post-082-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and wrote the worker 083 prompt.
 - Launched `rnskia-worker-083-post-082-root-cause-audit` as a read-only top-level tmux subprocess to audit post-worker-082 state and select the next strongest unblocked root-cause target.
 - Worker 083 passed the visible `GOAL_CREATED: Audit post-worker-082 state and select the next strongest unblocked root-cause target.` gate as the first worker message.
+- Worker 083 completed the audit, reported `Goal finished.`, and wrote `worker-progress/worker-083-post-082-root-cause-audit.md`.
+- Worker 083 reran `npm run check:feasible-matrix`; all 26 commands passed in `4m 2s`, including worker 082's expanded `check:yoganode-native-commands-render` as command 17 in `27.9s`.
+- Worker 083 reconfirmed local platform-native blockers: Command Line Tools-only Xcode selection, full Xcode unavailable, CocoaPods unavailable, Java runtime missing, `ANDROID_HOME`/`ANDROID_SDK_ROOT` unset, `adb`/`cmake`/`ninja`/`gradle` missing, and no tracked/generated `example/ios`, `example/android`, or `example/.expo` in the worker worktree.
+- Worker 083 selected bounded host-native `ImageCmd` command/render verification as the next strongest target: extend the existing command/render verifier with a synthetic `SkImage` wrapped in a real RN Skia `JsiSkImage` host object, convert through `JSIConverter<NodeCommand>::fromJSI(...)`, install through `YogaNode::setCommand()`, and assert raster pixels through `renderToContext()`.
+- Worker 083 ranked text/paragraph fidelity, dynamic Worklets-backed `AnimatedDouble`, Nitro `toObject()` / prototype materialization, covered-command variants, native bridge/platform runtime, and package/example feedback-loop work lower or blocked for this slot.
+- Orchestrator acceptance for worker 083 passed: exact first visible gate check, `Goal finished.` final response check, report review, `git diff --check HEAD~1 HEAD`, and final tracked status clean before doc edits.
+- Committed worker 083 as `81263cc Add post-worker-082 root cause audit`.
+- Merged worker 083 into `main` as `029e88a Merge worker 083 post-082 root cause audit`.
+- Main post-merge verification after worker 083 report integration:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - Final main tracked status was clean; known ignored local artifacts were left untouched.
+- Cleanup after worker 083 acceptance:
+  - Killed `rnskia-worker-083-post-082-root-cause-audit`.
+  - Removed `../worker-083-post-082-root-cause-audit`.
+  - Deleted branch `worker/083-post-082-root-cause-audit`.
 
 ## Active Workers
 
-- `rnskia-worker-083-post-082-root-cause-audit`: launched from `worker/083-post-082-root-cause-audit`; monitoring for post-worker-082 root-cause target selection.
+- None after worker 083 cleanup.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2063,10 +2078,11 @@ Accepted worker reports:
 - `worker-progress/worker-080-yoganode-native-commands-render.md`
 - `worker-progress/worker-081-post-080-root-cause-audit.md`
 - `worker-progress/worker-082-yoganode-more-native-commands-render.md`
+- `worker-progress/worker-083-post-082-root-cause-audit.md`
 
 ## Pending Workers
 
-- None; worker 083 is active.
+- `rnskia-worker-084-yoganode-image-command-render`: planned implementation worker for bounded host-native `ImageCmd` command/render verification.
 
 ## Decisions
 
@@ -2092,12 +2108,13 @@ Accepted worker reports:
 - YogaNode command/render verification: worker 080 added `check:yoganode-native-commands-render`, proving selected simple `JSIConverter<NodeCommand>::fromJSI(...)` payloads, real `YogaNode::setCommand()`, real `RectCmd`/`GroupCmd`/`PointsCmd` raster rendering through `renderToContext()`, parent/child Yoga-derived coordinates, group raster-cache reuse/invalidation, and pixel assertions. The feasible matrix now has 26 commands. Orchestrator post-merge verification passed syntax checks, `git diff --check`, the focused verifier, and `npm run check:feasible-matrix` in `4m 35s`.
 - Post-worker-080 target selection: worker 081 reconfirmed the 26-command matrix and local platform-native blockers, accepted worker 080's proof boundary, and selected deterministic command/render expansion because real command coverage still excludes `line`, `oval`, numeric `circle`, numeric `rrect`, bounded `blurMaskFilter`, and real `RNSkia::JsiSkPath` host-object `path` conversion/rendering.
 - YogaNode command/render expansion: worker 082 expanded the existing host-native verifier to cover real `LineCmd`, `OvalCmd`, numeric/static `CircleCmd`, numeric/static `RRectCmd`, bounded `BlurMaskFilterCmd`, and real `RNSkia::JsiSkPath` host-object `PathCmd` conversion/rendering through `JSIConverter<NodeCommand>::fromJSI(...)`, `YogaNode::setCommand()`, and `renderToContext()` raster assertions. The feasible matrix remains 26 commands because the existing command was expanded, and orchestrator post-merge verification passed the focused verifier plus the full matrix in `3m 34s`.
+- Post-worker-082 target selection: worker 083 reconfirmed the 26-command matrix and local platform-native blockers, accepted worker 082's proof boundary, and selected host-native `ImageCmd` command/render fidelity as the next strongest unblocked target because it is a real remaining command class with deterministic synthetic `SkImage` pixels and a real RN Skia `JsiSkImage` host-object path.
 - Example Worklets transform: worker 051 added the example/Expo Babel-config path to `check:skia-yoga-object-lazy-init`, proving package source `src/util.ts` keeps the same lazy Nitro closure/body contract when transformed through `example/babel.config.js` and the example dependency context.
 - Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the package lifecycle root-cause task, worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`. Worker 020 found the runtime-smoke archive discovery target, worker 021 completed it, worker 022 found the Android CMake archive-layout analogue, worker 023 completed it, worker 024 selected lint-ci root configuration/formatter repair as the next repo-owned feedback-loop fix, worker 025 completed that repair, worker 026 selected the remaining product-source React Native deep imports as the next implementation target, worker 027 completed that target, worker 028 selected example lint-contract cleanup, worker 029 completed it, worker 030 selected public README/API documentation drift, worker 031 completed that contract fix, worker 032 selected native publish-surface completeness, worker 033 completed that package-surface fix, worker 034 selected the unguarded Expo export path plus Metro config dump as the next example feedback-loop target, worker 035 completed that feedback-loop target, worker 036 confirmed platform-native build/run remains blocked by local toolchain gaps rather than a stronger repo-owned target, and worker 037 removed the strongest known unblocked RN Skia private-import target.
 
 ## Next Implementation Candidates
 
-- Launch and monitor worker 083 for a post-worker-082 root-cause audit. It should rerun/challenge the 26-command matrix, review worker 082's expanded proof boundary, reconfirm platform-native blockers, and rank the next unblocked target without making product edits.
+- Launch and monitor worker 084 for bounded host-native `ImageCmd` command/render verification. It should reuse or extend the existing command/render verifier with a synthetic `SkImage` in a real `JsiSkImage` host object, and avoid claiming image decoding, assets, text/paragraph fidelity, platform runtime, or full image-fit coverage unless actually proven.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
