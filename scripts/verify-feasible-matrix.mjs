@@ -42,6 +42,7 @@ const tempArtifactPrefixes = [
 	"rnskia-yoganode-hit-testing-",
 	"rnskia-yoganode-jsi-raw-methods-",
 	"rnskia-yoganode-lifetime-",
+	"rnskia-yoganode-nitro-materialization-",
 	"rnskia-yoganode-runtime-",
 ]
 
@@ -98,6 +99,7 @@ const matrixCommands = [
 	npmScript("check:yoganode-native-hit-testing", { timeoutMs: 300_000 }),
 	npmScript("check:yoganode-native-commands-render", { timeoutMs: 300_000 }),
 	npmScript("check:yoganode-jsi-raw-methods", { timeoutMs: 300_000 }),
+	npmScript("check:yoganode-nitro-materialization", { timeoutMs: 300_000 }),
 	npmScript("check:rnsk-yoga-view-runtime", { timeoutMs: 300_000 }),
 	npmScript("typecheck"),
 	npmScript("lint-ci"),
