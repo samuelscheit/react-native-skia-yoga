@@ -167,9 +167,10 @@ try {
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, AnimatedDouble.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, Worklets shared-item sources, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
 	console.log("- The executable created a JSC runtime, converted numeric and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), and executed real YogaNode::setCommand().")
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
-	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, bounded blur-mask-filter inheritance, real JsiSkPath/JsiSkImage host-object conversion/rendering, bounded TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
+	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath/JsiSkImage host-object conversion/rendering, bounded TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
+	console.log("- The executable asserted public path.stroke width, miter_limit, precision, join, and cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, paragraph measurement, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove exact typography, font fallback correctness, paragraph shaping fidelity, all text/paragraph styles, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, full image-fit coverage, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, all text/paragraph styles, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, full image-fit coverage, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -499,6 +500,12 @@ void expectNear(double actual, double expected, const std::string& message, doub
 }
 
 void expectOptionalNear(const std::optional<double>& actual, double expected, const std::string& message)
+{
+    expect(actual.has_value(), message + " must have a value");
+    expectNear(*actual, expected, message);
+}
+
+void expectOptionalFloatNear(const std::optional<float>& actual, double expected, const std::string& message)
 {
     expect(actual.has_value(), message + " must have a value");
     expectNear(*actual, expected, message);
@@ -1038,6 +1045,75 @@ NodeCommand pathCommand(jsi::Runtime& runtime)
     command.setProperty(runtime, "type", "path");
     command.setProperty(runtime, "data", std::move(data));
     return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand publicPathStrokeCommand(jsi::Runtime& runtime)
+{
+    SkPath path;
+    path.addRect(SkRect::MakeXYWH(0.0f, 0.0f, 10.0f, 6.0f));
+
+    jsi::Object stroke(runtime);
+    stroke.setProperty(runtime, "width", 4.0);
+    stroke.setProperty(runtime, "miter_limit", 7.0);
+    stroke.setProperty(runtime, "precision", 1.25);
+    stroke.setProperty(
+        runtime,
+        "join",
+        static_cast<double>(static_cast<int>(SkPaint::Join::kMiter_Join)));
+    stroke.setProperty(
+        runtime,
+        "cap",
+        static_cast<double>(static_cast<int>(SkPaint::Cap::kSquare_Cap)));
+
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
+    data.setProperty(runtime, "stroke", std::move(stroke));
+    data.setProperty(runtime, "trimStart", 0.0);
+    data.setProperty(runtime, "trimEnd", 1.0);
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "path");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand pathStrokeAliasPrecedenceCommand(jsi::Runtime& runtime)
+{
+    SkPath path;
+    path.addRect(SkRect::MakeXYWH(0.0f, 0.0f, 10.0f, 6.0f));
+
+    jsi::Object stroke(runtime);
+    stroke.setProperty(runtime, "width", 3.0);
+    stroke.setProperty(runtime, "miterLimit", 2.0);
+    stroke.setProperty(runtime, "miter_limit", 9.0);
+
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
+    data.setProperty(runtime, "stroke", std::move(stroke));
+    data.setProperty(runtime, "trimStart", 0.0);
+    data.setProperty(runtime, "trimEnd", 1.0);
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "path");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+jsi::Object pathCommandObjectWithStrokeValue(jsi::Runtime& runtime, jsi::Value stroke)
+{
+    SkPath path;
+    path.addRect(SkRect::MakeXYWH(0.0f, 0.0f, 10.0f, 6.0f));
+
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
+    data.setProperty(runtime, "stroke", std::move(stroke));
+    data.setProperty(runtime, "trimStart", 0.0);
+    data.setProperty(runtime, "trimEnd", 1.0);
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "path");
+    command.setProperty(runtime, "data", std::move(data));
+    return command;
 }
 
 NodeCommand dynamicPathTrimCommand(
@@ -1717,6 +1793,89 @@ void assertPathHostObjectCommandRender(jsi::Runtime& runtime)
     expectColorNear(pixelAt(surface, 22, 14), SK_ColorTRANSPARENT, 0, "path render remains bounded by its scaled path");
 }
 
+void assertPublicPathStrokeCommandRender(jsi::Runtime& runtime)
+{
+    auto command = publicPathStrokeCommand(runtime);
+    const auto& payload = std::get<PathCommandData>(command.data);
+    expect(payload.stroke.has_value(), "public path.stroke payload conversion keeps stroke options");
+    const auto& stroke = payload.stroke.value();
+    expectOptionalFloatNear(stroke.width, 4.0, "public path.stroke conversion keeps width");
+    expectOptionalFloatNear(stroke.miterLimit, 7.0, "public path.stroke conversion keeps miter_limit");
+    expectOptionalFloatNear(stroke.precision, 1.25, "public path.stroke conversion keeps precision");
+    expect(
+        stroke.join.has_value() && stroke.join.value() == SkPaint::Join::kMiter_Join,
+        "public path.stroke conversion keeps join");
+    expect(
+        stroke.cap.has_value() && stroke.cap.value() == SkPaint::Cap::kSquare_Cap,
+        "public path.stroke conversion keeps cap");
+
+    auto root = makeYogaNode(
+        fixedStyle(20.0, 12.0, SK_ColorCYAN),
+        std::move(command));
+
+    expect(root->_commandKind == YogaNodeCommandKind::PATH, "public path.stroke setCommand constructs a real PathCmd");
+    auto* pathCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::PathCmd*>(root->_command.get());
+    expect(pathCmd != nullptr, "public path.stroke installed command has PathCmd type");
+    expect(pathCmd->props.stroke.has_value(), "public path.stroke reaches PathCmd props before draw");
+    const auto& nativeStroke = pathCmd->props.stroke.value();
+    expectOptionalFloatNear(nativeStroke.width, 4.0, "public path.stroke native PathCmd width");
+    expectOptionalFloatNear(nativeStroke.miter_limit, 7.0, "public path.stroke native PathCmd miter_limit");
+    expectOptionalFloatNear(nativeStroke.precision, 1.25, "public path.stroke native PathCmd precision");
+    expect(
+        nativeStroke.join.has_value() && nativeStroke.join.value() == SkPaint::Join::kMiter_Join,
+        "public path.stroke native PathCmd join");
+    expect(
+        nativeStroke.cap.has_value() && nativeStroke.cap.value() == SkPaint::Cap::kSquare_Cap,
+        "public path.stroke native PathCmd cap");
+
+    auto surface = makeSurface(28, 20);
+    renderNode(root, surface);
+    expect(pathCmd->props.stroke.has_value(), "public path.stroke remains installed during PathCmd draw");
+    expectColorNear(pixelAt(surface, 10, 6), SK_ColorCYAN, 0, "public path.stroke renders through PathCmd::draw");
+    expectColorNear(pixelAt(surface, 22, 14), SK_ColorTRANSPARENT, 0, "public path.stroke render remains bounded outside the path");
+}
+
+void assertPathStrokeMiterAliasPrecedence(jsi::Runtime& runtime)
+{
+    auto command = pathStrokeAliasPrecedenceCommand(runtime);
+    const auto& payload = std::get<PathCommandData>(command.data);
+    expect(payload.stroke.has_value(), "path.stroke alias precedence payload keeps stroke options");
+    expectOptionalFloatNear(
+        payload.stroke->miterLimit,
+        9.0,
+        "path.stroke public miter_limit wins over miterLimit alias");
+}
+
+void assertStrokeOptsConverterPublicMiterContract(jsi::Runtime& runtime)
+{
+    RNSkia::StrokeOpts outbound;
+    outbound.width = 4.0f;
+    outbound.miter_limit = 11.0f;
+    outbound.precision = 1.25f;
+    outbound.join = SkPaint::Join::kMiter_Join;
+    outbound.cap = SkPaint::Cap::kSquare_Cap;
+
+    auto outboundValue = margelo::nitro::JSIConverter<RNSkia::StrokeOpts>::toJSI(runtime, outbound);
+    auto outboundObject = outboundValue.asObject(runtime);
+    expectNear(outboundObject.getProperty(runtime, "miter_limit").asNumber(), 11.0, "StrokeOpts toJSI emits public miter_limit");
+    expect(
+        outboundObject.getProperty(runtime, "miterLimit").isUndefined(),
+        "StrokeOpts toJSI does not emit private miterLimit");
+
+    jsi::Object inbound(runtime);
+    inbound.setProperty(runtime, "miterLimit", 2.0);
+    inbound.setProperty(runtime, "miter_limit", 8.0);
+    auto inboundValue = jsi::Value(runtime, inbound);
+    auto converted = margelo::nitro::JSIConverter<RNSkia::StrokeOpts>::fromJSI(runtime, inboundValue);
+    expectOptionalFloatNear(converted.miter_limit, 8.0, "StrokeOpts fromJSI public miter_limit wins over alias");
+
+    jsi::Object aliasOnly(runtime);
+    aliasOnly.setProperty(runtime, "miterLimit", 3.0);
+    auto aliasOnlyValue = jsi::Value(runtime, aliasOnly);
+    auto aliasConverted = margelo::nitro::JSIConverter<RNSkia::StrokeOpts>::fromJSI(runtime, aliasOnlyValue);
+    expectOptionalFloatNear(aliasConverted.miter_limit, 3.0, "StrokeOpts fromJSI preserves miterLimit alias fallback");
+}
+
 void assertImageHostObjectCommandRender(jsi::Runtime& runtime)
 {
     auto root = makeYogaNode(
@@ -1965,6 +2124,54 @@ void assertDynamicPathTrimCommandRejections(jsi::Runtime& runtime)
         "NodeCommand conversion rejects non-Synchronizable SerializableJSRef path trimStart");
 }
 
+void assertPathStrokeCommandRejections(jsi::Runtime& runtime)
+{
+    auto nonObjectCommand = pathCommandObjectWithStrokeValue(runtime, jsi::Value(42.0));
+    jsi::Value nonObjectCommandValue(runtime, nonObjectCommand);
+
+    expect(
+        margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, nonObjectCommandValue),
+        "NodeCommand converter canConvert accepts shaped path command before rejecting non-object stroke");
+    expectJsiThrows(
+        [&]() {
+            (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, nonObjectCommandValue);
+        },
+        "Expected stroke object.",
+        "NodeCommand conversion rejects non-object path.stroke payload");
+
+    jsi::Object invalidJoinStroke(runtime);
+    invalidJoinStroke.setProperty(runtime, "width", 4.0);
+    invalidJoinStroke.setProperty(runtime, "miter_limit", 7.0);
+    invalidJoinStroke.setProperty(runtime, "join", "spike");
+    auto invalidJoinCommand = pathCommandObjectWithStrokeValue(
+        runtime,
+        jsi::Value(runtime, invalidJoinStroke));
+    jsi::Value invalidJoinCommandValue(runtime, invalidJoinCommand);
+
+    expectJsiThrows(
+        [&]() {
+            (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, invalidJoinCommandValue);
+        },
+        "Invalid stroke join: spike",
+        "NodeCommand conversion rejects invalid path.stroke join");
+
+    jsi::Object invalidCapStroke(runtime);
+    invalidCapStroke.setProperty(runtime, "width", 4.0);
+    invalidCapStroke.setProperty(runtime, "miter_limit", 7.0);
+    invalidCapStroke.setProperty(runtime, "cap", "triangle");
+    auto invalidCapCommand = pathCommandObjectWithStrokeValue(
+        runtime,
+        jsi::Value(runtime, invalidCapStroke));
+    jsi::Value invalidCapCommandValue(runtime, invalidCapCommand);
+
+    expectJsiThrows(
+        [&]() {
+            (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, invalidCapCommandValue);
+        },
+        "Invalid stroke cap: triangle",
+        "NodeCommand conversion rejects invalid path.stroke cap");
+}
+
 void assertConverterErrorImage(jsi::Runtime& runtime)
 {
     jsi::Object data(runtime);
@@ -2046,12 +2253,16 @@ int main()
     assertBlurMaskFilterCommandRender(*runtime);
     assertDynamicBlurMaskFilterCommandRender(*runtime);
     assertPathHostObjectCommandRender(*runtime);
+    assertPublicPathStrokeCommandRender(*runtime);
+    assertPathStrokeMiterAliasPrecedence(*runtime);
+    assertStrokeOptsConverterPublicMiterContract(*runtime);
     assertDynamicPathTrimCommandRender(*runtime);
     assertImageHostObjectCommandRender(*runtime);
     assertTextCommandStateAndRender(*runtime);
     assertParagraphCommandMeasureAndRender(*runtime);
     assertConverterErrorPath(*runtime);
     assertDynamicPathTrimCommandRejections(*runtime);
+    assertPathStrokeCommandRejections(*runtime);
     assertConverterErrorImage(*runtime);
     assertConverterErrorTextFont(*runtime);
     assertDynamicAnimatedDoubleCommandRejections(*runtime);
