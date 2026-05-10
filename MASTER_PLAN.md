@@ -175,10 +175,11 @@ Accepted package-hygiene implementation:
 - `worker-061-reconciler-animated-binding-runtime-verifier`: added `check:reconciler-animated-bindings`, a source-level Node VM verifier that captures the Reconciler host config and exercises native vs JS animated command bindings, style listeners, native mirror updates, active/continuous-redraw toggles, `commitUpdate`, `detachDeletedInstance`, and `clearContainer` cleanup with local stubs.
 - `worker-062-gesture-interaction-runtime-verifier`: added `check:gesture-interaction-runtime`, a source-level Node VM verifier for `YogaInteractionRegistry`, `useCanvasGestures`, and selected `YogaCanvas` gesture wiring with local React/RNGH/Reanimated/Worklets stubs.
 - `worker-063-post-062-root-cause-audit`: audited the post-worker-062 state, confirmed the feasible matrix remains green while full platform-native proof is still locally blocked, and selected `YogaCanvas` lifecycle/render/profiling source-level runtime verification as the next strongest unblocked target.
+- `worker-064-yogacanvas-lifecycle-runtime-verifier`: added `check:yogacanvas-lifecycle-runtime`, a source-level Node VM verifier for `YogaCanvas` lazy native IDs, root/container setup, layout effects, `onLayout`, bounded retry RAF, animation callbacks, profiling counters/native sample parsing/fallbacks/forced flush, and unmount cleanup with local stubs.
 
 Current next step:
 
-- Monitor active worker 064 YogaCanvas lifecycle runtime verifier, then accept or reject it based on its tmux goal gate, implementation/report scope, focused verifier evidence, proof-boundary wording, nested challenger documentation, full verification matrix, and cleanup state.
+- Monitor active worker 065 post-worker-064 root-cause audit, then accept or reject it based on its tmux goal gate, report scope, target-selection evidence, proof-boundary wording, nested challenger documentation, full verification matrix, and cleanup state.
 
 Acceptance criteria:
 
