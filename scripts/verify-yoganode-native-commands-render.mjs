@@ -66,6 +66,7 @@ try {
 	const compiler = process.env.CXX || "clang++"
 	const compileArgs = [
 		"-std=c++20",
+		"-DNDEBUG",
 		"-ferror-limit=20",
 		"-ffunction-sections",
 		"-fdata-sections",
@@ -163,10 +164,11 @@ try {
 	}
 
 	console.log("YogaNode native command/render verifier passed:")
-	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
+	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, AnimatedDouble.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
 	console.log("- The executable created a JSC runtime, installed it as RN Skia's main runtime, converted simple NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), and executed real YogaNode::setCommand().")
-	console.log("- The executable rendered real RectCmd, GroupCmd, and PointsCmd paths through YogaNode::renderToContext() onto raster SkSurfaces and asserted pixels for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, and point drawing.")
-	console.log("- Proof boundary: host-native macOS C++ command construction and raster behavior only. This does not prove Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, RNGH native delivery, or text/paragraph/image command fidelity.")
+	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, and PathCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
+	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, point drawing, line stroke drawing, oval/circle/rrect fills, bounded blur-mask-filter inheritance, and real JsiSkPath host-object path conversion/rendering.")
+	console.log("- Proof boundary: host-native macOS C++ command construction and raster behavior for deterministic geometry/filter/path commands only. This does not prove Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, RNGH native delivery, dynamic Worklets-backed AnimatedDouble resolution, or text/paragraph/image command fidelity.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -204,6 +206,7 @@ function assertLinkedBinary(binaryPath, diagnosticPaths) {
 function helperSourcePaths() {
 	return [
 		"cpp/ColorParser.cpp",
+		"cpp/AnimatedDouble.cpp",
 		"cpp/PlatformContextAccessor.cpp",
 		"node_modules/react-native/ReactCommon/jsi/jsi/jsi.cpp",
 		"node_modules/react-native/ReactCommon/jsi/jsi/jsilib-posix.cpp",
@@ -421,7 +424,9 @@ function nativeProbeSource() {
 #include <include/core/SkImage.h>
 #include <include/core/SkImageInfo.h>
 #include <include/core/SkPaint.h>
+#include <include/core/SkPath.h>
 #include <include/core/SkPixmap.h>
+#include <include/core/SkRect.h>
 #include <include/core/SkSurface.h>
 #include <jsi/jsi.h>
 #include <yoga/Yoga.h>
@@ -517,6 +522,22 @@ NodeStyle fixedStyle(double width, double height, SkColor color, std::optional<d
     return style;
 }
 
+NodeStyle strokeStyle(double width, double height, SkColor color, float strokeWidth)
+{
+    NodeStyle style {};
+    style.width = points(width);
+    style.height = points(height);
+    SkPaint paint;
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setColor(color);
+    paint.setAntiAlias(false);
+    paint.setStrokeWidth(strokeWidth);
+    paint.setStrokeCap(SkPaint::kButt_Cap);
+    style.backgroundColor = paint;
+    style.antiaAlias = false;
+    return style;
+}
+
 NodeStyle absoluteStyle(double left, double top, double width, double height, SkColor color)
 {
     auto style = fixedStyle(width, height, color);
@@ -558,6 +579,18 @@ SkColor pixelAt(const sk_sp<SkSurface>& surface, int x, int y)
     SkPixmap pixmap;
     expect(surface->peekPixels(&pixmap), "raster surface pixels must be readable");
     return pixmap.getColor(x, y);
+}
+
+bool hasAnyAlphaInRegion(const sk_sp<SkSurface>& surface, int left, int top, int right, int bottom)
+{
+    for (int y = top; y < bottom; ++y) {
+        for (int x = left; x < right; ++x) {
+            if (SkColorGetA(pixelAt(surface, x, y)) > 0) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 void renderNode(const std::shared_ptr<YogaNode>& node, const sk_sp<SkSurface>& surface)
@@ -613,6 +646,78 @@ NodeCommand pointsCommand(jsi::Runtime& runtime)
 
     jsi::Object command(runtime);
     command.setProperty(runtime, "type", "points");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand lineCommand(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "from", makePointObject(runtime, 0.0, 3.0));
+    data.setProperty(runtime, "to", makePointObject(runtime, 20.0, 3.0));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "line");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand ovalCommand(jsi::Runtime& runtime)
+{
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "oval");
+    command.setProperty(runtime, "data", jsi::Object(runtime));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand circleCommand(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "radius", 8.0);
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "circle");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand rrectCommand(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "cornerRadius", 5.0);
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "rrect");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand blurMaskFilterCommand(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "blur", 4.0);
+    data.setProperty(runtime, "blurStyle", "normal");
+    data.setProperty(runtime, "respectCTM", false);
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "blurMaskFilter");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand pathCommand(jsi::Runtime& runtime)
+{
+    SkPath path;
+    path.addRect(SkRect::MakeXYWH(0.0f, 0.0f, 10.0f, 6.0f));
+
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "fillType", "winding");
+    data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
+    data.setProperty(runtime, "trimStart", 0.0);
+    data.setProperty(runtime, "trimEnd", 1.0);
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "path");
     command.setProperty(runtime, "data", std::move(data));
     return convertCommand(runtime, std::move(command));
 }
@@ -723,6 +828,104 @@ void assertAdditionalPointsCommandRender(jsi::Runtime& runtime)
     expectColorNear(pixelAt(surface, 2, 2), SK_ColorTRANSPARENT, 0, "uncovered points surface stays transparent");
 }
 
+void assertLineCommandRender(jsi::Runtime& runtime)
+{
+    auto root = makeYogaNode(
+        strokeStyle(20.0, 8.0, SK_ColorBLUE, 3.0f),
+        lineCommand(runtime));
+
+    expect(root->_commandKind == YogaNodeCommandKind::LINE, "setCommand constructs a real LineCmd");
+    expect(dynamic_cast<margelo::nitro::RNSkiaYoga::LineCmd*>(root->_command.get()) != nullptr, "installed command has LineCmd type");
+
+    auto surface = makeSurface(28, 16);
+    renderNode(root, surface);
+    expectColorNear(pixelAt(surface, 10, 3), SK_ColorBLUE, 0, "real line command stroke renders at the converted coordinates");
+    expectColorNear(pixelAt(surface, 10, 7), SK_ColorTRANSPARENT, 0, "line stroke does not fill unrelated pixels");
+}
+
+void assertOvalCommandRender(jsi::Runtime& runtime)
+{
+    auto root = makeYogaNode(
+        fixedStyle(20.0, 12.0, SK_ColorGREEN),
+        ovalCommand(runtime));
+
+    expect(root->_commandKind == YogaNodeCommandKind::OVAL, "setCommand constructs a real OvalCmd");
+    expect(dynamic_cast<margelo::nitro::RNSkiaYoga::OvalCmd*>(root->_command.get()) != nullptr, "installed command has OvalCmd type");
+
+    auto surface = makeSurface(28, 20);
+    renderNode(root, surface);
+    expectColorNear(pixelAt(surface, 10, 6), SK_ColorGREEN, 0, "real oval command fills the layout center");
+    expectColorNear(pixelAt(surface, 1, 1), SK_ColorTRANSPARENT, 0, "oval corners remain transparent");
+}
+
+void assertCircleCommandRender(jsi::Runtime& runtime)
+{
+    auto root = makeYogaNode(
+        fixedStyle(24.0, 24.0, SK_ColorYELLOW),
+        circleCommand(runtime));
+
+    expect(root->_commandKind == YogaNodeCommandKind::CIRCLE, "setCommand constructs a real CircleCmd");
+    expect(dynamic_cast<margelo::nitro::RNSkiaYoga::CircleCmd*>(root->_command.get()) != nullptr, "installed command has CircleCmd type");
+
+    auto surface = makeSurface(32, 32);
+    renderNode(root, surface);
+    expectColorNear(pixelAt(surface, 12, 12), SK_ColorYELLOW, 0, "numeric circle radius fills the layout center");
+    expectColorNear(pixelAt(surface, 22, 12), SK_ColorTRANSPARENT, 0, "numeric circle radius bounds the filled region");
+}
+
+void assertRRectCommandRender(jsi::Runtime& runtime)
+{
+    auto root = makeYogaNode(
+        fixedStyle(20.0, 16.0, SK_ColorMAGENTA),
+        rrectCommand(runtime));
+
+    expect(root->_commandKind == YogaNodeCommandKind::RRECT, "setCommand constructs a real RRectCmd");
+    expect(dynamic_cast<margelo::nitro::RNSkiaYoga::RRectCmd*>(root->_command.get()) != nullptr, "installed command has RRectCmd type");
+
+    auto surface = makeSurface(28, 24);
+    renderNode(root, surface);
+    expectColorNear(pixelAt(surface, 10, 8), SK_ColorMAGENTA, 0, "numeric rrect corner radius still fills the layout center");
+    expectColorNear(pixelAt(surface, 0, 0), SK_ColorTRANSPARENT, 0, "numeric rrect corner radius clips the corner");
+}
+
+void assertBlurMaskFilterCommandRender(jsi::Runtime& runtime)
+{
+    auto root = makeYogaNode(
+        groupStyle(32.0, 32.0),
+        blurMaskFilterCommand(runtime));
+    auto child = makeYogaNode(
+        absoluteStyle(10.0, 10.0, 8.0, 8.0, SK_ColorRED),
+        rectCommand(runtime));
+    root->insertChild(child, std::nullopt);
+
+    expect(root->_commandKind == YogaNodeCommandKind::BLUR_MASK_FILTER, "setCommand constructs a real BlurMaskFilterCmd");
+    expect(dynamic_cast<margelo::nitro::RNSkiaYoga::BlurMaskFilterCmd*>(root->_command.get()) != nullptr, "installed command has BlurMaskFilterCmd type");
+
+    auto surface = makeSurface(40, 40);
+    renderNode(root, surface);
+    expect(
+        hasAnyAlphaInRegion(surface, 6, 11, 10, 17),
+        "bounded blur mask filter produces non-transparent pixels just outside the child rect");
+    expect(
+        SkColorGetA(pixelAt(surface, 1, 1)) == 0,
+        "bounded blur mask filter does not leak to a far outside pixel");
+}
+
+void assertPathHostObjectCommandRender(jsi::Runtime& runtime)
+{
+    auto root = makeYogaNode(
+        fixedStyle(20.0, 12.0, SK_ColorCYAN),
+        pathCommand(runtime));
+
+    expect(root->_commandKind == YogaNodeCommandKind::PATH, "setCommand constructs a real PathCmd");
+    expect(dynamic_cast<margelo::nitro::RNSkiaYoga::PathCmd*>(root->_command.get()) != nullptr, "installed command has PathCmd type");
+
+    auto surface = makeSurface(28, 20);
+    renderNode(root, surface);
+    expectColorNear(pixelAt(surface, 10, 6), SK_ColorCYAN, 0, "real JsiSkPath host-object path renders after layout scaling");
+    expectColorNear(pixelAt(surface, 22, 14), SK_ColorTRANSPARENT, 0, "path render remains bounded by its scaled path");
+}
+
 void assertConverterErrorPath(jsi::Runtime& runtime)
 {
     jsi::Object command(runtime);
@@ -754,6 +957,12 @@ int main()
     assertParentChildLayoutRender(*runtime);
     assertGroupRasterCacheBehavior(*runtime);
     assertAdditionalPointsCommandRender(*runtime);
+    assertLineCommandRender(*runtime);
+    assertOvalCommandRender(*runtime);
+    assertCircleCommandRender(*runtime);
+    assertRRectCommandRender(*runtime);
+    assertBlurMaskFilterCommandRender(*runtime);
+    assertPathHostObjectCommandRender(*runtime);
     assertConverterErrorPath(*runtime);
 
     std::cout << "YogaNode native command/render host probe passed\n";
