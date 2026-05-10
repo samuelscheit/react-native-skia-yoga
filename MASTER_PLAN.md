@@ -196,7 +196,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch and monitor worker 082 for deterministic host-native YogaNode command/render expansion around real `YogaNode::setCommand()` and raster behavior beyond worker 080's `rect`/`group`/`points` coverage.
+- Monitor worker 082 for deterministic host-native YogaNode command/render expansion around real `YogaNode::setCommand()` and raster behavior beyond worker 080's `rect`/`group`/`points` coverage.
 
 Acceptance criteria:
 
