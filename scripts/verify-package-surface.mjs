@@ -25,6 +25,12 @@ const representativeNativeFiles = [
 	"nitrogen/generated/ios/RNSkiaYoga+autolinking.rb",
 	"nitrogen/generated/shared/c++/HybridSkiaYogaSpec.hpp",
 ]
+const sourceFirstRuntimeFiles = [
+	"src/YogaCanvas.tsx",
+	"src/Reconciler.ts",
+	"src/SkiaYogaObject.ts",
+	"src/util.ts",
+]
 
 const packageJson = JSON.parse(readFileSync(projectPath("package.json"), "utf8"))
 const packageFiles = packageJson.files ?? []
@@ -75,6 +81,8 @@ assertContains(
 	'apply from: "./fix-prefab.gradle"',
 	"android/build.gradle must apply the packaged Android Gradle prefab patch script.",
 )
+assertPublicDeclarationBoundary()
+assertPublicSourceBoundary()
 
 const packResult = run("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], {
 	cwd: rootDir,
@@ -95,6 +103,7 @@ const requiredPackedFiles = unique([
 	"README.md",
 	"index.d.ts",
 	"src/index.ts",
+	...sourceFirstRuntimeFiles,
 	...representativeNativeFiles,
 	...walkFiles(projectPath("cpp")).map((filePath) => toPackagePath(filePath)),
 ])
@@ -112,9 +121,118 @@ console.log(`- npm pack manifest includes ${packedPaths.size} files.`)
 console.log(`- All ${walkFiles(projectPath("cpp")).length} files under cpp/ are published.`)
 console.log("- Representative iOS, Android, Nitrogen, and package entrypoint files are published.")
 console.log("- Podspec source metadata points at the canonical repository.")
+console.log("- Source-first runtime files remain published for React Native, while public declarations and the source barrel use explicit allowlists.")
 
 function projectPath(...segments) {
 	return path.join(rootDir, ...segments)
+}
+
+function assertPublicDeclarationBoundary() {
+	const indexDts = readProjectFile("index.d.ts")
+	const jsxRuntimeDts = readProjectFile("jsx-runtime.d.ts")
+	const jsxDevRuntimeDts = readProjectFile("jsx-dev-runtime.d.ts")
+
+	assertContains(
+		indexDts,
+		'export { YogaCanvas } from "./src/YogaCanvas"',
+		"index.d.ts must explicitly publish YogaCanvas.",
+	)
+	assertContains(
+		indexDts,
+		"YogaCanvasProfileSample",
+		"index.d.ts must explicitly publish the YogaCanvas profiling sample type.",
+	)
+	assertContains(
+		indexDts,
+		"YogaIntrinsicElements",
+		"index.d.ts must explicitly publish the JSX intrinsic element map.",
+	)
+	assertContains(
+		indexDts,
+		"YogaNodeStyle",
+		"index.d.ts must explicitly publish the public Yoga node style type.",
+	)
+	assertNotContains(
+		indexDts,
+		'export * from "./src/index"',
+		"index.d.ts must not re-export the source runtime barrel wholesale.",
+	)
+	assertNotContains(
+		indexDts,
+		"./src/Reconciler",
+		"index.d.ts must not expose the internal reconciler module.",
+	)
+	assertNotContains(
+		indexDts,
+		"./src/util",
+		"index.d.ts must not expose internal native object factories.",
+	)
+	assertNotContains(
+		indexDts,
+		"./src/SkiaYogaObject",
+		"index.d.ts must not expose the internal native hybrid object.",
+	)
+
+	assertContains(
+		jsxRuntimeDts,
+		'export { Fragment, jsx, jsxs } from "react/jsx-runtime"',
+		"jsx-runtime.d.ts must preserve the React JSX runtime contract.",
+	)
+	assertNotContains(
+		jsxRuntimeDts,
+		'export * from "./src/jsx-runtime"',
+		"jsx-runtime.d.ts must not re-export the source runtime module wholesale.",
+	)
+	assertContains(
+		jsxDevRuntimeDts,
+		'export { Fragment, jsxDEV } from "react/jsx-dev-runtime"',
+		"jsx-dev-runtime.d.ts must preserve the React dev JSX runtime contract.",
+	)
+	assertNotContains(
+		jsxDevRuntimeDts,
+		'export * from "./src/jsx-dev-runtime"',
+		"jsx-dev-runtime.d.ts must not re-export the source dev runtime module wholesale.",
+	)
+}
+
+function assertPublicSourceBoundary() {
+	const sourceIndex = readProjectFile("src/index.ts")
+
+	assertContains(
+		sourceIndex,
+		'export { YogaCanvas } from "./YogaCanvas"',
+		"src/index.ts must explicitly publish YogaCanvas.",
+	)
+	assertNotContains(
+		sourceIndex,
+		"export *",
+		"src/index.ts must not wildcard-export implementation modules.",
+	)
+	assertNotContains(
+		sourceIndex,
+		'from "./Reconciler"',
+		"src/index.ts must not expose the internal reconciler module.",
+	)
+	assertNotContains(
+		sourceIndex,
+		'from "./util"',
+		"src/index.ts must not expose internal native object factories.",
+	)
+	assertNotContains(
+		sourceIndex,
+		'from "./SkiaYogaObject"',
+		"src/index.ts must not expose the internal native hybrid object.",
+	)
+	assertNotContains(
+		sourceIndex,
+		"YogaNodeFinal",
+		"src/index.ts must not expose the internal native Yoga node interface.",
+	)
+	assertNotContains(
+		sourceIndex,
+		"YogaInteractionRegistry",
+		"src/index.ts must not expose internal event registry plumbing.",
+	)
 }
 
 function run(command, args, options) {
@@ -186,4 +304,8 @@ function assertNotContains(source, unexpected, message) {
 	if (source.includes(unexpected)) {
 		throw new Error(message)
 	}
+}
+
+function readProjectFile(...segments) {
+	return readFileSync(projectPath(...segments), "utf8")
 }
