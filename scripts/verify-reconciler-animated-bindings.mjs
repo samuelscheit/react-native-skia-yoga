@@ -8,7 +8,53 @@ import ts from "typescript"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
 
+const nativeCommandBindingCases = [
+	{
+		initialValue: 4,
+		lateValue: 8,
+		nextValue: 6,
+		path: ["blur"],
+		plainValue: 2,
+		type: "blurMaskFilter",
+	},
+	{
+		initialValue: 12,
+		lateValue: 22,
+		nextValue: 18,
+		path: ["radius"],
+		plainValue: 7,
+		type: "circle",
+	},
+	{
+		baseProps: { path: { id: "trim-end-path" } },
+		initialValue: 0.75,
+		lateValue: 0.25,
+		nextValue: 0.5,
+		path: ["trimEnd"],
+		plainValue: 1,
+		type: "path",
+	},
+	{
+		baseProps: { path: { id: "trim-start-path" } },
+		initialValue: 0.1,
+		lateValue: 0.4,
+		nextValue: 0.25,
+		path: ["trimStart"],
+		plainValue: 0,
+		type: "path",
+	},
+	{
+		initialValue: 5,
+		lateValue: 11,
+		nextValue: 9,
+		path: ["cornerRadius"],
+		plainValue: 3,
+		type: "rrect",
+	},
+]
+
 verifyYogaCanvasAnimationBindingModeMapping()
+verifyNativeCommandBindingWhitelistMatchesCases()
 verifyNativeCommandBindingMirrorsSharedValue()
 verifyJsCommandBindingModeRunsCommandUpdateCallback()
 verifyStyleAnimatedListenerUpdatesStyleAndContinuousRedraw()
@@ -20,7 +66,10 @@ console.log(
 	'- YogaCanvas still maps animationBindingMode="native" to native Reconciler command bindings.',
 )
 console.log(
-	"- Native command binding mode mirrors supported SharedValue command props through Synchronizable.setBlocking.",
+	`- Reconciler supportsNativeCommandBinding(...) whitelist matches verifier cases: ${formatNativeBindingCaseList(nativeCommandBindingCases)}.`,
+)
+console.log(
+	`- Native command binding mode mirrors all whitelisted SharedValue command props (${formatNativeBindingCaseList(nativeCommandBindingCases)}) through Synchronizable.setBlocking.`,
 )
 console.log(
 	"- JS command binding mode updates host commands through SharedValue listener callbacks and invalidates.",
@@ -29,10 +78,13 @@ console.log(
 	"- Animated style listeners update host styles, invalidate, and toggle continuous redraw state.",
 )
 console.log(
-	"- Shared native bindings are ref-counted across nodes and detach cleanup removes only the final listener.",
+	"- Shared native binding ref-count cleanup is exercised through shared circle.radius mirror reuse.",
 )
 console.log(
 	"- clearContainer recursively removes animated listeners, unregisters interactions, and clears root children.",
+)
+console.log(
+	"- Proof boundary: Node VM source-level Reconciler stubs only; excludes UI-runtime Worklets execution, real Reanimated delivery, actual native bridge delivery, C++ conversion, platform app runtime, image loading/decoding, exact render fidelity, Nitro registry install, and React Native runtime integration.",
 )
 
 function verifyYogaCanvasAnimationBindingModeMapping() {
@@ -74,127 +126,464 @@ function verifyYogaCanvasAnimationBindingModeMapping() {
 	)
 }
 
+function extractNativeCommandBindingWhitelist() {
+	const sourceFile = ts.createSourceFile(
+		projectPath("src/Reconciler.ts"),
+		readFileSync(projectPath("src/Reconciler.ts"), "utf8"),
+		ts.ScriptTarget.Latest,
+		true,
+		ts.ScriptKind.TS,
+	)
+	let declaration
+
+	walkTs(sourceFile, (node) => {
+		if (
+			ts.isFunctionDeclaration(node) &&
+			node.name?.text === "supportsNativeCommandBinding"
+		) {
+			declaration = node
+		}
+	})
+
+	assert.ok(
+		declaration?.body,
+		"Reconciler should define supportsNativeCommandBinding(...) with a body",
+	)
+
+	let hasSingleSegmentGuard = false
+	let foundSwitch = false
+	let hasDefaultFalse = false
+	const bindings = []
+
+	for (const statement of declaration.body.statements) {
+		if (
+			ts.isIfStatement(statement) &&
+			isSingleSegmentPathGuard(statement.expression) &&
+			statementReturnsFalse(statement.thenStatement)
+		) {
+			hasSingleSegmentGuard = true
+			continue
+		}
+
+		if (!ts.isSwitchStatement(statement)) {
+			continue
+		}
+
+		assert.equal(
+			isIdentifierNamed(statement.expression, "type"),
+			true,
+			"supportsNativeCommandBinding(...) should switch on type",
+		)
+		foundSwitch = true
+
+		for (const clause of statement.caseBlock.clauses) {
+			if (ts.isDefaultClause(clause)) {
+				assert.equal(
+					clause.statements.length,
+					1,
+					"supportsNativeCommandBinding(...) default clause should only return false",
+				)
+				assert.equal(
+					statementReturnsFalse(clause.statements[0]),
+					true,
+					"supportsNativeCommandBinding(...) default clause should return false",
+				)
+				hasDefaultFalse = true
+				continue
+			}
+
+			assert.ok(
+				ts.isStringLiteral(clause.expression),
+				"supportsNativeCommandBinding(...) case labels should be string literals",
+			)
+			assert.equal(
+				clause.statements.length,
+				1,
+				`supportsNativeCommandBinding(...) ${clause.expression.text} case should only return path comparisons`,
+			)
+			const [returnStatement] = clause.statements
+			assert.ok(
+				ts.isReturnStatement(returnStatement) &&
+					returnStatement.expression,
+				`supportsNativeCommandBinding(...) ${clause.expression.text} case should return a path comparison`,
+			)
+
+			const pathKeys = extractNativeBindingPathKeys(
+				returnStatement.expression,
+				clause.expression.text,
+			)
+			for (const pathKey of pathKeys) {
+				bindings.push({
+					path: [pathKey],
+					type: clause.expression.text,
+				})
+			}
+		}
+	}
+
+	assert.equal(
+		hasSingleSegmentGuard,
+		true,
+		"supportsNativeCommandBinding(...) should reject nested command paths before the whitelist switch",
+	)
+	assert.equal(
+		foundSwitch,
+		true,
+		"supportsNativeCommandBinding(...) should use a type switch that the verifier can compare",
+	)
+	assert.equal(
+		hasDefaultFalse,
+		true,
+		"supportsNativeCommandBinding(...) should default unsupported types to false",
+	)
+
+	return sortNativeBindingCases(bindings)
+}
+
+function extractNativeBindingPathKeys(expression, type) {
+	const current = skipExpressionWrappers(expression)
+
+	if (
+		ts.isBinaryExpression(current) &&
+		current.operatorToken.kind === ts.SyntaxKind.BarBarToken
+	) {
+		return [
+			...extractNativeBindingPathKeys(current.left, type),
+			...extractNativeBindingPathKeys(current.right, type),
+		]
+	}
+
+	if (!ts.isBinaryExpression(current)) {
+		throw new Error(
+			`Unsupported supportsNativeCommandBinding(...) return shape for ${type}. Expected path[0] string comparisons.`,
+		)
+	}
+
+	const operator = current.operatorToken.kind
+	if (
+		operator !== ts.SyntaxKind.EqualsEqualsEqualsToken &&
+		operator !== ts.SyntaxKind.EqualsEqualsToken
+	) {
+		throw new Error(
+			`Unsupported supportsNativeCommandBinding(...) comparison operator for ${type}.`,
+		)
+	}
+
+	const leftPathKey = extractPathZeroStringComparison(
+		current.left,
+		current.right,
+	)
+	if (leftPathKey) {
+		return [leftPathKey]
+	}
+
+	const rightPathKey = extractPathZeroStringComparison(
+		current.right,
+		current.left,
+	)
+	if (rightPathKey) {
+		return [rightPathKey]
+	}
+
+	throw new Error(
+		`Unsupported supportsNativeCommandBinding(...) path comparison for ${type}.`,
+	)
+}
+
+function extractPathZeroStringComparison(pathExpression, valueExpression) {
+	const pathNode = skipExpressionWrappers(pathExpression)
+	const valueNode = skipExpressionWrappers(valueExpression)
+
+	if (!ts.isStringLiteral(valueNode)) {
+		return undefined
+	}
+
+	if (
+		!ts.isElementAccessExpression(pathNode) ||
+		!isIdentifierNamed(pathNode.expression, "path") ||
+		!pathNode.argumentExpression ||
+		!ts.isNumericLiteral(pathNode.argumentExpression) ||
+		pathNode.argumentExpression.text !== "0"
+	) {
+		return undefined
+	}
+
+	return valueNode.text
+}
+
+function isSingleSegmentPathGuard(expression) {
+	const current = skipExpressionWrappers(expression)
+	if (!ts.isBinaryExpression(current)) {
+		return false
+	}
+	if (
+		current.operatorToken.kind !== ts.SyntaxKind.ExclamationEqualsToken &&
+		current.operatorToken.kind !==
+			ts.SyntaxKind.ExclamationEqualsEqualsToken
+	) {
+		return false
+	}
+
+	return (
+		(isPathLengthAccess(current.left) &&
+			isNumericLiteralText(current.right, "1")) ||
+		(isPathLengthAccess(current.right) &&
+			isNumericLiteralText(current.left, "1"))
+	)
+}
+
+function isPathLengthAccess(node) {
+	const current = skipExpressionWrappers(node)
+	return (
+		ts.isPropertyAccessExpression(current) &&
+		isIdentifierNamed(current.expression, "path") &&
+		current.name.text === "length"
+	)
+}
+
+function isNumericLiteralText(node, text) {
+	const current = skipExpressionWrappers(node)
+	return ts.isNumericLiteral(current) && current.text === text
+}
+
+function statementReturnsFalse(statement) {
+	if (!statement) {
+		return false
+	}
+
+	if (ts.isReturnStatement(statement)) {
+		return isFalseLiteral(statement.expression)
+	}
+
+	if (ts.isBlock(statement)) {
+		return (
+			statement.statements.length === 1 &&
+			statementReturnsFalse(statement.statements[0])
+		)
+	}
+
+	return false
+}
+
+function isFalseLiteral(node) {
+	return skipExpressionWrappers(node)?.kind === ts.SyntaxKind.FalseKeyword
+}
+
+function isIdentifierNamed(node, name) {
+	const current = skipExpressionWrappers(node)
+	return ts.isIdentifier(current) && current.text === name
+}
+
+function verifyNativeCommandBindingWhitelistMatchesCases() {
+	const whitelist = extractNativeCommandBindingWhitelist()
+	assert.deepEqual(
+		formatNativeBindingCaseList(whitelist),
+		formatNativeBindingCaseList(nativeCommandBindingCases),
+		"native command binding verifier cases should match supportsNativeCommandBinding(...) whitelist",
+	)
+}
+
+function makeNativeBindingProps(testCase, value) {
+	const props = { ...(testCase.baseProps ?? {}) }
+	setValueAtPath(props, testCase.path, value)
+	return props
+}
+
+function setValueAtPath(target, valuePath, value) {
+	assert.ok(valuePath.length > 0, "native binding case path should not be empty")
+	let current = target
+	for (const segment of valuePath.slice(0, -1)) {
+		if (!isPlainVerifierObject(current[segment])) {
+			current[segment] = {}
+		}
+		current = current[segment]
+	}
+	current[valuePath[valuePath.length - 1]] = value
+}
+
+function getValueAtPath(target, valuePath) {
+	let current = target
+	for (const segment of valuePath) {
+		assert.ok(
+			current != null,
+			`expected command payload path ${valuePath.join(".")} to exist`,
+		)
+		current = current[segment]
+	}
+	return current
+}
+
+function isPlainVerifierObject(value) {
+	return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
 function verifyNativeCommandBindingMirrorsSharedValue() {
+	for (const testCase of nativeCommandBindingCases) {
+		verifyNativeCommandBindingCaseMirrorsSharedValue(testCase)
+	}
+}
+
+function verifyNativeCommandBindingCaseMirrorsSharedValue(testCase) {
 	const harness = createReconcilerHarness()
 	const config = harness.loadReconcilerHostConfig()
-	const radius = harness.makeSharedValue(12, "native.radius")
+	const label = formatNativeBindingCase(testCase)
+	const sharedValue = harness.makeSharedValue(
+		testCase.initialValue,
+		`native.${label}`,
+	)
 	const { calls, container } = harness.makeRootContainer({
 		nativeCommandBindingsEnabled: true,
 	})
+	const propsWithSharedValue = makeNativeBindingProps(testCase, sharedValue)
+	const propsWithPlainValue = makeNativeBindingProps(
+		testCase,
+		testCase.plainValue,
+	)
 
-	const node = config.createInstance("circle", { radius }, container)
-	const mirror = only(harness.calls.createSynchronizable).mirror
+	const node = config.createInstance(
+		testCase.type,
+		propsWithSharedValue,
+		container,
+	)
+	const createdMirror = only(harness.calls.createSynchronizable)
+	const mirror = createdMirror.mirror
 	const firstCommand = only(node.commands)
 
 	assert.equal(
-		radius.listenerCount(),
+		sharedValue.listenerCount(),
 		1,
-		"native binding should register one SharedValue listener",
+		`${label} native binding should register one SharedValue listener`,
 	)
 	assert.equal(
 		harness.calls.sharedAddListener.length,
 		1,
-		"native binding should call SharedValue.addListener once",
+		`${label} native binding should call SharedValue.addListener once`,
+	)
+	assert.equal(
+		createdMirror.value,
+		testCase.initialValue,
+		`${label} native binding should seed Synchronizable from the SharedValue snapshot`,
+	)
+	assert.equal(
+		mirror.value,
+		testCase.initialValue,
+		`${label} native binding should expose the initial SharedValue snapshot on the mirror`,
 	)
 	assert.equal(
 		firstCommand.type,
-		"circle",
-		"native binding should still set the circle host command",
+		testCase.type,
+		`${label} native binding should still set the host command`,
 	)
 	assert.equal(
-		firstCommand.data.radius,
+		getValueAtPath(firstCommand.data, testCase.path),
 		mirror,
-		"native binding should pass the Synchronizable mirror to the native command payload",
+		`${label} native binding should pass the Synchronizable mirror to the native command payload`,
 	)
 	assertToggle(
 		calls.nativeAnimationActive,
 		0,
 		node,
 		true,
-		"native binding should mark the node as natively animated",
+		`${label} native binding should mark the node as natively animated`,
 	)
 	assert.equal(
 		calls.invalidations.length,
 		1,
-		"activating native animation should invalidate once",
+		`${label} activating native animation should invalidate once`,
 	)
 
-	radius.emit(18)
+	sharedValue.emit(testCase.nextValue)
 
 	assert.equal(
 		harness.calls.setBlocking.length,
 		1,
-		"SharedValue emits should update the native mirror with setBlocking",
+		`${label} SharedValue emits should update the native mirror with setBlocking`,
 	)
 	assert.equal(
 		only(harness.calls.setBlocking).mirror,
 		mirror,
-		"SharedValue emits should update the original mirror object",
+		`${label} SharedValue emits should update the original mirror object`,
+	)
+	assert.equal(
+		only(harness.calls.setBlocking).nextValue,
+		testCase.nextValue,
+		`${label} SharedValue emits should pass the latest value to setBlocking`,
 	)
 	assert.equal(
 		mirror.value,
-		18,
-		"setBlocking should store the latest native mirror value",
+		testCase.nextValue,
+		`${label} setBlocking should store the latest native mirror value`,
 	)
 	assert.equal(
 		node.commands.length,
 		1,
-		"native mirror emits should not rebuild host commands on JS",
+		`${label} native mirror emits should not rebuild host commands on JS`,
 	)
 	assert.equal(
 		calls.invalidations.length,
 		1,
-		"native mirror emits should not invalidate through the JS listener path",
+		`${label} native mirror emits should not invalidate through the JS listener path`,
+	)
+	assert.equal(
+		harness.calls.runOnJS.length,
+		0,
+		`${label} native mirror emits should not create runOnJS bridges`,
 	)
 	assert.equal(
 		harness.calls.runOnJSCalls.length,
 		0,
-		"native mirror emits should not bridge through runOnJS",
+		`${label} native mirror emits should not bridge through runOnJS`,
 	)
 
-	config.commitUpdate(node, "circle", { radius }, { radius: 7 }, null)
+	config.commitUpdate(
+		node,
+		testCase.type,
+		propsWithSharedValue,
+		propsWithPlainValue,
+		null,
+	)
 
 	assert.equal(
-		radius.listenerCount(),
+		sharedValue.listenerCount(),
 		0,
-		"commitUpdate to a plain command prop should remove the native listener",
+		`${label} commitUpdate to a plain command prop should remove the native listener`,
 	)
 	assert.equal(
 		only(harness.calls.sharedRemoveListener).had,
 		true,
-		"native listener cleanup should remove an existing SharedValue listener id",
+		`${label} native listener cleanup should remove an existing SharedValue listener id`,
 	)
 	assertToggle(
 		calls.nativeAnimationActive,
 		1,
 		node,
 		false,
-		"commitUpdate should mark the native animation inactive",
+		`${label} commitUpdate should mark the native animation inactive`,
 	)
 	assert.equal(
 		calls.invalidations.length,
 		2,
-		"deactivating native animation should invalidate once",
+		`${label} deactivating native animation should invalidate once`,
 	)
 	assert.equal(
-		last(node.commands).data.radius,
-		7,
-		"commitUpdate should apply the resolved plain command prop",
+		getValueAtPath(last(node.commands).data, testCase.path),
+		testCase.plainValue,
+		`${label} commitUpdate should apply the resolved plain command prop`,
 	)
 
 	const setBlockingCalls = harness.calls.setBlocking.length
 	const commandCalls = node.commands.length
-	radius.emit(22)
+	sharedValue.emit(testCase.lateValue)
 
 	assert.equal(
 		harness.calls.setBlocking.length,
 		setBlockingCalls,
-		"removed native listeners should not receive later SharedValue emits",
+		`${label} removed native listeners should not receive later SharedValue emits`,
 	)
 	assert.equal(
 		node.commands.length,
 		commandCalls,
-		"removed native bindings should not rebuild commands after cleanup",
+		`${label} removed native bindings should not rebuild commands after cleanup`,
 	)
 }
 
@@ -1039,9 +1428,47 @@ function last(items) {
 	return items[items.length - 1]
 }
 
+function formatNativeBindingCase(testCase) {
+	return `${testCase.type}.${testCase.path.join(".")}`
+}
+
+function formatNativeBindingCaseList(cases) {
+	return sortNativeBindingCases(cases).map(formatNativeBindingCase).join(", ")
+}
+
+function sortNativeBindingCases(cases) {
+	return [...cases].sort((left, right) =>
+		formatNativeBindingCase(left).localeCompare(formatNativeBindingCase(right)),
+	)
+}
+
 function walkTs(node, visitor) {
 	visitor(node)
 	ts.forEachChild(node, (child) => walkTs(child, visitor))
+}
+
+function skipExpressionWrappers(node) {
+	let current = node
+	while (current) {
+		if (
+			ts.isParenthesizedExpression(current) ||
+			ts.isNonNullExpression(current)
+		) {
+			current = current.expression
+			continue
+		}
+
+		if (
+			ts.isAsExpression(current) ||
+			ts.isTypeAssertionExpression(current)
+		) {
+			current = current.expression
+			continue
+		}
+
+		break
+	}
+	return current
 }
 
 function skipParentheses(node) {
