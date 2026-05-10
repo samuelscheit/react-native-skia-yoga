@@ -163,10 +163,11 @@ Accepted package-hygiene implementation:
 - `worker-049-util-worklets-closure-guard`: added a repo-owned Worklets transform guard to `check:skia-yoga-object-lazy-init`, asserting transformed `createYogaNode()` keeps `createYogaNode.__closure` exactly on `lazyNitroModulesBox`, does not capture `NitroModules`, and keeps the Worklets body on `lazyNitroModulesBox.current.unbox()`; added direct verifier dev dependencies for Babel and `react-native-worklets`.
 - `worker-050-post-049-root-cause-audit`: audited worker 049, confirmed it meaningfully closed the root transform-level lazy Nitro closure contract without proving device/UI-runtime Worklets behavior, reconfirmed local platform-native build/run blockers, and selected an example/Expo Babel-config Worklets transform guard for the package source path as the next strongest unblocked repo-owned target.
 - `worker-051-example-worklets-transform-guard`: extended `check:skia-yoga-object-lazy-init` so package source `src/util.ts` is also transformed through `example/babel.config.js` with Babel resolved from the example package context, then asserted the same lazy Nitro closure/body contract as the root Worklets transform guard.
+- `worker-052-post-051-root-cause-audit`: audited worker 051, accepted it as root plus example Babel/Expo transform proof without claiming device/UI-runtime Worklets or full native app proof, reconfirmed local platform-native blockers, and selected lazy-init public-import verifier hardening around the real public import graph and `codegenNativeComponent("SkiaYogaView")` registration as the next strongest unblocked repo-owned target.
 
 Current next step:
 
-- Monitor active read-only worker 052 post-worker-051 root-cause audit, then accept or reject it based on its tmux goal gate, report, final status, cleanup probes, and feasible-matrix evidence. The audit should rank the next strongest unblocked repo-owned target after both root and example Worklets transform guards.
+- Monitor active worker 053 public-import graph verifier hardening, then accept or reject it based on its tmux goal gate, implementation diff, report, final status, cleanup probes, and feasible-matrix evidence.
 
 Acceptance criteria:
 
