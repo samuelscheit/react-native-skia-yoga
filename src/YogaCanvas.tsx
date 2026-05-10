@@ -1,5 +1,4 @@
 import { type CanvasProps } from "@shopify/react-native-skia"
-import "@shopify/react-native-skia/lib/typescript/src/views/api.d.ts"
 import React, {
 	useCallback,
 	useEffect,
@@ -10,6 +9,7 @@ import React, {
 import type { LayoutChangeEvent } from "react-native"
 import { GestureDetector, type GestureType } from "react-native-gesture-handler"
 import { YogaInteractionRegistry } from "./interactivity"
+import { allocateYogaCanvasNativeId } from "./nativeId"
 import { type YogaRootContainer, reconciler } from "./Reconciler"
 import { SkiaYoga } from "./SkiaYogaObject"
 import { NodeCommandKind } from "./specs/SkiaYoga.nitro"
@@ -47,9 +47,6 @@ type NativeProfilePayload = {
 	sampleDurationMs?: unknown
 }
 
-const { SkiaViewNativeId } =
-	require("@shopify/react-native-skia/src/views/SkiaViewNativeId") as typeof import("@shopify/react-native-skia/lib/typescript/src/views/SkiaViewNativeId")
-
 function reportError(error: Error) {
 	console.error(error)
 }
@@ -86,7 +83,7 @@ export function YogaCanvas({
 	profilingEnabled = false,
 }: YogaCanvasProps) {
 	const nativeId = useMemo(() => {
-		return SkiaViewNativeId.current++
+		return allocateYogaCanvasNativeId()
 	}, [])
 	const activeContinuousNodesRef = useRef(new Set<object>())
 	const activeNativeAnimationNodesRef = useRef(new Set<object>())
