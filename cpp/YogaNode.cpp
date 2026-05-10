@@ -270,73 +270,6 @@ PointerEventsMode parsePointerEventsMode(const std::string& value)
     return PointerEventsMode::AUTO;
 }
 
-std::string describeJSIValue(jsi::Runtime& runtime, const jsi::Value& value, int depth = 0)
-{
-    if (value.isUndefined()) {
-        return "undefined";
-    }
-    if (value.isNull()) {
-        return "null";
-    }
-    if (value.isBool()) {
-        return value.getBool() ? "true" : "false";
-    }
-    if (value.isNumber()) {
-        return std::to_string(value.asNumber());
-    }
-    if (value.isString()) {
-        return "\"" + value.asString(runtime).utf8(runtime) + "\"";
-    }
-    if (!value.isObject()) {
-        return "[unknown]";
-    }
-
-    auto object = value.asObject(runtime);
-    if (object.isArray(runtime)) {
-        auto array = object.asArray(runtime);
-        if (depth >= 1) {
-            return "[Array(" + std::to_string(array.size(runtime)) + ")]";
-        }
-
-        std::string result = "[";
-        const auto length = std::min<size_t>(array.size(runtime), 5);
-        for (size_t index = 0; index < length; ++index) {
-            if (index > 0) {
-                result += ", ";
-            }
-            result += describeJSIValue(runtime, array.getValueAtIndex(runtime, index), depth + 1);
-        }
-        if (array.size(runtime) > length) {
-            result += ", ...";
-        }
-        result += "]";
-        return result;
-    }
-
-    if (depth >= 2) {
-        return "[Object]";
-    }
-
-    auto propertyNames = object.getPropertyNames(runtime);
-    std::string result = "{";
-    const auto length = std::min<size_t>(propertyNames.size(runtime), 8);
-    for (size_t index = 0; index < length; ++index) {
-        if (index > 0) {
-            result += ", ";
-        }
-
-        const auto keyValue = propertyNames.getValueAtIndex(runtime, index);
-        const auto key = keyValue.isString() ? keyValue.asString(runtime).utf8(runtime) : "<non-string>";
-        result += key + ": ";
-        result += describeJSIValue(runtime, object.getProperty(runtime, key.c_str()), depth + 1);
-    }
-    if (propertyNames.size(runtime) > length) {
-        result += ", ...";
-    }
-    result += "}";
-    return result;
-}
-
 } // namespace
 
 YogaNode::~YogaNode()
@@ -907,33 +840,6 @@ void YogaNode::setStyle(const NodeStyle& style)
         }
     } else if (const auto& value = style.matrix) {
         _matrix = makeMatrixPointer(*value);
-    }
-}
-
-jsi::Value YogaNode::setStyleRaw(jsi::Runtime& runtime, const jsi::Value& thisArg, const jsi::Value* args, size_t count)
-{
-    (void)thisArg;
-
-    if (count < 1) {
-        throw jsi::JSError(runtime, "YogaNode.setStyle(style) expects a style object.");
-    }
-
-    try {
-        const auto style = JSIConverter<NodeStyle>::fromJSI(runtime, args[0]);
-        setStyle(style);
-        return jsi::Value::undefined();
-    } catch (const jsi::JSError&) {
-        throw;
-    } catch (const std::exception& error) {
-        throw jsi::JSError(
-            runtime,
-            "YogaNode.setStyle(style) failed. style=" + describeJSIValue(runtime, args[0]) +
-                " cause=" + error.what());
-    } catch (...) {
-        throw jsi::JSError(
-            runtime,
-            "YogaNode.setStyle(style) failed. style=" + describeJSIValue(runtime, args[0]) +
-                " cause=Unknown native error");
     }
 }
 
