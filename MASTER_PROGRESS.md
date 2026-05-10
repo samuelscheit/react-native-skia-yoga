@@ -2013,10 +2013,30 @@ Last updated: 2026-05-10
 - Created `worker-086-yoganode-text-paragraph-command-render` from current `main`, symlinked root/example dependencies from the main worktree, and wrote the worker 086 prompt.
 - Launched `rnskia-worker-086-yoganode-text-paragraph-command-render` as a top-level tmux subprocess to extend bounded host-native `TextCmd` and `ParagraphCmd` command/render verification.
 - Worker 086 passed the visible `GOAL_CREATED: Extend host-native YogaNode command/render verification for bounded TextCmd and ParagraphCmd coverage.` gate as the first worker message.
+- Worker 086 completed, reported `Goal finished.`, and wrote `worker-progress/worker-086-yoganode-text-paragraph-command-render.md`.
+- Worker 086 expanded `scripts/verify-yoganode-native-commands-render.mjs` in place, adding bounded real `TextCmd` and `ParagraphCmd` coverage through `JSIConverter<NodeCommand>::fromJSI(...)`, real `YogaNode::setCommand()`, paragraph Yoga measure-function behavior, and `renderToContext()` raster evidence. It kept exact typography, font fallback correctness, paragraph shaping fidelity, all styles, Nitro materialization, Worklets, RNGH, image decoding/assets, and platform-native presentation outside the proof boundary.
+- Worker 086 verification passed `node --check scripts/verify-yoganode-native-commands-render.mjs`, `npm run check:yoganode-native-commands-render`, `npm run check:feasible-matrix` with all 26 commands in `3m 44s`, `git diff --check`, and cleanup/process probes.
+- Orchestrator independent acceptance in the worker worktree passed report/proof-boundary review, `node --check scripts/verify-yoganode-native-commands-render.mjs`, `git diff --check`, `npm run check:yoganode-native-commands-render`, cleanup/status probes, and `npm run check:feasible-matrix` with all 26 commands in `3m 47s`; command 17 `check:yoganode-native-commands-render` passed in `30.1s`.
+- Committed worker 086 as `cd16486 Add YogaNode text paragraph render verifier`.
+- Merged worker 086 into `main` as `3551d33 Merge worker 086 YogaNode text paragraph verifier`.
+- Main post-merge verification after worker 086 integration:
+  - `node --check scripts/verify-yoganode-native-commands-render.mjs`: passed.
+  - `node --check scripts/verify-feasible-matrix.mjs`: passed.
+  - `git diff --check`: passed.
+  - `npm run check:yoganode-native-commands-render`: passed.
+  - `npm run check:feasible-matrix`: passed all 26 commands in `3m 39s`; updated `check:yoganode-native-commands-render` passed as command 17 in `27.8s`.
+  - Final main tracked status was clean; known ignored local artifacts were left untouched.
+- Cleanup after worker 086 acceptance:
+  - Killed `rnskia-worker-086-yoganode-text-paragraph-command-render`.
+  - Removed `../worker-086-yoganode-text-paragraph-command-render`.
+  - Deleted branch `worker/086-yoganode-text-paragraph-command-render`.
+- Created `worker-087-post-086-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and wrote the worker 087 prompt.
+- Launched `rnskia-worker-087-post-086-root-cause-audit` as a read-only top-level tmux subprocess to audit post-worker-086 state and select the next strongest unblocked root-cause target.
+- Worker 087 passed the visible `GOAL_CREATED: Audit post-worker-086 state and select the next strongest unblocked root-cause target.` gate as the first worker message.
 
 ## Active Workers
 
-- `rnskia-worker-086-yoganode-text-paragraph-command-render`: launched from `worker/086-yoganode-text-paragraph-command-render`; monitoring for bounded `TextCmd`/`ParagraphCmd` command-render verification.
+- `rnskia-worker-087-post-086-root-cause-audit`: launched from `worker/087-post-086-root-cause-audit`; monitoring for post-worker-086 audit and next target selection.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2122,10 +2142,11 @@ Accepted worker reports:
 - `worker-progress/worker-083-post-082-root-cause-audit.md`
 - `worker-progress/worker-084-yoganode-image-command-render.md`
 - `worker-progress/worker-085-post-084-root-cause-audit.md`
+- `worker-progress/worker-086-yoganode-text-paragraph-command-render.md`
 
 ## Pending Workers
 
-- None; worker 086 is active.
+- None; worker 087 is active.
 
 ## Decisions
 
@@ -2150,15 +2171,16 @@ Accepted worker reports:
 - Post-worker-078 target selection: worker 079 reconfirmed the 25-command matrix and local platform-native blockers, accepted worker 078's proof boundary, and selected host-native YogaNode command/render verification because current checks still avoid real `YogaNode::setCommand()`, real command classes, and raster rendering assertions.
 - YogaNode command/render verification: worker 080 added `check:yoganode-native-commands-render`, proving selected simple `JSIConverter<NodeCommand>::fromJSI(...)` payloads, real `YogaNode::setCommand()`, real `RectCmd`/`GroupCmd`/`PointsCmd` raster rendering through `renderToContext()`, parent/child Yoga-derived coordinates, group raster-cache reuse/invalidation, and pixel assertions. The feasible matrix now has 26 commands. Orchestrator post-merge verification passed syntax checks, `git diff --check`, the focused verifier, and `npm run check:feasible-matrix` in `4m 35s`.
 - Post-worker-080 target selection: worker 081 reconfirmed the 26-command matrix and local platform-native blockers, accepted worker 080's proof boundary, and selected deterministic command/render expansion because real command coverage still excludes `line`, `oval`, numeric `circle`, numeric `rrect`, bounded `blurMaskFilter`, and real `RNSkia::JsiSkPath` host-object `path` conversion/rendering.
-- YogaNode command/render expansion: worker 082 expanded the existing host-native verifier to cover real `LineCmd`, `OvalCmd`, numeric/static `CircleCmd`, numeric/static `RRectCmd`, bounded `BlurMaskFilterCmd`, and real `RNSkia::JsiSkPath` host-object `PathCmd` conversion/rendering through `JSIConverter<NodeCommand>::fromJSI(...)`, `YogaNode::setCommand()`, and `renderToContext()` raster assertions. Worker 084 then added bounded real `ImageCmd` coverage with a synthetic `SkImage` wrapped in a real RN Skia `JsiSkImage`, `fit: "fill"` raster pixel/bounds assertions, and a plain-JS image negative assertion. The feasible matrix remains 26 commands because the existing command was expanded, and orchestrator post-merge verification passed the focused verifier plus the full matrix in `3m 52s`.
+- YogaNode command/render expansion: worker 082 expanded the existing host-native verifier to cover real `LineCmd`, `OvalCmd`, numeric/static `CircleCmd`, numeric/static `RRectCmd`, bounded `BlurMaskFilterCmd`, and real `RNSkia::JsiSkPath` host-object `PathCmd` conversion/rendering through `JSIConverter<NodeCommand>::fromJSI(...)`, `YogaNode::setCommand()`, and `renderToContext()` raster assertions. Worker 084 then added bounded real `ImageCmd` coverage with a synthetic `SkImage` wrapped in a real RN Skia `JsiSkImage`, `fit: "fill"` raster pixel/bounds assertions, and a plain-JS image negative assertion. Worker 086 added bounded real `TextCmd` and `ParagraphCmd` coverage with host font-manager setup, text state/fallback-color assertions, paragraph measurement, and raster evidence. The feasible matrix remains 26 commands because the existing command was expanded, and orchestrator post-merge verification passed the focused verifier plus the full matrix in `3m 39s`.
 - Post-worker-082 target selection: worker 083 reconfirmed the 26-command matrix and local platform-native blockers, accepted worker 082's proof boundary, and selected host-native `ImageCmd` command/render fidelity as the next strongest unblocked target because it is a real remaining command class with deterministic synthetic `SkImage` pixels and a real RN Skia `JsiSkImage` host-object path.
 - Post-worker-084 target selection: worker 085 reconfirmed the 26-command matrix and local platform-native blockers, accepted worker 084's proof boundary, and selected host-native `TextCmd` plus `ParagraphCmd` command/render fidelity as the next strongest unblocked target because those are the final unentered command classes in `check:yoganode-native-commands-render`.
+- Post-worker-086 target selection: worker 087 is active and auditing the verified post-worker-086 state to select the next strongest unblocked target.
 - Example Worklets transform: worker 051 added the example/Expo Babel-config path to `check:skia-yoga-object-lazy-init`, proving package source `src/util.ts` keeps the same lazy Nitro closure/body contract when transformed through `example/babel.config.js` and the example dependency context.
 - Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the package lifecycle root-cause task, worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`. Worker 020 found the runtime-smoke archive discovery target, worker 021 completed it, worker 022 found the Android CMake archive-layout analogue, worker 023 completed it, worker 024 selected lint-ci root configuration/formatter repair as the next repo-owned feedback-loop fix, worker 025 completed that repair, worker 026 selected the remaining product-source React Native deep imports as the next implementation target, worker 027 completed that target, worker 028 selected example lint-contract cleanup, worker 029 completed it, worker 030 selected public README/API documentation drift, worker 031 completed that contract fix, worker 032 selected native publish-surface completeness, worker 033 completed that package-surface fix, worker 034 selected the unguarded Expo export path plus Metro config dump as the next example feedback-loop target, worker 035 completed that feedback-loop target, worker 036 confirmed platform-native build/run remains blocked by local toolchain gaps rather than a stronger repo-owned target, and worker 037 removed the strongest known unblocked RN Skia private-import target.
 
 ## Next Implementation Candidates
 
-- Launch and monitor worker 086 for bounded host-native `TextCmd` and `ParagraphCmd` command/render verification. It should extend the existing command-render verifier, assert real command conversion/installation/paragraph measure behavior/bounded raster evidence, and avoid exact typography/font/shaping/platform overclaims.
+- Monitor worker 087 for the post-worker-086 audit and selected next implementation target.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
