@@ -203,10 +203,11 @@ Accepted package-hygiene implementation:
 - `worker-089-animated-double-synchronizable`: fixed `AnimatedDouble` Worklets `SerializableJSRef` / `Synchronizable` validation to be stable outside assertion builds, added `check:animated-double-synchronizable`, proved bounded host-JSC/native dynamic value extraction and numeric resolution through RN Skia main-runtime state, and expanded `check:feasible-matrix` to 28 commands.
 - `worker-090-animated-double-nodecommand`: expanded `check:yoganode-native-commands-render` to prove selected Worklets-backed dynamic `AnimatedDouble` props through `JSIConverter<NodeCommand>::fromJSI(...)` for `circle.radius`, `rrect.cornerRadius`, and `blurMaskFilter.blur`, including fallback, main-runtime resolution, mutation, render evidence, and dynamic raster-cache bypass.
 - `worker-091-post-090-root-cause-audit`: audited the post-worker-090 state, accepted the prior worker-091 28-command feasible matrix evidence, reconfirmed local platform-native blockers, and selected dynamic `PathCmd` `trimStart` / `trimEnd` `AnimatedDouble` NodeCommand/render coverage as the strongest remaining unblocked target.
+- `worker-092-dynamic-path-trim-nodecommand`: expanded `check:yoganode-native-commands-render` to prove Worklets-backed dynamic `AnimatedDouble` NodeCommand coverage for `path.trimStart` and `path.trimEnd`, including real `PathCmd` conversion/rendering, render-time fallback, main-runtime resolution, mutation observation, path-trim raster evidence, symmetric rejection cases, and dynamic raster-cache bypass.
 
 Current next step:
 
-- Monitor worker 092's dynamic `PathCmd` `trimStart` / `trimEnd` `AnimatedDouble` NodeCommand/render implementation and accept it only after focused verifier, feasible matrix, cleanup, and report evidence are complete.
+- Launch worker 093 as a read-only post-worker-092 root-cause audit to rank the remaining proof gaps after dynamic path trim coverage.
 
 Acceptance criteria:
 
