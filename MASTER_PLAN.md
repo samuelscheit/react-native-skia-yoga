@@ -164,10 +164,11 @@ Accepted package-hygiene implementation:
 - `worker-050-post-049-root-cause-audit`: audited worker 049, confirmed it meaningfully closed the root transform-level lazy Nitro closure contract without proving device/UI-runtime Worklets behavior, reconfirmed local platform-native build/run blockers, and selected an example/Expo Babel-config Worklets transform guard for the package source path as the next strongest unblocked repo-owned target.
 - `worker-051-example-worklets-transform-guard`: extended `check:skia-yoga-object-lazy-init` so package source `src/util.ts` is also transformed through `example/babel.config.js` with Babel resolved from the example package context, then asserted the same lazy Nitro closure/body contract as the root Worklets transform guard.
 - `worker-052-post-051-root-cause-audit`: audited worker 051, accepted it as root plus example Babel/Expo transform proof without claiming device/UI-runtime Worklets or full native app proof, reconfirmed local platform-native blockers, and selected lazy-init public-import verifier hardening around the real public import graph and `codegenNativeComponent("SkiaYogaView")` registration as the next strongest unblocked repo-owned target.
+- `worker-053-public-import-graph-verifier`: hardened `check:skia-yoga-object-lazy-init` so the harness loads the real public project import graph, counts exactly one `codegenNativeComponent("SkiaYogaView")` registration, asserts `NativeSkiaYoga` is not loaded by supported public imports, and preserves the existing lazy Nitro/Worklets/native side-effect checks.
 
 Current next step:
 
-- Monitor active worker 053 public-import graph verifier hardening, then accept or reject it based on its tmux goal gate, implementation diff, report, final status, cleanup probes, and feasible-matrix evidence.
+- Monitor active read-only worker 054 post-worker-053 root-cause audit, then accept or reject it based on its tmux goal gate, report, final status, cleanup probes, and feasible-matrix evidence. The audit should rank the next strongest unblocked repo-owned target after the public-import graph verifier hardening.
 
 Acceptance criteria:
 
