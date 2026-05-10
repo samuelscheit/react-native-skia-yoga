@@ -2095,10 +2095,31 @@ Last updated: 2026-05-10
 - Prepared worker 090 as the next target: dynamic Worklets-backed `AnimatedDouble` through `JSIConverter<NodeCommand>::fromJSI(...)` for selected command props in the existing host-native command/render verifier, bounded to host-JSC/native command conversion and raster behavior.
 - Created `worker-090-animated-double-nodecommand` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-090-animated-double-nodecommand` as a top-level tmux subprocess.
 - Worker 090 passed the visible `GOAL_CREATED: Prove or root-cause dynamic Worklets-backed AnimatedDouble through JSIConverter<NodeCommand>::fromJSI in bounded host-native command/render verification.` gate as the first worker message.
+- Worker 090 completed, reported `Goal finished.`, and wrote `worker-progress/worker-090-animated-double-nodecommand.md`.
+- Worker 090 expanded `scripts/verify-yoganode-native-commands-render.mjs` in place to prove real Worklets `Synchronizable` NativeState objects through `JSIConverter<NodeCommand>::fromJSI(...)` for selected dynamic `AnimatedDouble` command props: `circle.radius`, `rrect.cornerRadius`, and `blurMaskFilter.blur`.
+- Worker 090 also updated `scripts/verify-animated-double-synchronizable.mjs` so the raw `AnimatedDouble` verifier now points to the command/render verifier for selected NodeCommand integration instead of saying the command path is excluded.
+- The proof covers static-vs-dynamic converter state, source-owned negative cases through `circle.radius`, no-main-runtime fallback, main-runtime resolution, `Synchronizable::setBlocking(...)` mutation, render pixels/regions, and dynamic raster-cache bypass for a rasterized group with dynamic child content. It still excludes UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH delivery, Nitro module registry install, React Native runtime integration, platform app build/run, image loading/decoding, exact render fidelity, full image-fit coverage, and every `AnimatedDouble` command prop.
+- Orchestrator independent acceptance in the worker worktree passed report/proof-boundary review, `git diff --check`, syntax checks for changed verifier scripts, `npm run check:yoganode-native-commands-render`, `npm run check:animated-double-synchronizable`, cleanup/status probes, and `npm run check:feasible-matrix` with all 28 commands in `7m 49s`.
+- Committed worker 090 as `4141446 Prove AnimatedDouble NodeCommand dynamics`.
+- Merged worker 090 into `main` as `4494b61 Merge worker 090 AnimatedDouble NodeCommand verifier`.
+- Main post-merge verification after worker 090 integration:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - `node --check scripts/verify-yoganode-native-commands-render.mjs`: passed.
+  - `node --check scripts/verify-animated-double-synchronizable.mjs`: passed.
+  - `npm run check:yoganode-native-commands-render`: passed.
+  - `npm run check:animated-double-synchronizable`: passed.
+  - `npm run check:feasible-matrix`: passed all 28 commands in `4m 50s`; expanded command 17 `check:yoganode-native-commands-render` passed in `35.1s`, and command 18 `check:animated-double-synchronizable` passed in `7.7s`.
+  - Final main tracked status was clean; known ignored local artifacts were left untouched.
+- Cleanup after worker 090 acceptance:
+  - Killed `rnskia-worker-090-animated-double-nodecommand`.
+  - Removed `../worker-090-animated-double-nodecommand`.
+  - Deleted branch `worker/090-animated-double-nodecommand`.
+  - Verified no matching verifier temp roots or active matching verifier/debug processes remained.
+- Prepared worker 091 as the next step: a read-only post-worker-090 root-cause audit to select the strongest remaining unblocked target.
 
 ## Active Workers
 
-- `rnskia-worker-090-animated-double-nodecommand`: running from `worker/090-animated-double-nodecommand`; monitoring dynamic `AnimatedDouble` through `NodeCommand` conversion/render proof.
+- None currently; worker 091 is prepared for launch.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2208,10 +2229,11 @@ Accepted worker reports:
 - `worker-progress/worker-087-post-086-root-cause-audit.md`
 - `worker-progress/worker-088-nitro-yoganode-materialization.md`
 - `worker-progress/worker-089-animated-double-synchronizable.md`
+- `worker-progress/worker-090-animated-double-nodecommand.md`
 
 ## Pending Workers
 
-- None; worker 090 is active.
+- Worker 091 is prepared for launch.
 
 ## Decisions
 
@@ -2242,12 +2264,13 @@ Accepted worker reports:
 - Post-worker-086 target selection: worker 087 reconfirmed the 26-command matrix and local platform-native blockers, accepted worker 086's proof boundary, and selected Nitro `YogaNode::toObject()` / prototype materialization plus generated JS-facing `YogaNode` method execution as the next strongest unblocked target.
 - YogaNode Nitro materialization: worker 088 added `check:yoganode-nitro-materialization`, proving host-JSC `YogaNode::toObject(runtime)` materialization, NativeState/prototype attachment, generated `setCommand`, `setStyle`, `computeLayout`, and `layout` wrapper execution, cached object stability, and direct native side effects from those generated calls. The feasible matrix now has 27 commands and passed on main in `4m 18s`. The proof boundary still excludes Nitro module registry install, React Native runtime integration, platform app build/run, simulator/device launch, native presentation, UI-runtime Worklets/RNGH delivery, dynamic Worklets-backed `AnimatedDouble`, image assets/decoding/loading, and exact render fidelity.
 - AnimatedDouble Synchronizable proof: worker 089 added `check:animated-double-synchronizable`, proving host-JSC/native Worklets `Synchronizable` extraction into `AnimatedDouble`, `canConvert(...)`, dynamic flag behavior, no-main-runtime fallback, main-runtime numeric resolution, mutation observation, and stable local rejection paths. It also fixed assertion-mode-dependent wrong-Serializable handling in `cpp/AnimatedDouble.cpp`. The feasible matrix now has 28 commands and passed on main in `4m 29s`. The proof boundary still excludes UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH delivery, Nitro module registry install, React Native runtime integration, platform app build/run, image assets/decoding/loading, exact render fidelity, and dynamic `AnimatedDouble` through `JSIConverter<NodeCommand>::fromJSI(...)`.
+- AnimatedDouble NodeCommand proof: worker 090 expanded `check:yoganode-native-commands-render` to prove selected Worklets-backed dynamic `AnimatedDouble` command props through real `JSIConverter<NodeCommand>::fromJSI(...)`, `YogaNode::setCommand()`, and `renderToContext()` paths. Covered props are `circle.radius`, `rrect.cornerRadius`, and `blurMaskFilter.blur`, including no-main-runtime fallback, main-runtime resolution, `Synchronizable::setBlocking(...)` mutation, source-owned negative cases through `circle.radius`, and dynamic raster-cache bypass. The feasible matrix remains 28 commands and passed on main in `4m 50s`. Remaining gaps include UI-runtime Worklets/Reanimated delivery, full RN runtime integration, platform app build/run, image asset loading/decoding, full image-fit coverage, exact render fidelity, and unproven `AnimatedDouble` props such as path trim values.
 - Example Worklets transform: worker 051 added the example/Expo Babel-config path to `check:skia-yoga-object-lazy-init`, proving package source `src/util.ts` keeps the same lazy Nitro closure/body contract when transformed through `example/babel.config.js` and the example dependency context.
 - Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the package lifecycle root-cause task, worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`. Worker 020 found the runtime-smoke archive discovery target, worker 021 completed it, worker 022 found the Android CMake archive-layout analogue, worker 023 completed it, worker 024 selected lint-ci root configuration/formatter repair as the next repo-owned feedback-loop fix, worker 025 completed that repair, worker 026 selected the remaining product-source React Native deep imports as the next implementation target, worker 027 completed that target, worker 028 selected example lint-contract cleanup, worker 029 completed it, worker 030 selected public README/API documentation drift, worker 031 completed that contract fix, worker 032 selected native publish-surface completeness, worker 033 completed that package-surface fix, worker 034 selected the unguarded Expo export path plus Metro config dump as the next example feedback-loop target, worker 035 completed that feedback-loop target, worker 036 confirmed platform-native build/run remains blocked by local toolchain gaps rather than a stronger repo-owned target, and worker 037 removed the strongest known unblocked RN Skia private-import target.
 
 ## Next Implementation Candidates
 
-- Monitor worker 090 for dynamic Worklets-backed `AnimatedDouble` through `JSIConverter<NodeCommand>::fromJSI(...)` for selected command props in `check:yoganode-native-commands-render`, bounded to host-JSC/native command conversion and raster assertions.
+- Launch worker 091 as a read-only post-worker-090 root-cause audit to select the next strongest unblocked target from the remaining proof gaps.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
