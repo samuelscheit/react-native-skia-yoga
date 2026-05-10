@@ -70,7 +70,6 @@
 		"@react-native/eslint-config": "0.80.1",
 		"@types/jest": "^29.5.12",
 		"@types/react": "^19.0.6",
-		"@types/react-reconciler": "^0.32.1",
 		"eslint": "^8.57.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-prettier": "^5.2.1",
@@ -110,6 +109,8 @@
 		"react-native-nitro-modules"
 	],
 	"dependencies": {
-		"react-native-nitro-modules": "^0.35.0"
+		"@types/react-reconciler": "^0.32.1",
+		"react-native-nitro-modules": "^0.35.0",
+		"react-reconciler": "0.31.0"
 	}
 }
