@@ -2297,10 +2297,23 @@ Last updated: 2026-05-11
 - Prepared worker 101 as the next step: a read-only post-worker-100 root-cause audit to select the next strongest unblocked target.
 - Created `worker-101-post-100-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-101-post-100-root-cause-audit` as a top-level tmux subprocess.
 - Worker 101 passed the visible `GOAL_CREATED: Audit post-worker-100 state and select the next strongest unblocked root-cause target.` gate as the first worker message.
+- Worker 101 completed and reported `Goal finished.` It wrote `worker-progress/worker-101-post-100-root-cause-audit.md`.
+- Worker 101 reran `npm run check:feasible-matrix`, which passed all 28 commands in `4m 55s` command duration (`295.24s` real time), and confirmed platform-native build/run remains locally blocked by missing full Xcode selection, CocoaPods, Java runtime, Android SDK variables/tools, ADB, CMake, Ninja, and Gradle.
+- Worker 101 selected synthetic `ImageCmd` fit-mode/default/invalid coverage in `check:yoganode-native-commands-render` as the next strongest unblocked target, ahead of remaining generated `setCommand(...)` breadth and the lower-risk direct `StrokeOpts::canConvert(...)` cleanup.
+- Worker 101 branch commit: `d40c4ba Add worker 101 post-100 audit`.
+- Merged worker 101 into `main` as `927cbfb Merge worker 101 post-100 audit`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 101 cleanup:
+  - Killed `rnskia-worker-101-post-100-root-cause-audit`.
+  - Removed `../worker-101-post-100-root-cause-audit`.
+  - Deleted branch `worker/101-post-100-root-cause-audit`.
+  - Verified no `rnskia-worker-101` tmux session, worker 101 worktree, or worker 101 branch remained.
+- Prepared worker 102 as the next step: expand synthetic `ImageCmd` fit-mode/default/invalid coverage in `check:yoganode-native-commands-render`.
 
 ## Active Workers
 
-- `rnskia-worker-101-post-100-root-cause-audit`: running from `worker/101-post-100-root-cause-audit`; auditing the post-worker-100 state and selecting the next strongest unblocked root-cause target.
+- `rnskia-worker-102-image-fit-coverage`: planned from `worker/102-image-fit-coverage`; expanding synthetic `ImageCmd` fit-mode/default/invalid coverage.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2421,10 +2434,11 @@ Accepted worker reports:
 - `worker-progress/worker-098-reconciler-js-mode-command-bindings.md`
 - `worker-progress/worker-099-post-098-root-cause-audit.md`
 - `worker-progress/worker-100-nitro-setcommand-breadth.md`
+- `worker-progress/worker-101-post-100-root-cause-audit.md`
 
 ## Pending Workers
 
-- None; worker 101 is active.
+- None; worker 102 is active.
 
 ## Decisions
 
@@ -2466,12 +2480,13 @@ Accepted worker reports:
 - Reconciler JS-mode command listener proof: worker 098 expanded `check:reconciler-animated-bindings` with representative JS listener cases for native-disabled `circle.radius`, unsupported-native `group.rasterize`, nested `line.from.x`, post-worker-096 `path.stroke.miter_limit`, and nested-array `points.points.0.x`. The verifier now proves listener registration, `runOnJS` key/value delivery, command rebuild/invalidation, native-mirror avoidance, cleanup, and ignored late emits for those source-level cases while preserving the native mirror whitelist coverage. The feasible matrix remained 28 commands and passed on main in `4m 43s`. Remaining gaps still include UI-runtime Worklets/Reanimated delivery, actual native bridge delivery, C++ conversion for JS-mode cases, Nitro registry install, React Native runtime integration, platform app build/run, native presentation, image asset loading/decoding, and exact render fidelity.
 - Post-worker-098 target selection: worker 099 reconfirmed the 28-command feasible matrix in `4m 45s`, accepted worker 098's source-level JS listener proof boundary, and selected generated Nitro-materialized `YogaNode.setCommand(...)` breadth beyond the current `group` case as the next strongest unblocked target. The gap is that current `check:yoganode-nitro-materialization` proves generated `setCommand(group)` only, while Reconciler and direct native command/render verifiers now cover representative `group`, `line`, `path.stroke.miter_limit`, and `points` payload shapes through adjacent boundaries. The next target should extend `scripts/verify-yoganode-nitro-materialization.mjs` with generated wrapper calls on fresh materialized YogaNode instances for representative command payloads, without claiming actual RN bridge delivery, Nitro registry install inside React Native, UI-runtime Worklets, Reanimated delivery, platform app build/run, image asset loading, or render fidelity.
 - Generated Nitro setCommand breadth proof: worker 100 expanded `check:yoganode-nitro-materialization` beyond `group` by invoking generated JS-facing `setCommand(line)`, `setCommand(points)`, and public-shaped `setCommand(path)` wrappers from fresh materialized YogaNode objects. The verifier now proves generated wrapper callability/`undefined` return, NativeState identity to the original C++ YogaNode, `_commandKind`, concrete command classes, nested line points, array points and point mode, and public `path.stroke.miter_limit` conversion through a real `JsiSkPath` host object. Existing generated `setCommand(group)`, `setStyle`, `computeLayout`, and `layout` coverage remains intact. The feasible matrix remained 28 commands and passed on main in `4m 17s`. Remaining gaps still include actual React Native bridge delivery, Nitro registry install in a React Native runtime, UI-runtime Worklets/Reanimated delivery, platform app build/run, native presentation, image asset loading/decoding, exact render fidelity, and full command-set coverage.
+- Post-worker-100 target selection: worker 101 reconfirmed the 28-command feasible matrix in `4m 55s`, accepted worker 100's host-JSC generated wrapper proof boundary, and selected synthetic `ImageCmd` fit-mode/default/invalid coverage as the next strongest unblocked target. The gap is that `src/specs/commands.ts` exposes image fits `cover`, `contain`, `fill`, `fitHeight`, `fitWidth`, `none`, and `scaleDown`; `cpp/JSIConverter+NodeCommand.hpp` accepts those strings; `cpp/YogaNode.cpp` defaults missing image fit to `contain`; but `check:yoganode-native-commands-render` currently proves only synthetic `fit: "fill"` and still excludes full image-fit coverage. The next target should table-drive bounded synthetic `JsiSkImage` command conversion/render cases, including default/missing fit and invalid-fit rejection, without claiming asset loading/decoding, `useImage`, local/remote asset resolution, React Native bridge delivery, platform app runtime, exact render fidelity, Nitro registry install, UI-runtime Worklets, or real Reanimated delivery.
 - Example Worklets transform: worker 051 added the example/Expo Babel-config path to `check:skia-yoga-object-lazy-init`, proving package source `src/util.ts` keeps the same lazy Nitro closure/body contract when transformed through `example/babel.config.js` and the example dependency context.
 - Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the package lifecycle root-cause task, worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`. Worker 020 found the runtime-smoke archive discovery target, worker 021 completed it, worker 022 found the Android CMake archive-layout analogue, worker 023 completed it, worker 024 selected lint-ci root configuration/formatter repair as the next repo-owned feedback-loop fix, worker 025 completed that repair, worker 026 selected the remaining product-source React Native deep imports as the next implementation target, worker 027 completed that target, worker 028 selected example lint-contract cleanup, worker 029 completed it, worker 030 selected public README/API documentation drift, worker 031 completed that contract fix, worker 032 selected native publish-surface completeness, worker 033 completed that package-surface fix, worker 034 selected the unguarded Expo export path plus Metro config dump as the next example feedback-loop target, worker 035 completed that feedback-loop target, worker 036 confirmed platform-native build/run remains blocked by local toolchain gaps rather than a stronger repo-owned target, and worker 037 removed the strongest known unblocked RN Skia private-import target.
 
 ## Next Implementation Candidates
 
-- Monitor worker 101's post-worker-100 root-cause audit and accept/merge it if its report, verification, target selection, and cleanup meet the prompt.
+- Monitor worker 102's synthetic `ImageCmd` fit coverage work and accept/merge it if its implementation, report, verification, and cleanup meet the prompt.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
