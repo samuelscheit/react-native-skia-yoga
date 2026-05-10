@@ -166,9 +166,9 @@ try {
 	console.log("YogaNode native command/render verifier passed:")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, AnimatedDouble.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
 	console.log("- The executable created a JSC runtime, installed it as RN Skia's main runtime, converted simple NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), and executed real YogaNode::setCommand().")
-	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, and ImageCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
-	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, point drawing, line stroke drawing, oval/circle/rrect fills, bounded blur-mask-filter inheritance, real JsiSkPath host-object path conversion/rendering, and real JsiSkImage host-object image conversion/rendering.")
-	console.log("- Proof boundary: host-native macOS C++ command construction and raster behavior for deterministic geometry/filter/path/image commands only. This does not prove Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, RNGH native delivery, dynamic Worklets-backed AnimatedDouble resolution, image decoding/assets/loading, full image-fit coverage, or text/paragraph command fidelity.")
+	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
+	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, point drawing, line stroke drawing, oval/circle/rrect fills, bounded blur-mask-filter inheritance, real JsiSkPath/JsiSkImage host-object conversion/rendering, bounded TextCmd raster evidence, and ParagraphCmd measure/raster evidence.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, paragraph measurement, and bounded raster behavior for selected commands. This does not prove exact typography, font fallback correctness, paragraph shaping fidelity, all text/paragraph styles, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, RNGH native delivery, dynamic Worklets-backed AnimatedDouble resolution, image decoding/assets/loading, or full image-fit coverage.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -410,17 +410,24 @@ function nativeProbeSource() {
 	return String.raw`
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
+#include <exception>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <optional>
 #include <sstream>
+#include <stdexcept>
 #include <string>
+#include <utility>
 #include <variant>
 #include <vector>
 
+#include <ReactCommon/CallInvoker.h>
 #include <include/core/SkCanvas.h>
 #include <include/core/SkColor.h>
+#include <include/core/SkFontMgr.h>
 #include <include/core/SkImage.h>
 #include <include/core/SkImageInfo.h>
 #include <include/core/SkPaint.h>
@@ -428,6 +435,11 @@ function nativeProbeSource() {
 #include <include/core/SkPixmap.h>
 #include <include/core/SkRect.h>
 #include <include/core/SkSamplingOptions.h>
+#include <include/core/SkStream.h>
+#include <include/ports/SkFontMgr_mac_ct.h>
+#if !defined(SK_GRAPHITE)
+#include <include/gpu/ganesh/GrDirectContext.h>
+#endif
 #include <include/core/SkSurface.h>
 #include <jsi/jsi.h>
 #include <yoga/Yoga.h>
@@ -435,6 +447,7 @@ function nativeProbeSource() {
 #include "JSCRuntime.h"
 #include "RuntimeAwareCache.h"
 #include "DrawingCtx.h"
+#include "RNSkPlatformContext.h"
 #include "HybridYogaNodeSpec.cpp"
 #include "YogaNode.cpp"
 
@@ -442,8 +455,10 @@ using margelo::nitro::RNSkiaYoga::GroupCommandData;
 using margelo::nitro::RNSkiaYoga::NodeCommand;
 using margelo::nitro::RNSkiaYoga::NodeStyle;
 using margelo::nitro::RNSkiaYoga::NodeCommandKind;
+using margelo::nitro::RNSkiaYoga::ParagraphCommandData;
 using margelo::nitro::RNSkiaYoga::PointsCommandData;
 using margelo::nitro::RNSkiaYoga::Position;
+using margelo::nitro::RNSkiaYoga::TextCommandData;
 using margelo::nitro::RNSkiaYoga::YogaNode;
 using margelo::nitro::RNSkiaYoga::YogaNodeCommandKind;
 
@@ -495,6 +510,127 @@ void expectColorNear(SkColor actual, SkColor expected, int tolerance, const std:
         fail(out.str());
     }
 }
+
+class HostCallInvoker final : public facebook::react::CallInvoker {
+public:
+    void invokeAsync(facebook::react::CallFunc&& func) noexcept override
+    {
+        (void)func;
+    }
+
+    void invokeSync(facebook::react::CallFunc&& func) override
+    {
+        (void)func;
+    }
+};
+
+class HostPlatformContext final : public RNSkia::RNSkPlatformContext {
+public:
+    explicit HostPlatformContext(std::shared_ptr<HostCallInvoker> callInvoker)
+        : RNSkia::RNSkPlatformContext(std::move(callInvoker), 1.0f)
+    {
+    }
+
+    void runOnMainThread(std::function<void()> func) override
+    {
+        func();
+    }
+
+    sk_sp<SkImage> takeScreenshotFromViewTag(size_t tag) override
+    {
+        (void)tag;
+        return nullptr;
+    }
+
+    void performStreamOperation(
+        const std::string& sourceUri,
+        const std::function<void(std::unique_ptr<SkStreamAsset>)>& op) override
+    {
+        (void)sourceUri;
+        op(nullptr);
+    }
+
+    void raiseError(const std::exception& err) override
+    {
+        throw std::runtime_error(err.what());
+    }
+
+    sk_sp<SkSurface> makeOffscreenSurface(int width, int height) override
+    {
+        return SkSurfaces::Raster(SkImageInfo::MakeN32Premul(std::max(1, width), std::max(1, height)));
+    }
+
+    std::shared_ptr<RNSkia::WindowContext> makeContextFromNativeSurface(
+        void* surface,
+        int width,
+        int height) override
+    {
+        (void)surface;
+        (void)width;
+        (void)height;
+        return nullptr;
+    }
+
+    sk_sp<SkImage> makeImageFromNativeBuffer(void* buffer) override
+    {
+        (void)buffer;
+        return nullptr;
+    }
+
+#if !defined(SK_GRAPHITE)
+    sk_sp<SkImage> makeImageFromNativeTexture(
+        const RNSkia::TextureInfo& textureInfo,
+        int width,
+        int height,
+        bool mipMapped) override
+    {
+        (void)textureInfo;
+        (void)width;
+        (void)height;
+        (void)mipMapped;
+        return nullptr;
+    }
+
+    const RNSkia::TextureInfo getTexture(sk_sp<SkSurface> image) override
+    {
+        (void)image;
+        return {};
+    }
+
+    const RNSkia::TextureInfo getTexture(sk_sp<SkImage> image) override
+    {
+        (void)image;
+        return {};
+    }
+
+    GrDirectContext* getDirectContext() override
+    {
+        return nullptr;
+    }
+#endif
+
+    void releaseNativeBuffer(uint64_t pointer) override
+    {
+        (void)pointer;
+    }
+
+    uint64_t makeNativeBuffer(sk_sp<SkImage> image) override
+    {
+        (void)image;
+        return 0;
+    }
+
+    std::shared_ptr<RNSkia::RNSkVideo> createVideo(const std::string& url) override
+    {
+        (void)url;
+        return nullptr;
+    }
+
+    sk_sp<SkFontMgr> createFontMgr() override
+    {
+        return SkFontMgr_New_CoreText(nullptr);
+    }
+};
 
 std::variant<std::string, double> points(double value)
 {
@@ -557,6 +693,14 @@ NodeStyle groupStyle(double width, double height)
     return style;
 }
 
+NodeStyle widthOnlyStyle(double width)
+{
+    NodeStyle style {};
+    style.width = points(width);
+    style.antiaAlias = false;
+    return style;
+}
+
 NodeStyle pointsStyle(double width, double height, SkColor color)
 {
     auto style = fixedStyle(width, height, color);
@@ -610,6 +754,23 @@ bool hasAnyAlphaInRegion(const sk_sp<SkSurface>& surface, int left, int top, int
     for (int y = top; y < bottom; ++y) {
         for (int x = left; x < right; ++x) {
             if (SkColorGetA(pixelAt(surface, x, y)) > 0) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool hasAnyBlueDominantPixelInRegion(const sk_sp<SkSurface>& surface, int left, int top, int right, int bottom)
+{
+    for (int y = top; y < bottom; ++y) {
+        for (int x = left; x < right; ++x) {
+            const auto color = pixelAt(surface, x, y);
+            if (
+                SkColorGetA(color) > 0 &&
+                SkColorGetB(color) > 48 &&
+                SkColorGetB(color) > SkColorGetR(color) + 16 &&
+                SkColorGetB(color) > SkColorGetG(color) + 16) {
                 return true;
             }
         }
@@ -767,6 +928,49 @@ NodeCommand imageCommand(jsi::Runtime& runtime)
 
     jsi::Object command(runtime);
     command.setProperty(runtime, "type", "image");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+jsi::Object textStyleObject(jsi::Runtime& runtime, double fontSize, SkColor color)
+{
+    jsi::Object textStyle(runtime);
+    textStyle.setProperty(runtime, "fontSize", fontSize);
+    textStyle.setProperty(runtime, "color", static_cast<double>(color));
+    return textStyle;
+}
+
+NodeCommand defaultTextCommand(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "text", "Default Text");
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "text");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand styledTextCommand(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "text", "Bounded Text");
+    data.setProperty(runtime, "textStyle", textStyleObject(runtime, 18.0, SK_ColorBLUE));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "text");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand paragraphCommand(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "text", "Paragraph host text");
+    data.setProperty(runtime, "paragraphStyle", textStyleObject(runtime, 18.0, SK_ColorBLUE));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "paragraph");
     command.setProperty(runtime, "data", std::move(data));
     return convertCommand(runtime, std::move(command));
 }
@@ -1007,6 +1211,107 @@ void assertImageHostObjectCommandRender(jsi::Runtime& runtime)
     expectColorNear(pixelAt(surface, 1, 9), SK_ColorTRANSPARENT, 0, "image render remains bounded by the Yoga layout height");
 }
 
+void assertTextCommandStateAndRender(jsi::Runtime& runtime)
+{
+    auto defaultCommand = defaultTextCommand(runtime);
+    const auto& defaultPayload = std::get<TextCommandData>(defaultCommand.data);
+    expect(defaultPayload.text.has_value(), "default text command conversion keeps text");
+    expect(defaultPayload.text.value() == "Default Text", "default text command conversion keeps text value");
+
+    auto defaultNode = makeYogaNode(
+        groupStyle(96.0, 36.0),
+        std::move(defaultCommand));
+
+    expect(defaultNode->_commandKind == YogaNodeCommandKind::TEXT, "setCommand constructs a real TextCmd");
+    auto* defaultTextCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::TextCmd*>(defaultNode->_command.get());
+    expect(defaultTextCmd != nullptr, "installed command has TextCmd type");
+    expect(defaultTextCmd->props.text == "Default Text", "TextCmd keeps converted text payload");
+    expect(defaultTextCmd->props.font.has_value(), "TextCmd has a default font");
+    expectNear(defaultTextCmd->props.font->getSize(), 14.0, "TextCmd default font size");
+
+    auto styledCommand = styledTextCommand(runtime);
+    const auto& styledPayload = std::get<TextCommandData>(styledCommand.data);
+    expect(styledPayload.text.has_value(), "styled text command conversion keeps text");
+    expect(styledPayload.text.value() == "Bounded Text", "styled text command conversion keeps text value");
+    expect(styledPayload.textStyle.has_value(), "styled text command conversion keeps textStyle");
+    expectNear(styledPayload.textStyle->getFontSize(), 18.0, "styled text command conversion keeps font size");
+    expectColorNear(styledPayload.textStyle->getColor(), SkColorSetARGB(255, 0, 0, 255), 0, "styled text command conversion keeps color");
+
+    auto root = makeYogaNode(
+        groupStyle(116.0, 42.0),
+        std::move(styledCommand));
+
+    expect(root->_commandKind == YogaNodeCommandKind::TEXT, "styled setCommand constructs a real TextCmd");
+    auto* textCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::TextCmd*>(root->_command.get());
+    expect(textCmd != nullptr, "styled installed command has TextCmd type");
+    expect(textCmd->props.text == "Bounded Text", "styled TextCmd keeps converted text payload");
+    expect(textCmd->props.font.has_value(), "styled TextCmd has a font");
+    expectNear(textCmd->props.font->getSize(), 18.0, "styled TextCmd applies textStyle font size");
+    expect(textCmd->fallbackPaintColor().has_value(), "styled TextCmd exposes fallback paint color");
+    expectColorNear(*textCmd->fallbackPaintColor(), SkColorSetARGB(255, 0, 0, 255), 0, "styled TextCmd fallback paint color comes from textStyle");
+
+    auto surface = makeSurface(140, 64);
+    renderNode(root, surface);
+
+    expectNear(root->_layout.width, 116.0, "text layout width");
+    expectNear(root->_layout.height, 42.0, "text layout height");
+    expect(
+        hasAnyBlueDominantPixelInRegion(surface, 0, 1, 116, 34),
+        "TextCmd renders bounded blue-dominant glyph pixels from textStyle fallback paint");
+    expect(
+        !hasAnyAlphaInRegion(surface, 126, 48, 138, 62),
+        "TextCmd render remains away from far outside pixels");
+}
+
+void assertParagraphCommandMeasureAndRender(jsi::Runtime& runtime)
+{
+    auto command = paragraphCommand(runtime);
+    const auto& payload = std::get<ParagraphCommandData>(command.data);
+    expect(payload.text.has_value(), "paragraph command conversion keeps text");
+    expect(payload.text.value() == "Paragraph host text", "paragraph command conversion keeps text value");
+    expect(payload.paragraphStyle.has_value(), "paragraph command conversion keeps paragraphStyle");
+    expectNear(payload.paragraphStyle->getTextStyle().getFontSize(), 18.0, "paragraph command conversion keeps flattened font size");
+    expectColorNear(payload.paragraphStyle->getTextStyle().getColor(), SkColorSetARGB(255, 0, 0, 255), 0, "paragraph command conversion keeps flattened color");
+    expect(!payload.paragraph.has_value(), "paragraph command conversion does not require a JS-created JsiSkParagraph");
+
+    auto root = makeYogaNode(
+        widthOnlyStyle(92.0),
+        std::move(command));
+
+    expect(root->_commandKind == YogaNodeCommandKind::PARAGRAPH, "setCommand constructs a real ParagraphCmd");
+    auto* paragraphCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::ParagraphCmd*>(root->_command.get());
+    expect(paragraphCmd != nullptr, "installed command has ParagraphCmd type");
+    expect(YGNodeHasMeasureFunc(root->_node), "ParagraphCmd installs a Yoga measure function");
+    expect(paragraphCmd->props.paragraph != nullptr, "ParagraphCmd builds a paragraph from text and paragraphStyle");
+
+    auto measured = margelo::nitro::RNSkiaYoga::ParagraphCmd::measureFunc(
+        root->_node,
+        92.0f,
+        YGMeasureModeAtMost,
+        YGUndefined,
+        YGMeasureModeUndefined);
+    expect(measured.width > 0.0f, "ParagraphCmd measure width is positive");
+    expect(measured.width <= 92.0f, "ParagraphCmd measure width is bounded by the available width");
+    expect(measured.height > 0.0f, "ParagraphCmd measure height is positive");
+    expect(measured.height < 140.0f, "ParagraphCmd measure height remains bounded for probe text");
+
+    auto surface = makeSurface(140, 120);
+    renderNode(root, surface);
+
+    expectNear(root->_layout.width, 92.0, "paragraph Yoga layout width follows style constraint");
+    expect(root->_layout.height > 0.0, "paragraph Yoga layout height comes from measure function");
+    expect(root->_layout.height < 140.0, "paragraph Yoga layout height remains bounded");
+    expectNear(paragraphCmd->props.width, 92.0, "ParagraphCmd draw width follows Yoga layout");
+    expect(paragraphCmd->props.paragraph->getObject()->getHeight() > 0.0f, "ParagraphCmd paragraph object has positive laid-out height");
+
+    expect(
+        hasAnyBlueDominantPixelInRegion(surface, 2, 2, 90, 96),
+        "ParagraphCmd renders blue-dominant paragraph glyph pixels inside the debug border");
+    expect(
+        !hasAnyAlphaInRegion(surface, 112, 96, 136, 116),
+        "ParagraphCmd render remains bounded away from far outside pixels");
+}
+
 void assertConverterErrorPath(jsi::Runtime& runtime)
 {
     jsi::Object command(runtime);
@@ -1054,12 +1359,42 @@ void assertConverterErrorImage(jsi::Runtime& runtime)
     fail("image command conversion with a plain JS image object must fail in this host probe");
 }
 
+void assertConverterErrorTextFont(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "text", "plain font object");
+    data.setProperty(runtime, "font", jsi::Object(runtime));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "text");
+    command.setProperty(runtime, "data", std::move(data));
+    jsi::Value commandValue(runtime, command);
+
+    try {
+        (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
+    } catch (const jsi::JSError& error) {
+        const auto message = error.getMessage();
+        expect(
+            message.find("NodeCommand conversion failed for type \"text\"") != std::string::npos,
+            "text conversion failure should be scoped to NodeCommand payload conversion");
+        expect(
+            message.find("SkFont") != std::string::npos || message.find("JsiSkFont") != std::string::npos,
+            "text conversion failure should require a real JsiSkFont host object");
+        return;
+    }
+
+    fail("text command conversion with a plain JS font object must fail in this host probe");
+}
+
 } // namespace
 
 int main()
 {
     auto runtime = facebook::jsc::makeJSCRuntime();
     RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(runtime.get());
+    auto callInvoker = std::make_shared<HostCallInvoker>();
+    auto platformContext = std::make_shared<HostPlatformContext>(callInvoker);
+    margelo::nitro::RNSkiaYoga::SetPlatformContext(platformContext);
 
     assertRectOpacityRender(*runtime);
     assertParentChildLayoutRender(*runtime);
@@ -1072,8 +1407,11 @@ int main()
     assertBlurMaskFilterCommandRender(*runtime);
     assertPathHostObjectCommandRender(*runtime);
     assertImageHostObjectCommandRender(*runtime);
+    assertTextCommandStateAndRender(*runtime);
+    assertParagraphCommandMeasureAndRender(*runtime);
     assertConverterErrorPath(*runtime);
     assertConverterErrorImage(*runtime);
+    assertConverterErrorTextFont(*runtime);
 
     std::cout << "YogaNode native command/render host probe passed\n";
     return 0;
