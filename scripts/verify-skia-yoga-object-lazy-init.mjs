@@ -37,6 +37,7 @@ console.log("SkiaYogaObject lazy-init verifier passed:")
 console.log("- Importing the public source entrypoint did not box NitroModules.")
 console.log("- Importing the public source entrypoint did not look up/install native bindings.")
 console.log("- Importing the public source entrypoint did not create native hybrid objects.")
+console.log("- Importing the public source entrypoint registered only the SkiaYogaView native component.")
 console.log("- Import-only access did not log or mutate globalThis.SkiaYoga.")
 console.log("- Explicit createYogaNode() access boxed NitroModules once and created YogaNode objects at call time.")
 console.log("- Worklets transform kept createYogaNode() on lazyNitroModulesBox.current.unbox().")
@@ -53,6 +54,17 @@ function verifyPublicImportIsLazy() {
 		typeof publicEntrypoint.YogaCanvas,
 		"function",
 		"public source entrypoint should still export YogaCanvas",
+	)
+	assertPublicImportGraphLoaded(harness)
+	assert.deepEqual(
+		harness.calls.codegenNativeComponent,
+		["SkiaYogaView"],
+		'importing the public source entrypoint should register only codegenNativeComponent("SkiaYogaView")',
+	)
+	assert.equal(
+		harness.calls.reactReconciler,
+		1,
+		"importing the public source entrypoint should initialize the real Reconciler host config once",
 	)
 	assert.deepEqual(
 		harness.calls.getEnforcing,
@@ -257,6 +269,17 @@ function verifyYogaCanvasRuntimeCreatesRootNodeLazily() {
 		0,
 		"importing the public source entrypoint before YogaCanvas render must not call NitroModules.box",
 	)
+	assertPublicImportGraphLoaded(harness)
+	assert.deepEqual(
+		harness.calls.codegenNativeComponent,
+		["SkiaYogaView"],
+		'importing the public source entrypoint before YogaCanvas render should register only codegenNativeComponent("SkiaYogaView")',
+	)
+	assert.equal(
+		harness.calls.reactReconciler,
+		1,
+		"importing the public source entrypoint before YogaCanvas render should initialize the real Reconciler host config once",
+	)
 
 	publicEntrypoint.YogaCanvas({
 		children: null,
@@ -276,6 +299,16 @@ function verifyYogaCanvasRuntimeCreatesRootNodeLazily() {
 		harness.calls.createHybridObject,
 		["YogaNode"],
 		"YogaCanvas root creation should create a YogaNode hybrid object at render time",
+	)
+	assert.deepEqual(
+		harness.calls.codegenNativeComponent,
+		["SkiaYogaView"],
+		"YogaCanvas render should not register additional native components",
+	)
+	assert.equal(
+		harness.calls.reconcilerCreateContainer,
+		1,
+		"YogaCanvas root creation should create a reconciler container once",
 	)
 	assert.deepEqual(
 		harness.calls.getEnforcing,
@@ -391,10 +424,14 @@ function createHarness(options = {}) {
 		install: 0,
 		nitroBox: 0,
 		nitroUnbox: 0,
+		reactReconciler: 0,
+		reconcilerCreateContainer: 0,
 	}
 	const moduleCache = new Map()
+	const loadedProjectModules = new Set()
 	const global = {
 		clearInterval() {},
+		clearTimeout() {},
 		console: {
 			error(...args) {
 				calls.consoleError.push(args)
@@ -408,7 +445,15 @@ function createHarness(options = {}) {
 				return 0
 			},
 		},
+		queueMicrotask() {},
+		requestAnimationFrame() {
+			return 1
+		},
+		cancelAnimationFrame() {},
 		setInterval() {
+			return 1
+		},
+		setTimeout() {
 			return 1
 		},
 	}
@@ -426,7 +471,25 @@ function createHarness(options = {}) {
 	const externalModules = new Map([
 		[
 			"@shopify/react-native-skia",
-			{},
+			{
+				BlurStyle: {
+					Inner: 3,
+					Normal: 0,
+					Outer: 2,
+					Solid: 1,
+				},
+				FillType: {
+					EvenOdd: 1,
+					InverseEvenOdd: 3,
+					InverseWinding: 2,
+					Winding: 0,
+				},
+				PointMode: {
+					Lines: 1,
+					Points: 0,
+					Polygon: 2,
+				},
+			},
 		],
 		[
 			"react",
@@ -471,8 +534,28 @@ function createHarness(options = {}) {
 		[
 			"react-native-gesture-handler",
 			{
+				Gesture: {
+					Manual() {
+						return createGestureMock("manual")
+					},
+					Simultaneous(...gestures) {
+						return createGestureMock("simultaneous", gestures)
+					},
+				},
 				GestureDetector({ children }) {
 					return children
+				},
+			},
+		],
+		[
+			"react-native-reanimated",
+			{
+				isSharedValue,
+				runOnJS(callback) {
+					return callback
+				},
+				useSharedValue(value) {
+					return { value }
 				},
 			},
 		],
@@ -499,50 +582,50 @@ function createHarness(options = {}) {
 				},
 			},
 		],
-	])
-
-	const projectStubs = new Map([
 		[
-			projectPath("src/Reconciler.ts"),
+			"react-native-worklets",
 			{
-				reconciler: {
+				createSynchronizable(value) {
+					return {
+						value,
+						setBlocking(nextValue) {
+							this.value = nextValue
+						},
+					}
+				},
+				executeOnUIRuntimeSync(callback) {
+					return (...args) => callback(...args)
+				},
+				runOnJS(callback) {
+					return callback
+				},
+			},
+		],
+		[
+			"react-reconciler",
+			function createReactReconciler(config) {
+				calls.reactReconciler += 1
+				assert.equal(
+					typeof config.createInstance,
+					"function",
+					"real Reconciler module should pass a host config with createInstance",
+				)
+				return {
 					createContainer() {
+						calls.reconcilerCreateContainer += 1
 						return {}
 					},
 					flushPassiveEffects() {},
 					flushSyncWork() {},
 					updateContainer() {},
 					updateContainerSync() {},
-				},
+				}
 			},
 		],
 		[
-			projectPath("src/interactivity.ts"),
+			"react-reconciler/constants",
 			{
-				YogaInteractionRegistry: class YogaInteractionRegistry {},
-			},
-		],
-		[
-			projectPath("src/specs/SkiaYoga.nitro.ts"),
-			{
-				NodeCommandKind: {
-					Group: "Group",
-				},
-			},
-		],
-		[
-			projectPath("src/specs/SkiaYogaViewNativeComponent.ts"),
-			{
-				__esModule: true,
-				default: "SkiaYogaViewNativeComponent",
-			},
-		],
-		[
-			projectPath("src/useCanvasGestures.ts"),
-			{
-				useCanvasGestures() {
-					return {}
-				},
+				DefaultEventPriority: 1,
 			},
 		],
 	])
@@ -553,13 +636,11 @@ function createHarness(options = {}) {
 
 	function loadModule(filePath) {
 		const normalizedPath = normalizePath(filePath)
-		if (projectStubs.has(normalizedPath)) {
-			return projectStubs.get(normalizedPath)
-		}
 		if (moduleCache.has(normalizedPath)) {
 			return moduleCache.get(normalizedPath).exports
 		}
 
+		loadedProjectModules.add(normalizedPath)
 		const code = readFileSync(normalizedPath, "utf8")
 		const compiled = ts.transpileModule(code, {
 			compilerOptions: {
@@ -620,6 +701,7 @@ function createHarness(options = {}) {
 	return {
 		calls,
 		global,
+		loadedProjectModules,
 		loadProjectModule,
 	}
 }
@@ -659,6 +741,68 @@ function createNativeObject(name) {
 		setCommand() {},
 		setStyle() {},
 	}
+}
+
+function assertPublicImportGraphLoaded(harness) {
+	for (const relativePath of [
+		"src/YogaCanvas.tsx",
+		"src/Reconciler.ts",
+		"src/SkiaYogaObject.ts",
+		"src/interactivity.ts",
+		"src/nativeId.ts",
+		"src/specs/SkiaYoga.nitro.ts",
+		"src/specs/SkiaYogaViewNativeComponent.ts",
+		"src/specs/commands.ts",
+		"src/useCanvasGestures.ts",
+		"src/util.ts",
+	]) {
+		assert.equal(
+			harness.loadedProjectModules.has(projectPath(relativePath)),
+			true,
+			`public source entrypoint should load the real ${relativePath} module`,
+		)
+	}
+	assert.equal(
+		harness.loadedProjectModules.has(projectPath("src/specs/NativeSkiaYoga.ts")),
+		false,
+		"public source entrypoint must not load the generated NativeSkiaYoga runtime spec",
+	)
+}
+
+function createGestureMock(kind, gestures = []) {
+	return {
+		gestures,
+		handlers: {},
+		kind,
+		manualActivation(value) {
+			this.manualActivationValue = value
+			return this
+		},
+		shouldCancelWhenOutside(value) {
+			this.shouldCancelWhenOutsideValue = value
+			return this
+		},
+		onTouchesDown(handler) {
+			this.handlers.touchesDown = handler
+			return this
+		},
+		onTouchesMove(handler) {
+			this.handlers.touchesMove = handler
+			return this
+		},
+		onTouchesUp(handler) {
+			this.handlers.touchesUp = handler
+			return this
+		},
+		onTouchesCancelled(handler) {
+			this.handlers.touchesCancelled = handler
+			return this
+		},
+	}
+}
+
+function isSharedValue(value) {
+	return typeof value === "object" && value !== null && "value" in value
 }
 
 function normalizePath(filePath) {
