@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 
-import { mkdtempSync, rmSync, writeFileSync, mkdirSync, symlinkSync, unlinkSync, existsSync, readdirSync, statSync, readFileSync } from "node:fs"
-import { tmpdir } from "node:os"
+import { rmSync, writeFileSync, mkdirSync, symlinkSync, unlinkSync, existsSync, readdirSync, statSync, readFileSync } from "node:fs"
 import path from "node:path"
 import { spawnSync } from "node:child_process"
+import {
+	createVerifierTempDir,
+	formatVerifierTempDiagnostics,
+} from "./verifier-temp-utils.mjs"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
-const tmpDir = mkdtempSync(path.join(tmpdir(), "rnskia-yoganode-lifetime-"))
+const tmpDir = createVerifierTempDir("rnskia-yoganode-lifetime-")
 
 try {
 	const yogaNodeCpp = readProjectFile("cpp/YogaNode.cpp")
@@ -41,6 +44,10 @@ try {
 		const stderr = result.stderr.trim()
 		throw new Error([
 			`${compiler} native syntax probe failed with exit code ${result.status}.`,
+			`diagnostics:\n${formatVerifierTempDiagnostics([
+				{ label: "YogaNode lifetime temp root", targetPath: tmpDir },
+				{ label: "probe source", targetPath: probePath },
+			])}`,
 			stdout ? `stdout:\n${stdout}` : "",
 			stderr ? `stderr:\n${stderr}` : "",
 		].filter(Boolean).join("\n\n"))

@@ -4,24 +4,31 @@ import { spawn } from "node:child_process"
 import {
 	existsSync,
 	lstatSync,
+	mkdtempSync,
 	readdirSync,
+	realpathSync,
 	rmSync,
+	statSync,
 } from "node:fs"
-import { tmpdir } from "node:os"
 import path from "node:path"
 import { performance } from "node:perf_hooks"
+import {
+	defaultVerifierTempParent,
+	formatPathDiagnostic,
+	verifierTempParentEnv,
+} from "./verifier-temp-utils.mjs"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
 const exampleDir = path.join(rootDir, "example")
 const defaultTimeoutMs = 600_000
 const startedAtMs = Date.now()
 const startedAt = new Date(startedAtMs)
-
-const tempParentDirs = unique(
-	[tmpdir(), existsSync("/tmp") ? "/tmp" : tmpdir()].map((dir) =>
-		path.resolve(dir),
-	),
+const matrixTempParentDir = mkdtempSync(
+	path.join(defaultVerifierTempParent(), "rnskia-feasible-matrix-"),
 )
+assertMatrixTempParent(matrixTempParentDir)
+
+const tempParentDirs = [matrixTempParentDir]
 
 const tempArtifactPrefixes = [
 	"rnskia-example-export.",
@@ -128,6 +135,8 @@ process.once("SIGINT", () => {
 	terminateActiveChild("SIGTERM")
 	const cleanupResult = cleanupNewArtifacts(initialCleanupSnapshot)
 	printCleanupResult(cleanupResult)
+	const matrixTempCleanupResult = cleanupMatrixTempParent()
+	printMatrixTempCleanupResult(matrixTempCleanupResult)
 	process.exit(130)
 })
 
@@ -135,6 +144,8 @@ process.once("SIGTERM", () => {
 	terminateActiveChild("SIGTERM")
 	const cleanupResult = cleanupNewArtifacts(initialCleanupSnapshot)
 	printCleanupResult(cleanupResult)
+	const matrixTempCleanupResult = cleanupMatrixTempParent()
+	printMatrixTempCleanupResult(matrixTempCleanupResult)
 	process.exit(143)
 })
 
@@ -142,6 +153,7 @@ const initialCleanupSnapshot = snapshotArtifacts()
 
 let matrixError = null
 let cleanupResult = null
+let matrixTempCleanupResult = null
 
 try {
 	printHeader()
@@ -151,9 +163,15 @@ try {
 } finally {
 	cleanupResult = cleanupNewArtifacts(initialCleanupSnapshot)
 	printCleanupResult(cleanupResult)
+	matrixTempCleanupResult = cleanupMatrixTempParent()
+	printMatrixTempCleanupResult(matrixTempCleanupResult)
 }
 
-if (matrixError !== null || cleanupResult.errors.length > 0) {
+if (
+	matrixError !== null ||
+	cleanupResult.errors.length > 0 ||
+	matrixTempCleanupResult.errors.length > 0
+) {
 	if (matrixError !== null) {
 		console.error("")
 		console.error(`Feasible matrix failed: ${matrixError.message}`)
@@ -162,6 +180,13 @@ if (matrixError !== null || cleanupResult.errors.length > 0) {
 		console.error("")
 		console.error("Cleanup errors:")
 		for (const error of cleanupResult.errors) {
+			console.error(`- ${error}`)
+		}
+	}
+	if (matrixTempCleanupResult.errors.length > 0) {
+		console.error("")
+		console.error("Matrix temp parent cleanup errors:")
+		for (const error of matrixTempCleanupResult.errors) {
 			console.error(`- ${error}`)
 		}
 	}
@@ -195,8 +220,14 @@ function printHeader() {
 	console.log("")
 	console.log("Cleanup accounting:")
 	console.log("- Pre-existing tracked artifacts are preserved.")
-	console.log("- Newly created tracked artifacts are removed only from constrained known paths and temp-prefix roots.")
-	console.log(`- Temp roots: ${tempParentDirs.join(", ")}`)
+	console.log(
+		"- Child verifiers receive a matrix-owned temp parent through an explicit environment variable.",
+	)
+	console.log(
+		"- Newly created tracked artifacts are removed only from constrained known paths and the matrix-owned temp parent.",
+	)
+	console.log(`- ${verifierTempParentEnv}: ${matrixTempParentDir}`)
+	console.log("- Shared system temp roots are not scanned or cleaned by this matrix run.")
 	printPreExistingArtifacts(initialCleanupSnapshot)
 	console.log("")
 	console.log(`Commands: ${matrixCommands.length}`)
@@ -275,7 +306,10 @@ function runCommand(commandConfig) {
 		const child = spawn(commandConfig.command, commandConfig.args, {
 			cwd: commandConfig.cwd,
 			detached: process.platform !== "win32",
-			env: process.env,
+			env: {
+				...process.env,
+				[verifierTempParentEnv]: matrixTempParentDir,
+			},
 			shell: false,
 			stdio: "inherit",
 		})
@@ -403,6 +437,29 @@ function scanTempArtifacts() {
 	}
 
 	return artifacts
+}
+
+function cleanupMatrixTempParent() {
+	const errors = []
+	let removed = false
+	let beforeRemoval = null
+
+	try {
+		beforeRemoval = formatPathDiagnostic(
+			"matrix temp parent before removal",
+			matrixTempParentDir,
+		)
+		rmSync(matrixTempParentDir, { force: true, recursive: true })
+		removed = true
+	} catch (error) {
+		errors.push(`${matrixTempParentDir}: ${error.message}`)
+	}
+
+	return {
+		beforeRemoval,
+		errors,
+		removed,
+	}
 }
 
 function scanWorkspaceArtifacts() {
@@ -560,6 +617,21 @@ function printCleanupResult(result) {
 	}
 }
 
+function printMatrixTempCleanupResult(result) {
+	console.log("- Matrix temp parent cleanup:")
+	if (result.beforeRemoval !== null) {
+		console.log(`  - ${result.beforeRemoval}`)
+	}
+	if (result.removed) {
+		console.log(`  - Removed ${matrixTempParentDir}`)
+	}
+	if (result.errors.length > 0) {
+		for (const error of result.errors) {
+			console.log(`  - Cleanup error: ${error}`)
+		}
+	}
+}
+
 function formatSpawn(commandConfig) {
 	return [commandConfig.command, ...commandConfig.args].join(" ")
 }
@@ -590,6 +662,23 @@ function normalizeArtifactPath(artifactPath) {
 	return path.resolve(artifactPath)
 }
 
-function unique(values) {
-	return [...new Set(values)]
+function assertMatrixTempParent(tempParentDir) {
+	const stats = statSync(tempParentDir)
+	if (!stats.isDirectory()) {
+		throw new Error(`Matrix temp parent is not a directory: ${tempParentDir}`)
+	}
+
+	const realTempParentDir = realpathSync(tempParentDir)
+	const realRootDir = realpathSync(rootDir)
+	const relativePath = path.relative(realRootDir, realTempParentDir)
+	if (
+		relativePath === "" ||
+		(Boolean(relativePath) &&
+			!relativePath.startsWith("..") &&
+			!path.isAbsolute(relativePath))
+	) {
+		throw new Error(
+			`Matrix temp parent must not be inside the repository: ${realTempParentDir}`,
+		)
+	}
 }

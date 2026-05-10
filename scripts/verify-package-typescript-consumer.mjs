@@ -4,15 +4,17 @@ import { spawnSync } from "node:child_process"
 import {
 	lstatSync,
 	mkdirSync,
-	mkdtempSync,
 	readFileSync,
 	realpathSync,
 	rmSync,
 	writeFileSync,
 } from "node:fs"
-import { tmpdir } from "node:os"
 import path from "node:path"
 import { pathToFileURL } from "node:url"
+import {
+	createVerifierTempDir,
+	formatVerifierTempDiagnostics,
+} from "./verifier-temp-utils.mjs"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
 const rootPackageJson = readPackageJson(path.join(rootDir, "package.json"))
@@ -20,9 +22,7 @@ const examplePackageJson = readPackageJson(
 	path.join(rootDir, "example", "package.json"),
 )
 
-const tempRoot = mkdtempSync(
-	path.join(tmpdir(), "rnskia-package-typescript-consumer-"),
-)
+const tempRoot = createVerifierTempDir("rnskia-package-typescript-consumer-")
 
 try {
 	const tarballDir = path.join(tempRoot, "tarball")
@@ -114,7 +114,15 @@ function packPackage(tarballDir) {
 			"--pack-destination",
 			tarballDir,
 		],
-		{ cwd: rootDir, timeout: 120_000 },
+		{
+			cwd: rootDir,
+			diagnostics: () =>
+				formatVerifierTempDiagnostics([
+					{ label: "typescript consumer temp root", targetPath: tempRoot },
+					{ label: "npm pack tarball directory", targetPath: tarballDir },
+				]),
+			timeout: 120_000,
+		},
 	)
 	const packManifest = JSON.parse(packResult.stdout.trim())
 	if (!Array.isArray(packManifest) || packManifest.length === 0) {
@@ -430,8 +438,9 @@ function readPackageJson(filePath) {
 }
 
 function run(command, args, options) {
+	const { diagnostics, ...spawnOptions } = options
 	const result = spawnSync(command, args, {
-		...options,
+		...spawnOptions,
 		encoding: "utf8",
 	})
 
@@ -445,6 +454,7 @@ function run(command, args, options) {
 		throw new Error(
 			[
 				`${command} ${args.join(" ")} failed with exit code ${result.status}.`,
+				diagnostics ? `diagnostics:\n${diagnostics()}` : "",
 				stdout ? `stdout:\n${stdout}` : "",
 				stderr ? `stderr:\n${stderr}` : "",
 			]

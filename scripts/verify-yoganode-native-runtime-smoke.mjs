@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 
-import { mkdtempSync, rmSync, writeFileSync, mkdirSync, symlinkSync, unlinkSync, existsSync, readdirSync, statSync, realpathSync } from "node:fs"
-import { tmpdir } from "node:os"
+import { rmSync, writeFileSync, mkdirSync, symlinkSync, unlinkSync, existsSync, readdirSync, statSync, realpathSync } from "node:fs"
 import path from "node:path"
 import { spawnSync } from "node:child_process"
+import {
+	createVerifierTempDir,
+	formatVerifierTempDiagnostics,
+} from "./verifier-temp-utils.mjs"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
-const tmpDir = mkdtempSync(path.join(tmpdir(), "rnskia-yoganode-runtime-"))
+const tmpDir = createVerifierTempDir("rnskia-yoganode-runtime-")
 const expectedSkiaArchiveBasenames = [
 	"libskia.a",
 	"libskottie.a",
@@ -93,8 +96,19 @@ try {
 	}
 
 	if (compileResult.status !== 0) {
-		throw new Error(formatFailure(`${compiler} native runtime smoke compile/link failed with exit code ${compileResult.status}.`, compileResult))
+		throw new Error(formatFailure(`${compiler} native runtime smoke compile/link failed with exit code ${compileResult.status}.`, compileResult, [
+			{ label: "YogaNode runtime temp root", targetPath: tmpDir },
+			{ label: "probe source", targetPath: probePath },
+			{ label: "binary output", targetPath: binaryPath },
+			{ label: "binary output parent", targetPath: path.dirname(binaryPath) },
+		]))
 	}
+
+	assertLinkedBinary(binaryPath, [
+		{ label: "YogaNode runtime temp root", targetPath: tmpDir },
+		{ label: "binary output", targetPath: binaryPath },
+		{ label: "binary output parent", targetPath: path.dirname(binaryPath) },
+	])
 
 	const runResult = spawnSync(binaryPath, [], {
 		cwd: rootDir,
@@ -102,11 +116,20 @@ try {
 	})
 
 	if (runResult.error) {
-		throw new Error(`Failed to execute YogaNode native runtime smoke binary: ${runResult.error.message}`)
+		throw new Error([
+			`Failed to execute YogaNode native runtime smoke binary: ${runResult.error.message}`,
+			`diagnostics:\n${formatVerifierTempDiagnostics([
+				{ label: "YogaNode runtime temp root", targetPath: tmpDir },
+				{ label: "binary output", targetPath: binaryPath },
+			])}`,
+		].join("\n\n"))
 	}
 
 	if (runResult.status !== 0) {
-		throw new Error(formatFailure(`YogaNode native runtime smoke execution failed with exit code ${runResult.status}.`, runResult))
+		throw new Error(formatFailure(`YogaNode native runtime smoke execution failed with exit code ${runResult.status}.`, runResult, [
+			{ label: "YogaNode runtime temp root", targetPath: tmpDir },
+			{ label: "binary output", targetPath: binaryPath },
+		]))
 	}
 
 	console.log("YogaNode native runtime smoke passed:")
@@ -117,16 +140,30 @@ try {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
 
-function formatFailure(prefix, result) {
+function formatFailure(prefix, result, diagnosticPaths = []) {
 	const stdout = result.stdout.trim()
 	const stderr = result.stderr.trim()
 	const signal = result.signal == null ? "" : `\n\nsignal: ${result.signal}`
 	return [
 		prefix,
+		diagnosticPaths.length > 0
+			? `diagnostics:\n${formatVerifierTempDiagnostics(diagnosticPaths)}`
+			: "",
 		stdout ? `stdout:\n${stdout}` : "",
 		stderr ? `stderr:\n${stderr}` : "",
 		signal,
 	].filter(Boolean).join("\n\n")
+}
+
+function assertLinkedBinary(binaryPath, diagnosticPaths) {
+	if (existsSync(binaryPath) && statSync(binaryPath).isFile()) {
+		return
+	}
+
+	throw new Error([
+		"Native linker reported success but the expected YogaNode runtime smoke binary was not created.",
+		`diagnostics:\n${formatVerifierTempDiagnostics(diagnosticPaths)}`,
+	].join("\n\n"))
 }
 
 function helperSourcePaths() {

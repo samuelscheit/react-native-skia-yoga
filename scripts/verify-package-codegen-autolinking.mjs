@@ -6,7 +6,6 @@ import {
 	existsSync,
 	lstatSync,
 	mkdirSync,
-	mkdtempSync,
 	readdirSync,
 	readFileSync,
 	realpathSync,
@@ -15,9 +14,13 @@ import {
 	writeFileSync,
 } from "node:fs"
 import { createRequire } from "node:module"
-import { tmpdir } from "node:os"
 import path from "node:path"
 import { pathToFileURL } from "node:url"
+import {
+	createVerifierTempDir,
+	formatPathDiagnostic,
+	formatVerifierTempDiagnostics,
+} from "./verifier-temp-utils.mjs"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
 const rootRequire = createRequire(import.meta.url)
@@ -31,9 +34,7 @@ const { filterJSFile } = rootRequire(
 const rootPackageJson = readJson(projectPath("package.json"))
 const examplePackageJson = readJson(projectPath("example", "package.json"))
 const packageName = rootPackageJson.name
-const tempRoot = mkdtempSync(
-	path.join(tmpdir(), "rnskia-package-codegen-autolinking-"),
-)
+const tempRoot = createVerifierTempDir("rnskia-package-codegen-autolinking-")
 
 let summary
 
@@ -127,7 +128,15 @@ function packPackage(tarballDir) {
 			"--pack-destination",
 			tarballDir,
 		],
-		{ cwd: rootDir, timeout: 120_000 },
+		{
+			cwd: rootDir,
+			diagnostics: () =>
+				formatVerifierTempDiagnostics([
+					{ label: "codegen/autolinking temp root", targetPath: tempRoot },
+					{ label: "npm pack tarball directory", targetPath: tarballDir },
+				]),
+			timeout: 120_000,
+		},
 	)
 	const packManifest = JSON.parse(packResult.stdout.trim())
 	if (!Array.isArray(packManifest) || packManifest.length === 0) {
@@ -381,10 +390,17 @@ function assertReactNativeCliAutolinkingMetadata(
 	)
 
 	const dependency = config.dependencies?.[packageName]
-	assert.ok(
-		dependency,
-		`React Native CLI config did not include dependency ${packageName}.`,
-	)
+	if (!dependency) {
+		throw new Error(
+			formatMissingCliDependencyDiagnostics(
+				"React Native CLI config",
+				config,
+				consumerDir,
+				packageRoot,
+				installedRealPath,
+			),
+		)
+	}
 	assert.equal(
 		realpathSync(dependency.root),
 		installedRealPath,
@@ -765,6 +781,26 @@ function isJavaScriptOrTypeScriptSource(filePath) {
 	return /\.[cm]?[jt]sx?$/.test(filePath) && !filePath.endsWith(".d.ts")
 }
 
+function formatMissingCliDependencyDiagnostics(
+	label,
+	config,
+	consumerDir,
+	packageRoot,
+	installedRealPath,
+) {
+	const dependencyKeys = Object.keys(config.dependencies ?? {}).sort()
+	return [
+		`${label} did not include dependency ${packageName}.`,
+		`Config root: ${config.root ?? "(missing)"}`,
+		`Temporary consumer: ${consumerDir}`,
+		`Expected package root: ${packageRoot}`,
+		`Expected installed real path: ${installedRealPath}`,
+		`Dependency keys: ${dependencyKeys.length === 0 ? "(none)" : dependencyKeys.join(", ")}`,
+		formatPathDiagnostic("temporary consumer node_modules", path.join(consumerDir, "node_modules")),
+		formatPathDiagnostic("installed package root", packageRoot),
+	].join("\n")
+}
+
 function projectPath(...segments) {
 	return path.join(rootDir, ...segments)
 }
@@ -784,8 +820,9 @@ function isPathInside(candidatePath, parentPath) {
 }
 
 function run(command, args, options) {
+	const { diagnostics, ...spawnOptions } = options
 	const result = spawnSync(command, args, {
-		...options,
+		...spawnOptions,
 		encoding: "utf8",
 		env: {
 			...process.env,
@@ -804,6 +841,7 @@ function run(command, args, options) {
 		throw new Error(
 			[
 				`${command} ${args.join(" ")} failed with exit code ${result.status}.`,
+				diagnostics ? `diagnostics:\n${diagnostics()}` : "",
 				stdout ? `stdout:\n${stdout}` : "",
 				stderr ? `stderr:\n${stderr}` : "",
 			]
