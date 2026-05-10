@@ -205,7 +205,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch worker 091 as a read-only post-worker-090 root-cause audit to select the next strongest unblocked target from the remaining proof gaps.
+- Monitor worker 091's read-only post-worker-090 root-cause audit and use its recommendation to choose the next implementation target.
 
 Acceptance criteria:
 

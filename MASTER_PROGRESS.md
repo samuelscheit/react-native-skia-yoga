@@ -2116,10 +2116,12 @@ Last updated: 2026-05-10
   - Deleted branch `worker/090-animated-double-nodecommand`.
   - Verified no matching verifier temp roots or active matching verifier/debug processes remained.
 - Prepared worker 091 as the next step: a read-only post-worker-090 root-cause audit to select the strongest remaining unblocked target.
+- Created `worker-091-post-090-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-091-post-090-root-cause-audit` as a top-level tmux subprocess.
+- Worker 091 passed the visible `GOAL_CREATED: Audit post-worker-090 state and select the next strongest unblocked root-cause target.` gate as the first worker message.
 
 ## Active Workers
 
-- None currently; worker 091 is prepared for launch.
+- `rnskia-worker-091-post-090-root-cause-audit`: running from `worker/091-post-090-root-cause-audit`; auditing remaining proof gaps after worker 090.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2233,7 +2235,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- Worker 091 is prepared for launch.
+- None; worker 091 is active.
 
 ## Decisions
 
@@ -2270,7 +2272,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Launch worker 091 as a read-only post-worker-090 root-cause audit to select the next strongest unblocked target from the remaining proof gaps.
+- Monitor worker 091's read-only post-worker-090 root-cause audit and use its recommendation to choose the next implementation target.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
