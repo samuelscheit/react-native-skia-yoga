@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
   s.authors      = package["author"]
 
   s.platforms    = { :ios => "13.0", :tvos => "13.0", :osx => "11" }
-  s.source       = { :git => "https://github.com/mrousavy/nitro.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/SamuelScheit/react-native-skia-yoga.git", :tag => "#{s.version}" }
 
   s.source_files = [
     # Implementation (Swift)
