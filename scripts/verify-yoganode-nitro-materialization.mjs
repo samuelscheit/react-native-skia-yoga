@@ -168,7 +168,7 @@ try {
 	console.log("YogaNode Nitro materialization verifier passed:")
 	console.log("- Source gap confirmed: existing YogaNode raw-method and command/render checks do not call YogaNode::toObject(runtime) or invoke generated JS-facing YogaNode wrappers from a materialized object.")
 	console.log("- Prior risk source-confirmed: HybridObject::toObject() enters HybridObjectPrototype/JSICache, JSICache calls getRuntimeId(runtime), and getRuntimeId(runtime) depends on platform ThreadUtils; this verifier links the real iOS ThreadUtils implementation for the host-JSC probe.")
-	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, generated HybridYogaNodeSpec.cpp, Nitro HybridObject/prototype/cache sources, platform ThreadUtils, React Native JSC, upstream Yoga sources, RN Skia macOS archives, ColorParser, PlatformContextAccessor, AnimatedDouble, and Nitro/JSI helper sources.")
+	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, generated HybridYogaNodeSpec.cpp, Nitro HybridObject/prototype/cache sources, platform ThreadUtils, React Native JSC, upstream Yoga sources, RN Skia macOS archives, Worklets shared-item sources, ColorParser, PlatformContextAccessor, AnimatedDouble, and Nitro/JSI helper sources.")
 	console.log("- The executable created a shared YogaNode, called YogaNode::toObject(runtime), asserted the returned value is a JS object with NativeState wrapping the original YogaNode, and asserted repeated toObject(runtime) returns the cached JS object.")
 	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height), computeLayout(width, height), and the layout getter.")
 	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, NodeStyle width/height state, Yoga layout computation, and generated layout getter values.")
@@ -287,6 +287,10 @@ function helperSourcePaths() {
 		"cpp/AnimatedDouble.cpp",
 		"cpp/ColorParser.cpp",
 		"cpp/PlatformContextAccessor.cpp",
+		"node_modules/react-native-worklets/Common/cpp/worklets/SharedItems/Serializable.cpp",
+		"node_modules/react-native-worklets/Common/cpp/worklets/SharedItems/Synchronizable.cpp",
+		"node_modules/react-native-worklets/Common/cpp/worklets/SharedItems/SynchronizableAccess.cpp",
+		"node_modules/react-native-worklets/Common/cpp/worklets/Registries/WorkletRuntimeRegistry.cpp",
 		"node_modules/react-native/ReactCommon/jsi/jsi/jsi.cpp",
 		"node_modules/react-native/ReactCommon/jsi/jsi/jsilib-posix.cpp",
 		"node_modules/react-native/ReactCommon/jsc/JSCRuntime.cpp",

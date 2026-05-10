@@ -164,7 +164,7 @@ try {
 	}
 
 	console.log("YogaNode native command/render verifier passed:")
-	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, AnimatedDouble.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
+	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, AnimatedDouble.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, Worklets shared-item sources, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
 	console.log("- The executable created a JSC runtime, installed it as RN Skia's main runtime, converted simple NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), and executed real YogaNode::setCommand().")
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
 	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, point drawing, line stroke drawing, oval/circle/rrect fills, bounded blur-mask-filter inheritance, real JsiSkPath/JsiSkImage host-object conversion/rendering, bounded TextCmd raster evidence, and ParagraphCmd measure/raster evidence.")
@@ -208,6 +208,10 @@ function helperSourcePaths() {
 		"cpp/ColorParser.cpp",
 		"cpp/AnimatedDouble.cpp",
 		"cpp/PlatformContextAccessor.cpp",
+		"node_modules/react-native-worklets/Common/cpp/worklets/SharedItems/Serializable.cpp",
+		"node_modules/react-native-worklets/Common/cpp/worklets/SharedItems/Synchronizable.cpp",
+		"node_modules/react-native-worklets/Common/cpp/worklets/SharedItems/SynchronizableAccess.cpp",
+		"node_modules/react-native-worklets/Common/cpp/worklets/Registries/WorkletRuntimeRegistry.cpp",
 		"node_modules/react-native/ReactCommon/jsi/jsi/jsi.cpp",
 		"node_modules/react-native/ReactCommon/jsi/jsi/jsilib-posix.cpp",
 		"node_modules/react-native/ReactCommon/jsc/JSCRuntime.cpp",
