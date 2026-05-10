@@ -210,7 +210,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch worker 096 to prove and fix the public `path.stroke` payload contract through the host-native command/render verifier.
+- Monitor worker 096 as it proves and fixes the public `path.stroke` payload contract through the host-native command/render verifier.
 
 Acceptance criteria:
 
