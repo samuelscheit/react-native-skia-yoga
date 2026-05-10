@@ -212,7 +212,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch worker 098 to expand Reconciler JS-mode animated command coverage across representative root and nested command props.
+- Monitor worker 098 as it expands Reconciler JS-mode animated command coverage across representative root and nested command props.
 
 Acceptance criteria:
 
