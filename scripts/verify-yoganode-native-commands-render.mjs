@@ -167,9 +167,9 @@ try {
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, AnimatedDouble.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, Worklets shared-item sources, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
 	console.log("- The executable created a JSC runtime, converted numeric and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), and executed real YogaNode::setCommand().")
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
-	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, bounded blur-mask-filter inheritance, real JsiSkPath/JsiSkImage host-object conversion/rendering, bounded TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur fallback, resolution, and mutation.")
-	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, and blurMaskFilter.blur, including fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, paragraph measurement, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, and blurMaskFilter.blur, and bounded raster behavior for selected commands. This does not prove exact typography, font fallback correctness, paragraph shaping fidelity, all text/paragraph styles, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, full image-fit coverage, or every AnimatedDouble command prop.")
+	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, bounded blur-mask-filter inheritance, real JsiSkPath/JsiSkImage host-object conversion/rendering, bounded TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
+	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, paragraph measurement, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove exact typography, font fallback correctness, paragraph shaping fidelity, all text/paragraph styles, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, full image-fit coverage, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -729,6 +729,15 @@ NodeStyle absoluteStyle(double left, double top, double width, double height, Sk
     return style;
 }
 
+NodeStyle absoluteStrokeStyle(double left, double top, double width, double height, SkColor color, float strokeWidth)
+{
+    auto style = strokeStyle(width, height, color, strokeWidth);
+    style.position = Position::ABSOLUTE;
+    style.left = points(left);
+    style.top = points(top);
+    return style;
+}
+
 NodeStyle groupStyle(double width, double height)
 {
     NodeStyle style {};
@@ -1005,6 +1014,15 @@ NodeCommand dynamicBlurMaskFilterCommand(
     return convertCommand(runtime, std::move(command));
 }
 
+SkPath makeTrimProbePath()
+{
+    SkPath path;
+    path.moveTo(0.0f, 6.0f);
+    path.lineTo(20.0f, 6.0f);
+    path.lineTo(20.0f, 12.0f);
+    return path;
+}
+
 NodeCommand pathCommand(jsi::Runtime& runtime)
 {
     SkPath path;
@@ -1015,6 +1033,22 @@ NodeCommand pathCommand(jsi::Runtime& runtime)
     data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
     data.setProperty(runtime, "trimStart", 0.0);
     data.setProperty(runtime, "trimEnd", 1.0);
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "path");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand dynamicPathTrimCommand(
+    jsi::Runtime& runtime,
+    const std::shared_ptr<worklets::Synchronizable>& trimStart,
+    const std::shared_ptr<worklets::Synchronizable>& trimEnd)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, makeTrimProbePath()));
+    data.setProperty(runtime, "trimStart", makeSynchronizableRefValue(runtime, trimStart));
+    data.setProperty(runtime, "trimEnd", makeSynchronizableRefValue(runtime, trimEnd));
 
     jsi::Object command(runtime);
     command.setProperty(runtime, "type", "path");
@@ -1122,6 +1156,8 @@ void assertStaticAnimatedDoubleNodeCommandPayloads(jsi::Runtime& runtime)
     const auto& pathPayload = std::get<PathCommandData>(path.data);
     expect(!pathPayload.trimStart.isDynamic(), "static path trimStart remains distinct from dynamic AnimatedDouble");
     expect(!pathPayload.trimEnd.isDynamic(), "static path trimEnd remains distinct from dynamic AnimatedDouble");
+    expectOptionalNear(pathPayload.trimStart.value, 0.0, "static path trimStart payload value");
+    expectOptionalNear(pathPayload.trimEnd.value, 1.0, "static path trimEnd payload value");
     expectOptionalNear(pathPayload.trimStart.resolve(), 0.0, "static path trimStart resolve");
     expectOptionalNear(pathPayload.trimEnd.resolve(), 1.0, "static path trimEnd resolve");
 }
@@ -1182,6 +1218,26 @@ void assertDynamicAnimatedDoubleNodeCommandPayloads(jsi::Runtime& runtime)
         4.0,
         0.0,
         "blurMaskFilter.blur");
+
+    auto pathTrimStart = makeSynchronizable(runtime, 0.25);
+    auto pathTrimEnd = makeSynchronizable(runtime, 0.75);
+    auto path = dynamicPathTrimCommand(runtime, pathTrimStart, pathTrimEnd);
+    expect(path.type == NodeCommandKind::PATH, "dynamic path command kind");
+    const auto& pathPayload = std::get<PathCommandData>(path.data);
+    expectDynamicAnimatedDoublePayload(
+        runtime,
+        pathPayload.trimStart,
+        pathTrimStart,
+        0.25,
+        0.0,
+        "path.trimStart");
+    expectDynamicAnimatedDoublePayload(
+        runtime,
+        pathPayload.trimEnd,
+        pathTrimEnd,
+        0.75,
+        0.5,
+        "path.trimEnd");
 
     RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(&runtime);
 }
@@ -1296,6 +1352,40 @@ void assertDynamicRasterizedGroupBypassesCache(jsi::Runtime& runtime)
     expect(root->_rasterCache == nullptr, "rasterized group still does not cache after dynamic mutation");
     expect(root->_rasterCacheDirty, "rasterized group stays dirty after dynamic mutation");
     expectColorNear(pixelAt(updatedSurface, 18, 12), SK_ColorYELLOW, 0, "dynamic raster child mutation is visible without stale cache reuse");
+}
+
+void assertDynamicPathTrimRasterizedGroupBypassesCache(jsi::Runtime& runtime)
+{
+    RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(&runtime);
+
+    auto root = makeYogaNode(groupStyle(24.0, 16.0), groupCommand(runtime, true));
+    auto trimStart = makeSynchronizable(runtime, 0.0);
+    auto trimEnd = makeSynchronizable(runtime, 0.5);
+    auto child = makeYogaNode(
+        absoluteStrokeStyle(0.0, 0.0, 20.0, 12.0, SK_ColorCYAN, 2.0f),
+        dynamicPathTrimCommand(runtime, trimStart, trimEnd));
+    root->insertChild(child, std::nullopt);
+
+    expect(root->_commandKind == YogaNodeCommandKind::GROUP, "dynamic path raster test root is a GroupCmd");
+    expect(child->_commandKind == YogaNodeCommandKind::PATH, "dynamic path raster test child is a PathCmd");
+    expect(child->subtreeHasDynamicRasterContent(), "dynamic path child subtree reports dynamic raster content");
+    expect(root->subtreeHasDynamicRasterContent(), "rasterized parent observes dynamic path trim content");
+
+    auto initialSurface = makeSurface(32, 24);
+    renderNode(root, initialSurface);
+    expect(root->_rasterCache == nullptr, "rasterized group does not cache a dynamic path trim subtree");
+    expect(root->_rasterCacheDirty, "rasterized group remains dirty for dynamic path trim subtree");
+    expectColorNear(pixelAt(initialSurface, 2, 6), SK_ColorCYAN, 0, "dynamic path raster child renders initial trimmed start segment");
+    expectColorNear(pixelAt(initialSurface, 18, 6), SK_ColorTRANSPARENT, 0, "dynamic path raster child initial trim removes trailing segment");
+
+    trimStart->setBlocking(makeSerializableNumberValue(runtime, 0.5));
+    trimEnd->setBlocking(makeSerializableNumberValue(runtime, 1.0));
+    auto updatedSurface = makeSurface(32, 24);
+    renderNode(root, updatedSurface);
+    expect(root->_rasterCache == nullptr, "rasterized group still does not cache after dynamic path trim mutation");
+    expect(root->_rasterCacheDirty, "rasterized group stays dirty after dynamic path trim mutation");
+    expectColorNear(pixelAt(updatedSurface, 2, 6), SK_ColorTRANSPARENT, 0, "dynamic path trim mutation removes the stale start segment");
+    expectColorNear(pixelAt(updatedSurface, 18, 6), SK_ColorCYAN, 0, "dynamic path trim mutation is visible without stale cache reuse");
 }
 
 void assertAdditionalPointsCommandRender(jsi::Runtime& runtime)
@@ -1557,6 +1647,61 @@ void assertDynamicBlurMaskFilterCommandRender(jsi::Runtime& runtime)
         "dynamic blur observes Synchronizable mutation during later render");
 }
 
+void assertDynamicPathTrimCommandRender(jsi::Runtime& runtime)
+{
+    auto trimStart = makeSynchronizable(runtime, 0.25);
+    auto trimEnd = makeSynchronizable(runtime, 0.5);
+    auto command = dynamicPathTrimCommand(runtime, trimStart, trimEnd);
+    const auto& payload = std::get<PathCommandData>(command.data);
+    expect(payload.trimStart.isDynamic(), "path NodeCommand conversion keeps dynamic AnimatedDouble trimStart");
+    expect(payload.trimEnd.isDynamic(), "path NodeCommand conversion keeps dynamic AnimatedDouble trimEnd");
+    expect(payload.trimStart.synchronizable.get() == trimStart.get(), "path NodeCommand conversion keeps trimStart Synchronizable identity");
+    expect(payload.trimEnd.synchronizable.get() == trimEnd.get(), "path NodeCommand conversion keeps trimEnd Synchronizable identity");
+    expect(!payload.trimStart.value.has_value(), "path dynamic trimStart does not invent a static fallback");
+    expect(!payload.trimEnd.value.has_value(), "path dynamic trimEnd does not invent a static fallback");
+    const auto convertedTrimStart = payload.trimStart;
+    const auto convertedTrimEnd = payload.trimEnd;
+
+    auto root = makeYogaNode(
+        strokeStyle(20.0, 12.0, SK_ColorCYAN, 2.0f),
+        std::move(command));
+
+    expect(root->_commandKind == YogaNodeCommandKind::PATH, "dynamic setCommand constructs a real PathCmd");
+    auto* pathCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::PathCmd*>(root->_command.get());
+    expect(pathCmd != nullptr, "dynamic installed command has PathCmd type");
+    expect(pathCmd->isDynamic(), "PathCmd reports dynamic raster content for Synchronizable trim values");
+
+    RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(nullptr);
+    auto fallbackSurface = makeSurface(28, 20);
+    renderNode(root, fallbackSurface);
+    expectNear(pathCmd->props.start, 0.0, "dynamic path trimStart falls back to zero while main runtime is unset");
+    expectNear(pathCmd->props.end, 1.0, "dynamic path trimEnd falls back to one while main runtime is unset");
+    expectColorNear(pixelAt(fallbackSurface, 2, 6), SK_ColorCYAN, 0, "unset-main-runtime fallback renders the untrimmed path start");
+    expectColorNear(pixelAt(fallbackSurface, 18, 6), SK_ColorCYAN, 0, "unset-main-runtime fallback renders the untrimmed path end");
+
+    RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(&runtime);
+    auto initialSurface = makeSurface(28, 20);
+    renderNode(root, initialSurface);
+    expectNear(pathCmd->props.start, 0.25, "dynamic path trimStart resolves initial Synchronizable number");
+    expectNear(pathCmd->props.end, 0.5, "dynamic path trimEnd resolves initial Synchronizable number");
+    expectColorNear(pixelAt(initialSurface, 2, 6), SK_ColorTRANSPARENT, 0, "dynamic path initial trim removes the path start");
+    expectColorNear(pixelAt(initialSurface, 10, 6), SK_ColorCYAN, 0, "dynamic path initial trim renders the middle segment");
+    expectColorNear(pixelAt(initialSurface, 18, 6), SK_ColorTRANSPARENT, 0, "dynamic path initial trim removes the path end");
+
+    trimStart->setBlocking(makeSerializableNumberValue(runtime, 0.5));
+    trimEnd->setBlocking(makeSerializableNumberValue(runtime, 1.0));
+    expectOptionalNear(convertedTrimStart.resolve(), 0.5, "converted dynamic path trimStart observes Synchronizable mutation");
+    expectOptionalNear(convertedTrimEnd.resolve(), 1.0, "converted dynamic path trimEnd observes Synchronizable mutation");
+
+    auto updatedSurface = makeSurface(28, 20);
+    renderNode(root, updatedSurface);
+    expectNear(pathCmd->props.start, 0.5, "dynamic PathCmd render observes trimStart setBlocking mutation");
+    expectNear(pathCmd->props.end, 1.0, "dynamic PathCmd render observes trimEnd setBlocking mutation");
+    expectColorNear(pixelAt(updatedSurface, 2, 6), SK_ColorTRANSPARENT, 0, "updated dynamic path trim removes the stale start segment");
+    expectColorNear(pixelAt(updatedSurface, 18, 6), SK_ColorCYAN, 0, "updated dynamic path trim renders the new end segment");
+    expectColorNear(pixelAt(updatedSurface, 19, 10), SK_ColorCYAN, 0, "updated dynamic path trim renders the vertical segment");
+}
+
 void assertPathHostObjectCommandRender(jsi::Runtime& runtime)
 {
     auto root = makeYogaNode(
@@ -1725,6 +1870,101 @@ void assertConverterErrorPath(jsi::Runtime& runtime)
     fail("path command conversion without a JsiSkPath host object must fail in this host probe");
 }
 
+void assertDynamicPathTrimCommandRejections(jsi::Runtime& runtime)
+{
+    jsi::Object plainTrimStart(runtime);
+    plainTrimStart.setProperty(runtime, "not", "a synchronizable");
+
+    jsi::Object plainData(runtime);
+    plainData.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, makeTrimProbePath()));
+    plainData.setProperty(runtime, "trimStart", std::move(plainTrimStart));
+    plainData.setProperty(runtime, "trimEnd", 1.0);
+
+    jsi::Object plainCommand(runtime);
+    plainCommand.setProperty(runtime, "type", "path");
+    plainCommand.setProperty(runtime, "data", std::move(plainData));
+    jsi::Value plainCommandValue(runtime, plainCommand);
+
+    expect(
+        margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, plainCommandValue),
+        "NodeCommand converter canConvert accepts shaped path command before rejecting plain trimStart payload");
+    expectJsiThrows(
+        [&]() {
+            (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, plainCommandValue);
+        },
+        "NodeCommand conversion failed for type \"path\"",
+        "NodeCommand conversion rejects plain JS object path trimStart");
+    expectJsiThrows(
+        [&]() {
+            (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, plainCommandValue);
+        },
+        "Worklets SerializableJSRef",
+        "NodeCommand conversion requires Worklets SerializableJSRef for object path trimStart");
+
+    jsi::Object wrongData(runtime);
+    wrongData.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, makeTrimProbePath()));
+    wrongData.setProperty(runtime, "trimStart", 0.0);
+    wrongData.setProperty(runtime, "trimEnd", makeWrongSerializableRefValue(runtime));
+
+    jsi::Object wrongCommand(runtime);
+    wrongCommand.setProperty(runtime, "type", "path");
+    wrongCommand.setProperty(runtime, "data", std::move(wrongData));
+    jsi::Value wrongCommandValue(runtime, wrongCommand);
+
+    expect(
+        margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, wrongCommandValue),
+        "NodeCommand converter canConvert accepts shaped path command before rejecting non-Synchronizable trimEnd payload");
+    expectJsiThrows(
+        [&]() {
+            (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, wrongCommandValue);
+        },
+        "Worklets Synchronizable",
+        "NodeCommand conversion rejects non-Synchronizable SerializableJSRef path trimEnd");
+
+    jsi::Object plainTrimEnd(runtime);
+    plainTrimEnd.setProperty(runtime, "not", "a synchronizable");
+
+    jsi::Object plainEndData(runtime);
+    plainEndData.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, makeTrimProbePath()));
+    plainEndData.setProperty(runtime, "trimStart", 0.0);
+    plainEndData.setProperty(runtime, "trimEnd", std::move(plainTrimEnd));
+
+    jsi::Object plainEndCommand(runtime);
+    plainEndCommand.setProperty(runtime, "type", "path");
+    plainEndCommand.setProperty(runtime, "data", std::move(plainEndData));
+    jsi::Value plainEndCommandValue(runtime, plainEndCommand);
+
+    expect(
+        margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, plainEndCommandValue),
+        "NodeCommand converter canConvert accepts shaped path command before rejecting plain trimEnd payload");
+    expectJsiThrows(
+        [&]() {
+            (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, plainEndCommandValue);
+        },
+        "Worklets SerializableJSRef",
+        "NodeCommand conversion requires Worklets SerializableJSRef for object path trimEnd");
+
+    jsi::Object wrongStartData(runtime);
+    wrongStartData.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, makeTrimProbePath()));
+    wrongStartData.setProperty(runtime, "trimStart", makeWrongSerializableRefValue(runtime));
+    wrongStartData.setProperty(runtime, "trimEnd", 1.0);
+
+    jsi::Object wrongStartCommand(runtime);
+    wrongStartCommand.setProperty(runtime, "type", "path");
+    wrongStartCommand.setProperty(runtime, "data", std::move(wrongStartData));
+    jsi::Value wrongStartCommandValue(runtime, wrongStartCommand);
+
+    expect(
+        margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, wrongStartCommandValue),
+        "NodeCommand converter canConvert accepts shaped path command before rejecting non-Synchronizable trimStart payload");
+    expectJsiThrows(
+        [&]() {
+            (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, wrongStartCommandValue);
+        },
+        "Worklets Synchronizable",
+        "NodeCommand conversion rejects non-Synchronizable SerializableJSRef path trimStart");
+}
+
 void assertConverterErrorImage(jsi::Runtime& runtime)
 {
     jsi::Object data(runtime);
@@ -1795,6 +2035,7 @@ int main()
     assertParentChildLayoutRender(*runtime);
     assertGroupRasterCacheBehavior(*runtime);
     assertDynamicRasterizedGroupBypassesCache(*runtime);
+    assertDynamicPathTrimRasterizedGroupBypassesCache(*runtime);
     assertAdditionalPointsCommandRender(*runtime);
     assertLineCommandRender(*runtime);
     assertOvalCommandRender(*runtime);
@@ -1805,10 +2046,12 @@ int main()
     assertBlurMaskFilterCommandRender(*runtime);
     assertDynamicBlurMaskFilterCommandRender(*runtime);
     assertPathHostObjectCommandRender(*runtime);
+    assertDynamicPathTrimCommandRender(*runtime);
     assertImageHostObjectCommandRender(*runtime);
     assertTextCommandStateAndRender(*runtime);
     assertParagraphCommandMeasureAndRender(*runtime);
     assertConverterErrorPath(*runtime);
+    assertDynamicPathTrimCommandRejections(*runtime);
     assertConverterErrorImage(*runtime);
     assertConverterErrorTextFont(*runtime);
     assertDynamicAnimatedDoubleCommandRejections(*runtime);
