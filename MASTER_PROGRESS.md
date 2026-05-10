@@ -2067,10 +2067,12 @@ Last updated: 2026-05-10
   - Removed `../worker-088-nitro-yoganode-materialization`.
   - Deleted branch `worker/088-nitro-yoganode-materialization`.
 - Prepared worker 089 as the next target: dynamic Worklets-backed `AnimatedDouble` / `Synchronizable` extraction and numeric resolution proof without claiming UI-runtime Worklets execution.
+- Created `worker-089-animated-double-synchronizable` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-089-animated-double-synchronizable` as a top-level tmux subprocess.
+- Worker 089 passed the visible `GOAL_CREATED: Prove or root-cause dynamic Worklets-backed AnimatedDouble/Synchronizable extraction and numeric resolution in a bounded host-JSC/native verifier.` gate as the first worker message. Its first `ORCHESTRATOR.md` read used the repo root and failed because the file lives one directory up, then it found `../ORCHESTRATOR.md`; this happened after the accepted goal gate.
 
 ## Active Workers
 
-- None; worker 089 is prepared for launch.
+- `rnskia-worker-089-animated-double-synchronizable`: running from `worker/089-animated-double-synchronizable`; monitoring dynamic `AnimatedDouble` / Worklets `Synchronizable` proof.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2182,7 +2184,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- `worker-089-animated-double-synchronizable`: dynamic Worklets-backed `AnimatedDouble` / `Synchronizable` extraction and numeric resolution proof.
+- None; worker 089 is active.
 
 ## Decisions
 
@@ -2217,7 +2219,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Launch worker 089 for dynamic Worklets-backed `AnimatedDouble` / `Synchronizable` extraction and numeric resolution proof in a bounded host-JSC/native verifier.
+- Monitor worker 089 for dynamic Worklets-backed `AnimatedDouble` / `Synchronizable` extraction and numeric resolution proof in a bounded host-JSC/native verifier.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes

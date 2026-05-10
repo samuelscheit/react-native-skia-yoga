@@ -203,7 +203,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch worker 089 for dynamic Worklets-backed `AnimatedDouble` / `Synchronizable` extraction and numeric resolution proof, bounded to host-JSC/native behavior and without claiming UI-runtime Worklets execution.
+- Monitor worker 089 for dynamic Worklets-backed `AnimatedDouble` / `Synchronizable` extraction and numeric resolution proof, bounded to host-JSC/native behavior and without claiming UI-runtime Worklets execution.
 
 Acceptance criteria:
 
