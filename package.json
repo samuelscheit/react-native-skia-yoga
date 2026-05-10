@@ -37,6 +37,7 @@
 		"check:android-skia-archives": "node ./scripts/verify-android-skia-archives.mjs",
 		"check:yoganode-native-lifetime": "node ./scripts/verify-yoganode-native-lifetime.mjs",
 		"check:yoganode-native-hit-testing": "node ./scripts/verify-yoganode-native-hit-testing.mjs",
+		"check:rnsk-yoga-view-runtime": "node ./scripts/verify-rnsk-yoga-view-runtime.mjs",
 		"check:package-lifecycle": "node ./scripts/verify-package-lifecycle.mjs",
 		"check:package-surface": "node ./scripts/verify-package-surface.mjs",
 		"check:package-typescript-consumer": "node ./scripts/verify-package-typescript-consumer.mjs",
