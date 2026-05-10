@@ -206,10 +206,11 @@ Accepted package-hygiene implementation:
 - `worker-092-dynamic-path-trim-nodecommand`: expanded `check:yoganode-native-commands-render` to prove Worklets-backed dynamic `AnimatedDouble` NodeCommand coverage for `path.trimStart` and `path.trimEnd`, including real `PathCmd` conversion/rendering, render-time fallback, main-runtime resolution, mutation observation, path-trim raster evidence, symmetric rejection cases, and dynamic raster-cache bypass.
 - `worker-093-post-092-root-cause-audit`: audited the post-worker-092 state, reconfirmed the 28-command feasible matrix, and selected expanding `check:reconciler-animated-bindings` across every native-bound command prop as the next strongest unblocked target.
 - `worker-094-reconciler-native-command-bindings`: expanded `check:reconciler-animated-bindings` to cover every current source-whitelisted native command binding prop, added a TypeScript AST drift guard for `supportsNativeCommandBinding(...)`, and kept the proof boundary to Node VM source-level Reconciler stubs.
+- `worker-095-post-094-root-cause-audit`: audited the post-worker-094 state, reconfirmed the 28-command feasible matrix, and selected the public `path.stroke` payload contract, especially `StrokeOpts.miter_limit`, as the next strongest unblocked target.
 
 Current next step:
 
-- Monitor worker 095's post-worker-094 root-cause audit and use its recommendation to choose the next implementation target.
+- Launch worker 096 to prove and fix the public `path.stroke` payload contract through the host-native command/render verifier.
 
 Acceptance criteria:
 

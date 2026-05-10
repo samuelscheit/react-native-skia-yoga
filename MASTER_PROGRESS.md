@@ -2192,10 +2192,25 @@ Last updated: 2026-05-10
 - Prepared worker 095 as the next step: a read-only post-worker-094 root-cause audit to rank remaining proof gaps after Reconciler native command binding coverage.
 - Created `worker-095-post-094-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-095-post-094-root-cause-audit` as a top-level tmux subprocess.
 - Worker 095 passed the visible `GOAL_CREATED: Audit post-worker-094 state and select the next strongest unblocked root-cause target.` gate as the first worker message.
+- Worker 095 completed, reported `Goal finished.`, and wrote `worker-progress/worker-095-post-094-root-cause-audit.md`.
+- Worker 095 reran the 28-command feasible matrix in `4m 57s`, reconfirmed local platform-native blockers, documented a challenger, and selected proving/fixing the public `path.stroke` payload contract as the next strongest unblocked target.
+- Worker 095 found a source-confirmed contract drift: public JSX accepts RN Skia `StrokeOpts`, RN Skia's public TypeScript shape exposes `miter_limit`, but this repo's handwritten native stroke conversion currently reads `miterLimit`; current path command/render verification does not send a `stroke` payload.
+- Orchestrator acceptance in the worker worktree passed report review, `git diff --check`, and cleanup/status probes.
+- Committed worker 095 report as `bca3c33 Add worker 095 post-094 audit`.
+- Merged worker 095 into `main` as `50d430f Merge worker 095 post-094 audit`.
+- Main post-merge verification after worker 095 integration:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - Main tracked status was clean; known ignored local artifacts were left untouched.
+- Cleanup after worker 095 acceptance:
+  - Killed `rnskia-worker-095-post-094-root-cause-audit`.
+  - Removed `../worker-095-post-094-root-cause-audit`.
+  - Deleted branch `worker/095-post-094-root-cause-audit`.
+  - Verified no `rnskia-worker-095` tmux session, worker 095 worktree, or worker 095 branch remained.
+- Prepared worker 096 as the next step: prove and fix the public `path.stroke` payload contract through `check:yoganode-native-commands-render`, especially `StrokeOpts.miter_limit`.
 
 ## Active Workers
 
-- `rnskia-worker-095-post-094-root-cause-audit`: running from `worker/095-post-094-root-cause-audit`; auditing remaining proof gaps after worker 094.
+- None; worker 096 is prepared for launch.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2310,10 +2325,11 @@ Accepted worker reports:
 - `worker-progress/worker-092-dynamic-path-trim-nodecommand.md`
 - `worker-progress/worker-093-post-092-root-cause-audit.md`
 - `worker-progress/worker-094-reconciler-native-command-bindings.md`
+- `worker-progress/worker-095-post-094-root-cause-audit.md`
 
 ## Pending Workers
 
-- None; worker 095 is active.
+- `worker-096-path-stroke-contract`: pending launch to prove and fix the public `path.stroke` payload contract.
 
 ## Decisions
 
@@ -2349,12 +2365,13 @@ Accepted worker reports:
 - Dynamic PathCmd trim proof: worker 092 expanded `check:yoganode-native-commands-render` to cover Worklets-backed dynamic `path.trimStart` and `path.trimEnd` through real `JSIConverter<NodeCommand>::fromJSI(...)`, `YogaNode::setCommand()`, `PathCmd::draw()`, and `renderToContext()` paths. The proof covers render-time no-main-runtime fallback, main-runtime resolution, `Synchronizable::setBlocking(...)` mutation observation, bounded path raster evidence, symmetric trim rejection cases, and dynamic raster-cache bypass. The feasible matrix remains 28 commands and passed on main in `4m 42s`. Remaining gaps still include UI-runtime Worklets/Reanimated delivery, JS listener scheduling, Nitro registry install, full RN runtime integration, platform app build/run, image asset loading/decoding, full image-fit coverage, exact render fidelity, broader text/paragraph fidelity, and remaining unproven `AnimatedDouble` command props.
 - Post-worker-092 target selection: worker 093 reran the feasible matrix, accepted worker 092's proof boundary, and selected source-level Reconciler native command-binding coverage across every current native-bound command prop. The current Reconciler verifier covers the mechanism through `circle.radius`, while source whitelists `blurMaskFilter.blur`, `circle.radius`, `path.trimEnd`, `path.trimStart`, and `rrect.cornerRadius`; the next proof should table-drive all of those without claiming UI-runtime Worklets, real Reanimated delivery, actual native bridge delivery, or C++ conversion in that source-level verifier.
 - Reconciler native command-binding proof: worker 094 expanded `check:reconciler-animated-bindings` to table-drive all current `supportsNativeCommandBinding(...)` entries: `blurMaskFilter.blur`, `circle.radius`, `path.trimEnd`, `path.trimStart`, and `rrect.cornerRadius`. Each case proves source-level Reconciler creation of a `Synchronizable` mirror from the `SharedValue` snapshot, command payload placement, native-animation activation/invalidation, `setBlocking(...)` mutation, no JS command rebuild or `runOnJS` native path, plain-prop cleanup, and ignored later emits. The verifier now parses `src/Reconciler.ts` with TypeScript AST to fail if the source whitelist and verifier table drift. The proof remains Node VM source-level Reconciler stubs only and excludes UI-runtime Worklets execution, real Reanimated delivery, actual native bridge delivery, C++ conversion, platform app runtime, image loading/decoding, exact render fidelity, Nitro registry install, and React Native runtime integration. The feasible matrix remained 28 commands and passed on main in `4m 53s`.
+- Post-worker-094 target selection: worker 095 reran the feasible matrix, accepted worker 094's source-level boundary, reconfirmed local platform-native blockers, and selected the public `path.stroke` payload contract as the next strongest unblocked target. The audit found `src/jsx.ts` exposes RN Skia `StrokeOpts` for `path.stroke`, RN Skia's installed public type uses `miter_limit`, this repo's handwritten native converter reads `miterLimit`, and `check:yoganode-native-commands-render` currently builds `path` payloads without `stroke`. The next target should prove public-shaped `path.stroke` payload conversion through `JSIConverter<NodeCommand>::fromJSI(...)`, real `YogaNode::setCommand()`, real `PathCmd`, and bounded host-native render evidence without claiming platform app proof, real RN bridge delivery, UI-runtime Worklets execution, Reanimated delivery, image asset loading, exact render fidelity, or full path/stroke fidelity.
 - Example Worklets transform: worker 051 added the example/Expo Babel-config path to `check:skia-yoga-object-lazy-init`, proving package source `src/util.ts` keeps the same lazy Nitro closure/body contract when transformed through `example/babel.config.js` and the example dependency context.
 - Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the package lifecycle root-cause task, worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`. Worker 020 found the runtime-smoke archive discovery target, worker 021 completed it, worker 022 found the Android CMake archive-layout analogue, worker 023 completed it, worker 024 selected lint-ci root configuration/formatter repair as the next repo-owned feedback-loop fix, worker 025 completed that repair, worker 026 selected the remaining product-source React Native deep imports as the next implementation target, worker 027 completed that target, worker 028 selected example lint-contract cleanup, worker 029 completed it, worker 030 selected public README/API documentation drift, worker 031 completed that contract fix, worker 032 selected native publish-surface completeness, worker 033 completed that package-surface fix, worker 034 selected the unguarded Expo export path plus Metro config dump as the next example feedback-loop target, worker 035 completed that feedback-loop target, worker 036 confirmed platform-native build/run remains blocked by local toolchain gaps rather than a stronger repo-owned target, and worker 037 removed the strongest known unblocked RN Skia private-import target.
 
 ## Next Implementation Candidates
 
-- Monitor worker 095's post-worker-094 root-cause audit and use its recommendation to choose the next implementation target.
+- Launch worker 096 to prove and fix the public `path.stroke` payload contract through the host-native command/render verifier.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
