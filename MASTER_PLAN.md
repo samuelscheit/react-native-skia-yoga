@@ -105,7 +105,7 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, and post-README/root-cause audit cadence continuing
+Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, and example bundle feedback-loop hygiene selected as the next implementation target
 
 Goals:
 
@@ -145,10 +145,11 @@ Accepted package-hygiene implementation:
 - `worker-031-readme-api-contract`: documented consumer peer dependencies and the required `jsxImportSource: "react-native-skia-yoga"` TypeScript setup for lowercase intrinsic nodes, corrected stale Nitro package metadata URLs to `SamuelScheit/react-native-skia-yoga`, verified no runtime/type shim changes were needed, and proved package lifecycle verification still passes.
 - `worker-032-next-root-cause-audit`: audited the post-worker-031 backlog, confirmed the feasible checks remain green, and selected native package publish-surface completeness as the next unblocked repo-owned target because the packed npm manifest omits `cpp/` while iOS and Android native build metadata requires it.
 - `worker-033-native-publish-surface`: added `cpp/` and the Android `fix-prefab.gradle` helper to the packed npm surface, corrected the podspec source URL, and added `check:package-surface` to assert required native/package files in the `npm pack --dry-run --json --ignore-scripts` manifest.
+- `worker-034-next-root-cause-audit`: audited the post-worker-033 backlog, confirmed the feasible package/native/example checks remain green, and selected example JS bundle feedback-loop hygiene as the next unblocked repo-owned target because the working Expo export path is not guarded by a repo script and `example/metro.config.js` dumps the full Metro config.
 
 Current next step:
 
-- Launch a read-only post-worker-033 root-cause audit to rank the next unblocked repo-owned target. Continue platform-native build/run verification once local prerequisites are available.
+- Launch a scoped implementation worker to add a bounded temp-dir Expo export smoke command and remove `console.log(finalConfig)` from `example/metro.config.js`. Continue platform-native build/run verification once local prerequisites are available.
 
 Acceptance criteria:
 
