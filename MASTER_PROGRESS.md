@@ -1993,10 +1993,12 @@ Last updated: 2026-05-10
   - Removed `../worker-084-yoganode-image-command-render`.
   - Deleted branch `worker/084-yoganode-image-command-render`.
 - Created `worker-085-post-084-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and wrote the worker 085 prompt.
+- Launched `rnskia-worker-085-post-084-root-cause-audit` as a read-only top-level tmux subprocess to audit post-worker-084 state and select the next strongest unblocked root-cause target.
+- Worker 085 passed the visible `GOAL_CREATED: Audit post-worker-084 state and select the next strongest unblocked root-cause target.` gate as the first worker message.
 
 ## Active Workers
 
-- None after worker 084 cleanup; worker 085 is prepared but not yet launched.
+- `rnskia-worker-085-post-084-root-cause-audit`: launched from `worker/085-post-084-root-cause-audit`; monitoring for post-worker-084 audit and next-target selection.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2104,7 +2106,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- `worker-085-post-084-root-cause-audit`: prepared for launch as a read-only post-worker-084 audit.
+- None; worker 085 is active.
 
 ## Decisions
 
