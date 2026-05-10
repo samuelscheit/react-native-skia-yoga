@@ -30,6 +30,7 @@ const tempArtifactPrefixes = [
 	"rnskia-package-consumer-",
 	"rnskia-package-lifecycle-",
 	"rnskia-package-typescript-consumer-",
+	"rnskia-yoganode-hit-testing-",
 	"rnskia-yoganode-lifetime-",
 	"rnskia-yoganode-runtime-",
 ]
@@ -84,6 +85,7 @@ const matrixCommands = [
 	npmScript("check:android-skia-archives", { timeoutMs: 120_000 }),
 	npmScript("check:yoganode-native-lifetime", { timeoutMs: 180_000 }),
 	npmScript("check:yoganode-native-runtime", { timeoutMs: 300_000 }),
+	npmScript("check:yoganode-native-hit-testing", { timeoutMs: 300_000 }),
 	npmScript("typecheck"),
 	npmScript("lint-ci"),
 	{
