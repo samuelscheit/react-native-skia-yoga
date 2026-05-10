@@ -205,10 +205,11 @@ Accepted package-hygiene implementation:
 - `worker-091-post-090-root-cause-audit`: audited the post-worker-090 state, accepted the prior worker-091 28-command feasible matrix evidence, reconfirmed local platform-native blockers, and selected dynamic `PathCmd` `trimStart` / `trimEnd` `AnimatedDouble` NodeCommand/render coverage as the strongest remaining unblocked target.
 - `worker-092-dynamic-path-trim-nodecommand`: expanded `check:yoganode-native-commands-render` to prove Worklets-backed dynamic `AnimatedDouble` NodeCommand coverage for `path.trimStart` and `path.trimEnd`, including real `PathCmd` conversion/rendering, render-time fallback, main-runtime resolution, mutation observation, path-trim raster evidence, symmetric rejection cases, and dynamic raster-cache bypass.
 - `worker-093-post-092-root-cause-audit`: audited the post-worker-092 state, reconfirmed the 28-command feasible matrix, and selected expanding `check:reconciler-animated-bindings` across every native-bound command prop as the next strongest unblocked target.
+- `worker-094-reconciler-native-command-bindings`: expanded `check:reconciler-animated-bindings` to cover every current source-whitelisted native command binding prop, added a TypeScript AST drift guard for `supportsNativeCommandBinding(...)`, and kept the proof boundary to Node VM source-level Reconciler stubs.
 
 Current next step:
 
-- Monitor worker 094 as it expands `check:reconciler-animated-bindings` across all native-bound command props while keeping the proof boundary source-level.
+- Launch worker 095 as a post-worker-094 root-cause audit to reassess remaining proof gaps and select the next strongest unblocked target.
 
 Acceptance criteria:
 
