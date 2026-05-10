@@ -105,7 +105,7 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, example bundle feedback-loop hygiene fixed, post-worker-035 root-cause audit accepted, RN Skia private import cleanup integrated, and post-worker-037 root-cause audit selected as the next coordination step
+Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, example bundle feedback-loop hygiene fixed, post-worker-035 root-cause audit accepted, RN Skia private import cleanup integrated, post-worker-037 root-cause audit accepted, and packed-package TypeScript consumer smoke coverage launched as the next implementation step
 
 Goals:
 
@@ -149,16 +149,18 @@ Accepted package-hygiene implementation:
 - `worker-035-example-bundle-smoke`: added `check:example-bundle`, implemented a bounded temp-dir Expo iOS export verifier, removed the Metro config dump, and verified cleanup plus the core package/type/lint/spec checks.
 - `worker-036-post-035-root-cause-audit`: audited the post-worker-035 backlog, confirmed the full feasible package/native/example matrix remains green, and selected `src/YogaCanvas.tsx` RN Skia private import cleanup as the next unblocked repo-owned target because the current native-ID import only works through Metro's TypeScript source resolution and fails Node extensionless resolution.
 - `worker-037-yogacanvas-skia-import-cleanup`: removed `src/YogaCanvas.tsx` RN Skia private/deep imports, added repo-owned native-ID allocation, and added `check:rn-skia-imports` to guard tracked source against RN Skia `src/`, `lib/typescript/src/`, and private `SkiaViewNativeId` deep paths.
+- `worker-038-post-037-root-cause-audit`: audited the post-worker-037 state, confirmed the feasible package/native/example matrix remains green with `check:rn-skia-imports`, and selected packed-package TypeScript consumer smoke coverage as the next unblocked repo-owned target because existing checks do not compile public entrypoints and lowercase JSX from an installed tarball consumer.
 
 Current next step:
 
-- Monitor the active read-only post-worker-037 root-cause audit, which is rerunning the feasible package/native/example matrix, confirming the new `check:rn-skia-imports` guard stays green, and ranking the next unblocked repo-owned target. Continue platform-native build/run verification once local prerequisites are available.
+- Monitor the active packed-package TypeScript consumer smoke implementation worker. It should add a repo-owned verifier that packs the package, installs it into a temporary external TypeScript consumer, compiles public imports plus lowercase intrinsic JSX under `jsxImportSource: "react-native-skia-yoga"`, and cleans all temporary output. Continue platform-native build/run verification once local prerequisites are available.
 
 Acceptance criteria:
 
 - Example app runs or has documented environment blockers.
 - Published package metadata has no consumer lifecycle hook that depends on repo-local scripts or local workspace layout.
 - A temporary tarball consumer install passes with scripts enabled and without Bun on `PATH`.
+- A temporary packed-package TypeScript consumer compile passes against public entrypoints and the `jsxImportSource` lowercase intrinsic-node contract.
 - Android/iOS build paths are verified to the extent available locally.
 - Cleanup removes stale worktrees, tmux sessions, logs, and temporary build outputs.
 
