@@ -5,6 +5,32 @@ A React Native C++ library that combines the [Yoga](https://www.yogalayout.dev/)
 > [!CAUTION]
 > This library is in early development and not ready for production use.
 
+## Installation
+
+This package expects your app to provide its peer dependencies:
+
+- `react`
+- `react-native`
+- `@shopify/react-native-skia`
+- `react-native-reanimated`
+- `react-native-gesture-handler`
+- `react-native-worklets`
+
+## TypeScript Setup
+
+The custom intrinsic-node JSX surface is wired through the React JSX runtime. For lowercase nodes such as `<rect />`, `<text />`, and `<group />`, configure your app with:
+
+```json
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react-native-skia-yoga"
+  }
+}
+```
+
+The example app in `example/` uses this setup intentionally.
+
 ## Usage
 
 ```tsx
