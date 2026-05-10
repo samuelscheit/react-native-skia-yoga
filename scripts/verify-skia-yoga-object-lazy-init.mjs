@@ -9,13 +9,18 @@ import ts from "typescript"
 const rootDir = path.resolve(import.meta.dirname, "..")
 
 verifyPublicImportIsLazy()
+verifyCreateYogaNodeAccessIsLazyAndCached()
+verifyYogaCanvasRuntimeCreatesRootNodeLazily()
 verifyExplicitAccessIsLazyAndIdempotent()
 verifyMissingNativeErrorIsDeferredAndClear()
 
 console.log("SkiaYogaObject lazy-init verifier passed:")
+console.log("- Importing the public source entrypoint did not box NitroModules.")
 console.log("- Importing the public source entrypoint did not look up/install native bindings.")
-console.log("- Importing the public source entrypoint did not create the SkiaYoga hybrid object.")
+console.log("- Importing the public source entrypoint did not create native hybrid objects.")
 console.log("- Import-only access did not log or mutate globalThis.SkiaYoga.")
+console.log("- Explicit createYogaNode() access boxed NitroModules once and created YogaNode objects at call time.")
+console.log("- YogaCanvas runtime root creation still creates a YogaNode object lazily.")
 console.log("- Explicit getSkiaYoga() access installed and created the native object exactly once.")
 console.log("- Native-missing failures are reported when getSkiaYoga() is called.")
 
@@ -34,6 +39,16 @@ function verifyPublicImportIsLazy() {
 		"importing the public source entrypoint must not call TurboModuleRegistry.getEnforcing",
 	)
 	assert.equal(
+		harness.calls.nitroBox,
+		0,
+		"importing the public source entrypoint must not call NitroModules.box",
+	)
+	assert.equal(
+		harness.calls.nitroUnbox,
+		0,
+		"importing the public source entrypoint must not unbox NitroModules",
+	)
+	assert.equal(
 		harness.calls.install,
 		0,
 		"importing the public source entrypoint must not install native bindings",
@@ -41,7 +56,7 @@ function verifyPublicImportIsLazy() {
 	assert.deepEqual(
 		harness.calls.createHybridObject,
 		[],
-		"importing the public source entrypoint must not create the SkiaYoga hybrid object",
+		"importing the public source entrypoint must not create native hybrid objects",
 	)
 	assert.deepEqual(
 		harness.calls.consoleLog,
@@ -52,6 +67,114 @@ function verifyPublicImportIsLazy() {
 		hasOwn(harness.global, "SkiaYoga"),
 		false,
 		"importing the public source entrypoint must not write globalThis.SkiaYoga",
+	)
+}
+
+function verifyCreateYogaNodeAccessIsLazyAndCached() {
+	const harness = createHarness({
+		createHybridObject: createNativeObject,
+	})
+	const util = harness.loadProjectModule("src/util.ts")
+
+	assert.equal(
+		typeof util.createYogaNode,
+		"function",
+		"util should export createYogaNode",
+	)
+	assert.equal(
+		harness.calls.nitroBox,
+		0,
+		"importing util directly must not call NitroModules.box",
+	)
+	assert.equal(
+		harness.calls.nitroUnbox,
+		0,
+		"importing util directly must not unbox NitroModules",
+	)
+	assert.deepEqual(
+		harness.calls.createHybridObject,
+		[],
+		"importing util directly must not create native hybrid objects",
+	)
+
+	const first = util.createYogaNode()
+	const second = util.createYogaNode()
+
+	assert.notEqual(first, second, "createYogaNode should create a new YogaNode per call")
+	assert.equal(first.nativeName, "YogaNode", "first createYogaNode call should create a YogaNode")
+	assert.equal(second.nativeName, "YogaNode", "second createYogaNode call should create a YogaNode")
+	assert.equal(
+		harness.calls.nitroBox,
+		1,
+		"createYogaNode should lazily box NitroModules exactly once across repeated calls",
+	)
+	assert.equal(
+		harness.calls.nitroUnbox,
+		2,
+		"createYogaNode should unbox once per explicit node creation",
+	)
+	assert.deepEqual(
+		harness.calls.createHybridObject,
+		["YogaNode", "YogaNode"],
+		"createYogaNode should create YogaNode hybrid objects at explicit call time",
+	)
+	assert.deepEqual(
+		harness.calls.getEnforcing,
+		[],
+		"createYogaNode should not look up the SkiaYoga TurboModule",
+	)
+	assert.equal(
+		harness.calls.install,
+		0,
+		"createYogaNode should not install SkiaYoga native bindings",
+	)
+	assert.equal(
+		hasOwn(harness.global, "SkiaYoga"),
+		false,
+		"createYogaNode should not write globalThis.SkiaYoga",
+	)
+}
+
+function verifyYogaCanvasRuntimeCreatesRootNodeLazily() {
+	const harness = createHarness({
+		createHybridObject: createNativeObject,
+	})
+	const publicEntrypoint = harness.loadProjectModule("src/index.ts")
+
+	assert.equal(
+		harness.calls.nitroBox,
+		0,
+		"importing the public source entrypoint before YogaCanvas render must not call NitroModules.box",
+	)
+
+	publicEntrypoint.YogaCanvas({
+		children: null,
+	})
+
+	assert.equal(
+		harness.calls.nitroBox,
+		1,
+		"YogaCanvas root creation should lazily box NitroModules exactly once",
+	)
+	assert.equal(
+		harness.calls.nitroUnbox,
+		1,
+		"YogaCanvas root creation should unbox NitroModules once",
+	)
+	assert.deepEqual(
+		harness.calls.createHybridObject,
+		["YogaNode"],
+		"YogaCanvas root creation should create a YogaNode hybrid object at render time",
+	)
+	assert.deepEqual(
+		harness.calls.getEnforcing,
+		[],
+		"YogaCanvas root creation should not look up SkiaYoga until explicit SkiaYoga access",
+	)
+	assert.equal(
+		harness.calls.install,
+		0,
+		"YogaCanvas root creation should not install SkiaYoga native bindings",
 	)
 }
 
@@ -311,17 +434,6 @@ function createHarness(options = {}) {
 				},
 			},
 		],
-		[
-			projectPath("src/util.ts"),
-			{
-				createYogaNode() {
-					return {
-						setCommand() {},
-						setStyle() {},
-					}
-				},
-			},
-		],
 	])
 
 	function loadProjectModule(relativePath) {
@@ -425,6 +537,17 @@ function resolveProjectSpecifier(parentPath, specifier) {
 
 function hasOwn(value, property) {
 	return Object.prototype.hasOwnProperty.call(value, property)
+}
+
+function createNativeObject(name) {
+	return {
+		getChildren() {
+			return []
+		},
+		nativeName: name,
+		setCommand() {},
+		setStyle() {},
+	}
 }
 
 function normalizePath(filePath) {
