@@ -105,7 +105,7 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, example bundle feedback-loop hygiene fixed, post-worker-035 root-cause audit accepted, RN Skia private import cleanup integrated, post-worker-037 root-cause audit accepted, and packed-package TypeScript consumer smoke coverage launched as the next implementation step
+Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, example bundle feedback-loop hygiene fixed, post-worker-035 root-cause audit accepted, RN Skia private import cleanup integrated, post-worker-037 root-cause audit accepted, packed-package TypeScript consumer smoke coverage integrated, and post-worker-039 root-cause audit is the next coordination step
 
 Goals:
 
@@ -150,10 +150,11 @@ Accepted package-hygiene implementation:
 - `worker-036-post-035-root-cause-audit`: audited the post-worker-035 backlog, confirmed the full feasible package/native/example matrix remains green, and selected `src/YogaCanvas.tsx` RN Skia private import cleanup as the next unblocked repo-owned target because the current native-ID import only works through Metro's TypeScript source resolution and fails Node extensionless resolution.
 - `worker-037-yogacanvas-skia-import-cleanup`: removed `src/YogaCanvas.tsx` RN Skia private/deep imports, added repo-owned native-ID allocation, and added `check:rn-skia-imports` to guard tracked source against RN Skia `src/`, `lib/typescript/src/`, and private `SkiaViewNativeId` deep paths.
 - `worker-038-post-037-root-cause-audit`: audited the post-worker-037 state, confirmed the feasible package/native/example matrix remains green with `check:rn-skia-imports`, and selected packed-package TypeScript consumer smoke coverage as the next unblocked repo-owned target because existing checks do not compile public entrypoints and lowercase JSX from an installed tarball consumer.
+- `worker-039-package-typescript-consumer-smoke`: added `check:package-typescript-consumer`, which packs the package to a real tarball, installs it into a temporary external TypeScript consumer, compiles public entrypoints and lowercase intrinsic JSX under `jsxImportSource: "react-native-skia-yoga"`, and cleans all temporary output.
 
 Current next step:
 
-- Monitor the active packed-package TypeScript consumer smoke implementation worker. It should add a repo-owned verifier that packs the package, installs it into a temporary external TypeScript consumer, compiles public imports plus lowercase intrinsic JSX under `jsxImportSource: "react-native-skia-yoga"`, and cleans all temporary output. Continue platform-native build/run verification once local prerequisites are available.
+- Launch a read-only post-worker-039 root-cause audit to rerun/challenge the feasible matrix, include the new `check:package-typescript-consumer`, and rank the next unblocked repo-owned target. Candidate areas to challenge include the hidden `react-reconciler` / `@types/react-reconciler` package surface exposed by source-first declarations, `src/SkiaYogaObject.ts` import-time side effects, and continued platform-native blockers.
 
 Acceptance criteria:
 
