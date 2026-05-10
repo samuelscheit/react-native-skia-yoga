@@ -847,10 +847,13 @@ Last updated: 2026-05-10
   - Killed `rnskia-worker-048-post-047-root-cause-audit`.
   - Removed `../worker-048-post-047-root-cause-audit`.
   - Deleted branch `worker/048-post-047-root-cause-audit`.
+- Created `worker-049-util-worklets-closure-guard` from current `main`, symlinked root/example dependencies from the main worktree, and wrote the worker 049 prompt.
+- Launched `rnskia-worker-049-util-worklets-closure-guard` as a top-level tmux subprocess.
+- Worker 049 passed the visible `GOAL_CREATED: Add Worklets transform guard for util lazy Nitro closure.` gate as the first worker message before repository inspection.
 
 ## Active Workers
 
-- No active `rnskia-worker-*` top-level tmux worker is currently running.
+- `rnskia-worker-049-util-worklets-closure-guard`: implementation worker for a repo-owned Worklets transform/closure guard around `src/util.ts` lazy Nitro boxing; active in `../worker-049-util-worklets-closure-guard`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -922,7 +925,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- No launched `rnskia-worker-*` worker is pending acceptance.
+- `worker-049-util-worklets-closure-guard`: launched from `ee0fae3` to add a Worklets transform/closure guard that catches direct `NitroModules` capture, loss of `lazyNitroModulesBox`, or loss of the lazy accessor/unbox path in transformed `createYogaNode()`.
 
 ## Decisions
 
@@ -945,7 +948,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Launch an implementation worker to add a repo-owned Worklets transform/closure guard for `src/util.ts`.
+- Monitor worker 049 while it adds a repo-owned Worklets transform/closure guard for `src/util.ts`.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
