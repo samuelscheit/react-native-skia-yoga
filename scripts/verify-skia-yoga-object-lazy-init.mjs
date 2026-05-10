@@ -30,6 +30,10 @@ verifyNativeSkiaYogaDirectImportIsLazy()
 verifyCreateYogaNodeAccessIsLazyAndCached()
 verifyCreateYogaNodeWorkletsTransformUsesLazyAccessor()
 verifyCreateYogaNodeExampleWorkletsTransformUsesLazyAccessor()
+verifyReconcilerWorkletsTransformPreservesAnimatedBindings()
+verifyReconcilerExampleWorkletsTransformPreservesAnimatedBindings()
+verifyUseCanvasGesturesWorkletsTransformPreservesGestureCallbacks()
+verifyUseCanvasGesturesExampleWorkletsTransformPreservesGestureCallbacks()
 verifyYogaCanvasRuntimeCreatesRootNodeLazily()
 verifyExplicitAccessIsLazyAndIdempotent()
 verifyMissingNativeErrorIsDeferredAndClear()
@@ -44,6 +48,10 @@ console.log("- Import-only access did not log or mutate globalThis.SkiaYoga.")
 console.log("- Explicit createYogaNode() access boxed NitroModules once and created YogaNode objects at call time.")
 console.log("- Worklets transform kept createYogaNode() on lazyNitroModulesBox.current.unbox().")
 console.log("- Example Babel/Expo transform kept createYogaNode() on lazyNitroModulesBox.current.unbox().")
+console.log("- Worklets transform preserved Reconciler animated listener/native binding worklets.")
+console.log("- Example Babel/Expo transform preserved Reconciler animated listener/native binding worklets.")
+console.log("- Worklets transform preserved YogaCanvas gesture callback worklets and runOnJS dispatches.")
+console.log("- Example Babel/Expo transform preserved YogaCanvas gesture callback worklets and runOnJS dispatches.")
 console.log("- YogaCanvas runtime root creation still creates a YogaNode object lazily.")
 console.log("- Explicit getSkiaYoga() access installed and created the native object exactly once.")
 console.log("- Native-missing failures are reported when getSkiaYoga() is called.")
@@ -235,41 +243,108 @@ function verifyCreateYogaNodeAccessIsLazyAndCached() {
 }
 
 function verifyCreateYogaNodeWorkletsTransformUsesLazyAccessor() {
-	const utilPath = projectPath("src/util.ts")
-	const transformed = transformSync(readFileSync(utilPath, "utf8"), {
-		ast: true,
-		babelrc: false,
-		code: true,
-		configFile: false,
-		filename: utilPath,
-		plugins: [transformTypescriptPlugin, workletsPlugin],
-		sourceType: "module",
-	})
-
-	assert.ok(
-		transformed?.ast,
-		"Worklets transform should produce an AST for src/util.ts",
-	)
+	const { ast, filePath: utilPath } =
+		transformProjectFileWithRootWorklets("src/util.ts")
 
 	assertCreateYogaNodeWorkletsTransformUsesLazyAccessor(
-		transformed.ast,
+		ast,
 		`${utilPath}.root-worklet.js`,
 		"root Worklets transform",
 	)
 }
 
 function verifyCreateYogaNodeExampleWorkletsTransformUsesLazyAccessor() {
-	const utilPath = projectPath("src/util.ts")
+	const { ast, filePath: utilPath } =
+		transformProjectFileWithExampleBabel("src/util.ts")
+
+	assertCreateYogaNodeWorkletsTransformUsesLazyAccessor(
+		ast,
+		`${utilPath}.example-worklet.js`,
+		"example Babel/Expo transform",
+	)
+}
+
+function verifyReconcilerWorkletsTransformPreservesAnimatedBindings() {
+	const { ast, filePath: reconcilerPath } =
+		transformProjectFileWithRootWorklets("src/Reconciler.ts")
+
+	assertReconcilerWorkletsTransformPreservesAnimatedBindings(
+		ast,
+		`${reconcilerPath}.root-worklet.js`,
+		"root Worklets transform",
+	)
+}
+
+function verifyReconcilerExampleWorkletsTransformPreservesAnimatedBindings() {
+	const { ast, filePath: reconcilerPath } =
+		transformProjectFileWithExampleBabel("src/Reconciler.ts")
+
+	assertReconcilerWorkletsTransformPreservesAnimatedBindings(
+		ast,
+		`${reconcilerPath}.example-worklet.js`,
+		"example Babel/Expo transform",
+	)
+}
+
+function verifyUseCanvasGesturesWorkletsTransformPreservesGestureCallbacks() {
+	const { ast, filePath: gesturesPath } = transformProjectFileWithRootWorklets(
+		"src/useCanvasGestures.ts",
+	)
+
+	assertUseCanvasGesturesWorkletsTransformPreservesGestureCallbacks(
+		ast,
+		`${gesturesPath}.root-worklet.js`,
+		"root Worklets transform",
+	)
+}
+
+function verifyUseCanvasGesturesExampleWorkletsTransformPreservesGestureCallbacks() {
+	const { ast, filePath: gesturesPath } = transformProjectFileWithExampleBabel(
+		"src/useCanvasGestures.ts",
+	)
+
+	assertUseCanvasGesturesWorkletsTransformPreservesGestureCallbacks(
+		ast,
+		`${gesturesPath}.example-worklet.js`,
+		"example Babel/Expo transform",
+	)
+}
+
+function transformProjectFileWithRootWorklets(relativePath) {
+	const filePath = projectPath(relativePath)
+	const transformed = transformSync(readFileSync(filePath, "utf8"), {
+		ast: true,
+		babelrc: false,
+		code: true,
+		configFile: false,
+		filename: filePath,
+		plugins: [transformTypescriptPlugin, workletsPlugin],
+		sourceType: "module",
+	})
+
+	assert.ok(
+		transformed?.ast,
+		`Worklets transform should produce an AST for ${relativePath}`,
+	)
+
+	return {
+		ast: transformed.ast,
+		filePath,
+	}
+}
+
+function transformProjectFileWithExampleBabel(relativePath) {
+	const filePath = projectPath(relativePath)
 	const exampleBabel = exampleRequire("@babel/core")
 	const transformed = exampleBabel.transformSync(
-		readFileSync(utilPath, "utf8"),
+		readFileSync(filePath, "utf8"),
 		{
 			ast: true,
 			babelrc: false,
 			code: true,
 			configFile: path.join(exampleDir, "babel.config.js"),
 			cwd: exampleDir,
-			filename: utilPath,
+			filename: filePath,
 			root: exampleDir,
 			sourceType: "module",
 		},
@@ -277,14 +352,13 @@ function verifyCreateYogaNodeExampleWorkletsTransformUsesLazyAccessor() {
 
 	assert.ok(
 		transformed?.ast,
-		"Example Babel/Expo transform should produce an AST for src/util.ts",
+		`Example Babel/Expo transform should produce an AST for ${relativePath}`,
 	)
 
-	assertCreateYogaNodeWorkletsTransformUsesLazyAccessor(
-		transformed.ast,
-		`${utilPath}.example-worklet.js`,
-		"example Babel/Expo transform",
-	)
+	return {
+		ast: transformed.ast,
+		filePath,
+	}
 }
 
 function assertCreateYogaNodeWorkletsTransformUsesLazyAccessor(
@@ -321,6 +395,484 @@ function assertCreateYogaNodeWorkletsTransformUsesLazyAccessor(
 		containsLazyNitroModulesBoxUnboxCall(workletAst),
 		true,
 		`${contextDescription} createYogaNode worklet body must use lazyNitroModulesBox.current.unbox()`,
+	)
+}
+
+function assertReconcilerWorkletsTransformPreservesAnimatedBindings(
+	ast,
+	workletFilename,
+	contextDescription,
+) {
+	const worklets = collectTransformedWorklets(ast, contextDescription)
+
+	assertWorkletNames(
+		worklets,
+		["ReconcilerTs1", "ReconcilerTs2", "ReconcilerTs3", "ReconcilerTs4"],
+		`${contextDescription} Reconciler transform`,
+	)
+	assert.equal(
+		countIdentifierCalleeCalls(ast, "executeOnUIRuntimeSync"),
+		4,
+		`${contextDescription} Reconciler transform should keep four executeOnUIRuntimeSync call sites`,
+	)
+
+	for (const workletName of ["ReconcilerTs1", "ReconcilerTs2"]) {
+		const remover = getRequiredTransformedWorklet(
+			worklets,
+			workletName,
+			contextDescription,
+		)
+		assertWorkletClosureKeys(
+			remover,
+			[],
+			contextDescription,
+			`${workletName} remove-listener worklet`,
+		)
+
+		const removerAst = parseRequiredWorkletCode(remover, workletFilename)
+		assertWorkletFunctionParams(
+			removerAst,
+			workletName,
+			["sharedValue", "listenerId"],
+			contextDescription,
+		)
+		assert.equal(
+			countStaticMemberCalls(removerAst, "sharedValue", "removeListener"),
+			1,
+			`${contextDescription} ${workletName} should remove exactly one SharedValue listener`,
+		)
+		assert.equal(
+			containsIdentifier(removerAst, "runOnJS"),
+			false,
+			`${contextDescription} ${workletName} should not bridge to JS while removing listeners`,
+		)
+	}
+
+	const listenerUpdate = getRequiredTransformedWorklet(
+		worklets,
+		"ReconcilerTs3",
+		contextDescription,
+	)
+	assertWorkletClosureKeys(
+		listenerUpdate,
+		["runOnJS"],
+		contextDescription,
+		"animated listener update worklet",
+	)
+	const listenerUpdateAst = parseRequiredWorkletCode(
+		listenerUpdate,
+		workletFilename,
+	)
+	assertWorkletFunctionParams(
+		listenerUpdateAst,
+		"ReconcilerTs3",
+		["sharedValue", "listenerKey", "currentListenerId", "onUpdateOnJS"],
+		contextDescription,
+	)
+	assert.equal(
+		containsStaticMemberCall(listenerUpdateAst, "sharedValue", "addListener"),
+		true,
+		`${contextDescription} animated listener update worklet should preserve sharedValue.addListener`,
+	)
+	assert.equal(
+		containsRunOnJSCallbackCall(listenerUpdateAst, "onUpdateOnJS", [
+			"listenerKey",
+			"nextValue",
+		]),
+		true,
+		`${contextDescription} animated listener update worklet should bridge listener updates through runOnJS(onUpdateOnJS)`,
+	)
+
+	const nativeBinding = getRequiredTransformedWorklet(
+		worklets,
+		"ReconcilerTs4",
+		contextDescription,
+	)
+	assertWorkletClosureKeys(
+		nativeBinding,
+		[],
+		contextDescription,
+		"native binding mirror worklet",
+	)
+	const nativeBindingAst = parseRequiredWorkletCode(
+		nativeBinding,
+		workletFilename,
+	)
+	assertWorkletFunctionParams(
+		nativeBindingAst,
+		"ReconcilerTs4",
+		["sharedValue", "mirror", "currentListenerId"],
+		contextDescription,
+	)
+	assert.equal(
+		containsStaticMemberCall(nativeBindingAst, "sharedValue", "addListener"),
+		true,
+		`${contextDescription} native binding mirror worklet should preserve sharedValue.addListener`,
+	)
+	assert.equal(
+		containsStaticMemberCall(nativeBindingAst, "mirror", "setBlocking"),
+		true,
+		`${contextDescription} native binding mirror worklet should preserve mirror.setBlocking(nextValue)`,
+	)
+	assert.equal(
+		containsIdentifier(nativeBindingAst, "runOnJS"),
+		false,
+		`${contextDescription} native binding mirror worklet should not capture or call runOnJS`,
+	)
+}
+
+function assertUseCanvasGesturesWorkletsTransformPreservesGestureCallbacks(
+	ast,
+	workletFilename,
+	contextDescription,
+) {
+	const worklets = collectTransformedWorklets(ast, contextDescription)
+
+	assertWorkletNames(
+		worklets,
+		[
+			"getPrimaryTouch",
+			"makePanEvent",
+			"makePointerEvent",
+			"useCanvasGesturesTs4",
+			"useCanvasGesturesTs5",
+			"useCanvasGesturesTs6",
+			"useCanvasGesturesTs7",
+		],
+		`${contextDescription} useCanvasGestures transform`,
+	)
+	assertGestureBuilderFactory(
+		ast,
+		"onTouchesDown",
+		"useCanvasGesturesTs7",
+		contextDescription,
+	)
+	assertGestureBuilderFactory(
+		ast,
+		"onTouchesMove",
+		"useCanvasGesturesTs6",
+		contextDescription,
+	)
+	assertGestureBuilderFactory(
+		ast,
+		"onTouchesUp",
+		"useCanvasGesturesTs5",
+		contextDescription,
+	)
+	assertGestureBuilderFactory(
+		ast,
+		"onTouchesCancelled",
+		"useCanvasGesturesTs4",
+		contextDescription,
+	)
+
+	const primaryTouch = getRequiredTransformedWorklet(
+		worklets,
+		"getPrimaryTouch",
+		contextDescription,
+	)
+	assertWorkletClosureKeys(
+		primaryTouch,
+		[],
+		contextDescription,
+		"getPrimaryTouch worklet",
+	)
+	const primaryTouchAst = parseRequiredWorkletCode(
+		primaryTouch,
+		workletFilename,
+	)
+	assert.equal(
+		containsStaticMemberPropertyName(primaryTouchAst, "changedTouches"),
+		true,
+		`${contextDescription} getPrimaryTouch worklet should preserve changedTouches access`,
+	)
+	assert.equal(
+		containsStaticMemberPropertyName(primaryTouchAst, "allTouches"),
+		true,
+		`${contextDescription} getPrimaryTouch worklet should preserve allTouches fallback access`,
+	)
+
+	const pointerEvent = getRequiredTransformedWorklet(
+		worklets,
+		"makePointerEvent",
+		contextDescription,
+	)
+	assertWorkletClosureKeys(
+		pointerEvent,
+		["getPrimaryTouch"],
+		contextDescription,
+		"makePointerEvent worklet",
+	)
+	const pointerEventAst = parseRequiredWorkletCode(
+		pointerEvent,
+		workletFilename,
+	)
+	assert.equal(
+		containsIdentifierCalleeCall(pointerEventAst, "getPrimaryTouch"),
+		true,
+		`${contextDescription} makePointerEvent worklet should call getPrimaryTouch from its closure`,
+	)
+	assert.equal(
+		containsIdentifier(pointerEventAst, "runOnJS"),
+		false,
+		`${contextDescription} makePointerEvent helper worklet should stay UI-only`,
+	)
+
+	const panEvent = getRequiredTransformedWorklet(
+		worklets,
+		"makePanEvent",
+		contextDescription,
+	)
+	assertWorkletClosureKeys(
+		panEvent,
+		["getPrimaryTouch"],
+		contextDescription,
+		"makePanEvent worklet",
+	)
+	const panEventAst = parseRequiredWorkletCode(panEvent, workletFilename)
+	assert.equal(
+		containsIdentifierCalleeCall(panEventAst, "getPrimaryTouch"),
+		true,
+		`${contextDescription} makePanEvent worklet should call getPrimaryTouch from its closure`,
+	)
+	for (const fieldName of ["changeX", "translationX", "cancelled"]) {
+		assert.equal(
+			containsIdentifier(panEventAst, fieldName),
+			true,
+			`${contextDescription} makePanEvent worklet should preserve ${fieldName} in pan event payload`,
+		)
+	}
+
+	const touchesDown = getRequiredTransformedWorklet(
+		worklets,
+		"useCanvasGesturesTs7",
+		contextDescription,
+	)
+	assertWorkletClosureKeys(
+		touchesDown,
+		[
+			"activeTag",
+			"dispatchPressIn",
+			"getPrimaryTouch",
+			"lastX",
+			"lastY",
+			"makePointerEvent",
+			"node",
+			"panStarted",
+			"pressedInside",
+			"runOnJS",
+			"startX",
+			"startY",
+		],
+		contextDescription,
+		"onTouchesDown worklet",
+	)
+	const touchesDownAst = parseRequiredWorkletCode(
+		touchesDown,
+		workletFilename,
+	)
+	assertWorkletFunctionParams(
+		touchesDownAst,
+		"useCanvasGesturesTs7",
+		["event", "stateManager"],
+		contextDescription,
+	)
+	assert.equal(
+		containsStaticMemberCall(touchesDownAst, "node", "hitTest"),
+		true,
+		`${contextDescription} onTouchesDown worklet should preserve node.hitTest`,
+	)
+	assert.equal(
+		containsStaticMemberCall(touchesDownAst, "stateManager", "activate"),
+		true,
+		`${contextDescription} onTouchesDown worklet should preserve stateManager.activate`,
+	)
+	assert.equal(
+		containsRunOnJSCallbackCall(touchesDownAst, "dispatchPressIn", [
+			"tag",
+			"pressInEvent",
+		]),
+		true,
+		`${contextDescription} onTouchesDown worklet should dispatch press-in through runOnJS`,
+	)
+
+	const touchesMove = getRequiredTransformedWorklet(
+		worklets,
+		"useCanvasGesturesTs6",
+		contextDescription,
+	)
+	assertWorkletClosureKeys(
+		touchesMove,
+		[
+			"PAN_START_DISTANCE_SQUARED",
+			"activeTag",
+			"dispatchPanStart",
+			"dispatchPanUpdate",
+			"dispatchPressIn",
+			"dispatchPressOut",
+			"getPrimaryTouch",
+			"lastX",
+			"lastY",
+			"makePanEvent",
+			"makePointerEvent",
+			"node",
+			"panStarted",
+			"pressedInside",
+			"runOnJS",
+			"startX",
+			"startY",
+		],
+		contextDescription,
+		"onTouchesMove worklet",
+	)
+	const touchesMoveAst = parseRequiredWorkletCode(
+		touchesMove,
+		workletFilename,
+	)
+	assertWorkletFunctionParams(
+		touchesMoveAst,
+		"useCanvasGesturesTs6",
+		["event"],
+		contextDescription,
+	)
+	assert.equal(
+		containsIdentifier(touchesMoveAst, "PAN_START_DISTANCE_SQUARED"),
+		true,
+		`${contextDescription} onTouchesMove worklet should preserve pan-start threshold use`,
+	)
+	assert.equal(
+		containsStaticMemberCall(touchesMoveAst, "node", "hitTest"),
+		true,
+		`${contextDescription} onTouchesMove worklet should preserve node.hitTest for hover-in/out`,
+	)
+	for (const [callbackName, argumentNames] of [
+		["dispatchPressOut", ["tag", "pressOutEvent"]],
+		["dispatchPanStart", ["tag", "panStartEvent"]],
+		["dispatchPressIn", ["tag", "nextEvent"]],
+		["dispatchPressOut", ["tag", "nextEvent"]],
+		["dispatchPanUpdate", ["tag", "panUpdateEvent"]],
+	]) {
+		assert.equal(
+			containsRunOnJSCallbackCall(
+				touchesMoveAst,
+				callbackName,
+				argumentNames,
+			),
+			true,
+			`${contextDescription} onTouchesMove worklet should preserve runOnJS(${callbackName})(${argumentNames.join(", ")})`,
+		)
+	}
+
+	const touchesUp = getRequiredTransformedWorklet(
+		worklets,
+		"useCanvasGesturesTs5",
+		contextDescription,
+	)
+	assertWorkletClosureKeys(
+		touchesUp,
+		[
+			"activeTag",
+			"dispatchPanEnd",
+			"dispatchPress",
+			"dispatchPressOut",
+			"lastX",
+			"lastY",
+			"makePanEvent",
+			"makePointerEvent",
+			"panStarted",
+			"pressedInside",
+			"runOnJS",
+			"startX",
+			"startY",
+		],
+		contextDescription,
+		"onTouchesUp worklet",
+	)
+	const touchesUpAst = parseRequiredWorkletCode(touchesUp, workletFilename)
+	assertWorkletFunctionParams(
+		touchesUpAst,
+		"useCanvasGesturesTs5",
+		["event", "stateManager"],
+		contextDescription,
+	)
+	for (const [callbackName, argumentNames] of [
+		["dispatchPanEnd", ["tag", "panEndEvent"]],
+		["dispatchPress", ["tag", "pressEvent"]],
+		["dispatchPressOut", ["tag", "pressEvent"]],
+	]) {
+		assert.equal(
+			containsRunOnJSCallbackCall(touchesUpAst, callbackName, argumentNames),
+			true,
+			`${contextDescription} onTouchesUp worklet should preserve runOnJS(${callbackName})(${argumentNames.join(", ")})`,
+		)
+	}
+	assert.equal(
+		containsStaticMemberCall(touchesUpAst, "stateManager", "end"),
+		true,
+		`${contextDescription} onTouchesUp worklet should preserve stateManager.end`,
+	)
+
+	const touchesCancelled = getRequiredTransformedWorklet(
+		worklets,
+		"useCanvasGesturesTs4",
+		contextDescription,
+	)
+	assertWorkletClosureKeys(
+		touchesCancelled,
+		[
+			"activeTag",
+			"dispatchPanEnd",
+			"dispatchPressOut",
+			"lastX",
+			"lastY",
+			"makePanEvent",
+			"makePointerEvent",
+			"panStarted",
+			"pressedInside",
+			"runOnJS",
+			"startX",
+			"startY",
+		],
+		contextDescription,
+		"onTouchesCancelled worklet",
+	)
+	const touchesCancelledAst = parseRequiredWorkletCode(
+		touchesCancelled,
+		workletFilename,
+	)
+	assertWorkletFunctionParams(
+		touchesCancelledAst,
+		"useCanvasGesturesTs4",
+		["event", "stateManager"],
+		contextDescription,
+	)
+	for (const [callbackName, argumentNames] of [
+		["dispatchPanEnd", ["tag", "panCancelEvent"]],
+		["dispatchPressOut", ["tag", "pressOutEvent"]],
+	]) {
+		assert.equal(
+			containsRunOnJSCallbackCall(
+				touchesCancelledAst,
+				callbackName,
+				argumentNames,
+			),
+			true,
+			`${contextDescription} onTouchesCancelled worklet should preserve runOnJS(${callbackName})(${argumentNames.join(", ")})`,
+		)
+	}
+	assert.equal(
+		containsIdentifierCalleeCallWithBooleanArgument(
+			touchesCancelledAst,
+			"makePanEvent",
+			true,
+		),
+		true,
+		`${contextDescription} onTouchesCancelled worklet should preserve cancelled pan event creation`,
+	)
+	assert.equal(
+		containsStaticMemberCall(touchesCancelledAst, "stateManager", "fail"),
+		true,
+		`${contextDescription} onTouchesCancelled worklet should preserve stateManager.fail`,
 	)
 }
 
@@ -931,6 +1483,160 @@ function findCreateYogaNodeWorkletCode(ast) {
 	return candidates[0]
 }
 
+function collectTransformedWorklets(ast, contextDescription) {
+	const codeByInitDataName = new Map()
+	const worklets = new Map()
+
+	walkAst(ast, (node) => {
+		if (
+			node.type === "VariableDeclarator" &&
+			node.id.type === "Identifier" &&
+			node.init?.type === "ObjectExpression"
+		) {
+			const code = getObjectStringProperty(node.init, "code")
+			if (code != null) {
+				codeByInitDataName.set(node.id.name, code)
+			}
+		}
+
+		if (node.type !== "AssignmentExpression") {
+			return
+		}
+
+		const closureWorkletName = getStaticMemberExpressionObjectName(
+			node.left,
+			"__closure",
+		)
+		if (closureWorkletName) {
+			assert.equal(
+				node.right.type,
+				"ObjectExpression",
+				`${contextDescription} ${closureWorkletName}.__closure must be assigned an object literal`,
+			)
+			getTransformedWorkletRecord(worklets, closureWorkletName).closureKeys =
+				getObjectExpressionKeys(
+					node.right,
+					`${contextDescription} ${closureWorkletName}.__closure`,
+				).sort()
+			return
+		}
+
+		const hashWorkletName = getStaticMemberExpressionObjectName(
+			node.left,
+			"__workletHash",
+		)
+		if (hashWorkletName) {
+			assert.equal(
+				node.right.type,
+				"NumericLiteral",
+				`${contextDescription} ${hashWorkletName}.__workletHash must be numeric`,
+			)
+			getTransformedWorkletRecord(worklets, hashWorkletName).hash =
+				node.right.value
+			return
+		}
+
+		const initDataWorkletName = getStaticMemberExpressionObjectName(
+			node.left,
+			"__initData",
+		)
+		if (initDataWorkletName) {
+			assert.equal(
+				node.right.type,
+				"Identifier",
+				`${contextDescription} ${initDataWorkletName}.__initData must reference a generated init-data object`,
+			)
+			getTransformedWorkletRecord(worklets, initDataWorkletName).initDataName =
+				node.right.name
+		}
+	})
+
+	for (const worklet of worklets.values()) {
+		if (worklet.initDataName) {
+			worklet.code = codeByInitDataName.get(worklet.initDataName)
+		}
+	}
+
+	return worklets
+}
+
+function getTransformedWorkletRecord(worklets, workletName) {
+	if (!worklets.has(workletName)) {
+		worklets.set(workletName, {
+			code: undefined,
+			closureKeys: undefined,
+			hash: undefined,
+			initDataName: undefined,
+			name: workletName,
+		})
+	}
+
+	return worklets.get(workletName)
+}
+
+function assertWorkletNames(worklets, expectedNames, contextDescription) {
+	assert.deepEqual(
+		[...worklets.keys()].sort(),
+		[...expectedNames].sort(),
+		`${contextDescription} should emit exactly the expected transformed worklet markers`,
+	)
+}
+
+function getRequiredTransformedWorklet(
+	worklets,
+	workletName,
+	contextDescription,
+) {
+	const worklet = worklets.get(workletName)
+
+	assert.ok(
+		worklet,
+		`${contextDescription} should emit transformed markers for ${workletName}`,
+	)
+	assert.ok(
+		worklet.closureKeys,
+		`${contextDescription} ${workletName} should assign __closure`,
+	)
+	assert.equal(
+		typeof worklet.hash,
+		"number",
+		`${contextDescription} ${workletName} should assign __workletHash`,
+	)
+	assert.equal(
+		typeof worklet.code,
+		"string",
+		`${contextDescription} ${workletName} should assign __initData.code`,
+	)
+
+	return worklet
+}
+
+function assertWorkletClosureKeys(
+	worklet,
+	expectedKeys,
+	contextDescription,
+	workletDescription,
+) {
+	assert.deepEqual(
+		worklet.closureKeys,
+		[...expectedKeys].sort(),
+		`${contextDescription} ${workletDescription} should capture only the expected closure values`,
+	)
+}
+
+function parseRequiredWorkletCode(worklet, workletFilename) {
+	assert.equal(
+		typeof worklet.code,
+		"string",
+		`${worklet.name} should have transformed worklet code`,
+	)
+
+	return parseTransformedJavaScript(
+		worklet.code,
+		`${workletFilename}.${worklet.name}.js`,
+	)
+}
+
 function parseTransformedJavaScript(code, filename) {
 	const parsed = transformSync(code, {
 		ast: true,
@@ -956,6 +1662,257 @@ function containsIdentifier(ast, name) {
 	})
 
 	return found
+}
+
+function containsIdentifierCalleeCall(ast, calleeName) {
+	let found = false
+
+	walkAst(ast, (node) => {
+		if (
+			node.type === "CallExpression" &&
+			node.callee.type === "Identifier" &&
+			node.callee.name === calleeName
+		) {
+			found = true
+		}
+	})
+
+	return found
+}
+
+function containsIdentifierCalleeCallWithBooleanArgument(
+	ast,
+	calleeName,
+	booleanValue,
+) {
+	let found = false
+
+	walkAst(ast, (node) => {
+		if (
+			node.type !== "CallExpression" ||
+			node.callee.type !== "Identifier" ||
+			node.callee.name !== calleeName
+		) {
+			return
+		}
+
+		if (
+			node.arguments.some(
+				(argumentNode) =>
+					argumentNode.type === "BooleanLiteral" &&
+					argumentNode.value === booleanValue,
+			)
+		) {
+			found = true
+		}
+	})
+
+	return found
+}
+
+function countIdentifierCalleeCalls(ast, calleeName) {
+	let count = 0
+
+	walkAst(ast, (node) => {
+		if (node.type === "CallExpression" && isNamedCallee(node.callee, calleeName)) {
+			count += 1
+		}
+	})
+
+	return count
+}
+
+function isNamedCallee(node, calleeName) {
+	if (node.type === "Identifier") {
+		return node.name === calleeName
+	}
+
+	if (isStaticMemberProperty(node, calleeName)) {
+		return true
+	}
+
+	if (node.type === "SequenceExpression") {
+		return node.expressions.some((expression) =>
+			isNamedCallee(expression, calleeName),
+		)
+	}
+
+	return false
+}
+
+function containsStaticMemberCall(ast, objectName, propertyName) {
+	return countStaticMemberCalls(ast, objectName, propertyName) > 0
+}
+
+function countStaticMemberCalls(ast, objectName, propertyName) {
+	let count = 0
+
+	walkAst(ast, (node) => {
+		if (
+			node.type === "CallExpression" &&
+			isStaticMemberExpression(node.callee, objectName, propertyName)
+		) {
+			count += 1
+		}
+	})
+
+	return count
+}
+
+function containsStaticMemberPropertyName(ast, propertyName) {
+	let found = false
+
+	walkAst(ast, (node) => {
+		if (isStaticMemberProperty(node, propertyName)) {
+			found = true
+		}
+	})
+
+	return found
+}
+
+function containsRunOnJSCallbackCall(ast, callbackName, expectedArgumentNames) {
+	let found = false
+
+	walkAst(ast, (node) => {
+		if (node.type !== "CallExpression") {
+			return
+		}
+
+		const runOnJSCall = node.callee
+		if (
+			runOnJSCall.type !== "CallExpression" ||
+			runOnJSCall.callee.type !== "Identifier" ||
+			runOnJSCall.callee.name !== "runOnJS"
+		) {
+			return
+		}
+
+		const callbackArgument = runOnJSCall.arguments[0]
+		if (
+			callbackArgument?.type !== "Identifier" ||
+			callbackArgument.name !== callbackName
+		) {
+			return
+		}
+
+		if (
+			expectedArgumentNames &&
+			!identifierArgumentsEqual(node.arguments, expectedArgumentNames)
+		) {
+			return
+		}
+
+		found = true
+	})
+
+	return found
+}
+
+function identifierArgumentsEqual(argumentNodes, expectedNames) {
+	if (argumentNodes.length !== expectedNames.length) {
+		return false
+	}
+
+	return argumentNodes.every((argumentNode, index) => {
+		return (
+			argumentNode.type === "Identifier" &&
+			argumentNode.name === expectedNames[index]
+		)
+	})
+}
+
+function assertWorkletFunctionParams(
+	ast,
+	functionName,
+	expectedParamNames,
+	contextDescription,
+) {
+	const declaration = findFunctionDeclaration(ast, functionName)
+
+	assert.ok(
+		declaration,
+		`${contextDescription} should emit a ${functionName} function in worklet code`,
+	)
+	assert.deepEqual(
+		declaration.params.map(getFunctionParamName),
+		expectedParamNames,
+		`${contextDescription} ${functionName} worklet should preserve its parameter list`,
+	)
+}
+
+function findFunctionDeclaration(ast, functionName) {
+	let declaration
+
+	walkAst(ast, (node) => {
+		if (
+			declaration == null &&
+			node.type === "FunctionDeclaration" &&
+			node.id?.name === functionName
+		) {
+			declaration = node
+		}
+	})
+
+	return declaration
+}
+
+function getFunctionParamName(param) {
+	assert.equal(
+		param.type,
+		"Identifier",
+		"transformed worklet function params should stay identifiers",
+	)
+
+	return param.name
+}
+
+function assertGestureBuilderFactory(
+	ast,
+	methodName,
+	expectedWorkletName,
+	contextDescription,
+) {
+	const workletNames = []
+
+	walkAst(ast, (node) => {
+		if (
+			node.type !== "CallExpression" ||
+			!isStaticMemberProperty(node.callee, methodName)
+		) {
+			return
+		}
+
+		const workletName = getFactoryCallWorkletName(node.arguments[0])
+		if (workletName) {
+			workletNames.push(workletName)
+		}
+	})
+
+	assert.deepEqual(
+		workletNames,
+		[expectedWorkletName],
+		`${contextDescription} ${methodName} should receive a transformed ${expectedWorkletName} worklet factory call`,
+	)
+}
+
+function getFactoryCallWorkletName(node) {
+	if (node?.type !== "CallExpression") {
+		return undefined
+	}
+
+	const callee = node.callee
+	if (
+		callee.type !== "FunctionExpression" ||
+		callee.id?.type !== "Identifier"
+	) {
+		return undefined
+	}
+
+	const factoryName = callee.id.name
+	return factoryName.endsWith("Factory")
+		? factoryName.slice(0, -"Factory".length)
+		: undefined
 }
 
 function containsLazyNitroModulesBoxUnboxCall(ast) {
@@ -994,6 +1951,14 @@ function isStaticMemberExpression(node, objectName, propertyName) {
 	)
 }
 
+function getStaticMemberExpressionObjectName(node, propertyName) {
+	if (!isStaticMemberProperty(node, propertyName)) {
+		return undefined
+	}
+
+	return node.object.type === "Identifier" ? node.object.name : undefined
+}
+
 function isStaticMemberProperty(node, propertyName) {
 	if (node?.type !== "MemberExpression") {
 		return false
@@ -1002,22 +1967,36 @@ function isStaticMemberProperty(node, propertyName) {
 	return getStaticPropertyName(node.property, node.computed) === propertyName
 }
 
-function getObjectExpressionKeys(node) {
+function getObjectExpressionKeys(node, contextDescription = "object expression") {
 	return node.properties.map((property) => {
 		assert.equal(
 			property.type,
 			"ObjectProperty",
-			"transformed createYogaNode.__closure must only use object properties",
+			`${contextDescription} must only use object properties`,
 		)
 
 		const key = getStaticPropertyName(property.key, property.computed)
 		assert.ok(
 			key,
-			"transformed createYogaNode.__closure must use static property names",
+			`${contextDescription} must use static property names`,
 		)
 
 		return key
 	})
+}
+
+function getObjectStringProperty(node, propertyName) {
+	for (const property of node.properties) {
+		if (
+			property.type === "ObjectProperty" &&
+			getStaticPropertyName(property.key, property.computed) === propertyName &&
+			property.value.type === "StringLiteral"
+		) {
+			return property.value.value
+		}
+	}
+
+	return undefined
 }
 
 function getStaticPropertyName(node, computed = false) {
