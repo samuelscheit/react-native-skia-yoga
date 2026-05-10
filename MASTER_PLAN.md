@@ -204,10 +204,11 @@ Accepted package-hygiene implementation:
 - `worker-090-animated-double-nodecommand`: expanded `check:yoganode-native-commands-render` to prove selected Worklets-backed dynamic `AnimatedDouble` props through `JSIConverter<NodeCommand>::fromJSI(...)` for `circle.radius`, `rrect.cornerRadius`, and `blurMaskFilter.blur`, including fallback, main-runtime resolution, mutation, render evidence, and dynamic raster-cache bypass.
 - `worker-091-post-090-root-cause-audit`: audited the post-worker-090 state, accepted the prior worker-091 28-command feasible matrix evidence, reconfirmed local platform-native blockers, and selected dynamic `PathCmd` `trimStart` / `trimEnd` `AnimatedDouble` NodeCommand/render coverage as the strongest remaining unblocked target.
 - `worker-092-dynamic-path-trim-nodecommand`: expanded `check:yoganode-native-commands-render` to prove Worklets-backed dynamic `AnimatedDouble` NodeCommand coverage for `path.trimStart` and `path.trimEnd`, including real `PathCmd` conversion/rendering, render-time fallback, main-runtime resolution, mutation observation, path-trim raster evidence, symmetric rejection cases, and dynamic raster-cache bypass.
+- `worker-093-post-092-root-cause-audit`: audited the post-worker-092 state, reconfirmed the 28-command feasible matrix, and selected expanding `check:reconciler-animated-bindings` across every native-bound command prop as the next strongest unblocked target.
 
 Current next step:
 
-- Monitor worker 093's read-only post-worker-092 root-cause audit and use its recommendation to choose the next implementation target.
+- Launch worker 094 to expand `check:reconciler-animated-bindings` across all native-bound command props while keeping the proof boundary source-level.
 
 Acceptance criteria:
 

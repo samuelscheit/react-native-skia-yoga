@@ -2155,10 +2155,25 @@ Last updated: 2026-05-10
 - Prepared worker 093 as the next step: a read-only post-worker-092 root-cause audit to rank remaining proof gaps after dynamic path trim coverage.
 - Created `worker-093-post-092-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-093-post-092-root-cause-audit` as a top-level tmux subprocess.
 - Worker 093 passed the visible `GOAL_CREATED: Audit post-worker-092 state and select the next strongest unblocked root-cause target.` gate as the first worker message.
+- Worker 093 completed, reported `Goal finished.`, and wrote `worker-progress/worker-093-post-092-root-cause-audit.md`.
+- Worker 093 reran the 28-command feasible matrix in `5m 3s`, reconfirmed local platform-native blockers, documented a read-only challenger, and selected expanding `check:reconciler-animated-bindings` across every native-bound command prop as the next strongest unblocked target.
+- Orchestrator acceptance in the worker worktree passed report review, `git diff --check`, cleanup/status probes, and `npm run check:reconciler-animated-bindings`.
+- Committed worker 093 report as `beb1e42 Add worker 093 post-092 audit`.
+- Merged worker 093 into `main` as `7c0727b Merge worker 093 post-092 audit`.
+- Main post-merge verification after worker 093 integration:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - `npm run check:reconciler-animated-bindings`: passed.
+  - Main tracked status was clean; known ignored local artifacts were left untouched.
+- Cleanup after worker 093 acceptance:
+  - Killed `rnskia-worker-093-post-092-root-cause-audit`.
+  - Removed `../worker-093-post-092-root-cause-audit`.
+  - Deleted branch `worker/093-post-092-root-cause-audit`.
+  - Verified no `rnskia-worker-093` tmux session, worker 093 worktree, or worker 093 branch remained.
+- Prepared worker 094 as the next step: expand `check:reconciler-animated-bindings` across all native-bound command props while keeping the proof boundary source-level.
 
 ## Active Workers
 
-- `rnskia-worker-093-post-092-root-cause-audit`: running from `worker/093-post-092-root-cause-audit`; auditing remaining proof gaps after worker 092.
+- None; worker 094 is prepared for launch.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2271,10 +2286,11 @@ Accepted worker reports:
 - `worker-progress/worker-090-animated-double-nodecommand.md`
 - `worker-progress/worker-091-post-090-root-cause-audit.md`
 - `worker-progress/worker-092-dynamic-path-trim-nodecommand.md`
+- `worker-progress/worker-093-post-092-root-cause-audit.md`
 
 ## Pending Workers
 
-- None; worker 093 is active.
+- `worker-094-reconciler-native-command-bindings`: pending launch to expand `check:reconciler-animated-bindings` across all native-bound command props.
 
 ## Decisions
 
@@ -2308,12 +2324,13 @@ Accepted worker reports:
 - AnimatedDouble NodeCommand proof: worker 090 expanded `check:yoganode-native-commands-render` to prove selected Worklets-backed dynamic `AnimatedDouble` command props through real `JSIConverter<NodeCommand>::fromJSI(...)`, `YogaNode::setCommand()`, and `renderToContext()` paths. Covered props are `circle.radius`, `rrect.cornerRadius`, and `blurMaskFilter.blur`, including no-main-runtime fallback, main-runtime resolution, `Synchronizable::setBlocking(...)` mutation, source-owned negative cases through `circle.radius`, and dynamic raster-cache bypass. The feasible matrix remains 28 commands and passed on main in `4m 50s`. Remaining gaps include UI-runtime Worklets/Reanimated delivery, full RN runtime integration, platform app build/run, image asset loading/decoding, full image-fit coverage, exact render fidelity, and unproven `AnimatedDouble` props such as path trim values.
 - Post-worker-090 target selection: worker 091 accepted the post-worker-090 baseline, confirmed the 28-command feasible matrix passed in its prior log, reconfirmed local platform-native blockers, documented nested challenger attempts, and selected dynamic `PathCmd` `trimStart` / `trimEnd` `AnimatedDouble` NodeCommand/render coverage as the next strongest unblocked target. The target is bounded to host-native command conversion/render behavior with real Worklets `Synchronizable` values and must not claim UI-runtime Worklets, Reanimated delivery, JS listener scheduling, Nitro registry install, RN runtime integration, platform app build/run, image asset loading/decoding, exact render fidelity, or all command-prop behavior.
 - Dynamic PathCmd trim proof: worker 092 expanded `check:yoganode-native-commands-render` to cover Worklets-backed dynamic `path.trimStart` and `path.trimEnd` through real `JSIConverter<NodeCommand>::fromJSI(...)`, `YogaNode::setCommand()`, `PathCmd::draw()`, and `renderToContext()` paths. The proof covers render-time no-main-runtime fallback, main-runtime resolution, `Synchronizable::setBlocking(...)` mutation observation, bounded path raster evidence, symmetric trim rejection cases, and dynamic raster-cache bypass. The feasible matrix remains 28 commands and passed on main in `4m 42s`. Remaining gaps still include UI-runtime Worklets/Reanimated delivery, JS listener scheduling, Nitro registry install, full RN runtime integration, platform app build/run, image asset loading/decoding, full image-fit coverage, exact render fidelity, broader text/paragraph fidelity, and remaining unproven `AnimatedDouble` command props.
+- Post-worker-092 target selection: worker 093 reran the feasible matrix, accepted worker 092's proof boundary, and selected source-level Reconciler native command-binding coverage across every current native-bound command prop. The current Reconciler verifier covers the mechanism through `circle.radius`, while source whitelists `blurMaskFilter.blur`, `circle.radius`, `path.trimEnd`, `path.trimStart`, and `rrect.cornerRadius`; the next proof should table-drive all of those without claiming UI-runtime Worklets, real Reanimated delivery, actual native bridge delivery, or C++ conversion in that source-level verifier.
 - Example Worklets transform: worker 051 added the example/Expo Babel-config path to `check:skia-yoga-object-lazy-init`, proving package source `src/util.ts` keeps the same lazy Nitro closure/body contract when transformed through `example/babel.config.js` and the example dependency context.
 - Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the package lifecycle root-cause task, worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`. Worker 020 found the runtime-smoke archive discovery target, worker 021 completed it, worker 022 found the Android CMake archive-layout analogue, worker 023 completed it, worker 024 selected lint-ci root configuration/formatter repair as the next repo-owned feedback-loop fix, worker 025 completed that repair, worker 026 selected the remaining product-source React Native deep imports as the next implementation target, worker 027 completed that target, worker 028 selected example lint-contract cleanup, worker 029 completed it, worker 030 selected public README/API documentation drift, worker 031 completed that contract fix, worker 032 selected native publish-surface completeness, worker 033 completed that package-surface fix, worker 034 selected the unguarded Expo export path plus Metro config dump as the next example feedback-loop target, worker 035 completed that feedback-loop target, worker 036 confirmed platform-native build/run remains blocked by local toolchain gaps rather than a stronger repo-owned target, and worker 037 removed the strongest known unblocked RN Skia private-import target.
 
 ## Next Implementation Candidates
 
-- Monitor worker 093's read-only post-worker-092 root-cause audit and use its recommendation to choose the next implementation target.
+- Launch worker 094 to expand `check:reconciler-animated-bindings` across every current native-bound command prop.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
