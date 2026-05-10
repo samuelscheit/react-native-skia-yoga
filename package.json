@@ -39,6 +39,7 @@
 		"check:package-lifecycle": "node ./scripts/verify-package-lifecycle.mjs",
 		"check:package-surface": "node ./scripts/verify-package-surface.mjs",
 		"check:package-typescript-consumer": "node ./scripts/verify-package-typescript-consumer.mjs",
+		"check:rn-codegen-schema": "node ./scripts/verify-rn-codegen-schema.mjs",
 		"check:skia-yoga-object-lazy-init": "node ./scripts/verify-skia-yoga-object-lazy-init.mjs",
 		"check:example-bundle": "node ./scripts/verify-example-bundle-export.mjs",
 		"check:rn-skia-imports": "node ./scripts/verify-rn-skia-imports.mjs",
