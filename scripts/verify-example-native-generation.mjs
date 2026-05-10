@@ -3,219 +3,344 @@
 import assert from "node:assert/strict"
 import { spawn, spawnSync } from "node:child_process"
 import {
+	cpSync,
 	existsSync,
 	lstatSync,
+	mkdirSync,
+	mkdtempSync,
 	readFileSync,
 	readdirSync,
 	realpathSync,
 	rmSync,
 	statSync,
+	symlinkSync,
+	writeFileSync,
 } from "node:fs"
 import { createRequire } from "node:module"
+import { tmpdir } from "node:os"
 import path from "node:path"
 
-const rootDir = path.resolve(import.meta.dirname, "..")
-const exampleDir = path.join(rootDir, "example")
-const expoCacheDir = path.join(exampleDir, ".expo")
-const exampleRequire = createRequire(path.join(exampleDir, "package.json"))
+const checkoutRootDir = path.resolve(import.meta.dirname, "..")
+const checkoutExampleDir = path.join(checkoutRootDir, "example")
 const packageName = "react-native-skia-yoga"
 const timeoutMs = 300_000
-const expoCacheExistedAtStart = existsSync(expoCacheDir)
+const metadataTimeoutMs = 120_000
+const tempParentDir = existsSync("/tmp") ? "/tmp" : tmpdir()
+const preserveLocalProbeArg = "--probe-preserve-local-artifacts"
 
-const nativeDirs = [
-	{
-		name: "iOS",
-		path: path.join(exampleDir, "ios"),
-		relativePath: "example/ios",
-		markers: ["Podfile", ".xcode.env"],
-	},
-	{
-		name: "Android",
-		path: path.join(exampleDir, "android"),
-		relativePath: "example/android",
-		markers: ["settings.gradle", "app/build.gradle", "gradle.properties"],
-	},
+const sourceEntriesToCopy = [
+	".eslintrc.js",
+	".gitignore",
+	"README.md",
+	"RNSkiaYoga.podspec",
+	"android",
+	"babel.config.js",
+	"bun.lock",
+	"cpp",
+	"example",
+	"index.d.ts",
+	"ios",
+	"jsx-dev-runtime.d.ts",
+	"jsx-dev-runtime.js",
+	"jsx-runtime.d.ts",
+	"jsx-runtime.js",
+	"nitro.json",
+	"nitrogen",
+	"package.json",
+	"react-native.config.js",
+	"src",
+	"tsconfig.json",
+]
+
+const excludedCopyPrefixes = [
+	".git",
+	".vscode",
+	"node_modules",
+	"worker-progress",
+	"example/.expo",
+	"example/android",
+	"example/ios",
+	"example/node_modules",
 ]
 
 let activeChild = null
-let cleaned = false
-const cleanupAllowedPaths = new Set()
-let summary = null
+let activeWorkspace = null
 
 assertRunningUnderNode()
+assertAllowedArgs()
 
 process.once("SIGINT", () => {
 	terminateActiveChild("SIGTERM")
-	cleanupNativeDirs()
+	cleanupActiveWorkspace()
 	process.exit(130)
 })
 
 process.once("SIGTERM", () => {
 	terminateActiveChild("SIGTERM")
-	cleanupNativeDirs()
+	cleanupActiveWorkspace()
 	process.exit(143)
 })
 
-try {
-	prepareCleanNativeState()
-	markNativeDirsWorkerOwned()
-	await runExpoPrebuild()
-
-	const iosSummary = assertGeneratedIosProject()
-	const androidSummary = assertGeneratedAndroidProject()
-	const rnCliSummary = assertReactNativeCliConfig()
-	const expoIosSummary = assertExpoReactNativeConfig("ios")
-	const expoAndroidSummary = assertExpoReactNativeConfig("android")
-
-	summary = {
-		androidSummary,
-		expoAndroidSummary,
-		expoIosSummary,
-		iosSummary,
-		rnCliSummary,
-	}
-} finally {
-	cleanupNativeDirs()
+if (process.argv.includes(preserveLocalProbeArg)) {
+	await runLocalArtifactPreservationProbe()
+} else {
+	await runExampleNativeGenerationVerifier()
 }
 
-console.log("Example native generation verifier passed:")
-console.log(
-	`- Expo prebuild ran through Node (${process.execPath}) with --no-install --clean --platform all.`,
-)
-console.log(
-	`- Generated iOS project was NUL-free and parser-readable: ${summary.iosSummary.pbxprojPath}`,
-)
-console.log(
-	`- Generated Android project files and metadata were present: ${summary.androidSummary.sourceDir}`,
-)
-console.log(
-	`- React Native CLI config resolved ${packageName} iOS podspec: ${summary.rnCliSummary.iosPodspecPath}`,
-)
-console.log(
-	`- React Native CLI config resolved ${summary.rnCliSummary.packageInstance}, ${summary.rnCliSummary.libraryName}, and ${summary.rnCliSummary.componentDescriptors.join(", ")}.`,
-)
-console.log(
-	`- Expo react-native-config resolved ${packageName} for iOS and Android, including ${summary.expoAndroidSummary.libraryName}.`,
-)
-console.log("- Removed generated example/ios and example/android.")
-if (!expoCacheExistedAtStart) {
-	console.log("- Removed generated example/.expo cache.")
-}
+async function runExampleNativeGenerationVerifier() {
+	const workspace = createTempWorkspace()
+	activeWorkspace = workspace
 
-function assertRunningUnderNode() {
-	assert.ok(process.versions.node, "Verifier must run under Node.js.")
-	assert.equal(
-		process.versions.bun,
-		undefined,
-		"Verifier must not run under Bun; run it with node.",
-	)
-	assert.match(
-		path.basename(process.execPath),
-		/^node(?:\.exe)?$/,
-		`Verifier must use a Node executable, received: ${process.execPath}`,
-	)
-}
+	let summary = null
+	try {
+		await runExpoPrebuild(workspace)
 
-function prepareCleanNativeState() {
-	for (const nativeDir of nativeDirs) {
-		if (assertNativeDirCanBeRemoved(nativeDir)) {
-			cleanupAllowedPaths.add(nativeDir.path)
-			rmSync(nativeDir.path, { recursive: true, force: true })
+		const iosSummary = assertGeneratedIosProject(workspace)
+		const androidSummary = assertGeneratedAndroidProject(workspace)
+		const rnCliSummary = assertReactNativeCliConfig(workspace)
+		const expoIosSummary = assertExpoReactNativeConfig(workspace, "ios")
+		const expoAndroidSummary = assertExpoReactNativeConfig(workspace, "android")
+
+		summary = {
+			androidSummary,
+			expoAndroidSummary,
+			expoIosSummary,
+			iosSummary,
+			rnCliSummary,
+			workspaceRoot: workspace.rootDir,
 		}
+	} finally {
+		cleanupWorkspace(workspace)
+		activeWorkspace = null
+	}
+
+	console.log("Example native generation verifier passed:")
+	console.log(
+		`- Expo prebuild ran through Node (${process.execPath}) with --no-install --clean --platform all in an isolated temporary workspace.`,
+	)
+	console.log(
+		`- Generated iOS project was NUL-free and parser-readable: ${summary.iosSummary.pbxprojPath}`,
+	)
+	console.log(
+		`- Generated Android project files and metadata were present: ${summary.androidSummary.sourceDir}`,
+	)
+	console.log(
+		`- React Native CLI config resolved ${packageName} iOS podspec: ${summary.rnCliSummary.iosPodspecPath}`,
+	)
+	console.log(
+		`- React Native CLI config resolved ${summary.rnCliSummary.packageInstance}, ${summary.rnCliSummary.libraryName}, and ${summary.rnCliSummary.componentDescriptors.join(", ")}.`,
+	)
+	console.log(
+		`- Expo react-native-config resolved ${packageName} for iOS and Android, including ${summary.expoAndroidSummary.libraryName}.`,
+	)
+	console.log(
+		`- Removed temporary native-generation workspace: ${summary.workspaceRoot}`,
+	)
+	console.log(
+		"- The launched checkout's example/ios, example/android, and example/.expo paths were not used as generation targets.",
+	)
+}
+
+async function runLocalArtifactPreservationProbe() {
+	const fixtures = createSentinelFixtures()
+
+	try {
+		await runExampleNativeGenerationVerifier()
+		assertSentinelFixturesPreserved(fixtures)
+	} finally {
+		cleanupSentinelFixtures(fixtures)
+	}
+
+	console.log("Local native artifact preservation probe passed:")
+	for (const fixture of fixtures) {
+		console.log(`- Preserved and removed probe-owned sentinel under ${fixture.relativePath}.`)
 	}
 }
 
-function assertNativeDirCanBeRemoved(nativeDir) {
-	if (!existsSync(nativeDir.path)) {
-		return false
+function createTempWorkspace() {
+	const rootDir = mkdtempSync(
+		path.join(tempParentDir, "rnskia-example-native-generation-"),
+	)
+	const workspace = {
+		exampleDir: path.join(rootDir, "example"),
+		exampleRequire: null,
+		rootDir,
 	}
 
-	assertPathInside(nativeDir.path, exampleDir, `${nativeDir.relativePath} path`)
+	try {
+		copyCheckoutSource(rootDir)
+		linkRootNodeModules(rootDir)
+		linkExampleNodeModules(rootDir)
 
-	const nativeDirStat = lstatSync(nativeDir.path)
-	assert.equal(
-		nativeDirStat.isSymbolicLink(),
-		false,
-		`${nativeDir.relativePath} must not be a symlink.`,
+		const examplePackageJson = path.join(workspace.exampleDir, "package.json")
+		assertFile(examplePackageJson, "temporary example package.json")
+		workspace.exampleRequire = createRequire(examplePackageJson)
+
+		assertTempPackageLink(workspace)
+		assert.equal(
+			existsSync(path.join(workspace.exampleDir, "ios")),
+			false,
+			"Temporary workspace must start without example/ios.",
+		)
+		assert.equal(
+			existsSync(path.join(workspace.exampleDir, "android")),
+			false,
+			"Temporary workspace must start without example/android.",
+		)
+		assert.equal(
+			existsSync(path.join(workspace.exampleDir, ".expo")),
+			false,
+			"Temporary workspace must not copy launched-checkout example/.expo.",
+		)
+
+		return workspace
+	} catch (error) {
+		cleanupWorkspace(workspace)
+		throw error
+	}
+}
+
+function copyCheckoutSource(tempRootDir) {
+	for (const entry of sourceEntriesToCopy) {
+		const sourcePath = path.join(checkoutRootDir, entry)
+		if (!existsSync(sourcePath)) {
+			continue
+		}
+
+		cpSync(sourcePath, path.join(tempRootDir, entry), {
+			dereference: false,
+			errorOnExist: false,
+			filter: shouldCopySourcePath,
+			force: true,
+			recursive: true,
+		})
+	}
+}
+
+function shouldCopySourcePath(sourcePath) {
+	const relativePath = normalizeRelativePath(
+		path.relative(checkoutRootDir, sourcePath),
 	)
-	assert.ok(
-		nativeDirStat.isDirectory(),
-		`${nativeDir.relativePath} must be a directory if it exists.`,
-	)
-
-	assertNoTrackedFiles(nativeDir.relativePath)
-
-	const entries = readdirSync(nativeDir.path)
-	if (entries.length === 0) {
+	if (relativePath === "") {
 		return true
 	}
-
-	const hasGeneratedMarkers = nativeDir.markers.every((marker) =>
-		existsSync(path.join(nativeDir.path, marker)),
+	if (relativePath.endsWith(".tgz")) {
+		return false
+	}
+	if (relativePath.endsWith("tsconfig.tsbuildinfo")) {
+		return false
+	}
+	return !excludedCopyPrefixes.some(
+		(prefix) => relativePath === prefix || relativePath.startsWith(`${prefix}/`),
 	)
-	assert.ok(
-		hasGeneratedMarkers,
-		[
-			`Refusing to remove ambiguous pre-existing ${nativeDir.relativePath}.`,
-			`Expected generated-native markers: ${nativeDir.markers.join(", ")}`,
-		].join(" "),
-	)
-
-	return true
 }
 
-function markNativeDirsWorkerOwned() {
-	for (const nativeDir of nativeDirs) {
-		cleanupAllowedPaths.add(nativeDir.path)
+function linkRootNodeModules(tempRootDir) {
+	const sourceNodeModules = path.join(checkoutRootDir, "node_modules")
+	assertDirectory(sourceNodeModules, "root node_modules")
+	symlinkSync(
+		realpathSync(sourceNodeModules),
+		path.join(tempRootDir, "node_modules"),
+		"dir",
+	)
+}
+
+function linkExampleNodeModules(tempRootDir) {
+	const sourceNodeModules = path.join(checkoutExampleDir, "node_modules")
+	assertDirectory(sourceNodeModules, "example node_modules")
+
+	const sourceNodeModulesRealPath = realpathSync(sourceNodeModules)
+	const targetNodeModules = path.join(tempRootDir, "example", "node_modules")
+	mkdirSync(targetNodeModules, { recursive: true })
+
+	for (const entry of readdirSync(sourceNodeModulesRealPath).sort()) {
+		const sourceEntry = path.join(sourceNodeModulesRealPath, entry)
+		const targetEntry = path.join(targetNodeModules, entry)
+
+		if (entry === packageName) {
+			linkTempPackageRoot(tempRootDir, targetEntry)
+			continue
+		}
+
+		if (entry.startsWith("@") && statSync(sourceEntry).isDirectory()) {
+			mkdirSync(targetEntry, { recursive: true })
+			for (const scopedEntry of readdirSync(sourceEntry).sort()) {
+				symlinkDependency(
+					path.join(sourceEntry, scopedEntry),
+					path.join(targetEntry, scopedEntry),
+				)
+			}
+			continue
+		}
+
+		symlinkDependency(sourceEntry, targetEntry)
+	}
+
+	const packageLinkPath = path.join(targetNodeModules, packageName)
+	if (!existsSync(packageLinkPath)) {
+		linkTempPackageRoot(tempRootDir, packageLinkPath)
 	}
 }
 
-function assertNoTrackedFiles(relativePath) {
-	const result = spawnSync("git", ["ls-files", "--", relativePath], {
-		cwd: rootDir,
-		encoding: "utf8",
-	})
-	if (result.error) {
-		throw result.error
-	}
-	assert.equal(
-		result.status,
-		0,
-		`git ls-files failed for ${relativePath}: ${result.stderr}`,
-	)
-	assert.equal(
-		result.stdout.trim(),
-		"",
-		`Refusing to remove tracked generated-native files under ${relativePath}.`,
+function symlinkDependency(sourcePath, targetPath) {
+	const realSourcePath = realpathSync(sourcePath)
+	const sourceStat = statSync(realSourcePath)
+	symlinkSync(
+		realSourcePath,
+		targetPath,
+		sourceStat.isDirectory() ? "dir" : "file",
 	)
 }
 
-async function runExpoPrebuild() {
-	const expoCliPath = exampleRequire.resolve("@expo/cli")
-	assertPathInside(expoCliPath, path.join(exampleDir, "node_modules"), "@expo/cli")
+function linkTempPackageRoot(tempRootDir, targetPath) {
+	symlinkSync(
+		path.relative(path.dirname(targetPath), tempRootDir),
+		targetPath,
+		"dir",
+	)
+}
+
+function assertTempPackageLink(workspace) {
+	const packageLinkPath = path.join(
+		workspace.exampleDir,
+		"node_modules",
+		packageName,
+	)
+	assert.equal(
+		realpathSync(packageLinkPath),
+		realpathSync(workspace.rootDir),
+		`Temporary example node_modules/${packageName} must point at the temporary package root.`,
+	)
+}
+
+async function runExpoPrebuild(workspace) {
+	const expoCliPath = workspace.exampleRequire.resolve("@expo/cli")
+	assertNodeModulePath(expoCliPath, "@expo/cli")
+	assertTempPackageLink(workspace)
 
 	console.log(`Running Expo prebuild through Node with a ${timeoutMs / 1000}s timeout.`)
+	console.log(`- Temporary workspace: ${workspace.rootDir}`)
 	await runBounded(
 		process.execPath,
 		[expoCliPath, "prebuild", "--no-install", "--clean", "--platform", "all"],
 		{
-			cwd: exampleDir,
+			cwd: workspace.exampleDir,
 			env: verifierEnv(),
 			timeoutMs,
 		},
 	)
 }
 
-function assertGeneratedIosProject() {
-	const iosDir = path.join(exampleDir, "ios")
-	assertDirectory(iosDir, "generated example/ios")
+function assertGeneratedIosProject(workspace) {
+	const iosDir = path.join(workspace.exampleDir, "ios")
+	assertDirectory(iosDir, "generated temporary example/ios")
 
 	const pbxprojPath = findPbxproj(iosDir)
 	const pbxproj = readFileSync(pbxprojPath)
 	const nulCount = pbxproj.reduce((count, byte) => count + (byte === 0 ? 1 : 0), 0)
 	assert.equal(nulCount, 0, "Generated project.pbxproj must contain zero NUL bytes.")
 
-	parsePbxproj(pbxprojPath)
+	parsePbxproj(workspace, pbxprojPath)
 
 	const podfile = readText(path.join(iosDir, "Podfile"))
 	assert.match(
@@ -261,10 +386,10 @@ function findPbxproj(iosDir) {
 	return pbxprojPath
 }
 
-function parsePbxproj(pbxprojPath) {
+function parsePbxproj(workspace, pbxprojPath) {
 	let xcode
 	try {
-		xcode = exampleRequire("xcode")
+		xcode = workspace.exampleRequire("xcode")
 	} catch (error) {
 		if (error?.code === "MODULE_NOT_FOUND") {
 			console.log("- Skipped project.pbxproj parser check because xcode is not installed.")
@@ -284,9 +409,9 @@ function parsePbxproj(pbxprojPath) {
 	)
 }
 
-function assertGeneratedAndroidProject() {
-	const androidDir = path.join(exampleDir, "android")
-	assertDirectory(androidDir, "generated example/android")
+function assertGeneratedAndroidProject(workspace) {
+	const androidDir = path.join(workspace.exampleDir, "android")
+	assertDirectory(androidDir, "generated temporary example/android")
 
 	const settingsGradle = readText(path.join(androidDir, "settings.gradle"))
 	assert.match(
@@ -346,25 +471,26 @@ function assertGeneratedAndroidProject() {
 	}
 }
 
-function assertReactNativeCliConfig() {
-	const cliPath = exampleRequire.resolve("@react-native-community/cli/build/bin")
+function assertReactNativeCliConfig(workspace) {
+	const cliPath = workspace.exampleRequire.resolve("@react-native-community/cli/build/bin")
+	assertNodeModulePath(cliPath, "@react-native-community/cli")
 	const config = parseJsonOutput(
 		runCaptured(process.execPath, [cliPath, "config"], {
-			cwd: exampleDir,
+			cwd: workspace.exampleDir,
 			env: verifierEnv(),
-			timeout: 120_000,
+			timeout: metadataTimeoutMs,
 		}).stdout,
 	)
 
 	assert.equal(
 		realpathSync(config.root),
-		realpathSync(exampleDir),
-		"React Native CLI config root must be the example directory.",
+		realpathSync(workspace.exampleDir),
+		"React Native CLI config root must be the temporary example directory.",
 	)
 	assert.equal(
 		realpathSync(config.project?.ios?.sourceDir),
-		realpathSync(path.join(exampleDir, "ios")),
-		"React Native CLI config must point at generated example/ios.",
+		realpathSync(path.join(workspace.exampleDir, "ios")),
+		"React Native CLI config must point at generated temporary example/ios.",
 	)
 	assert.equal(
 		config.project?.ios?.xcodeProject?.name,
@@ -373,8 +499,8 @@ function assertReactNativeCliConfig() {
 	)
 	assert.equal(
 		realpathSync(config.project?.android?.sourceDir),
-		realpathSync(path.join(exampleDir, "android")),
-		"React Native CLI config must point at generated example/android.",
+		realpathSync(path.join(workspace.exampleDir, "android")),
+		"React Native CLI config must point at generated temporary example/android.",
 	)
 	assert.equal(
 		config.project?.android?.applicationId,
@@ -382,7 +508,7 @@ function assertReactNativeCliConfig() {
 		"React Native CLI config must report the generated Android applicationId.",
 	)
 
-	const dependency = assertDependency(config, "React Native CLI config")
+	const dependency = assertDependency(config, "React Native CLI config", workspace)
 	const ios = requiredObject(
 		dependency.platforms?.ios,
 		"React Native CLI config must include iOS metadata for react-native-skia-yoga.",
@@ -392,8 +518,16 @@ function assertReactNativeCliConfig() {
 		"React Native CLI config must include Android metadata for react-native-skia-yoga.",
 	)
 
-	const iosPodspecPath = assertIosPodspec(ios, "React Native CLI config")
-	const androidSummary = assertAndroidAutolinking(android, "React Native CLI config")
+	const iosPodspecPath = assertIosPodspec(
+		ios,
+		"React Native CLI config",
+		workspace,
+	)
+	const androidSummary = assertAndroidAutolinking(
+		android,
+		"React Native CLI config",
+		workspace,
+	)
 
 	return {
 		...androidSummary,
@@ -401,10 +535,11 @@ function assertReactNativeCliConfig() {
 	}
 }
 
-function assertExpoReactNativeConfig(platform) {
-	const autolinkingCliPath = exampleRequire.resolve(
+function assertExpoReactNativeConfig(workspace, platform) {
+	const autolinkingCliPath = workspace.exampleRequire.resolve(
 		"expo-modules-autolinking/bin/expo-modules-autolinking",
 	)
+	assertNodeModulePath(autolinkingCliPath, "expo-modules-autolinking")
 	const sourceDir = platform === "ios" ? "ios" : "android"
 	const output = runCaptured(
 		process.execPath,
@@ -420,17 +555,17 @@ function assertExpoReactNativeConfig(platform) {
 			".",
 		],
 		{
-			cwd: exampleDir,
+			cwd: workspace.exampleDir,
 			env: verifierEnv(),
-			timeout: 120_000,
+			timeout: metadataTimeoutMs,
 		},
 	).stdout
 	const config = parseJsonOutput(output)
 
 	assert.equal(
 		realpathSync(config.root),
-		realpathSync(exampleDir),
-		`Expo react-native-config ${platform} root must be the example directory.`,
+		realpathSync(workspace.exampleDir),
+		`Expo react-native-config ${platform} root must be the temporary example directory.`,
 	)
 	assert.equal(
 		config.project?.[platform]?.sourceDir,
@@ -441,6 +576,7 @@ function assertExpoReactNativeConfig(platform) {
 	const dependency = assertDependency(
 		config,
 		`Expo react-native-config ${platform}`,
+		workspace,
 	)
 	const platformConfig = requiredObject(
 		dependency.platforms?.[platform],
@@ -452,6 +588,7 @@ function assertExpoReactNativeConfig(platform) {
 			iosPodspecPath: assertIosPodspec(
 				platformConfig,
 				"Expo react-native-config iOS",
+				workspace,
 			),
 		}
 	}
@@ -459,10 +596,11 @@ function assertExpoReactNativeConfig(platform) {
 	return assertAndroidAutolinking(
 		platformConfig,
 		"Expo react-native-config Android",
+		workspace,
 	)
 }
 
-function assertDependency(config, label) {
+function assertDependency(config, label, workspace) {
 	const dependency = config.dependencies?.[packageName]
 	assert.ok(dependency, `${label} did not include ${packageName}.`)
 	assert.equal(
@@ -470,10 +608,17 @@ function assertDependency(config, label) {
 		packageName,
 		`${label} dependency name mismatch.`,
 	)
+	if (typeof dependency.root === "string") {
+		assert.equal(
+			realpathSync(dependency.root),
+			realpathSync(workspace.rootDir),
+			`${label} dependency root must resolve to the temporary package root.`,
+		)
+	}
 	return dependency
 }
 
-function assertIosPodspec(ios, label) {
+function assertIosPodspec(ios, label, workspace) {
 	const podspecPath = requiredString(
 		ios.podspecPath,
 		`${label} iOS metadata must include podspecPath.`,
@@ -484,10 +629,15 @@ function assertIosPodspec(ios, label) {
 		`${label} iOS podspecPath must resolve RNSkiaYoga.podspec.`,
 	)
 	assertFile(podspecPath, `${label} iOS podspecPath`)
+	assertPathInside(
+		podspecPath,
+		workspace.rootDir,
+		`${label} iOS podspecPath`,
+	)
 	return podspecPath
 }
 
-function assertAndroidAutolinking(android, label) {
+function assertAndroidAutolinking(android, label, workspace) {
 	const sourceDir = requiredString(
 		android.sourceDir,
 		`${label} Android metadata must include sourceDir.`,
@@ -498,6 +648,7 @@ function assertAndroidAutolinking(android, label) {
 		`${label} Android sourceDir must point at an android directory.`,
 	)
 	assertDirectory(sourceDir, `${label} Android sourceDir`)
+	assertPathInside(sourceDir, workspace.rootDir, `${label} Android sourceDir`)
 	assert.equal(
 		android.packageImportPath,
 		"import com.margelo.nitro.skiayoga.SkiaYogaPackage;",
@@ -525,6 +676,97 @@ function assertAndroidAutolinking(android, label) {
 		packageInstance: android.packageInstance,
 		sourceDir,
 	}
+}
+
+function createSentinelFixtures() {
+	const sentinelName = "__rnskia_native_generation_preservation_sentinel__"
+	const fixtures = [
+		{
+			dir: path.join(checkoutExampleDir, "ios"),
+			relativePath: "example/ios",
+		},
+		{
+			dir: path.join(checkoutExampleDir, "android"),
+			relativePath: "example/android",
+		},
+		{
+			dir: path.join(checkoutExampleDir, ".expo"),
+			relativePath: "example/.expo",
+		},
+	]
+
+	const createdFixtures = []
+	try {
+		for (const fixture of fixtures) {
+			const existedAtStart = existsSync(fixture.dir)
+			const entriesAtStart = existedAtStart
+				? listDirectoryEntries(fixture.dir, sentinelName)
+				: []
+			const sentinelDir = path.join(fixture.dir, sentinelName)
+			assert.equal(
+				existsSync(sentinelDir),
+				false,
+				`Refusing to reuse existing sentinel fixture at ${sentinelDir}.`,
+			)
+
+			mkdirSync(sentinelDir, { recursive: true })
+			const sentinelFile = path.join(sentinelDir, "keep.txt")
+			const contents = `${fixture.relativePath} sentinel ${Date.now()}\n`
+			writeFileSync(sentinelFile, contents)
+
+			createdFixtures.push({
+				...fixture,
+				contents,
+				entriesAtStart,
+				existedAtStart,
+				sentinelDir,
+				sentinelFile,
+				sentinelName,
+			})
+		}
+	} catch (error) {
+		cleanupSentinelFixtures(createdFixtures)
+		throw error
+	}
+
+	return createdFixtures
+}
+
+function assertSentinelFixturesPreserved(fixtures) {
+	for (const fixture of fixtures) {
+		assertFile(fixture.sentinelFile, `${fixture.relativePath} sentinel`)
+		assert.equal(
+			readFileSync(fixture.sentinelFile, "utf8"),
+			fixture.contents,
+			`${fixture.relativePath} sentinel content must be preserved.`,
+		)
+		assert.deepEqual(
+			listDirectoryEntries(fixture.dir, fixture.sentinelName),
+			fixture.entriesAtStart,
+			`${fixture.relativePath} non-sentinel entries must not change.`,
+		)
+	}
+}
+
+function cleanupSentinelFixtures(fixtures) {
+	for (const fixture of fixtures) {
+		rmSync(fixture.sentinelDir, { recursive: true, force: true })
+		if (!fixture.existedAtStart && existsSync(fixture.dir)) {
+			const remainingEntries = readdirSync(fixture.dir)
+			if (remainingEntries.length === 0) {
+				rmSync(fixture.dir, { recursive: true, force: true })
+			}
+		}
+	}
+}
+
+function listDirectoryEntries(dir, ignoredEntryName) {
+	if (!existsSync(dir)) {
+		return []
+	}
+	return readdirSync(dir)
+		.filter((entry) => entry !== ignoredEntryName)
+		.sort()
 }
 
 function runCaptured(command, args, options) {
@@ -630,20 +872,19 @@ function terminateActiveChild(signal) {
 	}
 }
 
-function cleanupNativeDirs() {
-	if (cleaned) {
+function cleanupActiveWorkspace() {
+	if (activeWorkspace !== null) {
+		cleanupWorkspace(activeWorkspace)
+		activeWorkspace = null
+	}
+}
+
+function cleanupWorkspace(workspace) {
+	if (workspace?.rootDir === undefined) {
 		return
 	}
-
-	cleaned = true
-	for (const nativeDir of nativeDirs) {
-		if (cleanupAllowedPaths.has(nativeDir.path)) {
-			rmSync(nativeDir.path, { recursive: true, force: true })
-		}
-	}
-	if (!expoCacheExistedAtStart) {
-		rmSync(expoCacheDir, { recursive: true, force: true })
-	}
+	assertPathInside(workspace.rootDir, tempParentDir, "temporary workspace")
+	rmSync(workspace.rootDir, { recursive: true, force: true })
 }
 
 function verifierEnv() {
@@ -681,13 +922,49 @@ function assertDirectory(dirPath, label) {
 	assert.ok(statSync(dirPath).isDirectory(), `${label} must be a directory.`)
 }
 
+function assertNodeModulePath(modulePath, label) {
+	assert.ok(
+		modulePath.includes(`${path.sep}node_modules${path.sep}`),
+		`${label} must resolve through node_modules: ${modulePath}`,
+	)
+}
+
 function assertPathInside(targetPath, parentPath, label) {
 	const parentRealPath = `${realpathSync(parentPath)}${path.sep}`
-	const targetRealPath = `${realpathSync(targetPath)}${path.sep}`
+	const targetStat = lstatSync(targetPath)
+	const targetRealPath = `${realpathSync(targetPath)}${targetStat.isDirectory() ? path.sep : ""}`
 	assert.ok(
-		targetRealPath.startsWith(parentRealPath),
+		targetRealPath === parentRealPath || targetRealPath.startsWith(parentRealPath),
 		`${label} must be inside ${parentPath}: ${targetPath}`,
 	)
+}
+
+function assertRunningUnderNode() {
+	assert.ok(process.versions.node, "Verifier must run under Node.js.")
+	assert.equal(
+		process.versions.bun,
+		undefined,
+		"Verifier must not run under Bun; run it with node.",
+	)
+	assert.match(
+		path.basename(process.execPath),
+		/^node(?:\.exe)?$/,
+		`Verifier must use a Node executable, received: ${process.execPath}`,
+	)
+}
+
+function assertAllowedArgs() {
+	const allowedArgs = new Set([preserveLocalProbeArg])
+	for (const arg of process.argv.slice(2)) {
+		assert.ok(
+			allowedArgs.has(arg),
+			`Unsupported argument ${arg}. Supported argument: ${preserveLocalProbeArg}`,
+		)
+	}
+}
+
+function normalizeRelativePath(relativePath) {
+	return relativePath.split(path.sep).join("/")
 }
 
 function requiredObject(value, message) {
