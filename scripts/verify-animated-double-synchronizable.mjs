@@ -110,7 +110,7 @@ try {
 	}
 
 	console.log("AnimatedDouble Synchronizable verifier passed:")
-	console.log("- Source gap confirmed: existing Reconciler and YogaNode command/render verifiers still prove JS mirrors and numeric/static AnimatedDouble fallback, while explicitly excluding dynamic Worklets-backed AnimatedDouble resolution.")
+	console.log("- Source boundary confirmed: this verifier proves raw AnimatedDouble extraction/resolution, while the YogaNode command/render verifier separately owns selected dynamic Worklets-backed AnimatedDouble NodeCommand coverage.")
 	console.log("- clang++ compiled and linked a host executable against real cpp/AnimatedDouble.cpp, React Native JSC/JSI, RN Skia RuntimeAwareCache, and real Worklets Serializable, Synchronizable, SynchronizableAccess, and WorkletRuntimeRegistry sources.")
 	console.log("- The executable created a real Worklets Synchronizable, wrapped it in a SerializableJSRef NativeState JSI object, asserted JSIConverter<AnimatedDouble>::canConvert(...), extracted it with JSIConverter<AnimatedDouble>::fromJSI(...), and asserted AnimatedDouble::isDynamic().")
 	console.log("- The executable asserted plain JS objects and non-Synchronizable Worklets SerializableJSRef objects are rejected with stable AnimatedDouble-owned failures.")
@@ -149,8 +149,8 @@ function assertCurrentGapAndSourceShape() {
 		"Reconciler animated binding verifier must still be a JS mirror/source-level check.",
 	)
 	assert(
-		commandVerifier.includes("dynamic Worklets-backed AnimatedDouble resolution"),
-		"Command/render verifier must still exclude dynamic Worklets-backed AnimatedDouble resolution.",
+		commandVerifier.includes("selected dynamic Worklets-backed AnimatedDouble NodeCommand"),
+		"Command/render verifier must explicitly own selected dynamic Worklets-backed AnimatedDouble NodeCommand coverage.",
 	)
 	assert(
 		animatedHeader.includes("AnimatedDouble") &&
