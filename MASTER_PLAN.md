@@ -206,7 +206,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch worker 092 to extend `check:yoganode-native-commands-render` with dynamic `PathCmd` `trimStart` / `trimEnd` `AnimatedDouble` NodeCommand/render coverage, while keeping the proof boundary to host-native command conversion/render behavior.
+- Monitor worker 092's dynamic `PathCmd` `trimStart` / `trimEnd` `AnimatedDouble` NodeCommand/render implementation and accept it only after focused verifier, feasible matrix, cleanup, and report evidence are complete.
 
 Acceptance criteria:
 
