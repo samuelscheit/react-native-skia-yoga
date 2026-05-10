@@ -105,7 +105,7 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, example bundle feedback-loop hygiene fixed, and post-worker-035 root-cause audit selected as the next step
+Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, example bundle feedback-loop hygiene fixed, post-worker-035 root-cause audit accepted, and RN Skia private import cleanup selected as the next implementation target
 
 Goals:
 
@@ -147,10 +147,11 @@ Accepted package-hygiene implementation:
 - `worker-033-native-publish-surface`: added `cpp/` and the Android `fix-prefab.gradle` helper to the packed npm surface, corrected the podspec source URL, and added `check:package-surface` to assert required native/package files in the `npm pack --dry-run --json --ignore-scripts` manifest.
 - `worker-034-next-root-cause-audit`: audited the post-worker-033 backlog, confirmed the feasible package/native/example checks remain green, and selected example JS bundle feedback-loop hygiene as the next unblocked repo-owned target because the working Expo export path is not guarded by a repo script and `example/metro.config.js` dumps the full Metro config.
 - `worker-035-example-bundle-smoke`: added `check:example-bundle`, implemented a bounded temp-dir Expo iOS export verifier, removed the Metro config dump, and verified cleanup plus the core package/type/lint/spec checks.
+- `worker-036-post-035-root-cause-audit`: audited the post-worker-035 backlog, confirmed the full feasible package/native/example matrix remains green, and selected `src/YogaCanvas.tsx` RN Skia private import cleanup as the next unblocked repo-owned target because the current native-ID import only works through Metro's TypeScript source resolution and fails Node extensionless resolution.
 
 Current next step:
 
-- Launch a read-only post-worker-035 root-cause audit to rank the next unblocked repo-owned target, challenging the known RN Skia private import cleanup candidate against any stronger package/native/example readiness work. Continue platform-native build/run verification once local prerequisites are available.
+- Launch a scoped implementation worker to remove the RN Skia private/deep imports from `src/YogaCanvas.tsx`, add repo-owned native-ID allocation that avoids practical collisions with RN Skia `Canvas`, and verify no tracked source imports RN Skia `src/`, `lib/typescript/src/`, or private `SkiaViewNativeId` deep paths. Continue platform-native build/run verification once local prerequisites are available.
 
 Acceptance criteria:
 
