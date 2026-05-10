@@ -53,10 +53,115 @@ const nativeCommandBindingCases = [
 	},
 ]
 
+const jsCommandBindingCases = [
+	{
+		cleanupKind: "plain",
+		cleanupValue: 11,
+		description: "native-disabled command prop",
+		expectedKey: "radius",
+		initialValue: 5,
+		lateValue: 13,
+		nativeCommandBindingsEnabled: false,
+		nextValue: 9,
+		path: ["radius"],
+		props(harness, sharedValue) {
+			return harness.makeVmValue("({ radius: bindings.value })", {
+				value: sharedValue,
+			})
+		},
+		cleanupProps(harness) {
+			return harness.makeVmValue("({ radius: 11 })")
+		},
+		type: "circle",
+	},
+	{
+		cleanupKind: "plain",
+		cleanupValue: false,
+		description: "unsupported-native top-level command prop",
+		expectedKey: "rasterize",
+		initialValue: true,
+		lateValue: true,
+		nativeCommandBindingsEnabled: true,
+		nextValue: false,
+		path: ["rasterize"],
+		props(harness, sharedValue) {
+			return harness.makeVmValue("({ rasterize: bindings.value })", {
+				value: sharedValue,
+			})
+		},
+		cleanupProps(harness) {
+			return harness.makeVmValue("({ rasterize: false })")
+		},
+		type: "group",
+	},
+	{
+		cleanupKind: "plain",
+		cleanupValue: 7,
+		description: "nested object command prop",
+		expectedKey: "from.x",
+		initialValue: 1,
+		lateValue: 12,
+		nativeCommandBindingsEnabled: true,
+		nextValue: 4,
+		path: ["from", "x"],
+		props(harness, sharedValue) {
+			return harness.makeVmValue(
+				"({ from: { x: bindings.value, y: 2 }, to: { x: 10, y: 20 } })",
+				{ value: sharedValue },
+			)
+		},
+		cleanupProps(harness) {
+			return harness.makeVmValue(
+				"({ from: { x: 7, y: 2 }, to: { x: 10, y: 20 } })",
+			)
+		},
+		type: "line",
+	},
+	{
+		cleanupKind: "delete",
+		cleanupPath: ["stroke"],
+		cleanupValue: undefined,
+		description: "post-096 nested path.stroke field",
+		expectedKey: "stroke.miter_limit",
+		initialValue: 3,
+		lateValue: 15,
+		nativeCommandBindingsEnabled: true,
+		nextValue: 8,
+		path: ["stroke", "miter_limit"],
+		props(harness, sharedValue) {
+			return harness.makeVmValue(
+				"({ path: { id: 'stroke-path' }, stroke: { width: 2, miter_limit: bindings.value, precision: 0.5 } })",
+				{ value: sharedValue },
+			)
+		},
+		cleanupProps(harness) {
+			return harness.makeVmValue("({ path: { id: 'stroke-path' } })")
+		},
+		type: "path",
+	},
+	{
+		cleanupKind: "unmount",
+		description: "nested-array command prop leaf",
+		expectedKey: "points.0.x",
+		initialValue: 2,
+		lateValue: 14,
+		nativeCommandBindingsEnabled: true,
+		nextValue: 6,
+		path: ["points", "0", "x"],
+		props(harness, sharedValue) {
+			return harness.makeVmValue(
+				"({ pointMode: 'points', points: [{ x: bindings.value, y: 3 }, { x: 5, y: 7 }] })",
+				{ value: sharedValue },
+			)
+		},
+		type: "points",
+	},
+]
+
 verifyYogaCanvasAnimationBindingModeMapping()
 verifyNativeCommandBindingWhitelistMatchesCases()
 verifyNativeCommandBindingMirrorsSharedValue()
-verifyJsCommandBindingModeRunsCommandUpdateCallback()
+verifyJsCommandBindingModeRunsCommandUpdateCallbacks()
 verifyStyleAnimatedListenerUpdatesStyleAndContinuousRedraw()
 verifyNativeBindingRefCountsAndDetachCleanup()
 verifyClearContainerCleansSubtreeAndRootChildren()
@@ -72,7 +177,7 @@ console.log(
 	`- Native command binding mode mirrors all whitelisted SharedValue command props (${formatNativeBindingCaseList(nativeCommandBindingCases)}) through Synchronizable.setBlocking.`,
 )
 console.log(
-	"- JS command binding mode updates host commands through SharedValue listener callbacks and invalidates.",
+	`- JS command listener path covers native-disabled, unsupported-native, nested object, post-096 stroke, and nested-array command props: ${formatJsCommandBindingCaseList(jsCommandBindingCases)}.`,
 )
 console.log(
 	"- Animated style listeners update host styles, invalidate, and toggle continuous redraw state.",
@@ -587,90 +692,174 @@ function verifyNativeCommandBindingCaseMirrorsSharedValue(testCase) {
 	)
 }
 
-function verifyJsCommandBindingModeRunsCommandUpdateCallback() {
+function verifyJsCommandBindingModeRunsCommandUpdateCallbacks() {
+	for (const testCase of jsCommandBindingCases) {
+		verifyJsCommandBindingCaseRunsCommandUpdateCallback(testCase)
+	}
+}
+
+function verifyJsCommandBindingCaseRunsCommandUpdateCallback(testCase) {
 	const harness = createReconcilerHarness()
 	const config = harness.loadReconcilerHostConfig()
-	const radius = harness.makeSharedValue(5, "js.radius")
+	const label = formatJsCommandBindingCase(testCase)
+	const sharedValue = harness.makeSharedValue(
+		testCase.initialValue,
+		`js.${label}`,
+	)
 	const { calls, container } = harness.makeRootContainer({
-		nativeCommandBindingsEnabled: false,
+		nativeCommandBindingsEnabled: testCase.nativeCommandBindingsEnabled,
 	})
+	const propsWithSharedValue = testCase.props(harness, sharedValue)
 
-	const node = config.createInstance("circle", { radius }, container)
+	const node = config.createInstance(
+		testCase.type,
+		propsWithSharedValue,
+		container,
+	)
 
 	assert.equal(
 		harness.calls.createSynchronizable.length,
 		0,
-		"JS binding mode should not create a native Synchronizable mirror for supported command props",
+		`${label} should not create a native Synchronizable mirror`,
 	)
 	assert.equal(
-		radius.listenerCount(),
+		sharedValue.listenerCount(),
 		1,
-		"JS binding mode should register a SharedValue listener",
+		`${label} should register one SharedValue listener`,
 	)
 	assert.equal(
-		last(node.commands).data.radius,
-		5,
-		"JS binding mode should resolve the initial command prop value",
+		harness.calls.sharedAddListener.length,
+		1,
+		`${label} should call SharedValue.addListener once`,
+	)
+	assert.equal(
+		harness.calls.uiRuntimeCalls[0]?.args[1],
+		testCase.expectedKey,
+		`${label} should register the listener under the expected command key`,
+	)
+	assert.equal(
+		getValueAtPath(last(node.commands).data, testCase.path),
+		testCase.initialValue,
+		`${label} should resolve the initial command prop value`,
 	)
 	assert.equal(
 		calls.nativeAnimationActive.length,
 		0,
-		"JS binding mode should not mark the node as natively animated",
+		`${label} should not mark the node as natively animated`,
 	)
 	assert.equal(
 		calls.invalidations.length,
 		0,
-		"initial JS command binding should not invalidate",
+		`${label} initial JS command binding should not invalidate`,
 	)
 
-	radius.emit(9)
+	sharedValue.emit(testCase.nextValue)
 
 	assert.deepEqual(
 		only(harness.calls.runOnJSCalls).args,
-		["radius", 9],
-		"JS SharedValue command updates should bridge listener key and value through runOnJS",
+		[testCase.expectedKey, testCase.nextValue],
+		`${label} SharedValue command updates should bridge listener key and value through runOnJS`,
 	)
 	assert.equal(
-		last(node.commands).data.radius,
-		9,
-		"JS SharedValue command updates should rebuild the host command with the latest value",
+		getValueAtPath(last(node.commands).data, testCase.path),
+		testCase.nextValue,
+		`${label} SharedValue command updates should rebuild the host command with the latest value`,
 	)
 	assert.equal(
 		calls.invalidations.length,
 		1,
-		"JS SharedValue command updates should invalidate the container",
+		`${label} SharedValue command updates should invalidate the container`,
+	)
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		`${label} should still avoid native mirrors after SharedValue emits`,
+	)
+	assert.equal(
+		harness.calls.setBlocking.length,
+		0,
+		`${label} should not use native mirror setBlocking updates`,
 	)
 
 	const commandCallsAfterEmit = node.commands.length
-	config.commitUpdate(node, "circle", { radius }, { radius: 11 }, null)
+	const runOnJsCallsAfterEmit = harness.calls.runOnJSCalls.length
 
-	assert.equal(
-		radius.listenerCount(),
-		0,
-		"commitUpdate to a plain command prop should remove the JS listener",
-	)
-	assert.equal(
-		only(harness.calls.sharedRemoveListener).had,
-		true,
-		"JS listener cleanup should remove an existing SharedValue listener id",
-	)
-	assert.equal(
-		last(node.commands).data.radius,
-		11,
-		"commitUpdate should apply the resolved plain JS-mode command prop",
-	)
+	if (testCase.cleanupKind === "unmount") {
+		config.detachDeletedInstance(node)
 
-	radius.emit(13)
+		assert.equal(
+			sharedValue.listenerCount(),
+			0,
+			`${label} unmount cleanup should remove the JS listener`,
+		)
+		assert.equal(
+			only(harness.calls.sharedRemoveListener).had,
+			true,
+			`${label} unmount cleanup should remove an existing SharedValue listener id`,
+		)
+		assert.equal(
+			calls.unregistered[0]?.node,
+			node,
+			`${label} unmount cleanup should unregister the node from interactions`,
+		)
+		assert.equal(
+			node.commands.length,
+			commandCallsAfterEmit,
+			`${label} unmount cleanup should not apply another command`,
+		)
+	} else {
+		const cleanupProps = testCase.cleanupProps(harness)
+		config.commitUpdate(
+			node,
+			testCase.type,
+			propsWithSharedValue,
+			cleanupProps,
+			null,
+		)
+
+		assert.equal(
+			sharedValue.listenerCount(),
+			0,
+			`${label} commitUpdate cleanup should remove the JS listener`,
+		)
+		assert.equal(
+			only(harness.calls.sharedRemoveListener).had,
+			true,
+			`${label} JS listener cleanup should remove an existing SharedValue listener id`,
+		)
+		assert.equal(
+			getValueAtPath(
+				last(node.commands).data,
+				testCase.cleanupPath ?? testCase.path,
+			),
+			testCase.cleanupValue,
+			`${label} commitUpdate should apply the cleaned JS-mode command prop`,
+		)
+		assert.equal(
+			node.commands.length,
+			commandCallsAfterEmit + 1,
+			`${label} commitUpdate cleanup should apply exactly one command update`,
+		)
+	}
+
+	const commandCallsAfterCleanup = node.commands.length
+	const invalidationsAfterCleanup = calls.invalidations.length
+	sharedValue.emit(testCase.lateValue)
 
 	assert.equal(
 		node.commands.length,
-		commandCallsAfterEmit + 1,
-		"removed JS listeners should not rebuild commands after cleanup",
+		commandCallsAfterCleanup,
+		`${label} removed JS listeners should not rebuild commands after cleanup`,
 	)
 	assert.equal(
 		calls.invalidations.length,
-		1,
-		"removed JS listeners should not invalidate after cleanup",
+		invalidationsAfterCleanup,
+		`${label} removed JS listeners should not invalidate after cleanup`,
+	)
+	assert.equal(
+		harness.calls.runOnJSCalls.length,
+		runOnJsCallsAfterEmit,
+		`${label} removed JS listeners should not bridge through runOnJS after cleanup`,
 	)
 }
 
@@ -1434,6 +1623,14 @@ function formatNativeBindingCase(testCase) {
 
 function formatNativeBindingCaseList(cases) {
 	return sortNativeBindingCases(cases).map(formatNativeBindingCase).join(", ")
+}
+
+function formatJsCommandBindingCase(testCase) {
+	return `${testCase.type}.${testCase.path.join(".")} (${testCase.description})`
+}
+
+function formatJsCommandBindingCaseList(cases) {
+	return cases.map(formatJsCommandBindingCase).join(", ")
 }
 
 function sortNativeBindingCases(cases) {
