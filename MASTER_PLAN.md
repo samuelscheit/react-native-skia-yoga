@@ -105,7 +105,7 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, example bundle feedback-loop hygiene fixed, post-worker-035 root-cause audit accepted, RN Skia private import cleanup integrated, post-worker-037 root-cause audit accepted, packed-package TypeScript consumer smoke coverage integrated, post-worker-039 root-cause audit accepted, `react-reconciler` package-surface dependency hygiene integrated, and post-worker-041 root-cause audit launched
+Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, example bundle feedback-loop hygiene fixed, post-worker-035 root-cause audit accepted, RN Skia private import cleanup integrated, post-worker-037 root-cause audit accepted, packed-package TypeScript consumer smoke coverage integrated, post-worker-039 root-cause audit accepted, `react-reconciler` package-surface dependency hygiene integrated, post-worker-041 root-cause audit accepted, and public declaration/export boundary cleanup launched
 
 Goals:
 
@@ -153,10 +153,11 @@ Accepted package-hygiene implementation:
 - `worker-039-package-typescript-consumer-smoke`: added `check:package-typescript-consumer`, which packs the package to a real tarball, installs it into a temporary external TypeScript consumer, compiles public entrypoints and lowercase intrinsic JSX under `jsxImportSource: "react-native-skia-yoga"`, and cleans all temporary output.
 - `worker-040-post-039-root-cause-audit`: audited the post-worker-039 state, confirmed the feasible package/native/example matrix remains green with the packed-package TypeScript consumer smoke, reproduced the external-consumer failure without `@types/react-reconciler`, and selected package-surface dependency hygiene around direct `react-reconciler` imports and type declarations as the next unblocked repo-owned target.
 - `worker-041-reconciler-dependency-hygiene`: made the direct `react-reconciler` package contract explicit by publishing `react-reconciler` and `@types/react-reconciler`, removed the packed-consumer verifier's consumer-side `@types/react-reconciler` workaround, and proved the external packed TypeScript consumer still compiles.
+- `worker-042-post-041-root-cause-audit`: audited the post-worker-041 state, confirmed dependency hygiene is closed with the full feasible matrix green, confirmed platform-native build/run remains externally blocked, and selected public declaration/export boundary cleanup as the next unblocked repo-owned target.
 
 Current next step:
 
-- Monitor the active post-worker-041 root-cause audit worker. It should rerun/challenge the feasible matrix after dependency hygiene, then rank the next unblocked repo-owned target, including public declaration/export boundary cleanup and `src/SkiaYogaObject.ts` import-time side effects as known candidates.
+- Monitor the active public declaration/export boundary worker. It should define and guard the intended top-level public API, preserve `YogaCanvas` and JSX runtime usage, and remove or isolate internal exports such as `reconciler` unless the worker finds strong evidence they are intentionally public.
 
 Acceptance criteria:
 
