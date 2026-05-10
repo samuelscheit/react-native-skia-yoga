@@ -2048,10 +2048,29 @@ Last updated: 2026-05-10
   - Removed `../worker-087-post-086-root-cause-audit`.
   - Deleted branch `worker/087-post-086-root-cause-audit`.
 - Prepared the worker 088 prompt for Nitro `YogaNode::toObject()` / prototype materialization and generated JS-facing `YogaNode` method execution.
+- Worker 088 passed the visible `GOAL_CREATED: Prove or root-cause Nitro YogaNode toObject/prototype materialization and generated JS-facing YogaNode method execution.` gate as the first worker message.
+- Worker 088 completed, reported `Goal finished.`, and wrote `worker-progress/worker-088-nitro-yoganode-materialization.md`.
+- Worker 088 added `scripts/verify-yoganode-nitro-materialization.mjs`, `check:yoganode-nitro-materialization`, and a new feasible-matrix entry. The verifier builds a host-JSC executable against real `YogaNode.cpp`, generated `HybridYogaNodeSpec.cpp`, Nitro materialization/prototype/cache sources, real iOS `ThreadUtils.cpp`, Yoga, RN Skia macOS archives, and helper sources.
+- Worker 088 proved a shared `YogaNode` can materialize through `node->toObject(runtime)`, return a JS object with NativeState wrapping the original `YogaNode`, return the cached live object on repeated `toObject(runtime)`, expose generated `setCommand`, `setStyle`, `computeLayout`, and `layout`, and execute those generated wrappers with native side effects for group command install, width/height style state, Yoga layout computation, and layout getter values.
+- Orchestrator independent acceptance in the worker worktree passed report/proof-boundary review, `git diff --check`, `node --check scripts/verify-yoganode-nitro-materialization.mjs`, `node --check scripts/verify-feasible-matrix.mjs`, `npm run check:yoganode-nitro-materialization`, cleanup/status probes, and `npm run check:feasible-matrix` with all 27 commands in `4m 12s`.
+- Committed worker 088 as `ff776d0 Add YogaNode Nitro materialization verifier`.
+- Merged worker 088 into `main` as `0351bf0 Merge worker 088 YogaNode Nitro materialization verifier`.
+- Main post-merge verification after worker 088 integration:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - `node --check scripts/verify-yoganode-nitro-materialization.mjs`: passed.
+  - `node --check scripts/verify-feasible-matrix.mjs`: passed.
+  - `npm run check:yoganode-nitro-materialization`: passed.
+  - `npm run check:feasible-matrix`: passed all 27 commands in `4m 18s`; new command 19 `check:yoganode-nitro-materialization` passed in `28.4s`.
+  - Final main tracked status was clean; known ignored local artifacts were left untouched.
+- Cleanup after worker 088 acceptance:
+  - Worker 088 tmux session had exited after completion.
+  - Removed `../worker-088-nitro-yoganode-materialization`.
+  - Deleted branch `worker/088-nitro-yoganode-materialization`.
+- Prepared worker 089 as the next target: dynamic Worklets-backed `AnimatedDouble` / `Synchronizable` extraction and numeric resolution proof without claiming UI-runtime Worklets execution.
 
 ## Active Workers
 
-- `rnskia-worker-088-nitro-yoganode-materialization`: launching from `worker/088-nitro-yoganode-materialization`; monitoring for the hard start gate and Nitro materialization implementation.
+- None; worker 089 is prepared for launch.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2159,10 +2178,11 @@ Accepted worker reports:
 - `worker-progress/worker-085-post-084-root-cause-audit.md`
 - `worker-progress/worker-086-yoganode-text-paragraph-command-render.md`
 - `worker-progress/worker-087-post-086-root-cause-audit.md`
+- `worker-progress/worker-088-nitro-yoganode-materialization.md`
 
 ## Pending Workers
 
-- None; worker 088 is active.
+- `worker-089-animated-double-synchronizable`: dynamic Worklets-backed `AnimatedDouble` / `Synchronizable` extraction and numeric resolution proof.
 
 ## Decisions
 
@@ -2191,12 +2211,13 @@ Accepted worker reports:
 - Post-worker-082 target selection: worker 083 reconfirmed the 26-command matrix and local platform-native blockers, accepted worker 082's proof boundary, and selected host-native `ImageCmd` command/render fidelity as the next strongest unblocked target because it is a real remaining command class with deterministic synthetic `SkImage` pixels and a real RN Skia `JsiSkImage` host-object path.
 - Post-worker-084 target selection: worker 085 reconfirmed the 26-command matrix and local platform-native blockers, accepted worker 084's proof boundary, and selected host-native `TextCmd` plus `ParagraphCmd` command/render fidelity as the next strongest unblocked target because those are the final unentered command classes in `check:yoganode-native-commands-render`.
 - Post-worker-086 target selection: worker 087 reconfirmed the 26-command matrix and local platform-native blockers, accepted worker 086's proof boundary, and selected Nitro `YogaNode::toObject()` / prototype materialization plus generated JS-facing `YogaNode` method execution as the next strongest unblocked target.
+- YogaNode Nitro materialization: worker 088 added `check:yoganode-nitro-materialization`, proving host-JSC `YogaNode::toObject(runtime)` materialization, NativeState/prototype attachment, generated `setCommand`, `setStyle`, `computeLayout`, and `layout` wrapper execution, cached object stability, and direct native side effects from those generated calls. The feasible matrix now has 27 commands and passed on main in `4m 18s`. The proof boundary still excludes Nitro module registry install, React Native runtime integration, platform app build/run, simulator/device launch, native presentation, UI-runtime Worklets/RNGH delivery, dynamic Worklets-backed `AnimatedDouble`, image assets/decoding/loading, and exact render fidelity.
 - Example Worklets transform: worker 051 added the example/Expo Babel-config path to `check:skia-yoga-object-lazy-init`, proving package source `src/util.ts` keeps the same lazy Nitro closure/body contract when transformed through `example/babel.config.js` and the example dependency context.
 - Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the package lifecycle root-cause task, worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`. Worker 020 found the runtime-smoke archive discovery target, worker 021 completed it, worker 022 found the Android CMake archive-layout analogue, worker 023 completed it, worker 024 selected lint-ci root configuration/formatter repair as the next repo-owned feedback-loop fix, worker 025 completed that repair, worker 026 selected the remaining product-source React Native deep imports as the next implementation target, worker 027 completed that target, worker 028 selected example lint-contract cleanup, worker 029 completed it, worker 030 selected public README/API documentation drift, worker 031 completed that contract fix, worker 032 selected native publish-surface completeness, worker 033 completed that package-surface fix, worker 034 selected the unguarded Expo export path plus Metro config dump as the next example feedback-loop target, worker 035 completed that feedback-loop target, worker 036 confirmed platform-native build/run remains blocked by local toolchain gaps rather than a stronger repo-owned target, and worker 037 removed the strongest known unblocked RN Skia private-import target.
 
 ## Next Implementation Candidates
 
-- Monitor worker 088 for Nitro `YogaNode::toObject()` / prototype materialization and generated JS-facing `YogaNode` method execution.
+- Launch worker 089 for dynamic Worklets-backed `AnimatedDouble` / `Synchronizable` extraction and numeric resolution proof in a bounded host-JSC/native verifier.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
