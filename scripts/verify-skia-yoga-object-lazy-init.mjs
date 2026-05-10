@@ -26,6 +26,7 @@ const ignoredAstKeys = new Set([
 ])
 
 verifyPublicImportIsLazy()
+verifyNativeSkiaYogaDirectImportIsLazy()
 verifyCreateYogaNodeAccessIsLazyAndCached()
 verifyCreateYogaNodeWorkletsTransformUsesLazyAccessor()
 verifyCreateYogaNodeExampleWorkletsTransformUsesLazyAccessor()
@@ -38,6 +39,7 @@ console.log("- Importing the public source entrypoint did not box NitroModules."
 console.log("- Importing the public source entrypoint did not look up/install native bindings.")
 console.log("- Importing the public source entrypoint did not create native hybrid objects.")
 console.log("- Importing the public source entrypoint registered only the SkiaYogaView native component.")
+console.log("- Direct NativeSkiaYoga deep import deferred TurboModule lookup until install().")
 console.log("- Import-only access did not log or mutate globalThis.SkiaYoga.")
 console.log("- Explicit createYogaNode() access boxed NitroModules once and created YogaNode objects at call time.")
 console.log("- Worklets transform kept createYogaNode() on lazyNitroModulesBox.current.unbox().")
@@ -100,6 +102,70 @@ function verifyPublicImportIsLazy() {
 		hasOwn(harness.global, "SkiaYoga"),
 		false,
 		"importing the public source entrypoint must not write globalThis.SkiaYoga",
+	)
+}
+
+function verifyNativeSkiaYogaDirectImportIsLazy() {
+	const harness = createHarness()
+	const nativeSkiaYoga = harness.loadProjectModule("src/specs/NativeSkiaYoga.ts")
+
+	assert.deepEqual(
+		harness.calls.getEnforcing,
+		[],
+		"direct NativeSkiaYoga import must not call TurboModuleRegistry.getEnforcing",
+	)
+	assert.equal(
+		typeof nativeSkiaYoga.default?.install,
+		"function",
+		"direct NativeSkiaYoga import should expose the generated install() method",
+	)
+	assert.deepEqual(
+		harness.calls.getEnforcing,
+		[],
+		"reading NativeSkiaYoga.install must not look up the TurboModule before explicit invocation",
+	)
+
+	nativeSkiaYoga.default.install()
+
+	assert.deepEqual(
+		harness.calls.getEnforcing,
+		["SkiaYoga"],
+		"NativeSkiaYoga.install() should look up the SkiaYoga TurboModule exactly once",
+	)
+	assert.equal(
+		harness.calls.install,
+		1,
+		"NativeSkiaYoga.install() should delegate to the native TurboModule install method",
+	)
+
+	const missingHarness = createHarness({
+		getEnforcing() {
+			throw new Error("native module unavailable")
+		},
+	})
+	const missingNativeSkiaYoga = missingHarness.loadProjectModule(
+		"src/specs/NativeSkiaYoga.ts",
+	)
+
+	assert.deepEqual(
+		missingHarness.calls.getEnforcing,
+		[],
+		"missing native availability must not be checked during direct NativeSkiaYoga import",
+	)
+	assert.throws(
+		() => missingNativeSkiaYoga.default.install(),
+		/native module unavailable/,
+		"missing native availability should throw only when NativeSkiaYoga.install() is called",
+	)
+	assert.deepEqual(
+		missingHarness.calls.getEnforcing,
+		["SkiaYoga"],
+		"missing native availability should be checked exactly once during explicit NativeSkiaYoga.install() access",
+	)
+	assert.equal(
+		missingHarness.calls.install,
+		0,
+		"missing TurboModule should not attempt to install native bindings",
 	)
 }
 
