@@ -2011,10 +2011,12 @@ Last updated: 2026-05-10
   - Removed `../worker-085-post-084-root-cause-audit`.
   - Deleted branch `worker/085-post-084-root-cause-audit`.
 - Created `worker-086-yoganode-text-paragraph-command-render` from current `main`, symlinked root/example dependencies from the main worktree, and wrote the worker 086 prompt.
+- Launched `rnskia-worker-086-yoganode-text-paragraph-command-render` as a top-level tmux subprocess to extend bounded host-native `TextCmd` and `ParagraphCmd` command/render verification.
+- Worker 086 passed the visible `GOAL_CREATED: Extend host-native YogaNode command/render verification for bounded TextCmd and ParagraphCmd coverage.` gate as the first worker message.
 
 ## Active Workers
 
-- None after worker 085 cleanup; worker 086 is prepared but not yet launched.
+- `rnskia-worker-086-yoganode-text-paragraph-command-render`: launched from `worker/086-yoganode-text-paragraph-command-render`; monitoring for bounded `TextCmd`/`ParagraphCmd` command-render verification.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2123,7 +2125,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- `worker-086-yoganode-text-paragraph-command-render`: prepared for launch as the `TextCmd`/`ParagraphCmd` command-render verifier implementation worker.
+- None; worker 086 is active.
 
 ## Decisions
 
