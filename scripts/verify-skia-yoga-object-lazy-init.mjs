@@ -8,10 +8,12 @@ import vm from "node:vm"
 import ts from "typescript"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
-const require = createRequire(import.meta.url)
-const { transformSync } = require("@babel/core")
-const transformTypescriptPlugin = require("@babel/plugin-transform-typescript")
-const workletsPlugin = require("react-native-worklets/plugin")
+const exampleDir = path.join(rootDir, "example")
+const rootRequire = createRequire(import.meta.url)
+const exampleRequire = createRequire(path.join(exampleDir, "package.json"))
+const { transformSync } = rootRequire("@babel/core")
+const transformTypescriptPlugin = rootRequire("@babel/plugin-transform-typescript")
+const workletsPlugin = rootRequire("react-native-worklets/plugin")
 const ignoredAstKeys = new Set([
 	"comments",
 	"end",
@@ -26,6 +28,7 @@ const ignoredAstKeys = new Set([
 verifyPublicImportIsLazy()
 verifyCreateYogaNodeAccessIsLazyAndCached()
 verifyCreateYogaNodeWorkletsTransformUsesLazyAccessor()
+verifyCreateYogaNodeExampleWorkletsTransformUsesLazyAccessor()
 verifyYogaCanvasRuntimeCreatesRootNodeLazily()
 verifyExplicitAccessIsLazyAndIdempotent()
 verifyMissingNativeErrorIsDeferredAndClear()
@@ -37,6 +40,7 @@ console.log("- Importing the public source entrypoint did not create native hybr
 console.log("- Import-only access did not log or mutate globalThis.SkiaYoga.")
 console.log("- Explicit createYogaNode() access boxed NitroModules once and created YogaNode objects at call time.")
 console.log("- Worklets transform kept createYogaNode() on lazyNitroModulesBox.current.unbox().")
+console.log("- Example Babel/Expo transform kept createYogaNode() on lazyNitroModulesBox.current.unbox().")
 console.log("- YogaCanvas runtime root creation still creates a YogaNode object lazily.")
 console.log("- Explicit getSkiaYoga() access installed and created the native object exactly once.")
 console.log("- Native-missing failures are reported when getSkiaYoga() is called.")
@@ -169,38 +173,76 @@ function verifyCreateYogaNodeWorkletsTransformUsesLazyAccessor() {
 		"Worklets transform should produce an AST for src/util.ts",
 	)
 
-	const closureKeys = findCreateYogaNodeClosureKeys(transformed.ast)
+	assertCreateYogaNodeWorkletsTransformUsesLazyAccessor(
+		transformed.ast,
+		`${utilPath}.root-worklet.js`,
+		"root Worklets transform",
+	)
+}
+
+function verifyCreateYogaNodeExampleWorkletsTransformUsesLazyAccessor() {
+	const utilPath = projectPath("src/util.ts")
+	const exampleBabel = exampleRequire("@babel/core")
+	const transformed = exampleBabel.transformSync(
+		readFileSync(utilPath, "utf8"),
+		{
+			ast: true,
+			babelrc: false,
+			code: true,
+			configFile: path.join(exampleDir, "babel.config.js"),
+			cwd: exampleDir,
+			filename: utilPath,
+			root: exampleDir,
+			sourceType: "module",
+		},
+	)
+
+	assert.ok(
+		transformed?.ast,
+		"Example Babel/Expo transform should produce an AST for src/util.ts",
+	)
+
+	assertCreateYogaNodeWorkletsTransformUsesLazyAccessor(
+		transformed.ast,
+		`${utilPath}.example-worklet.js`,
+		"example Babel/Expo transform",
+	)
+}
+
+function assertCreateYogaNodeWorkletsTransformUsesLazyAccessor(
+	ast,
+	workletFilename,
+	contextDescription,
+) {
+	const closureKeys = findCreateYogaNodeClosureKeys(ast)
 
 	assert.ok(
 		closureKeys.includes("lazyNitroModulesBox"),
-		"transformed createYogaNode.__closure must capture lazyNitroModulesBox",
+		`${contextDescription} createYogaNode.__closure must capture lazyNitroModulesBox`,
 	)
 	assert.equal(
 		closureKeys.includes("NitroModules"),
 		false,
-		"transformed createYogaNode.__closure must not capture NitroModules directly",
+		`${contextDescription} createYogaNode.__closure must not capture NitroModules directly`,
 	)
 	assert.deepEqual(
 		closureKeys,
 		["lazyNitroModulesBox"],
-		"transformed createYogaNode.__closure should only capture the lazy NitroModules box accessor",
+		`${contextDescription} createYogaNode.__closure should only capture the lazy NitroModules box accessor`,
 	)
 
-	const workletCode = findCreateYogaNodeWorkletCode(transformed.ast)
-	const workletAst = parseTransformedJavaScript(
-		workletCode,
-		`${utilPath}.worklet.js`,
-	)
+	const workletCode = findCreateYogaNodeWorkletCode(ast)
+	const workletAst = parseTransformedJavaScript(workletCode, workletFilename)
 
 	assert.equal(
 		containsIdentifier(workletAst, "NitroModules"),
 		false,
-		"transformed createYogaNode worklet body must not reference NitroModules directly",
+		`${contextDescription} createYogaNode worklet body must not reference NitroModules directly`,
 	)
 	assert.equal(
 		containsLazyNitroModulesBoxUnboxCall(workletAst),
 		true,
-		"transformed createYogaNode worklet body must use lazyNitroModulesBox.current.unbox()",
+		`${contextDescription} createYogaNode worklet body must use lazyNitroModulesBox.current.unbox()`,
 	)
 }
 
