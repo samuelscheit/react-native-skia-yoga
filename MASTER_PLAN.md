@@ -207,7 +207,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch worker 093 as a read-only post-worker-092 root-cause audit to rank the remaining proof gaps after dynamic path trim coverage.
+- Monitor worker 093's read-only post-worker-092 root-cause audit and use its recommendation to choose the next implementation target.
 
 Acceptance criteria:
 
