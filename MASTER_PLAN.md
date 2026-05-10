@@ -202,10 +202,11 @@ Accepted package-hygiene implementation:
 - `worker-088-nitro-yoganode-materialization`: added `check:yoganode-nitro-materialization`, a host-JSC verifier that materializes a shared `YogaNode` through `toObject(runtime)`, asserts NativeState identity and cached JS object stability, invokes generated `setCommand`, `setStyle`, `computeLayout`, and `layout` wrappers from the materialized object, and expands `check:feasible-matrix` to 27 commands.
 - `worker-089-animated-double-synchronizable`: fixed `AnimatedDouble` Worklets `SerializableJSRef` / `Synchronizable` validation to be stable outside assertion builds, added `check:animated-double-synchronizable`, proved bounded host-JSC/native dynamic value extraction and numeric resolution through RN Skia main-runtime state, and expanded `check:feasible-matrix` to 28 commands.
 - `worker-090-animated-double-nodecommand`: expanded `check:yoganode-native-commands-render` to prove selected Worklets-backed dynamic `AnimatedDouble` props through `JSIConverter<NodeCommand>::fromJSI(...)` for `circle.radius`, `rrect.cornerRadius`, and `blurMaskFilter.blur`, including fallback, main-runtime resolution, mutation, render evidence, and dynamic raster-cache bypass.
+- `worker-091-post-090-root-cause-audit`: audited the post-worker-090 state, accepted the prior worker-091 28-command feasible matrix evidence, reconfirmed local platform-native blockers, and selected dynamic `PathCmd` `trimStart` / `trimEnd` `AnimatedDouble` NodeCommand/render coverage as the strongest remaining unblocked target.
 
 Current next step:
 
-- Monitor worker 091's read-only post-worker-090 root-cause audit and use its recommendation to choose the next implementation target.
+- Launch worker 092 to extend `check:yoganode-native-commands-render` with dynamic `PathCmd` `trimStart` / `trimEnd` `AnimatedDouble` NodeCommand/render coverage, while keeping the proof boundary to host-native command conversion/render behavior.
 
 Acceptance criteria:
 
