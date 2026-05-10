@@ -211,7 +211,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch worker 097 as a read-only post-worker-096 root-cause audit to select the next strongest unblocked target from the accepted public `path.stroke` baseline.
+- Monitor worker 097 as it audits the post-worker-096 baseline and selects the next strongest unblocked root-cause target.
 
 Acceptance criteria:
 
