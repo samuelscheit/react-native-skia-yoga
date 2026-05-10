@@ -23,6 +23,4 @@ const finalConfig = {
   watchFolders: [...config.watchFolders, path.join(__dirname, '..')],
 }
 
-console.log(finalConfig)
-
 module.exports = finalConfig

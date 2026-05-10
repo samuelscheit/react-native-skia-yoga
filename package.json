@@ -38,6 +38,7 @@
 		"check:yoganode-native-lifetime": "node ./scripts/verify-yoganode-native-lifetime.mjs",
 		"check:package-lifecycle": "node ./scripts/verify-package-lifecycle.mjs",
 		"check:package-surface": "node ./scripts/verify-package-surface.mjs",
+		"check:example-bundle": "node ./scripts/verify-example-bundle-export.mjs",
 		"check:yoganode-native-runtime": "node ./scripts/verify-yoganode-native-runtime-smoke.mjs",
 		"clean": "rm -rf android/build node_modules/**/android/build lib",
 		"lint": "eslint --resolve-plugins-relative-to ./node_modules/@react-native/eslint-config \".eslintrc.js\" \"**/*.{js,mjs,ts,tsx}\" --fix",
