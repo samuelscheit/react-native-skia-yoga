@@ -167,10 +167,11 @@ try {
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, AnimatedDouble.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, Worklets shared-item sources, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
 	console.log("- The executable created a JSC runtime, converted numeric and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), and executed real YogaNode::setCommand().")
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
-	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath/JsiSkImage host-object conversion/rendering, bounded TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
+	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, bounded TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
+	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted public path.stroke width, miter_limit, precision, join, and cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, all text/paragraph styles, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, full image-fit coverage, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, all text/paragraph styles, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -465,6 +466,7 @@ using margelo::nitro::RNSkiaYoga::GroupCommandData;
 using margelo::nitro::RNSkiaYoga::NodeCommand;
 using margelo::nitro::RNSkiaYoga::NodeStyle;
 using margelo::nitro::RNSkiaYoga::CircleCommandData;
+using margelo::nitro::RNSkiaYoga::ImageCommandData;
 using margelo::nitro::RNSkiaYoga::NodeCommandKind;
 using margelo::nitro::RNSkiaYoga::ParagraphCommandData;
 using margelo::nitro::RNSkiaYoga::PathCommandData;
@@ -780,9 +782,9 @@ sk_sp<SkSurface> makeSurface(int width, int height, SkColor clearColor = SK_Colo
     return surface;
 }
 
-sk_sp<SkImage> makeQuadrantImage()
+sk_sp<SkImage> makeImageFitProbeImage()
 {
-    auto surface = makeSurface(4, 4);
+    auto surface = makeSurface(8, 4);
     auto* canvas = surface->getCanvas();
     auto paint = colorPaint(SK_ColorRED);
     canvas->drawRect(SkRect::MakeXYWH(0.0f, 0.0f, 2.0f, 2.0f), paint);
@@ -791,15 +793,27 @@ sk_sp<SkImage> makeQuadrantImage()
     canvas->drawRect(SkRect::MakeXYWH(2.0f, 0.0f, 2.0f, 2.0f), paint);
 
     paint.setColor(SK_ColorBLUE);
-    canvas->drawRect(SkRect::MakeXYWH(0.0f, 2.0f, 2.0f, 2.0f), paint);
+    canvas->drawRect(SkRect::MakeXYWH(4.0f, 0.0f, 2.0f, 2.0f), paint);
 
     paint.setColor(SK_ColorYELLOW);
+    canvas->drawRect(SkRect::MakeXYWH(6.0f, 0.0f, 2.0f, 2.0f), paint);
+
+    paint.setColor(SK_ColorCYAN);
+    canvas->drawRect(SkRect::MakeXYWH(0.0f, 2.0f, 2.0f, 2.0f), paint);
+
+    paint.setColor(SK_ColorMAGENTA);
     canvas->drawRect(SkRect::MakeXYWH(2.0f, 2.0f, 2.0f, 2.0f), paint);
 
+    paint.setColor(SK_ColorWHITE);
+    canvas->drawRect(SkRect::MakeXYWH(4.0f, 2.0f, 2.0f, 2.0f), paint);
+
+    paint.setColor(SK_ColorBLACK);
+    canvas->drawRect(SkRect::MakeXYWH(6.0f, 2.0f, 2.0f, 2.0f), paint);
+
     auto image = surface->makeImageSnapshot();
-    expect(image != nullptr, "synthetic quadrant SkImage must be created");
-    expect(image->width() == 4, "synthetic quadrant SkImage width");
-    expect(image->height() == 4, "synthetic quadrant SkImage height");
+    expect(image != nullptr, "synthetic image-fit SkImage must be created");
+    expect(image->width() == 8, "synthetic image-fit SkImage width");
+    expect(image->height() == 4, "synthetic image-fit SkImage height");
     return image;
 }
 
@@ -1132,7 +1146,7 @@ NodeCommand dynamicPathTrimCommand(
     return convertCommand(runtime, std::move(command));
 }
 
-NodeCommand imageCommand(jsi::Runtime& runtime)
+jsi::Object imageCommandObject(jsi::Runtime& runtime, std::optional<std::string> fit)
 {
     jsi::Object sampling(runtime);
     sampling.setProperty(
@@ -1144,16 +1158,24 @@ NodeCommand imageCommand(jsi::Runtime& runtime)
         runtime,
         std::make_shared<RNSkia::JsiSkImage>(
             margelo::nitro::RNSkiaYoga::GetPlatformContext(),
-            makeQuadrantImage()));
+            makeImageFitProbeImage()));
 
     jsi::Object data(runtime);
-    data.setProperty(runtime, "fit", "fill");
+    if (fit.has_value()) {
+        data.setProperty(runtime, "fit", fit->c_str());
+    }
     data.setProperty(runtime, "image", std::move(imageHostObject));
     data.setProperty(runtime, "sampling", std::move(sampling));
 
     jsi::Object command(runtime);
     command.setProperty(runtime, "type", "image");
     command.setProperty(runtime, "data", std::move(data));
+    return command;
+}
+
+NodeCommand imageCommand(jsi::Runtime& runtime, std::optional<std::string> fit)
+{
+    auto command = imageCommandObject(runtime, std::move(fit));
     return convertCommand(runtime, std::move(command));
 }
 
@@ -1876,36 +1898,274 @@ void assertStrokeOptsConverterPublicMiterContract(jsi::Runtime& runtime)
     expectOptionalFloatNear(aliasConverted.miter_limit, 3.0, "StrokeOpts fromJSI preserves miterLimit alias fallback");
 }
 
-void assertImageHostObjectCommandRender(jsi::Runtime& runtime)
+struct ExpectedPixel {
+    int x;
+    int y;
+    SkColor color;
+    std::string message;
+    int tolerance = 0;
+};
+
+void expectRectNear(
+    const SkRect& actual,
+    float expectedLeft,
+    float expectedTop,
+    float expectedWidth,
+    float expectedHeight,
+    const std::string& label)
 {
+    expectNear(actual.left(), expectedLeft, label + " left");
+    expectNear(actual.top(), expectedTop, label + " top");
+    expectNear(actual.width(), expectedWidth, label + " width");
+    expectNear(actual.height(), expectedHeight, label + " height");
+}
+
+void assertImageFitRects(
+    const std::string& fit,
+    float dstWidth,
+    float dstHeight,
+    const SkRect& expectedSrc,
+    const SkRect& expectedDst)
+{
+    const auto rects = RNSkiaImage::fitRects(
+        fit,
+        SkRect::MakeXYWH(0.0f, 0.0f, 8.0f, 4.0f),
+        SkRect::MakeXYWH(0.0f, 0.0f, dstWidth, dstHeight));
+    expectRectNear(rects.src, expectedSrc.left(), expectedSrc.top(), expectedSrc.width(), expectedSrc.height(), fit + " source fit rect");
+    expectRectNear(rects.dst, expectedDst.left(), expectedDst.top(), expectedDst.width(), expectedDst.height(), fit + " destination fit rect");
+}
+
+void assertImageFitHelperGeometry()
+{
+    assertImageFitRects(
+        "fill",
+        16.0f,
+        16.0f,
+        SkRect::MakeXYWH(0.0f, 0.0f, 8.0f, 4.0f),
+        SkRect::MakeXYWH(0.0f, 0.0f, 16.0f, 16.0f));
+    assertImageFitRects(
+        "contain",
+        16.0f,
+        16.0f,
+        SkRect::MakeXYWH(0.0f, 0.0f, 8.0f, 4.0f),
+        SkRect::MakeXYWH(0.0f, 4.0f, 16.0f, 8.0f));
+    assertImageFitRects(
+        "cover",
+        16.0f,
+        16.0f,
+        SkRect::MakeXYWH(2.0f, 0.0f, 4.0f, 4.0f),
+        SkRect::MakeXYWH(0.0f, 0.0f, 16.0f, 16.0f));
+    assertImageFitRects(
+        "fitWidth",
+        16.0f,
+        16.0f,
+        SkRect::MakeXYWH(0.0f, -2.0f, 8.0f, 8.0f),
+        SkRect::MakeXYWH(0.0f, 0.0f, 16.0f, 16.0f));
+    assertImageFitRects(
+        "fitHeight",
+        16.0f,
+        16.0f,
+        SkRect::MakeXYWH(2.0f, 0.0f, 4.0f, 4.0f),
+        SkRect::MakeXYWH(0.0f, 0.0f, 16.0f, 16.0f));
+    assertImageFitRects(
+        "none",
+        16.0f,
+        16.0f,
+        SkRect::MakeXYWH(0.0f, 0.0f, 8.0f, 4.0f),
+        SkRect::MakeXYWH(4.0f, 6.0f, 8.0f, 4.0f));
+    assertImageFitRects(
+        "scaleDown",
+        16.0f,
+        16.0f,
+        SkRect::MakeXYWH(0.0f, 0.0f, 8.0f, 4.0f),
+        SkRect::MakeXYWH(4.0f, 6.0f, 8.0f, 4.0f));
+    assertImageFitRects(
+        "scaleDown",
+        6.0f,
+        6.0f,
+        SkRect::MakeXYWH(0.0f, 0.0f, 8.0f, 4.0f),
+        SkRect::MakeXYWH(0.0f, 1.5f, 6.0f, 3.0f));
+}
+
+void assertImageFitCase(
+    jsi::Runtime& runtime,
+    const std::string& label,
+    std::optional<std::string> requestedFit,
+    const std::string& expectedNativeFit,
+    double layoutWidth,
+    double layoutHeight,
+    const std::vector<ExpectedPixel>& expectedPixels)
+{
+    auto command = imageCommand(runtime, requestedFit);
+    const auto& payload = std::get<ImageCommandData>(command.data);
+    if (requestedFit.has_value()) {
+        expect(payload.fit.has_value(), label + " converted payload keeps explicit fit");
+        expect(payload.fit.value() == requestedFit.value(), label + " converted payload fit value");
+    } else {
+        expect(!payload.fit.has_value(), label + " converted payload leaves omitted fit empty");
+    }
+    expect(payload.image.has_value(), label + " converted payload keeps image");
+    expect(payload.image.value() != nullptr, label + " converted payload image is non-null");
+    expect(payload.sampling.has_value(), label + " converted payload keeps sampling");
+
     auto root = makeYogaNode(
-        groupStyle(8.0, 8.0),
-        imageCommand(runtime));
+        groupStyle(layoutWidth, layoutHeight),
+        std::move(command));
 
-    expect(root->_commandKind == YogaNodeCommandKind::IMAGE, "setCommand constructs a real ImageCmd");
+    expect(root->_commandKind == YogaNodeCommandKind::IMAGE, label + " setCommand constructs a real ImageCmd");
     auto* imageCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::ImageCmd*>(root->_command.get());
-    expect(imageCmd != nullptr, "installed command has ImageCmd type");
-    expect(imageCmd->props.image.has_value(), "ImageCmd keeps the converted SkImage host object payload");
-    expect(imageCmd->props.image.value() != nullptr, "ImageCmd converted SkImage payload is non-null");
-    expect(imageCmd->props.image.value()->width() == 4, "ImageCmd converted SkImage width");
-    expect(imageCmd->props.image.value()->height() == 4, "ImageCmd converted SkImage height");
-    expect(imageCmd->props.fit == "fill", "ImageCmd keeps the requested fill fit mode");
+    expect(imageCmd != nullptr, label + " installed command has ImageCmd type");
+    expect(imageCmd->props.image.has_value(), label + " ImageCmd keeps the converted SkImage host object payload");
+    expect(imageCmd->props.image.value() != nullptr, label + " ImageCmd converted SkImage payload is non-null");
+    expect(imageCmd->props.image.value()->width() == 8, label + " ImageCmd converted SkImage width");
+    expect(imageCmd->props.image.value()->height() == 4, label + " ImageCmd converted SkImage height");
+    expect(imageCmd->props.fit == expectedNativeFit, label + " ImageCmd native fit mode");
 
-    auto surface = makeSurface(12, 12);
+    const int surfaceWidth = static_cast<int>(std::ceil(layoutWidth)) + 4;
+    const int surfaceHeight = static_cast<int>(std::ceil(layoutHeight)) + 4;
+    auto surface = makeSurface(surfaceWidth, surfaceHeight);
     renderNode(root, surface);
 
-    expectNear(root->_layout.width, 8.0, "image layout width");
-    expectNear(root->_layout.height, 8.0, "image layout height");
-    expect(imageCmd->props.rect.has_value(), "ImageCmd layout resolves a draw rect");
-    expectNear(imageCmd->props.rect->width(), 8.0, "ImageCmd draw rect width");
-    expectNear(imageCmd->props.rect->height(), 8.0, "ImageCmd draw rect height");
+    expectNear(root->_layout.width, layoutWidth, label + " image layout width");
+    expectNear(root->_layout.height, layoutHeight, label + " image layout height");
+    expect(imageCmd->props.rect.has_value(), label + " ImageCmd layout resolves a draw rect");
+    expectRectNear(*imageCmd->props.rect, 0.0f, 0.0f, static_cast<float>(layoutWidth), static_cast<float>(layoutHeight), label + " ImageCmd draw rect");
 
-    expectColorNear(pixelAt(surface, 1, 1), SK_ColorRED, 0, "fill image renders the red source quadrant");
-    expectColorNear(pixelAt(surface, 6, 1), SK_ColorGREEN, 0, "fill image renders the green source quadrant");
-    expectColorNear(pixelAt(surface, 1, 6), SK_ColorBLUE, 0, "fill image renders the blue source quadrant");
-    expectColorNear(pixelAt(surface, 6, 6), SK_ColorYELLOW, 0, "fill image renders the yellow source quadrant");
-    expectColorNear(pixelAt(surface, 9, 1), SK_ColorTRANSPARENT, 0, "image render remains bounded by the Yoga layout width");
-    expectColorNear(pixelAt(surface, 1, 9), SK_ColorTRANSPARENT, 0, "image render remains bounded by the Yoga layout height");
+    for (const auto& expected : expectedPixels) {
+        expectColorNear(
+            pixelAt(surface, expected.x, expected.y),
+            expected.color,
+            expected.tolerance,
+            label + " " + expected.message);
+    }
+
+    expectColorNear(
+        pixelAt(surface, static_cast<int>(std::ceil(layoutWidth)) + 1, 1),
+        SK_ColorTRANSPARENT,
+        0,
+        label + " image render remains bounded by the Yoga layout width");
+    expectColorNear(
+        pixelAt(surface, 1, static_cast<int>(std::ceil(layoutHeight)) + 1),
+        SK_ColorTRANSPARENT,
+        0,
+        label + " image render remains bounded by the Yoga layout height");
+}
+
+void assertImageFitCommandRender(jsi::Runtime& runtime)
+{
+    assertImageFitHelperGeometry();
+
+    assertImageFitCase(
+        runtime,
+        "fill",
+        std::optional<std::string>("fill"),
+        "fill",
+        16.0,
+        16.0,
+        {
+            { 2, 3, SK_ColorRED, "stretches red source block into the destination" },
+            { 6, 3, SK_ColorGREEN, "stretches green source block into the destination" },
+            { 10, 3, SK_ColorBLUE, "stretches blue source block into the destination" },
+            { 14, 3, SK_ColorYELLOW, "stretches yellow source block into the destination" },
+            { 2, 12, SK_ColorCYAN, "stretches cyan source block into the destination" },
+            { 6, 12, SK_ColorMAGENTA, "stretches magenta source block into the destination" },
+            { 10, 12, SK_ColorWHITE, "stretches white source block into the destination" },
+            { 14, 12, SK_ColorBLACK, "stretches black source block into the destination" },
+        });
+
+    assertImageFitCase(
+        runtime,
+        "default contain",
+        std::nullopt,
+        "contain",
+        16.0,
+        16.0,
+        {
+            { 2, 2, SK_ColorTRANSPARENT, "leaves the top letterbox transparent" },
+            { 2, 5, SK_ColorRED, "renders the contained red source block" },
+            { 14, 5, SK_ColorYELLOW, "renders the contained yellow source block" },
+            { 2, 10, SK_ColorCYAN, "renders the contained cyan source block" },
+            { 14, 10, SK_ColorBLACK, "renders the contained black source block" },
+            { 2, 14, SK_ColorTRANSPARENT, "leaves the bottom letterbox transparent" },
+        });
+
+    assertImageFitCase(
+        runtime,
+        "cover",
+        std::optional<std::string>("cover"),
+        "cover",
+        16.0,
+        16.0,
+        {
+            { 3, 3, SK_ColorGREEN, "crops away the left source edge" },
+            { 12, 3, SK_ColorBLUE, "crops away the right source edge" },
+            { 3, 12, SK_ColorMAGENTA, "renders the cropped lower-left source region" },
+            { 12, 12, SK_ColorWHITE, "renders the cropped lower-right source region" },
+        });
+
+    assertImageFitCase(
+        runtime,
+        "none",
+        std::optional<std::string>("none"),
+        "none",
+        16.0,
+        16.0,
+        {
+            { 3, 7, SK_ColorTRANSPARENT, "leaves pixels before the unscaled image transparent" },
+            { 5, 7, SK_ColorRED, "renders the unscaled red source block" },
+            { 7, 7, SK_ColorGREEN, "renders the unscaled green source block" },
+            { 9, 7, SK_ColorBLUE, "renders the unscaled blue source block" },
+            { 11, 7, SK_ColorYELLOW, "renders the unscaled yellow source block" },
+            { 5, 9, SK_ColorCYAN, "renders the unscaled cyan source block" },
+            { 11, 9, SK_ColorBLACK, "renders the unscaled black source block" },
+            { 12, 7, SK_ColorTRANSPARENT, "leaves pixels after the unscaled image transparent" },
+        });
+
+    assertImageFitCase(
+        runtime,
+        "scaleDown",
+        std::optional<std::string>("scaleDown"),
+        "scaleDown",
+        16.0,
+        16.0,
+        {
+            { 3, 7, SK_ColorTRANSPARENT, "does not upscale when the destination is larger than the image" },
+            { 5, 7, SK_ColorRED, "renders the no-upscale red source block" },
+            { 9, 7, SK_ColorBLUE, "renders the no-upscale blue source block" },
+            { 5, 9, SK_ColorCYAN, "renders the no-upscale cyan source block" },
+            { 11, 9, SK_ColorBLACK, "renders the no-upscale black source block" },
+            { 12, 7, SK_ColorTRANSPARENT, "keeps the no-upscale image bounded" },
+        });
+
+    assertImageFitCase(
+        runtime,
+        "fitWidth",
+        std::optional<std::string>("fitWidth"),
+        "fitWidth",
+        16.0,
+        16.0,
+        {
+            { 2, 2, SK_ColorTRANSPARENT, "keeps the out-of-source top band transparent" },
+            { 2, 5, SK_ColorRED, "renders the width-fit red source block" },
+            { 14, 5, SK_ColorYELLOW, "renders the width-fit yellow source block" },
+            { 2, 10, SK_ColorCYAN, "renders the width-fit cyan source block" },
+            { 14, 10, SK_ColorBLACK, "renders the width-fit black source block" },
+            { 2, 14, SK_ColorTRANSPARENT, "keeps the out-of-source bottom band transparent" },
+        });
+
+    assertImageFitCase(
+        runtime,
+        "fitHeight",
+        std::optional<std::string>("fitHeight"),
+        "fitHeight",
+        16.0,
+        16.0,
+        {
+            { 3, 3, SK_ColorGREEN, "crops horizontally to satisfy height fitting" },
+            { 12, 3, SK_ColorBLUE, "renders the height-fit cropped upper-right source region" },
+            { 3, 12, SK_ColorMAGENTA, "renders the height-fit cropped lower-left source region" },
+            { 12, 12, SK_ColorWHITE, "renders the height-fit cropped lower-right source region" },
+        });
 }
 
 void assertTextCommandStateAndRender(jsi::Runtime& runtime)
@@ -2199,6 +2459,28 @@ void assertConverterErrorImage(jsi::Runtime& runtime)
     fail("image command conversion with a plain JS image object must fail in this host probe");
 }
 
+void assertConverterErrorImageFit(jsi::Runtime& runtime)
+{
+    auto command = imageCommandObject(runtime, std::optional<std::string>("stretch"));
+    jsi::Value commandValue(runtime, command);
+
+    expect(
+        margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, commandValue),
+        "NodeCommand converter canConvert accepts shaped image command before rejecting invalid fit");
+    expectJsiThrows(
+        [&]() {
+            (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
+        },
+        "NodeCommand conversion failed for type \"image\"",
+        "NodeCommand conversion rejects invalid image fit");
+    expectJsiThrows(
+        [&]() {
+            (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
+        },
+        "Invalid fit: stretch",
+        "NodeCommand conversion reports the invalid image fit value");
+}
+
 void assertConverterErrorTextFont(jsi::Runtime& runtime)
 {
     jsi::Object data(runtime);
@@ -2257,13 +2539,14 @@ int main()
     assertPathStrokeMiterAliasPrecedence(*runtime);
     assertStrokeOptsConverterPublicMiterContract(*runtime);
     assertDynamicPathTrimCommandRender(*runtime);
-    assertImageHostObjectCommandRender(*runtime);
+    assertImageFitCommandRender(*runtime);
     assertTextCommandStateAndRender(*runtime);
     assertParagraphCommandMeasureAndRender(*runtime);
     assertConverterErrorPath(*runtime);
     assertDynamicPathTrimCommandRejections(*runtime);
     assertPathStrokeCommandRejections(*runtime);
     assertConverterErrorImage(*runtime);
+    assertConverterErrorImageFit(*runtime);
     assertConverterErrorTextFont(*runtime);
     assertDynamicAnimatedDoubleCommandRejections(*runtime);
 
