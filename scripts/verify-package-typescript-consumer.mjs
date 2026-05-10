@@ -80,6 +80,9 @@ try {
 	console.log(
 		"- Public package entrypoints and lowercase intrinsic JSX compiled from the installed package.",
 	)
+	console.log(
+		"- Public package boundary rejected internal top-level exports such as reconciler, createYogaNode, and SkiaYoga.",
+	)
 	const consumerDevDependencies =
 		consumerDependencySummary.devDependencies.join(", ")
 	const packedReactReconciler = packedDependencySummary["react-reconciler"]
@@ -205,6 +208,10 @@ function writeConsumerProject(consumerDir, packedTarball) {
 		path.join(consumerDir, "src", "packed-package-smoke.tsx"),
 		consumerSource(),
 	)
+	writeFileSync(
+		path.join(consumerDir, "src", "public-boundary-negative.ts"),
+		consumerBoundarySource(),
+	)
 
 	return {
 		devDependencies: Object.keys(
@@ -221,6 +228,7 @@ import {
 \ttype YogaIntrinsicElements,
 \ttype YogaNodeStyle,
 } from "react-native-skia-yoga"
+import { Fragment as YogaDevRuntimeFragment } from "react-native-skia-yoga/jsx-dev-runtime"
 import { Fragment as YogaRuntimeFragment } from "react-native-skia-yoga/jsx-runtime"
 
 const rootStyle: YogaNodeStyle = {
@@ -290,10 +298,49 @@ export function PackedPackageSmoke() {
 }
 
 const smokeElement: React.JSX.Element = <PackedPackageSmoke />
+const devRuntimeFragment = YogaDevRuntimeFragment
 const runtimeFragment = YogaRuntimeFragment
 
 void smokeElement
+void devRuntimeFragment
 void runtimeFragment
+`
+}
+
+function consumerBoundarySource() {
+	return `import * as PublicRuntime from "react-native-skia-yoga"
+import type * as PublicTypes from "react-native-skia-yoga"
+
+type PublicStyle = PublicTypes.YogaNodeStyle
+type PublicIntrinsicGroup = PublicTypes.YogaIntrinsicElements["group"]
+
+void PublicRuntime.YogaCanvas
+
+// @ts-expect-error reconciler is an internal renderer implementation detail.
+void PublicRuntime.reconciler
+// @ts-expect-error createYogaNode is an internal native object factory.
+void PublicRuntime.createYogaNode
+// @ts-expect-error SkiaYoga is an internal native hybrid object.
+void PublicRuntime.SkiaYoga
+// @ts-expect-error YogaInteractionRegistry is internal canvas event plumbing.
+void PublicRuntime.YogaInteractionRegistry
+
+// @ts-expect-error YogaNodeFinal is internal native node plumbing.
+type HiddenYogaNodeFinal = PublicTypes.YogaNodeFinal
+// @ts-expect-error YogaRootContainer is internal renderer state.
+type HiddenYogaRootContainer = PublicTypes.YogaRootContainer
+// @ts-expect-error SkiaYogaHostContext is internal renderer state.
+type HiddenHostContext = PublicTypes.SkiaYogaHostContext
+// @ts-expect-error YogaNodeInteractionConfig is internal native hit-test config.
+type HiddenInteractionConfig = PublicTypes.YogaNodeInteractionConfig
+// @ts-expect-error YogaNormalizedHitSlop is an internal normalized shape.
+type HiddenNormalizedHitSlop = PublicTypes.YogaNormalizedHitSlop
+
+const publicStyle: PublicStyle = { flex: 1 }
+const publicGroupProps: PublicIntrinsicGroup = { pointerEvents: "auto" }
+
+void publicStyle
+void publicGroupProps
 `
 }
 

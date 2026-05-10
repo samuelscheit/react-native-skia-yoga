@@ -9,7 +9,7 @@ import {
 } from "react-native-worklets"
 import Reconciler from "react-reconciler"
 import { DefaultEventPriority } from "react-reconciler/constants"
-import type { YogaNodeFinal } from "./index"
+import type { YogaNodeFinal } from "./internalTypes"
 import type { YogaInteractionRegistry } from "./interactivity"
 import type {
     BlurStyleName,

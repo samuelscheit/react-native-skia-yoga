@@ -1,20 +1,45 @@
-import type {
-	NodeCommand,
-	YogaNode,
-} from "./specs/SkiaYoga.nitro"
-import type { YogaNodeInteractionConfig } from "./interactivity"
-export { SkiaYoga } from "./SkiaYogaObject"
-
-export interface YogaNodeFinal extends YogaNode {
-	setCommand(command: NodeCommand): void
-	draw(): any
-	getChildren(): YogaNodeFinal[]
-	hitTest(x: number, y: number): number
-	setInteractionConfig(config: YogaNodeInteractionConfig): void
-}
-
-export * from "./interactivity"
-export * from "./Reconciler"
-export * from "./jsx"
-export * from "./util"
-export * from "./YogaCanvas"
+export { YogaCanvas } from "./YogaCanvas"
+export type { YogaCanvasProfileSample } from "./YogaCanvas"
+export type {
+	YogaAnimatedCornerRadius,
+	YogaAnimatedParagraphStyleProps,
+	YogaAnimatedPoint,
+	YogaAnimatedProp,
+	YogaAnimatedStrokeOpts,
+	YogaAnimatedStyle,
+	YogaAnimatedStyleObject,
+	YogaAnimatedTextStyleProps,
+	YogaAnimatedTransform,
+	YogaBlurStyle,
+	YogaCircleProps,
+	YogaContainerProps,
+	YogaDeepAnimated,
+	YogaElementChildren,
+	YogaGroupProps,
+	YogaImageProps,
+	YogaIntrinsicElements,
+	YogaLineProps,
+	YogaNodeStyle,
+	YogaOvalProps,
+	YogaParagraphProps,
+	YogaParagraphStyle,
+	YogaPathFillType,
+	YogaPathProps,
+	YogaPointMode,
+	YogaPointsProps,
+	YogaRectProps,
+	YogaRoundedRectProps,
+	YogaStyleProps,
+	YogaTextProps,
+	YogaTextStyle,
+	YogaBlurMaskFilterProps,
+} from "./jsx"
+export type {
+	YogaHitSlop,
+	YogaInteractiveProps,
+	YogaPanEvent,
+	YogaPanHandler,
+	YogaPointerEvent,
+	YogaPointerEvents,
+	YogaPressHandler,
+} from "./interactivity"
