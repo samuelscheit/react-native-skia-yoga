@@ -38,6 +38,7 @@
 		"check:yoganode-native-lifetime": "node ./scripts/verify-yoganode-native-lifetime.mjs",
 		"check:package-lifecycle": "node ./scripts/verify-package-lifecycle.mjs",
 		"check:package-surface": "node ./scripts/verify-package-surface.mjs",
+		"check:package-typescript-consumer": "node ./scripts/verify-package-typescript-consumer.mjs",
 		"check:example-bundle": "node ./scripts/verify-example-bundle-export.mjs",
 		"check:rn-skia-imports": "node ./scripts/verify-rn-skia-imports.mjs",
 		"check:yoganode-native-runtime": "node ./scripts/verify-yoganode-native-runtime-smoke.mjs",
