@@ -31,7 +31,10 @@ try {
 	mkdirSync(path.join(consumerDir, "src"), { recursive: true })
 
 	const packedTarball = packPackage(tarballDir)
-	writeConsumerProject(consumerDir, packedTarball)
+	const consumerDependencySummary = writeConsumerProject(
+		consumerDir,
+		packedTarball,
+	)
 
 	run(
 		"npm",
@@ -47,7 +50,7 @@ try {
 		{ cwd: consumerDir, timeout: 300_000 },
 	)
 
-	assertPackedPackageInstall(consumerDir)
+	const packedDependencySummary = assertPackedPackageInstall(consumerDir)
 
 	run(
 		process.execPath,
@@ -76,6 +79,23 @@ try {
 	)
 	console.log(
 		"- Public package entrypoints and lowercase intrinsic JSX compiled from the installed package.",
+	)
+	const consumerDevDependencies =
+		consumerDependencySummary.devDependencies.join(", ")
+	const packedReactReconciler = packedDependencySummary["react-reconciler"]
+	const packedReactReconcilerTypes =
+		packedDependencySummary["@types/react-reconciler"]
+	console.log(
+		[
+			`- Temporary consumer devDependencies: ${consumerDevDependencies}`,
+			"(no @types/react-reconciler).",
+		].join(" "),
+	)
+	console.log(
+		`- Packed dependency react-reconciler: ${packedReactReconciler}.`,
+	)
+	console.log(
+		`- Packed dependency @types/react-reconciler: ${packedReactReconcilerTypes}.`,
 	)
 } finally {
 	rmSync(tempRoot, { recursive: true, force: true })
@@ -136,9 +156,6 @@ function writeConsumerProject(consumerDir, packedTarball) {
 		},
 		devDependencies: {
 			"@types/react": exampleDependencyVersion("@types/react"),
-			"@types/react-reconciler": rootDevDependencyVersion(
-				"@types/react-reconciler",
-			),
 			typescript: exampleDependencyVersion("typescript"),
 		},
 	}
@@ -177,12 +194,23 @@ function writeConsumerProject(consumerDir, packedTarball) {
 		)
 	}
 
+	assertConsumerDevDependencyAbsent(
+		consumerPackageJson,
+		"@types/react-reconciler",
+	)
+
 	writeJson(path.join(consumerDir, "package.json"), consumerPackageJson)
 	writeJson(path.join(consumerDir, "tsconfig.json"), tsconfig)
 	writeFileSync(
 		path.join(consumerDir, "src", "packed-package-smoke.tsx"),
 		consumerSource(),
 	)
+
+	return {
+		devDependencies: Object.keys(
+			consumerPackageJson.devDependencies,
+		).sort(),
+	}
 }
 
 function consumerSource() {
@@ -295,6 +323,17 @@ function assertPackedPackageInstall(consumerDir) {
 			`Installed package name mismatch: ${installedPackageJson.name}`,
 		)
 	}
+
+	return {
+		"react-reconciler": assertPublishedDependency(
+			installedPackageJson,
+			"react-reconciler",
+		),
+		"@types/react-reconciler": assertPublishedDependency(
+			installedPackageJson,
+			"@types/react-reconciler",
+		),
+	}
 }
 
 function exampleDependencyVersion(name) {
@@ -313,13 +352,26 @@ function exampleDependencyVersion(name) {
 	throw new Error(`Example package.json does not declare ${name}.`)
 }
 
-function rootDevDependencyVersion(name) {
-	const version = rootPackageJson.devDependencies?.[name]
+function assertConsumerDevDependencyAbsent(consumerPackageJson, name) {
+	if (
+		Object.prototype.hasOwnProperty.call(
+			consumerPackageJson.devDependencies ?? {},
+			name,
+		)
+	) {
+		throw new Error(
+			`Temporary consumer must not declare ${name}; the packed package must provide its own type contract.`,
+		)
+	}
+}
+
+function assertPublishedDependency(packageJson, name) {
+	const version = packageJson.dependencies?.[name]
 	if (typeof version === "string" && version.length > 0) {
 		return version
 	}
 
-	throw new Error(`Root package.json does not declare devDependency ${name}.`)
+	throw new Error(`Packed package.json must declare dependency ${name}.`)
 }
 
 function writeJson(filePath, value) {
