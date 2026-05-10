@@ -1935,7 +1935,7 @@ Last updated: 2026-05-10
   - Deleted branch `worker/081-post-080-root-cause-audit`.
 - Created `worker-082-yoganode-more-native-commands-render` from current `main`, symlinked root/example dependencies from the main worktree, and wrote the worker 082 prompt.
 - Launched `rnskia-worker-082-yoganode-more-native-commands-render` as a top-level tmux subprocess to expand deterministic host-native YogaNode command/render coverage beyond worker 080's `rect`/`group`/`points` proof.
-- Worker 082 passed the visible `GOAL_CREATED: Expand host-native YogaNode command/render verification for deterministic remaining command coverage.` gate as the first worker message; final acceptance still requires the worker report to include goal lifecycle evidence and complete verification.
+- Worker 082 passed the visible `GOAL_CREATED: Expand host-native YogaNode command/render verification for deterministic remaining command coverage.` gate as the first worker message; final acceptance requires the worker to finish the assigned goal and complete verification.
 
 ## Active Workers
 
