@@ -164,7 +164,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch a read-only post-worker-049 root-cause audit to rerun/challenge the feasible matrix after the Worklets transform guard and rank the next unblocked repo-owned target. The audit should keep device/UI-runtime Worklets proof separate from transform-level coverage and continue treating full platform-native app build/run as locally blocked until prerequisites are available.
+- Monitor active read-only worker 050 post-worker-049 root-cause audit, then accept or reject it based on its tmux goal gate, report, final status, cleanup probes, and feasible-matrix evidence. The audit should keep device/UI-runtime Worklets proof separate from transform-level coverage and continue treating full platform-native app build/run as locally blocked until prerequisites are available.
 
 Acceptance criteria:
 
