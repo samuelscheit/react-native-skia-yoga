@@ -208,7 +208,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch worker 094 to expand `check:reconciler-animated-bindings` across all native-bound command props while keeping the proof boundary source-level.
+- Monitor worker 094 as it expands `check:reconciler-animated-bindings` across all native-bound command props while keeping the proof boundary source-level.
 
 Acceptance criteria:
 
