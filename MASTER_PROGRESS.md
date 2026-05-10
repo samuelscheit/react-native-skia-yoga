@@ -1972,10 +1972,13 @@ Last updated: 2026-05-10
   - Killed `rnskia-worker-083-post-082-root-cause-audit`.
   - Removed `../worker-083-post-082-root-cause-audit`.
   - Deleted branch `worker/083-post-082-root-cause-audit`.
+- Created `worker-084-yoganode-image-command-render` from current `main`, symlinked root/example dependencies from the main worktree, and wrote the worker 084 prompt.
+- Launched `rnskia-worker-084-yoganode-image-command-render` as a top-level tmux subprocess to add bounded host-native `ImageCmd` command/render verification.
+- Worker 084 passed the visible `GOAL_CREATED: Add host-native YogaNode ImageCmd command/render verification.` gate as the first worker message.
 
 ## Active Workers
 
-- None after worker 083 cleanup.
+- `rnskia-worker-084-yoganode-image-command-render`: launched from `worker/084-yoganode-image-command-render`; monitoring for bounded host-native `ImageCmd` command/render verification.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2082,7 +2085,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- `rnskia-worker-084-yoganode-image-command-render`: planned implementation worker for bounded host-native `ImageCmd` command/render verification.
+- None; worker 084 is active.
 
 ## Decisions
 
