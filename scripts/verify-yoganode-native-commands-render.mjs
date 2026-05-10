@@ -165,10 +165,11 @@ try {
 
 	console.log("YogaNode native command/render verifier passed:")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, AnimatedDouble.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, Worklets shared-item sources, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
-	console.log("- The executable created a JSC runtime, installed it as RN Skia's main runtime, converted simple NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), and executed real YogaNode::setCommand().")
+	console.log("- The executable created a JSC runtime, converted numeric and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), and executed real YogaNode::setCommand().")
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
-	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, point drawing, line stroke drawing, oval/circle/rrect fills, bounded blur-mask-filter inheritance, real JsiSkPath/JsiSkImage host-object conversion/rendering, bounded TextCmd raster evidence, and ParagraphCmd measure/raster evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, paragraph measurement, and bounded raster behavior for selected commands. This does not prove exact typography, font fallback correctness, paragraph shaping fidelity, all text/paragraph styles, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, RNGH native delivery, dynamic Worklets-backed AnimatedDouble resolution, image decoding/assets/loading, or full image-fit coverage.")
+	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, bounded blur-mask-filter inheritance, real JsiSkPath/JsiSkImage host-object conversion/rendering, bounded TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur fallback, resolution, and mutation.")
+	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, and blurMaskFilter.blur, including fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, paragraph measurement, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, and blurMaskFilter.blur, and bounded raster behavior for selected commands. This does not prove exact typography, font fallback correctness, paragraph shaping fidelity, all text/paragraph styles, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, full image-fit coverage, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -446,6 +447,8 @@ function nativeProbeSource() {
 #endif
 #include <include/core/SkSurface.h>
 #include <jsi/jsi.h>
+#include <SharedItems/Serializable.h>
+#include <SharedItems/Synchronizable.h>
 #include <yoga/Yoga.h>
 
 #include "JSCRuntime.h"
@@ -455,13 +458,18 @@ function nativeProbeSource() {
 #include "HybridYogaNodeSpec.cpp"
 #include "YogaNode.cpp"
 
+using margelo::nitro::RNSkiaYoga::AnimatedDouble;
+using margelo::nitro::RNSkiaYoga::BlurMaskFilterCommandData;
 using margelo::nitro::RNSkiaYoga::GroupCommandData;
 using margelo::nitro::RNSkiaYoga::NodeCommand;
 using margelo::nitro::RNSkiaYoga::NodeStyle;
+using margelo::nitro::RNSkiaYoga::CircleCommandData;
 using margelo::nitro::RNSkiaYoga::NodeCommandKind;
 using margelo::nitro::RNSkiaYoga::ParagraphCommandData;
+using margelo::nitro::RNSkiaYoga::PathCommandData;
 using margelo::nitro::RNSkiaYoga::PointsCommandData;
 using margelo::nitro::RNSkiaYoga::Position;
+using margelo::nitro::RNSkiaYoga::RoundedRectCommandData;
 using margelo::nitro::RNSkiaYoga::TextCommandData;
 using margelo::nitro::RNSkiaYoga::YogaNode;
 using margelo::nitro::RNSkiaYoga::YogaNodeCommandKind;
@@ -490,6 +498,17 @@ void expectNear(double actual, double expected, const std::string& message, doub
     }
 }
 
+void expectOptionalNear(const std::optional<double>& actual, double expected, const std::string& message)
+{
+    expect(actual.has_value(), message + " must have a value");
+    expectNear(*actual, expected, message);
+}
+
+void expectNoOptionalValue(const std::optional<double>& actual, const std::string& message)
+{
+    expect(!actual.has_value(), message + " must not have a value");
+}
+
 void expectColorNear(SkColor actual, SkColor expected, int tolerance, const std::string& message)
 {
     const auto close = [&](int actualChannel, int expectedChannel) {
@@ -513,6 +532,28 @@ void expectColorNear(SkColor actual, SkColor expected, int tolerance, const std:
             << SkColorGetA(actual) << ")";
         fail(out.str());
     }
+}
+
+template <typename Fn>
+void expectJsiThrows(Fn&& fn, const std::string& expectedSubstring, const std::string& message)
+{
+    try {
+        fn();
+    } catch (const jsi::JSError& error) {
+        const auto actual = error.getMessage();
+        if (actual.find(expectedSubstring) != std::string::npos) {
+            return;
+        }
+        fail(message + " wrong error message: " + actual);
+    } catch (const std::exception& error) {
+        const std::string actual = error.what();
+        if (actual.find(expectedSubstring) != std::string::npos) {
+            return;
+        }
+        fail(message + " wrong std::exception message: " + actual);
+    }
+
+    fail(message + " did not throw");
 }
 
 class HostCallInvoker final : public facebook::react::CallInvoker {
@@ -746,6 +787,35 @@ sk_sp<SkImage> makeQuadrantImage()
     return image;
 }
 
+std::shared_ptr<worklets::Serializable> makeSerializableNumberValue(
+    jsi::Runtime& runtime,
+    double number)
+{
+    auto serializableValue = worklets::makeSerializableNumber(runtime, number);
+    return worklets::extractSerializableOrThrow(runtime, serializableValue);
+}
+
+std::shared_ptr<worklets::Synchronizable> makeSynchronizable(
+    jsi::Runtime& runtime,
+    double number)
+{
+    return std::make_shared<worklets::Synchronizable>(
+        makeSerializableNumberValue(runtime, number));
+}
+
+jsi::Value makeSynchronizableRefValue(
+    jsi::Runtime& runtime,
+    const std::shared_ptr<worklets::Synchronizable>& synchronizable)
+{
+    auto ref = worklets::SerializableJSRef::newNativeStateObject(runtime, synchronizable);
+    return jsi::Value(runtime, ref);
+}
+
+jsi::Value makeWrongSerializableRefValue(jsi::Runtime& runtime)
+{
+    return worklets::makeSerializableNumber(runtime, 91.0);
+}
+
 SkColor pixelAt(const sk_sp<SkSurface>& surface, int x, int y)
 {
     SkPixmap pixmap;
@@ -870,6 +940,19 @@ NodeCommand circleCommand(jsi::Runtime& runtime)
     return convertCommand(runtime, std::move(command));
 }
 
+NodeCommand dynamicCircleCommand(
+    jsi::Runtime& runtime,
+    const std::shared_ptr<worklets::Synchronizable>& radius)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "radius", makeSynchronizableRefValue(runtime, radius));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "circle");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
 NodeCommand rrectCommand(jsi::Runtime& runtime)
 {
     jsi::Object data(runtime);
@@ -881,10 +964,38 @@ NodeCommand rrectCommand(jsi::Runtime& runtime)
     return convertCommand(runtime, std::move(command));
 }
 
+NodeCommand dynamicRRectCommand(
+    jsi::Runtime& runtime,
+    const std::shared_ptr<worklets::Synchronizable>& cornerRadius)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "cornerRadius", makeSynchronizableRefValue(runtime, cornerRadius));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "rrect");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
 NodeCommand blurMaskFilterCommand(jsi::Runtime& runtime)
 {
     jsi::Object data(runtime);
     data.setProperty(runtime, "blur", 4.0);
+    data.setProperty(runtime, "blurStyle", "normal");
+    data.setProperty(runtime, "respectCTM", false);
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "blurMaskFilter");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand dynamicBlurMaskFilterCommand(
+    jsi::Runtime& runtime,
+    const std::shared_ptr<worklets::Synchronizable>& blur)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "blur", makeSynchronizableRefValue(runtime, blur));
     data.setProperty(runtime, "blurStyle", "normal");
     data.setProperty(runtime, "respectCTM", false);
 
@@ -987,6 +1098,94 @@ std::shared_ptr<YogaNode> makeYogaNode(NodeStyle style, NodeCommand command)
     return node;
 }
 
+void assertStaticAnimatedDoubleNodeCommandPayloads(jsi::Runtime& runtime)
+{
+    auto circle = circleCommand(runtime);
+    const auto& circlePayload = std::get<CircleCommandData>(circle.data);
+    expect(!circlePayload.radius.isDynamic(), "static circle radius remains distinct from dynamic AnimatedDouble");
+    expectOptionalNear(circlePayload.radius.value, 8.0, "static circle radius payload value");
+    expectOptionalNear(circlePayload.radius.resolve(), 8.0, "static circle radius resolve");
+
+    auto rrect = rrectCommand(runtime);
+    const auto& rrectPayload = std::get<RoundedRectCommandData>(rrect.data);
+    expect(!rrectPayload.cornerRadius.isDynamic(), "static rrect cornerRadius remains distinct from dynamic AnimatedDouble");
+    expectOptionalNear(rrectPayload.cornerRadius.value, 5.0, "static rrect cornerRadius payload value");
+    expectOptionalNear(rrectPayload.cornerRadius.resolve(), 5.0, "static rrect cornerRadius resolve");
+
+    auto blur = blurMaskFilterCommand(runtime);
+    const auto& blurPayload = std::get<BlurMaskFilterCommandData>(blur.data);
+    expect(!blurPayload.blur.isDynamic(), "static blurMaskFilter blur remains distinct from dynamic AnimatedDouble");
+    expectOptionalNear(blurPayload.blur.value, 4.0, "static blurMaskFilter blur payload value");
+    expectOptionalNear(blurPayload.blur.resolve(), 4.0, "static blurMaskFilter blur resolve");
+
+    auto path = pathCommand(runtime);
+    const auto& pathPayload = std::get<PathCommandData>(path.data);
+    expect(!pathPayload.trimStart.isDynamic(), "static path trimStart remains distinct from dynamic AnimatedDouble");
+    expect(!pathPayload.trimEnd.isDynamic(), "static path trimEnd remains distinct from dynamic AnimatedDouble");
+    expectOptionalNear(pathPayload.trimStart.resolve(), 0.0, "static path trimStart resolve");
+    expectOptionalNear(pathPayload.trimEnd.resolve(), 1.0, "static path trimEnd resolve");
+}
+
+void expectDynamicAnimatedDoublePayload(
+    jsi::Runtime& runtime,
+    const AnimatedDouble& animated,
+    const std::shared_ptr<worklets::Synchronizable>& synchronizable,
+    double initialValue,
+    double updatedValue,
+    const std::string& label)
+{
+    expect(animated.isDynamic(), label + " converts to a dynamic AnimatedDouble");
+    expect(animated.synchronizable.get() == synchronizable.get(), label + " preserves Synchronizable identity");
+    expect(!animated.value.has_value(), label + " does not invent a static fallback");
+
+    RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(nullptr);
+    expectNoOptionalValue(animated.resolve(), label + " resolve with no main runtime");
+
+    RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(&runtime);
+    expectOptionalNear(animated.resolve(), initialValue, label + " resolve with main runtime");
+
+    synchronizable->setBlocking(makeSerializableNumberValue(runtime, updatedValue));
+    expectOptionalNear(animated.resolve(), updatedValue, label + " resolve after Synchronizable::setBlocking mutation");
+}
+
+void assertDynamicAnimatedDoubleNodeCommandPayloads(jsi::Runtime& runtime)
+{
+    auto circleRadius = makeSynchronizable(runtime, 6.0);
+    auto circle = dynamicCircleCommand(runtime, circleRadius);
+    expect(circle.type == NodeCommandKind::CIRCLE, "dynamic circle command kind");
+    expectDynamicAnimatedDoublePayload(
+        runtime,
+        std::get<CircleCommandData>(circle.data).radius,
+        circleRadius,
+        6.0,
+        10.0,
+        "circle.radius");
+
+    auto rrectCornerRadius = makeSynchronizable(runtime, 5.0);
+    auto rrect = dynamicRRectCommand(runtime, rrectCornerRadius);
+    expect(rrect.type == NodeCommandKind::RRECT, "dynamic rrect command kind");
+    expectDynamicAnimatedDoublePayload(
+        runtime,
+        std::get<RoundedRectCommandData>(rrect.data).cornerRadius,
+        rrectCornerRadius,
+        5.0,
+        0.0,
+        "rrect.cornerRadius");
+
+    auto blurAmount = makeSynchronizable(runtime, 4.0);
+    auto blur = dynamicBlurMaskFilterCommand(runtime, blurAmount);
+    expect(blur.type == NodeCommandKind::BLUR_MASK_FILTER, "dynamic blurMaskFilter command kind");
+    expectDynamicAnimatedDoublePayload(
+        runtime,
+        std::get<BlurMaskFilterCommandData>(blur.data).blur,
+        blurAmount,
+        4.0,
+        0.0,
+        "blurMaskFilter.blur");
+
+    RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(&runtime);
+}
+
 void assertRectOpacityRender(jsi::Runtime& runtime)
 {
     auto root = makeYogaNode(
@@ -1070,6 +1269,35 @@ void assertGroupRasterCacheBehavior(jsi::Runtime& runtime)
     expectColorNear(pixelAt(thirdSurface, 6, 7), SK_ColorBLUE, 0, "rebuilt raster cache reflects mutated child pixels");
 }
 
+void assertDynamicRasterizedGroupBypassesCache(jsi::Runtime& runtime)
+{
+    auto root = makeYogaNode(groupStyle(28.0, 28.0), groupCommand(runtime, true));
+    auto radius = makeSynchronizable(runtime, 4.0);
+    auto child = makeYogaNode(
+        absoluteStyle(0.0, 0.0, 24.0, 24.0, SK_ColorYELLOW),
+        dynamicCircleCommand(runtime, radius));
+    root->insertChild(child, std::nullopt);
+
+    expect(root->_commandKind == YogaNodeCommandKind::GROUP, "dynamic raster test root is a GroupCmd");
+    expect(child->_commandKind == YogaNodeCommandKind::CIRCLE, "dynamic raster test child is a CircleCmd");
+    expect(child->subtreeHasDynamicRasterContent(), "dynamic child subtree reports dynamic raster content");
+    expect(root->subtreeHasDynamicRasterContent(), "rasterized parent observes dynamic child content");
+
+    auto initialSurface = makeSurface(36, 36);
+    renderNode(root, initialSurface);
+    expect(root->_rasterCache == nullptr, "rasterized group does not cache a dynamic child subtree");
+    expect(root->_rasterCacheDirty, "rasterized group remains dirty for dynamic child subtree");
+    expectColorNear(pixelAt(initialSurface, 12, 12), SK_ColorYELLOW, 0, "dynamic raster child renders initial circle center");
+    expectColorNear(pixelAt(initialSurface, 18, 12), SK_ColorTRANSPARENT, 0, "dynamic raster child initial radius remains bounded");
+
+    radius->setBlocking(makeSerializableNumberValue(runtime, 10.0));
+    auto updatedSurface = makeSurface(36, 36);
+    renderNode(root, updatedSurface);
+    expect(root->_rasterCache == nullptr, "rasterized group still does not cache after dynamic mutation");
+    expect(root->_rasterCacheDirty, "rasterized group stays dirty after dynamic mutation");
+    expectColorNear(pixelAt(updatedSurface, 18, 12), SK_ColorYELLOW, 0, "dynamic raster child mutation is visible without stale cache reuse");
+}
+
 void assertAdditionalPointsCommandRender(jsi::Runtime& runtime)
 {
     auto root = makeYogaNode(
@@ -1130,6 +1358,48 @@ void assertCircleCommandRender(jsi::Runtime& runtime)
     expectColorNear(pixelAt(surface, 22, 12), SK_ColorTRANSPARENT, 0, "numeric circle radius bounds the filled region");
 }
 
+void assertDynamicCircleCommandRender(jsi::Runtime& runtime)
+{
+    auto radius = makeSynchronizable(runtime, 6.0);
+    auto command = dynamicCircleCommand(runtime, radius);
+    const auto& payload = std::get<CircleCommandData>(command.data);
+    expect(payload.radius.isDynamic(), "circle NodeCommand conversion keeps dynamic AnimatedDouble radius");
+    expect(payload.radius.synchronizable.get() == radius.get(), "circle NodeCommand conversion keeps Synchronizable identity");
+    expect(!payload.radius.value.has_value(), "circle dynamic AnimatedDouble radius does not invent a static fallback");
+    const auto convertedRadius = payload.radius;
+
+    auto root = makeYogaNode(
+        fixedStyle(24.0, 24.0, SK_ColorYELLOW),
+        std::move(command));
+
+    expect(root->_commandKind == YogaNodeCommandKind::CIRCLE, "dynamic setCommand constructs a real CircleCmd");
+    auto* circleCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::CircleCmd*>(root->_command.get());
+    expect(circleCmd != nullptr, "dynamic installed command has CircleCmd type");
+    expect(circleCmd->isDynamic(), "CircleCmd reports dynamic raster content for Synchronizable radius");
+
+    RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(nullptr);
+    auto fallbackSurface = makeSurface(32, 32);
+    renderNode(root, fallbackSurface);
+    expectNear(circleCmd->props.r, 12.0, "dynamic circle radius falls back to layout radius while main runtime is unset");
+    expectColorNear(pixelAt(fallbackSurface, 22, 12), SK_ColorYELLOW, 0, "unset-main-runtime fallback radius uses layout bounds");
+
+    RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(&runtime);
+    auto firstDynamicSurface = makeSurface(32, 32);
+    renderNode(root, firstDynamicSurface);
+    expectNear(circleCmd->props.r, 6.0, "dynamic circle radius resolves initial Synchronizable number");
+    expectColorNear(pixelAt(firstDynamicSurface, 12, 12), SK_ColorYELLOW, 0, "dynamic circle center renders");
+    expectColorNear(pixelAt(firstDynamicSurface, 19, 12), SK_ColorTRANSPARENT, 0, "dynamic circle initial radius bounds rendered pixels");
+
+    radius->setBlocking(makeSerializableNumberValue(runtime, 10.0));
+    expectOptionalNear(convertedRadius.resolve(), 10.0, "converted dynamic circle payload observes Synchronizable mutation");
+
+    auto updatedDynamicSurface = makeSurface(32, 32);
+    renderNode(root, updatedDynamicSurface);
+    expectNear(circleCmd->props.r, 10.0, "dynamic CircleCmd render observes Synchronizable setBlocking mutation");
+    expectColorNear(pixelAt(updatedDynamicSurface, 19, 12), SK_ColorYELLOW, 0, "updated dynamic circle radius expands rendered pixels");
+    expectColorNear(pixelAt(updatedDynamicSurface, 23, 12), SK_ColorTRANSPARENT, 0, "updated dynamic circle radius remains bounded");
+}
+
 void assertRRectCommandRender(jsi::Runtime& runtime)
 {
     auto root = makeYogaNode(
@@ -1143,6 +1413,83 @@ void assertRRectCommandRender(jsi::Runtime& runtime)
     renderNode(root, surface);
     expectColorNear(pixelAt(surface, 10, 8), SK_ColorMAGENTA, 0, "numeric rrect corner radius still fills the layout center");
     expectColorNear(pixelAt(surface, 0, 0), SK_ColorTRANSPARENT, 0, "numeric rrect corner radius clips the corner");
+}
+
+void assertDynamicRRectCommandRender(jsi::Runtime& runtime)
+{
+    auto cornerRadius = makeSynchronizable(runtime, 5.0);
+    auto root = makeYogaNode(
+        fixedStyle(20.0, 16.0, SK_ColorMAGENTA),
+        dynamicRRectCommand(runtime, cornerRadius));
+
+    expect(root->_commandKind == YogaNodeCommandKind::RRECT, "dynamic setCommand constructs a real RRectCmd");
+    auto* rrectCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::RRectCmd*>(root->_command.get());
+    expect(rrectCmd != nullptr, "dynamic installed command has RRectCmd type");
+    expect(rrectCmd->isDynamic(), "RRectCmd reports dynamic raster content for Synchronizable corner radius");
+
+    RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(nullptr);
+    auto fallbackSurface = makeSurface(28, 24);
+    renderNode(root, fallbackSurface);
+    expectColorNear(pixelAt(fallbackSurface, 0, 0), SK_ColorMAGENTA, 0, "dynamic rrect falls back to zero corner radius with no main runtime");
+
+    RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(&runtime);
+    auto initialSurface = makeSurface(28, 24);
+    renderNode(root, initialSurface);
+    expectColorNear(pixelAt(initialSurface, 10, 8), SK_ColorMAGENTA, 0, "dynamic rrect center renders");
+    expectColorNear(pixelAt(initialSurface, 0, 0), SK_ColorTRANSPARENT, 0, "dynamic rrect resolves initial Synchronizable corner radius");
+
+    cornerRadius->setBlocking(makeSerializableNumberValue(runtime, 0.0));
+    auto updatedSurface = makeSurface(28, 24);
+    renderNode(root, updatedSurface);
+    expectColorNear(pixelAt(updatedSurface, 0, 0), SK_ColorMAGENTA, 0, "dynamic rrect observes Synchronizable corner-radius mutation during later render");
+}
+
+void assertDynamicAnimatedDoubleCommandRejections(jsi::Runtime& runtime)
+{
+    jsi::Object plainRadius(runtime);
+    plainRadius.setProperty(runtime, "not", "a synchronizable");
+
+    jsi::Object plainData(runtime);
+    plainData.setProperty(runtime, "radius", std::move(plainRadius));
+
+    jsi::Object plainCommand(runtime);
+    plainCommand.setProperty(runtime, "type", "circle");
+    plainCommand.setProperty(runtime, "data", std::move(plainData));
+    jsi::Value plainCommandValue(runtime, plainCommand);
+
+    expect(
+        margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, plainCommandValue),
+        "NodeCommand converter canConvert remains a shape-level guard before AnimatedDouble payload conversion");
+    expectJsiThrows(
+        [&]() {
+            (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, plainCommandValue);
+        },
+        "NodeCommand conversion failed for type \"circle\"",
+        "NodeCommand conversion rejects plain JS object circle radius");
+    expectJsiThrows(
+        [&]() {
+            (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, plainCommandValue);
+        },
+        "Worklets SerializableJSRef",
+        "NodeCommand conversion requires Worklets SerializableJSRef for object AnimatedDouble radius");
+
+    jsi::Object wrongData(runtime);
+    wrongData.setProperty(runtime, "radius", makeWrongSerializableRefValue(runtime));
+
+    jsi::Object wrongCommand(runtime);
+    wrongCommand.setProperty(runtime, "type", "circle");
+    wrongCommand.setProperty(runtime, "data", std::move(wrongData));
+    jsi::Value wrongCommandValue(runtime, wrongCommand);
+
+    expect(
+        margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, wrongCommandValue),
+        "NodeCommand converter canConvert accepts shaped command before rejecting non-Synchronizable AnimatedDouble payload");
+    expectJsiThrows(
+        [&]() {
+            (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, wrongCommandValue);
+        },
+        "Worklets Synchronizable",
+        "NodeCommand conversion rejects non-Synchronizable SerializableJSRef circle radius");
 }
 
 void assertBlurMaskFilterCommandRender(jsi::Runtime& runtime)
@@ -1166,6 +1513,48 @@ void assertBlurMaskFilterCommandRender(jsi::Runtime& runtime)
     expect(
         SkColorGetA(pixelAt(surface, 1, 1)) == 0,
         "bounded blur mask filter does not leak to a far outside pixel");
+}
+
+void assertDynamicBlurMaskFilterCommandRender(jsi::Runtime& runtime)
+{
+    auto blurAmount = makeSynchronizable(runtime, 4.0);
+    auto root = makeYogaNode(
+        groupStyle(32.0, 32.0),
+        dynamicBlurMaskFilterCommand(runtime, blurAmount));
+    auto child = makeYogaNode(
+        absoluteStyle(10.0, 10.0, 8.0, 8.0, SK_ColorRED),
+        rectCommand(runtime));
+    root->insertChild(child, std::nullopt);
+
+    expect(root->_commandKind == YogaNodeCommandKind::BLUR_MASK_FILTER, "dynamic setCommand constructs a real BlurMaskFilterCmd");
+    auto* blurCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::BlurMaskFilterCmd*>(root->_command.get());
+    expect(blurCmd != nullptr, "dynamic installed command has BlurMaskFilterCmd type");
+    expect(blurCmd->isDynamic(), "BlurMaskFilterCmd reports dynamic raster content for Synchronizable blur");
+
+    RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(nullptr);
+    auto fallbackSurface = makeSurface(40, 40);
+    renderNode(root, fallbackSurface);
+    expectColorNear(pixelAt(fallbackSurface, 12, 12), SK_ColorRED, 0, "dynamic blur fallback still renders child rect");
+    expect(
+        !hasAnyAlphaInRegion(fallbackSurface, 6, 11, 10, 17),
+        "dynamic blur falls back to zero blur with no main runtime");
+
+    RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(&runtime);
+    auto initialSurface = makeSurface(40, 40);
+    renderNode(root, initialSurface);
+    expect(
+        hasAnyAlphaInRegion(initialSurface, 6, 11, 10, 17),
+        "dynamic blur resolves initial Synchronizable value during render");
+    expect(
+        SkColorGetA(pixelAt(initialSurface, 1, 1)) == 0,
+        "dynamic blur initial render remains bounded");
+
+    blurAmount->setBlocking(makeSerializableNumberValue(runtime, 0.0));
+    auto updatedSurface = makeSurface(40, 40);
+    renderNode(root, updatedSurface);
+    expect(
+        !hasAnyAlphaInRegion(updatedSurface, 6, 11, 10, 17),
+        "dynamic blur observes Synchronizable mutation during later render");
 }
 
 void assertPathHostObjectCommandRender(jsi::Runtime& runtime)
@@ -1400,15 +1789,21 @@ int main()
     auto platformContext = std::make_shared<HostPlatformContext>(callInvoker);
     margelo::nitro::RNSkiaYoga::SetPlatformContext(platformContext);
 
+    assertStaticAnimatedDoubleNodeCommandPayloads(*runtime);
+    assertDynamicAnimatedDoubleNodeCommandPayloads(*runtime);
     assertRectOpacityRender(*runtime);
     assertParentChildLayoutRender(*runtime);
     assertGroupRasterCacheBehavior(*runtime);
+    assertDynamicRasterizedGroupBypassesCache(*runtime);
     assertAdditionalPointsCommandRender(*runtime);
     assertLineCommandRender(*runtime);
     assertOvalCommandRender(*runtime);
     assertCircleCommandRender(*runtime);
+    assertDynamicCircleCommandRender(*runtime);
     assertRRectCommandRender(*runtime);
+    assertDynamicRRectCommandRender(*runtime);
     assertBlurMaskFilterCommandRender(*runtime);
+    assertDynamicBlurMaskFilterCommandRender(*runtime);
     assertPathHostObjectCommandRender(*runtime);
     assertImageHostObjectCommandRender(*runtime);
     assertTextCommandStateAndRender(*runtime);
@@ -1416,7 +1811,9 @@ int main()
     assertConverterErrorPath(*runtime);
     assertConverterErrorImage(*runtime);
     assertConverterErrorTextFont(*runtime);
+    assertDynamicAnimatedDoubleCommandRejections(*runtime);
 
+    RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(nullptr);
     std::cout << "YogaNode native command/render host probe passed\n";
     return 0;
 }
