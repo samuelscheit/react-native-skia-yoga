@@ -209,7 +209,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch worker 095 as a post-worker-094 root-cause audit to reassess remaining proof gaps and select the next strongest unblocked target.
+- Monitor worker 095's post-worker-094 root-cause audit and use its recommendation to choose the next implementation target.
 
 Acceptance criteria:
 

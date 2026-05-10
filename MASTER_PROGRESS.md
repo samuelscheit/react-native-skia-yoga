@@ -2190,10 +2190,12 @@ Last updated: 2026-05-10
   - Deleted branch `worker/094-reconciler-native-command-bindings`.
   - Verified no `rnskia-worker-094` tmux session, worker 094 worktree, or worker 094 branch remained.
 - Prepared worker 095 as the next step: a read-only post-worker-094 root-cause audit to rank remaining proof gaps after Reconciler native command binding coverage.
+- Created `worker-095-post-094-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-095-post-094-root-cause-audit` as a top-level tmux subprocess.
+- Worker 095 passed the visible `GOAL_CREATED: Audit post-worker-094 state and select the next strongest unblocked root-cause target.` gate as the first worker message.
 
 ## Active Workers
 
-- None; worker 095 is prepared for launch.
+- `rnskia-worker-095-post-094-root-cause-audit`: running from `worker/095-post-094-root-cause-audit`; auditing remaining proof gaps after worker 094.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2311,7 +2313,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- `worker-095-post-094-root-cause-audit`: pending launch to reassess remaining proof gaps after worker 094.
+- None; worker 095 is active.
 
 ## Decisions
 
@@ -2352,7 +2354,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Launch worker 095 as a read-only post-worker-094 root-cause audit to reassess remaining proof gaps and select the next strongest unblocked target.
+- Monitor worker 095's post-worker-094 root-cause audit and use its recommendation to choose the next implementation target.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
