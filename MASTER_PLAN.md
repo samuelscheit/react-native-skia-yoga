@@ -105,7 +105,7 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, example bundle feedback-loop hygiene fixed, post-worker-035 root-cause audit accepted, RN Skia private import cleanup integrated, post-worker-037 root-cause audit accepted, packed-package TypeScript consumer smoke coverage integrated, post-worker-039 root-cause audit accepted, and `react-reconciler` package-surface dependency hygiene launched
+Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, example bundle feedback-loop hygiene fixed, post-worker-035 root-cause audit accepted, RN Skia private import cleanup integrated, post-worker-037 root-cause audit accepted, packed-package TypeScript consumer smoke coverage integrated, post-worker-039 root-cause audit accepted, `react-reconciler` package-surface dependency hygiene integrated, and post-worker-041 root-cause audit launched
 
 Goals:
 
@@ -152,10 +152,11 @@ Accepted package-hygiene implementation:
 - `worker-038-post-037-root-cause-audit`: audited the post-worker-037 state, confirmed the feasible package/native/example matrix remains green with `check:rn-skia-imports`, and selected packed-package TypeScript consumer smoke coverage as the next unblocked repo-owned target because existing checks do not compile public entrypoints and lowercase JSX from an installed tarball consumer.
 - `worker-039-package-typescript-consumer-smoke`: added `check:package-typescript-consumer`, which packs the package to a real tarball, installs it into a temporary external TypeScript consumer, compiles public entrypoints and lowercase intrinsic JSX under `jsxImportSource: "react-native-skia-yoga"`, and cleans all temporary output.
 - `worker-040-post-039-root-cause-audit`: audited the post-worker-039 state, confirmed the feasible package/native/example matrix remains green with the packed-package TypeScript consumer smoke, reproduced the external-consumer failure without `@types/react-reconciler`, and selected package-surface dependency hygiene around direct `react-reconciler` imports and type declarations as the next unblocked repo-owned target.
+- `worker-041-reconciler-dependency-hygiene`: made the direct `react-reconciler` package contract explicit by publishing `react-reconciler` and `@types/react-reconciler`, removed the packed-consumer verifier's consumer-side `@types/react-reconciler` workaround, and proved the external packed TypeScript consumer still compiles.
 
 Current next step:
 
-- Monitor the active package-surface dependency hygiene worker for direct `react-reconciler` imports and `@types/react-reconciler`. The worker should make the package contract explicit or narrow the public export/declaration boundary, then remove the packed-consumer verifier's consumer-side `@types/react-reconciler` workaround and prove the external consumer still compiles.
+- Monitor the active post-worker-041 root-cause audit worker. It should rerun/challenge the feasible matrix after dependency hygiene, then rank the next unblocked repo-owned target, including public declaration/export boundary cleanup and `src/SkiaYogaObject.ts` import-time side effects as known candidates.
 
 Acceptance criteria:
 
