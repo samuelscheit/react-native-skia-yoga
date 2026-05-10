@@ -551,10 +551,13 @@ Last updated: 2026-05-10
   - Deleted branch `worker/037-yogacanvas-skia-import-cleanup`.
   - Confirmed no remaining `rnskia-worker-*` tmux sessions.
 - Next step selected by orchestration: launch a read-only post-worker-037 root-cause audit to rerun/challenge the feasible matrix, include the new `check:rn-skia-imports` guard, and rank the next unblocked repo-owned target.
+- Created `worker-038-post-037-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and wrote the worker 038 prompt.
+- The first worker 038 tmux launch exited immediately without a log because the wrapper script is not executable when invoked directly. Relaunched through `bash run-codex-report-worker.sh`.
+- Worker 038 passed the visible `GOAL_CREATED: Audit post-worker-037 state and rank the next root-cause target.` gate as the first worker message in the JSON log and is active.
 
 ## Active Workers
 
-- None.
+- `rnskia-worker-038-post-037-root-cause-audit`: read-only post-worker-037 root-cause audit; active in `../worker-038-post-037-root-cause-audit`.
 
 Invalid/stale tmux sessions cleaned up:
 

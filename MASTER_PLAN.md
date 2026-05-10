@@ -152,7 +152,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch a read-only post-worker-037 root-cause audit to rerun the feasible package/native/example matrix, confirm the new `check:rn-skia-imports` guard stays green, and rank the next unblocked repo-owned target. Continue platform-native build/run verification once local prerequisites are available.
+- Monitor the active read-only post-worker-037 root-cause audit, which is rerunning the feasible package/native/example matrix, confirming the new `check:rn-skia-imports` guard stays green, and ranking the next unblocked repo-owned target. Continue platform-native build/run verification once local prerequisites are available.
 
 Acceptance criteria:
 
