@@ -289,9 +289,8 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch a fresh post-worker-159 root-cause audit to accept the new proof
-  boundary, rerank remaining locally unblocked gaps, and select Worker 160's
-  target.
+- Monitor Worker 160's post-worker-159 root-cause audit from isolated worktree
+  `../worker-160-post-159-root-cause-audit`.
 
 Acceptance criteria:
 
