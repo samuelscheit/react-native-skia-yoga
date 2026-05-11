@@ -258,7 +258,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Run a fresh post-worker-137 root-cause audit to rerank remaining proof, API-contract, and platform-runtime gaps.
+- Monitor worker 138, which is auditing the post-worker-137 proof surface and reranking remaining proof, API-contract, and platform-runtime gaps.
 
 Acceptance criteria:
 
