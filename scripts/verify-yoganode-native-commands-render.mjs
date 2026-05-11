@@ -168,14 +168,14 @@ try {
 	console.log("- The executable created a JSC runtime, converted numeric, CSS color-string, and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), serialized representative payloads through JSIConverter<NodeCommand>::toJSI(...), and executed real YogaNode::setCommand().")
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
 	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, selected textStyle/paragraphStyle fields including fontFeatures and strutStyle, line from/to points, and points arrays.")
-	console.log("- The executable asserted selected value-bearing toJSI/fromJSI serialization for SkSamplingOptions filter/mipmap and cubic B/C, SkTextStyle fontSize/color/fontFamilies/fontFeatures/backgroundColor/foregroundColor/decoration fields/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, and SkParagraphStyle textAlign/maxLines/heightMultiplier/ellipsis/disableHinting/replaceTabCharacters/textDirection/textHeightBehavior, selected strutStyle fields, and flattened default text style fields.")
+	console.log("- The executable asserted selected value-bearing toJSI/fromJSI serialization for SkSamplingOptions filter/mipmap and cubic B/C, SkTextStyle fontSize/color/fontFamilies/fontFeatures/backgroundColor/foregroundColor/decoration fields/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, and SkParagraphStyle textAlign/maxLines/heightMultiplier/ellipsis/disableHinting/replaceTabCharacters/textDirection/textHeightBehavior, selected strutStyle fields, flattened default text style fields, and explicit unsupported fontVariations rejection.")
 	console.log("- The executable asserted generated NodeStyle transport and host-native SkPaint state for canonical style.antiAlias, legacy style.antiaAlias fallback, and canonical precedence when both keys are present.")
 	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
 	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
-	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) and flattened ParagraphCmd hex colors, named-color conversion, and invalid text/paragraph color-string rejection in JSIConverter<NodeCommand>::fromJSI(...).")
+	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) and flattened ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection, and unsupported text/paragraph fontVariations rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, YogaNode::setStyle SkPaint antiAlias state, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, selected value-bearing SkSamplingOptions, SkTextStyle including fontFeatures, and selected SkParagraphStyle serialization fields including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior and selected public-shaped strutStyle fields, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove unsupported SkSamplingOptions maxAniso preservation, every SkTextStyle/SkParagraphStyle field, fontVariations preservation, nested paragraphStyle.textStyle shape preservation, CSS color string preservation, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, YogaNode::setStyle SkPaint antiAlias state, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, selected value-bearing SkSamplingOptions, SkTextStyle including fontFeatures and unsupported fontVariations rejection, and selected SkParagraphStyle serialization fields including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior and selected public-shaped strutStyle fields plus flattened/nested unsupported fontVariations rejection, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove unsupported SkSamplingOptions maxAniso preservation, every SkTextStyle/SkParagraphStyle field, fontVariations native support or preservation, nested paragraphStyle.textStyle shape preservation beyond unsupported-key rejection, CSS color string preservation, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -1697,6 +1697,16 @@ jsi::Array textStyleFontFeatureArray(jsi::Runtime& runtime)
     return fontFeatures;
 }
 
+jsi::Array textStyleFontVariationArray(jsi::Runtime& runtime)
+{
+    jsi::Array fontVariations(runtime, 1);
+    jsi::Object weight(runtime);
+    weight.setProperty(runtime, "axis", "wght");
+    weight.setProperty(runtime, "value", 700.0);
+    fontVariations.setValueAtIndex(runtime, 0, std::move(weight));
+    return fontVariations;
+}
+
 jsi::Object richTextStyleObject(jsi::Runtime& runtime, double fontSize, SkColor color)
 {
     jsi::Object textStyle(runtime);
@@ -1728,6 +1738,13 @@ jsi::Object richTextStyleObject(jsi::Runtime& runtime, double fontSize, SkColor 
         runtime,
         "textBaseline",
         static_cast<double>(static_cast<int>(skia::textlayout::TextBaseline::kIdeographic)));
+    return textStyle;
+}
+
+jsi::Object textStyleWithFontVariationsObject(jsi::Runtime& runtime)
+{
+    auto textStyle = textStyleObject(runtime, 18.0, SK_ColorBLACK);
+    textStyle.setProperty(runtime, "fontVariations", textStyleFontVariationArray(runtime));
     return textStyle;
 }
 
@@ -1771,6 +1788,13 @@ jsi::Object paragraphStyleSerializationObject(jsi::Runtime& runtime)
         static_cast<double>(static_cast<int>(skia::textlayout::TextHeightBehavior::kDisableAll)));
     paragraphStyle.setProperty(runtime, "strutStyle", strutStyleObject(runtime));
     paragraphStyle.setProperty(runtime, "ellipsis", "...");
+    return paragraphStyle;
+}
+
+jsi::Object paragraphStyleWithNestedFontVariationsObject(jsi::Runtime& runtime)
+{
+    jsi::Object paragraphStyle(runtime);
+    paragraphStyle.setProperty(runtime, "textStyle", textStyleWithFontVariationsObject(runtime));
     return paragraphStyle;
 }
 
@@ -2157,6 +2181,129 @@ void assertValueBearingStyleConverters(jsi::Runtime& runtime)
             serializedStrutStyle.getProperty(runtime, "fontFamilies"),
             { "StrutSans", "StrutFallback" },
             "direct ParagraphStyle strutStyle without heightMultiplier toJSI fontFamilies");
+    }
+}
+
+void assertFontVariationsUnsupportedRejections(jsi::Runtime& runtime)
+{
+    {
+        auto styleObject = textStyleWithFontVariationsObject(runtime);
+        jsi::Value styleValue(runtime, styleObject);
+        expect(
+            margelo::nitro::JSIConverter<skia::textlayout::TextStyle>::canConvert(runtime, styleValue),
+            "direct TextStyle converter canConvert remains shape-level before rejecting fontVariations");
+        expectJsiThrows(
+            [&]() {
+                (void)margelo::nitro::JSIConverter<skia::textlayout::TextStyle>::fromJSI(runtime, styleValue);
+            },
+            "TextStyle.fontVariations",
+            "direct TextStyle conversion rejects unsupported fontVariations");
+    }
+
+    {
+        auto styleObject = textStyleWithFontVariationsObject(runtime);
+        jsi::Value styleValue(runtime, styleObject);
+        expect(
+            margelo::nitro::JSIConverter<skia::textlayout::ParagraphStyle>::canConvert(runtime, styleValue),
+            "direct ParagraphStyle converter canConvert remains shape-level before rejecting flattened fontVariations");
+        expectJsiThrows(
+            [&]() {
+                (void)margelo::nitro::JSIConverter<skia::textlayout::ParagraphStyle>::fromJSI(runtime, styleValue);
+            },
+            "ParagraphStyle.fontVariations",
+            "direct ParagraphStyle conversion rejects unsupported flattened fontVariations");
+    }
+
+    {
+        auto styleObject = paragraphStyleWithNestedFontVariationsObject(runtime);
+        jsi::Value styleValue(runtime, styleObject);
+        expectJsiThrows(
+            [&]() {
+                (void)margelo::nitro::JSIConverter<skia::textlayout::ParagraphStyle>::fromJSI(runtime, styleValue);
+            },
+            "ParagraphStyle.textStyle.fontVariations",
+            "direct ParagraphStyle conversion rejects unsupported nested textStyle fontVariations");
+    }
+
+    {
+        jsi::Object data(runtime);
+        data.setProperty(runtime, "text", "unsupported font variations");
+        data.setProperty(runtime, "textStyle", textStyleWithFontVariationsObject(runtime));
+
+        jsi::Object command(runtime);
+        command.setProperty(runtime, "type", "text");
+        command.setProperty(runtime, "data", std::move(data));
+        jsi::Value commandValue(runtime, command);
+
+        expect(
+            margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, commandValue),
+            "NodeCommand converter canConvert accepts shaped text command before rejecting text.textStyle fontVariations");
+        expectJsiThrows(
+            [&]() {
+                (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
+            },
+            "NodeCommand conversion failed for type \"text\"",
+            "NodeCommand conversion scopes text.textStyle fontVariations rejection to the text command");
+        expectJsiThrows(
+            [&]() {
+                (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
+            },
+            "TextStyle.fontVariations",
+            "NodeCommand conversion rejects unsupported text.textStyle fontVariations");
+    }
+
+    {
+        jsi::Object data(runtime);
+        data.setProperty(runtime, "text", "unsupported flattened paragraph font variations");
+        data.setProperty(runtime, "paragraphStyle", textStyleWithFontVariationsObject(runtime));
+
+        jsi::Object command(runtime);
+        command.setProperty(runtime, "type", "paragraph");
+        command.setProperty(runtime, "data", std::move(data));
+        jsi::Value commandValue(runtime, command);
+
+        expect(
+            margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, commandValue),
+            "NodeCommand converter canConvert accepts shaped paragraph command before rejecting flattened paragraphStyle fontVariations");
+        expectJsiThrows(
+            [&]() {
+                (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
+            },
+            "NodeCommand conversion failed for type \"paragraph\"",
+            "NodeCommand conversion scopes flattened paragraphStyle fontVariations rejection to the paragraph command");
+        expectJsiThrows(
+            [&]() {
+                (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
+            },
+            "ParagraphStyle.fontVariations",
+            "NodeCommand conversion rejects unsupported flattened paragraph.paragraphStyle fontVariations");
+    }
+
+    {
+        jsi::Object data(runtime);
+        data.setProperty(runtime, "text", "unsupported nested paragraph font variations");
+        data.setProperty(runtime, "paragraphStyle", paragraphStyleWithNestedFontVariationsObject(runtime));
+
+        jsi::Object command(runtime);
+        command.setProperty(runtime, "type", "paragraph");
+        command.setProperty(runtime, "data", std::move(data));
+        jsi::Value commandValue(runtime, command);
+
+        expect(
+            margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, commandValue),
+            "NodeCommand converter canConvert accepts shaped paragraph command before rejecting nested paragraphStyle.textStyle fontVariations");
+        expectJsiThrows(
+            [&]() {
+                (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
+            },
+            "NodeCommand conversion failed for type \"paragraph\"",
+            "NodeCommand conversion scopes nested paragraphStyle.textStyle fontVariations rejection to the paragraph command");
+        expectJsiThrows(
+            [&]() {
+                (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
+            },
+            "ParagraphStyle.textStyle.fontVariations",
+            "NodeCommand conversion rejects unsupported nested paragraph.paragraphStyle.textStyle fontVariations");
     }
 }
 
@@ -3745,6 +3892,7 @@ int main()
     assertStaticAnimatedDoubleNodeCommandPayloads(*runtime);
     assertDynamicAnimatedDoubleNodeCommandPayloads(*runtime);
     assertValueBearingStyleConverters(*runtime);
+    assertFontVariationsUnsupportedRejections(*runtime);
     assertNodeStyleAntiAliasTransportAndPaint(*runtime);
     assertNodeCommandToJSISerializationSymmetry(*runtime);
     assertRectOpacityRender(*runtime);

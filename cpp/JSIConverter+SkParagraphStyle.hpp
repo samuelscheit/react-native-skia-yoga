@@ -98,6 +98,31 @@ inline void applyParagraphStyleStrutStyleOverlay(
   }
 }
 
+inline void rejectUnsupportedParagraphStyleFontVariations(
+    jsi::Runtime& runtime,
+    const jsi::Value& value)
+{
+  if (!value.isObject()) {
+    return;
+  }
+
+  auto object = value.asObject(runtime);
+  rejectUnsupportedFontVariations(runtime, object, "ParagraphStyle.fontVariations");
+
+  if (!object.hasProperty(runtime, "textStyle")) {
+    return;
+  }
+
+  auto textStyleValue = object.getProperty(runtime, "textStyle");
+  if (textStyleValue.isObject()) {
+    auto textStyleObject = textStyleValue.asObject(runtime);
+    rejectUnsupportedFontVariations(
+        runtime,
+        textStyleObject,
+        "ParagraphStyle.textStyle.fontVariations");
+  }
+}
+
 inline jsi::Object strutStyleToJSI(
     jsi::Runtime& runtime,
     const skia::textlayout::StrutStyle& strutStyle)
@@ -134,6 +159,7 @@ struct JSIConverter<skia::textlayout::ParagraphStyle> final {
   static inline skia::textlayout::ParagraphStyle fromJSI(
       jsi::Runtime& runtime,
       const jsi::Value& arg) {
+    rejectUnsupportedParagraphStyleFontVariations(runtime, arg);
     auto paragraphStyle = RNSkia::JsiSkParagraphStyle::fromValue(runtime, arg);
 
     // Preserve the flattened JSX API: text-style fields are allowed directly on

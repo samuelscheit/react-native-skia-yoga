@@ -107,6 +107,9 @@ try {
 		"- Packed consumer TypeScript still rejected unsupported nested image.sampling SharedValue leaves while sampling remains opaque.",
 	)
 	console.log(
+		"- Packed consumer TypeScript rejected unsupported fontVariations authoring on text.textStyle, flattened paragraph.paragraphStyle, and nested paragraph.paragraphStyle.textStyle.",
+	)
+	console.log(
 		"- Public package boundary rejected internal top-level exports such as reconciler, NodeCommand, createYogaNode, and SkiaYoga.",
 	)
 	console.log(
@@ -355,6 +358,21 @@ const unsupportedNestedSamplingProps: YogaIntrinsicElements["image"] = {
 \tsampling: { filter: sharedSamplingFilter },
 }
 
+const unsupportedTextFontVariationsElement = (
+\t// @ts-expect-error fontVariations is not a public Yoga textStyle authoring field.
+\t<text text="unsupported" textStyle={{ fontVariations: [{ axis: "wght", value: 700 }] }} />
+)
+
+const unsupportedParagraphFlattenedFontVariationsElement = (
+\t// @ts-expect-error fontVariations is not a public flattened Yoga paragraphStyle authoring field.
+\t<paragraph text="unsupported" paragraphStyle={{ fontVariations: [{ axis: "wght", value: 700 }] }} />
+)
+
+const unsupportedParagraphNestedFontVariationsElement = (
+\t// @ts-expect-error fontVariations is not a public nested Yoga paragraphStyle.textStyle authoring field.
+\t<paragraph text="unsupported" paragraphStyle={{ textStyle: { fontVariations: [{ axis: "wght", value: 700 }] } }} />
+)
+
 function handleProfileSample(sample: YogaCanvasProfileSample) {
 \treturn sample.avgDrawMs + sample.avgPresentMs + sample.frames
 }
@@ -415,6 +433,9 @@ void smokeElement
 void devRuntimeFragment
 void runtimeFragment
 void unsupportedNestedSamplingProps
+void unsupportedTextFontVariationsElement
+void unsupportedParagraphFlattenedFontVariationsElement
+void unsupportedParagraphNestedFontVariationsElement
 void legacyAntiAliasStyle
 `
 }

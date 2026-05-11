@@ -37,7 +37,11 @@ export type YogaPointMode = PointMode | PointModeName
 
 export type YogaTextStyle = Omit<
 	SkTextStyle,
-	"backgroundColor" | "color" | "decorationColor" | "foregroundColor"
+	| "backgroundColor"
+	| "color"
+	| "decorationColor"
+	| "fontVariations"
+	| "foregroundColor"
 > & {
 	backgroundColor?: string | NonNullable<SkTextStyle["backgroundColor"]>
 	color?: YogaTextColor
@@ -45,7 +49,10 @@ export type YogaTextStyle = Omit<
 	foregroundColor?: YogaTextColor
 }
 
-export type YogaParagraphStyle = YogaTextStyle & SkParagraphStyle
+export type YogaParagraphStyle = YogaTextStyle &
+	Omit<SkParagraphStyle, "textStyle"> & {
+		textStyle?: YogaTextStyle
+	}
 export type YogaAnimatedProp<T> = T | SharedValue<T>
 type YogaOpaqueValue =
 	| SkFont
