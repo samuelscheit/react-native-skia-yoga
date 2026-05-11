@@ -588,6 +588,20 @@ void YogaNode::setStyle(const NodeStyle& style)
             nullptr, _node, YGEdgeVertical, *value);
     }
 
+    if (const auto& value = style.backgroundColor) {
+
+        if (std::holds_alternative<std::string>(*value)) {
+            const auto& str = std::get<std::string>(*value);
+            if (auto parsed = parseCssColor(str)) {
+                _paint.setColor(*parsed);
+            }
+        } else {
+            // backgroundColor is a SkPaint
+            const auto& p = std::get<SkPaint>(*value);
+            _paint = p;
+        }
+    }
+
     // Border properties
     if (const auto& value = style.borderWidth) {
         auto val = static_cast<float>(*value);
@@ -677,20 +691,6 @@ void YogaNode::setStyle(const NodeStyle& style)
 
     if (const auto& value = style.dither) {
         _paint.setDither(*value);
-    }
-
-    if (const auto& value = style.backgroundColor) {
-
-        if (std::holds_alternative<std::string>(*value)) {
-            const auto& str = std::get<std::string>(*value);
-            if (auto parsed = parseCssColor(str)) {
-                _paint.setColor(*parsed);
-            }
-        } else {
-            // backgroundColor is a SkPaint
-            const auto& p = std::get<SkPaint>(*value);
-            _paint = p;
-        }
     }
 
     if (const auto& value = style.antiAlias.has_value() ? style.antiAlias : style.antiaAlias) {
