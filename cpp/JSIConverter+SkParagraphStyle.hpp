@@ -79,6 +79,62 @@ inline std::string paragraphStyleEllipsisToUtf8(
   return utf16ToUtf8(paragraphStyle.getEllipsisUtf16());
 }
 
+inline jsi::Object paragraphStyleObjectWithoutTextStyle(
+    jsi::Runtime& runtime,
+    const jsi::Object& object)
+{
+  jsi::Object paragraphStyle(runtime);
+  const char* keys[] = {
+      "disableHinting",
+      "ellipsis",
+      "heightMultiplier",
+      "maxLines",
+      "replaceTabCharacters",
+      "strutStyle",
+      "textAlign",
+      "textDirection",
+      "textHeightBehavior",
+  };
+
+  for (const auto* key : keys) {
+    if (object.hasProperty(runtime, key)) {
+      paragraphStyle.setProperty(runtime, key, object.getProperty(runtime, key));
+    }
+  }
+
+  return paragraphStyle;
+}
+
+inline skia::textlayout::ParagraphStyle paragraphStyleBaseFromValue(
+    jsi::Runtime& runtime,
+    const jsi::Value& value)
+{
+  if (!value.isObject()) {
+    return RNSkia::JsiSkParagraphStyle::fromValue(runtime, value);
+  }
+
+  auto object = value.asObject(runtime);
+  auto paragraphStyleObject = paragraphStyleObjectWithoutTextStyle(runtime, object);
+  return RNSkia::JsiSkParagraphStyle::fromValue(
+      runtime,
+      jsi::Value(runtime, paragraphStyleObject));
+}
+
+inline void applyNestedParagraphStyleTextStyleOverlay(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    skia::textlayout::ParagraphStyle& paragraphStyle)
+{
+  if (!object.hasProperty(runtime, "textStyle")) {
+    return;
+  }
+
+  auto textStyleValue = object.getProperty(runtime, "textStyle");
+  auto textStyle = paragraphStyle.getTextStyle();
+  applyTextStyle(runtime, textStyleValue, textStyle);
+  paragraphStyle.setTextStyle(textStyle);
+}
+
 inline void applyParagraphStyleStrutStyleOverlay(
     jsi::Runtime& runtime,
     const jsi::Value& value,
@@ -160,12 +216,16 @@ struct JSIConverter<skia::textlayout::ParagraphStyle> final {
       jsi::Runtime& runtime,
       const jsi::Value& arg) {
     rejectUnsupportedParagraphStyleFontVariations(runtime, arg);
-    auto paragraphStyle = RNSkia::JsiSkParagraphStyle::fromValue(runtime, arg);
+    auto paragraphStyle = paragraphStyleBaseFromValue(runtime, arg);
 
-    // Preserve the flattened JSX API: text-style fields are allowed directly on
-    // the paragraphStyle object, and they should accept the same value shapes as
-    // <text textStyle={...} />, including CSS color strings.
     if (arg.isObject()) {
+      auto object = arg.asObject(runtime);
+      applyNestedParagraphStyleTextStyleOverlay(runtime, object, paragraphStyle);
+
+      // Preserve the flattened JSX API: text-style fields are allowed directly on
+      // the paragraphStyle object, and they should accept the same value shapes as
+      // <text textStyle={...} />, including CSS color strings. Keep this after
+      // the nested overlay so flattened fields retain public precedence.
       auto textStyle = paragraphStyle.getTextStyle();
       applyTextStyle(runtime, arg, textStyle);
       paragraphStyle.setTextStyle(textStyle);

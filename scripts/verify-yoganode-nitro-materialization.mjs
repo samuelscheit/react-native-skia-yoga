@@ -174,7 +174,7 @@ try {
 	console.log("- The executable materialized parent/child YogaNodes, inserted the child through the generated parent.insertChild(...) wrapper, called materialized parent.getChildren(), and asserted the returned child is the cached materialized child object with generated and raw YogaNode prototype methods.")
 	console.log("- The executable called generated setStyle/computeLayout/insertChild and raw setInteractionConfig/hitTest/getChildren through the returned child object, then asserted recursive returned-grandchild identity through returnedChild.getChildren().")
 	console.log("- The executable used fresh materialized YogaNode objects to invoke generated JS-facing setCommand(line), setCommand(points), setCommand(path), setCommand(text), setCommand(paragraph), setCommand(circle), setCommand(rrect), setCommand(blurMaskFilter), setCommand(rect), setCommand(oval), and setCommand(image) wrappers, preserving the native no-command-kind-change invariant.")
-	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/paragraphStyle measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias state, YogaNode::setStyle SkPaint antiAlias state, Yoga layout computation, and generated layout getter values.")
+	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias state, YogaNode::setStyle SkPaint antiAlias state, Yoga layout computation, and generated layout getter values.")
 	console.log("- For CircleCmd, RRectCmd, and BlurMaskFilterCmd, selected no-pixel draw calls are used only to expose render-time native state/mask-filter side effects after generated wrapper delivery; no command-rendering or render-fidelity claim is made.")
 	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, and selected generated/raw YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, image assets/decoding/loading, exact typography, command rendering, or exact render fidelity.")
 } finally {
@@ -906,6 +906,13 @@ jsi::Object makeTextStyle(jsi::Runtime& runtime, double fontSize, const char* co
     return textStyle;
 }
 
+jsi::Object makeParagraphStyleWithNestedTextStyle(jsi::Runtime& runtime, double fontSize, const char* color)
+{
+    jsi::Object paragraphStyle(runtime);
+    paragraphStyle.setProperty(runtime, "textStyle", makeTextStyle(runtime, fontSize, color));
+    return paragraphStyle;
+}
+
 jsi::Object makeTextCommand(jsi::Runtime& runtime)
 {
     jsi::Object command(runtime);
@@ -922,7 +929,7 @@ jsi::Object makeParagraphCommand(jsi::Runtime& runtime)
     jsi::Object command(runtime);
     jsi::Object data(runtime);
     data.setProperty(runtime, "text", "Materialized paragraph text");
-    data.setProperty(runtime, "paragraphStyle", makeTextStyle(runtime, 18.0, "#00ff00"));
+    data.setProperty(runtime, "paragraphStyle", makeParagraphStyleWithNestedTextStyle(runtime, 18.0, "#00ff00"));
     command.setProperty(runtime, "type", "paragraph");
     command.setProperty(runtime, "data", data);
     return command;
@@ -1446,7 +1453,7 @@ void assertGeneratedParagraphSetCommand(jsi::Runtime& runtime)
     auto* paragraphCmd = dynamic_cast<ParagraphCmd*>(materialized.node->_command.get());
     expect(paragraphCmd != nullptr, "generated setCommand(paragraph) must install a real ParagraphCmd");
     expect(YGNodeHasMeasureFunc(materialized.node->_node), "generated setCommand(paragraph) must install a Yoga measure function");
-    expect(paragraphCmd->props.paragraph != nullptr, "generated setCommand(paragraph) must build a paragraph from text and paragraphStyle");
+    expect(paragraphCmd->props.paragraph != nullptr, "generated setCommand(paragraph) must build a paragraph from text and nested paragraphStyle.textStyle CSS color");
 
     auto measured = ParagraphCmd::measureFunc(
         materialized.node->_node,

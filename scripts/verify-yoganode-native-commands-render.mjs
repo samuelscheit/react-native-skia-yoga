@@ -168,14 +168,14 @@ try {
 	console.log("- The executable created a JSC runtime, converted numeric, CSS color-string, and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), serialized representative payloads through JSIConverter<NodeCommand>::toJSI(...), and executed real YogaNode::setCommand().")
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
 	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, simple text.textStyle fields, selected paragraphStyle fields including fontFeatures and strutStyle, line from/to points, and points arrays.")
-	console.log("- The executable asserted selected value-bearing toJSI/fromJSI serialization for SkSamplingOptions filter/mipmap and cubic B/C, SkTextStyle fontSize/color/fontFamilies/fontFeatures/backgroundColor/foregroundColor/decoration fields/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, and SkParagraphStyle textAlign/maxLines/heightMultiplier/ellipsis/disableHinting/replaceTabCharacters/textDirection/textHeightBehavior, selected strutStyle fields, flattened default text style fields, and explicit unsupported fontVariations rejection.")
+	console.log("- The executable asserted selected value-bearing toJSI/fromJSI serialization for SkSamplingOptions filter/mipmap and cubic B/C, SkTextStyle fontSize/color/fontFamilies/fontFeatures/backgroundColor/foregroundColor/decoration fields/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, and SkParagraphStyle textAlign/maxLines/heightMultiplier/ellipsis/disableHinting/replaceTabCharacters/textDirection/textHeightBehavior, selected strutStyle fields, flattened and nested default text style fields including flattened precedence over nested values, and explicit unsupported fontVariations rejection.")
 	console.log("- The executable asserted generated NodeStyle transport and host-native SkPaint state for canonical style.antiAlias, legacy style.antiaAlias fallback, and canonical precedence when both keys are present.")
 	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
 	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
-	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) and flattened ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection, unsupported paragraph fontVariations rejection, and text.textStyle rich-key rejection in JSIConverter<NodeCommand>::fromJSI(...).")
+	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) plus flattened and nested ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection including nested paragraphStyle.textStyle.color, unsupported paragraph fontVariations rejection, and text.textStyle rich-key rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, YogaNode::setStyle SkPaint antiAlias state, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, selected value-bearing SkSamplingOptions, SkTextStyle including fontFeatures and unsupported fontVariations rejection, selected simple TextCmd textStyle fields plus rich-key rejection, and selected SkParagraphStyle serialization fields including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior and selected public-shaped strutStyle fields plus flattened/nested unsupported fontVariations rejection, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove unsupported SkSamplingOptions maxAniso preservation, every SkTextStyle/SkParagraphStyle field, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, nested paragraphStyle.textStyle shape preservation beyond unsupported-key rejection, CSS color string preservation, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, YogaNode::setStyle SkPaint antiAlias state, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, selected value-bearing SkSamplingOptions, SkTextStyle including fontFeatures and unsupported fontVariations rejection, selected simple TextCmd textStyle fields plus rich-key rejection, and selected SkParagraphStyle serialization fields including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior and selected public-shaped strutStyle fields plus flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened text-style precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove unsupported SkSamplingOptions maxAniso preservation, every SkTextStyle/SkParagraphStyle field, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, nested paragraphStyle.textStyle toJSI shape preservation, CSS color string preservation, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -1845,6 +1845,21 @@ jsi::Object paragraphStyleWithNestedFontVariationsObject(jsi::Runtime& runtime)
     return paragraphStyle;
 }
 
+jsi::Object paragraphStyleWithNestedTextStyleObject(jsi::Runtime& runtime, double fontSize, const char* color)
+{
+    jsi::Object paragraphStyle(runtime);
+    paragraphStyle.setProperty(runtime, "textStyle", textStyleObject(runtime, fontSize, color));
+    return paragraphStyle;
+}
+
+jsi::Object paragraphStyleWithFlattenedAndNestedTextStyleObject(jsi::Runtime& runtime)
+{
+    auto paragraphStyle = paragraphStyleWithNestedTextStyleObject(runtime, 16.0, "#00ff00");
+    paragraphStyle.setProperty(runtime, "fontSize", 22.0);
+    paragraphStyle.setProperty(runtime, "color", "#ff0000");
+    return paragraphStyle;
+}
+
 NodeCommand textSerializationCommand(jsi::Runtime& runtime)
 {
     jsi::Object data(runtime);
@@ -1934,6 +1949,18 @@ NodeCommand cssColorParagraphCommand(jsi::Runtime& runtime)
     jsi::Object data(runtime);
     data.setProperty(runtime, "text", "CSS paragraph text");
     data.setProperty(runtime, "paragraphStyle", textStyleObject(runtime, 18.0, "#00ff00"));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "paragraph");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand nestedCssColorParagraphCommand(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "text", "Nested CSS paragraph text");
+    data.setProperty(runtime, "paragraphStyle", paragraphStyleWithNestedTextStyleObject(runtime, 18.0, "#00ff00"));
 
     jsi::Object command(runtime);
     command.setProperty(runtime, "type", "paragraph");
@@ -2201,6 +2228,38 @@ void assertValueBearingStyleConverters(jsi::Runtime& runtime)
 
         auto roundTrip = margelo::nitro::JSIConverter<skia::textlayout::ParagraphStyle>::fromJSI(runtime, serialized);
         expectParagraphStyleState(roundTrip, "direct ParagraphStyle toJSI/fromJSI");
+    }
+
+    {
+        auto styleObject = paragraphStyleWithNestedTextStyleObject(runtime, 16.0, "#00ff00");
+        auto paragraphStyle = margelo::nitro::JSIConverter<skia::textlayout::ParagraphStyle>::fromJSI(
+            runtime,
+            jsi::Value(runtime, styleObject));
+        expectNear(
+            paragraphStyle.getTextStyle().getFontSize(),
+            16.0,
+            "direct ParagraphStyle conversion keeps nested textStyle fontSize");
+        expectColorNear(
+            paragraphStyle.getTextStyle().getColor(),
+            SK_ColorGREEN,
+            0,
+            "direct ParagraphStyle conversion parses nested textStyle CSS color string");
+    }
+
+    {
+        auto styleObject = paragraphStyleWithFlattenedAndNestedTextStyleObject(runtime);
+        auto paragraphStyle = margelo::nitro::JSIConverter<skia::textlayout::ParagraphStyle>::fromJSI(
+            runtime,
+            jsi::Value(runtime, styleObject));
+        expectNear(
+            paragraphStyle.getTextStyle().getFontSize(),
+            22.0,
+            "direct ParagraphStyle conversion gives flattened fontSize precedence over nested textStyle fontSize");
+        expectColorNear(
+            paragraphStyle.getTextStyle().getColor(),
+            SK_ColorRED,
+            0,
+            "direct ParagraphStyle conversion gives flattened CSS color precedence over nested textStyle color");
     }
 
     {
@@ -3770,6 +3829,52 @@ void assertParagraphCommandMeasureAndRender(jsi::Runtime& runtime)
     expect(
         !hasAnyAlphaInRegion(cssSurface, 112, 96, 136, 116),
         "CSS color ParagraphCmd render remains bounded away from far outside pixels");
+
+    auto nestedCssCommand = nestedCssColorParagraphCommand(runtime);
+    const auto& nestedCssPayload = std::get<ParagraphCommandData>(nestedCssCommand.data);
+    expect(nestedCssPayload.text.has_value(), "nested CSS color paragraph command conversion keeps text");
+    expect(nestedCssPayload.text.value() == "Nested CSS paragraph text", "nested CSS color paragraph command conversion keeps text value");
+    expect(nestedCssPayload.paragraphStyle.has_value(), "nested CSS color paragraph command conversion keeps paragraphStyle");
+    expectNear(nestedCssPayload.paragraphStyle->getTextStyle().getFontSize(), 18.0, "nested CSS color paragraph command conversion keeps nested font size");
+    expectColorNear(nestedCssPayload.paragraphStyle->getTextStyle().getColor(), SK_ColorGREEN, 0, "ParagraphCmd conversion parses nested textStyle hex CSS color string");
+    expect(!nestedCssPayload.paragraph.has_value(), "nested CSS color paragraph command conversion does not require a JS-created JsiSkParagraph");
+
+    auto nestedCssRoot = makeYogaNode(
+        widthOnlyStyle(92.0),
+        std::move(nestedCssCommand));
+
+    expect(nestedCssRoot->_commandKind == YogaNodeCommandKind::PARAGRAPH, "nested CSS color setCommand constructs a real ParagraphCmd");
+    auto* nestedCssParagraphCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::ParagraphCmd*>(nestedCssRoot->_command.get());
+    expect(nestedCssParagraphCmd != nullptr, "nested CSS color installed command has ParagraphCmd type");
+    expect(YGNodeHasMeasureFunc(nestedCssRoot->_node), "nested CSS color ParagraphCmd installs a Yoga measure function");
+    expect(nestedCssParagraphCmd->props.paragraph != nullptr, "nested CSS color ParagraphCmd builds a paragraph from text and paragraphStyle");
+
+    auto nestedCssMeasured = margelo::nitro::RNSkiaYoga::ParagraphCmd::measureFunc(
+        nestedCssRoot->_node,
+        92.0f,
+        YGMeasureModeAtMost,
+        YGUndefined,
+        YGMeasureModeUndefined);
+    expect(nestedCssMeasured.width > 0.0f, "nested CSS color ParagraphCmd measure width is positive");
+    expect(nestedCssMeasured.width <= 92.0f, "nested CSS color ParagraphCmd measure width is bounded by the available width");
+    expect(nestedCssMeasured.height > 0.0f, "nested CSS color ParagraphCmd measure height is positive");
+    expect(nestedCssMeasured.height < 140.0f, "nested CSS color ParagraphCmd measure height remains bounded for probe text");
+
+    auto nestedCssSurface = makeSurface(140, 120);
+    renderNode(nestedCssRoot, nestedCssSurface);
+
+    expectNear(nestedCssRoot->_layout.width, 92.0, "nested CSS color paragraph Yoga layout width follows style constraint");
+    expect(nestedCssRoot->_layout.height > 0.0, "nested CSS color paragraph Yoga layout height comes from measure function");
+    expect(nestedCssRoot->_layout.height < 140.0, "nested CSS color paragraph Yoga layout height remains bounded");
+    expectNear(nestedCssParagraphCmd->props.width, 92.0, "nested CSS color ParagraphCmd draw width follows Yoga layout");
+    expect(nestedCssParagraphCmd->props.paragraph->getObject()->getHeight() > 0.0f, "nested CSS color ParagraphCmd paragraph object has positive laid-out height");
+
+    expect(
+        hasAnyGreenDominantPixelInRegion(nestedCssSurface, 2, 2, 90, 96),
+        "ParagraphCmd renders green-dominant glyph pixels from nested textStyle hex CSS color string inside the debug border");
+    expect(
+        !hasAnyAlphaInRegion(nestedCssSurface, 112, 96, 136, 116),
+        "nested CSS color ParagraphCmd render remains bounded away from far outside pixels");
 }
 
 void assertConverterErrorPath(jsi::Runtime& runtime)
@@ -4071,6 +4176,36 @@ void assertConverterErrorParagraphStyleColorString(jsi::Runtime& runtime)
     fail("paragraph command conversion with an invalid paragraphStyle CSS color string must fail");
 }
 
+void assertConverterErrorParagraphStyleNestedColorString(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "text", "bad nested CSS paragraph color");
+    data.setProperty(runtime, "paragraphStyle", paragraphStyleWithNestedTextStyleObject(runtime, 18.0, "not-a-css-color"));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "paragraph");
+    command.setProperty(runtime, "data", std::move(data));
+    jsi::Value commandValue(runtime, command);
+
+    expect(
+        margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, commandValue),
+        "NodeCommand converter canConvert accepts shaped paragraph command before rejecting invalid nested paragraphStyle.textStyle CSS color string");
+    try {
+        (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
+    } catch (const jsi::JSError& error) {
+        const auto message = error.getMessage();
+        expect(
+            message.find("NodeCommand conversion failed for type \"paragraph\"") != std::string::npos,
+            "paragraph nested invalid color failure should be scoped to NodeCommand payload conversion");
+        expect(
+            message.find("Invalid color string for text style: not-a-css-color") != std::string::npos,
+            "paragraph nested invalid color failure should report the invalid CSS color string");
+        return;
+    }
+
+    fail("paragraph command conversion with an invalid paragraphStyle.textStyle CSS color string must fail");
+}
+
 } // namespace
 
 int main()
@@ -4119,6 +4254,7 @@ int main()
     assertConverterErrorTextFont(*runtime);
     assertConverterErrorTextStyleColorString(*runtime);
     assertConverterErrorParagraphStyleColorString(*runtime);
+    assertConverterErrorParagraphStyleNestedColorString(*runtime);
     assertDynamicAnimatedDoubleCommandRejections(*runtime);
 
     RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(nullptr);

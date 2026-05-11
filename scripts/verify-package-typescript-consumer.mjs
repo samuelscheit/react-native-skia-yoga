@@ -110,6 +110,9 @@ try {
 		"- Packed consumer TypeScript accepted simple text.textStyle color/fontSize authoring and rejected rich text.textStyle fontFamilies, fontFeatures, fontStyle, letterSpacing, and fontVariations authoring while preserving rich paragraphStyle text styling.",
 	)
 	console.log(
+		"- Packed consumer TypeScript accepted nested paragraphStyle.textStyle CSS color/fontSize authoring.",
+	)
+	console.log(
 		"- Public package boundary rejected internal top-level exports such as reconciler, NodeCommand, createYogaNode, and SkiaYoga.",
 	)
 	console.log(
@@ -370,6 +373,17 @@ const richParagraphProps: YogaIntrinsicElements["paragraph"] = {
 \ttext: "rich paragraph",
 }
 
+const nestedParagraphTextStyleProps: YogaIntrinsicElements["paragraph"] = {
+\tparagraphStyle: {
+\t\ttextStyle: {
+\t\t\tcolor: "#00ff00",
+\t\t\tfontSize: 16,
+\t\t},
+\t},
+\tstyle: { height: 32, width: 140 },
+\ttext: "nested paragraph color",
+}
+
 const unsupportedNestedSamplingProps: YogaIntrinsicElements["image"] = {
 \t// @ts-expect-error nested image.sampling SharedValue leaves are not part of the opaque SamplingOptions contract.
 \tsampling: { filter: sharedSamplingFilter },
@@ -444,6 +458,7 @@ export function PackedPackageSmoke() {
 \t\t\t\t\t\t\t\ttextStyle={{ color: "white", fontSize: 14 }}
 \t\t\t\t\t\t\t/>
 \t\t\t\t\t\t\t<paragraph {...richParagraphProps} />
+\t\t\t\t\t\t\t<paragraph {...nestedParagraphTextStyleProps} />
 \t\t\t\t\t\t\t<blurMaskFilter blur={sharedBlur} />
 \t\t\t\t\t\t\t<path {...dynamicPathProps} />
 \t\t\t\t\t\t\t<line
