@@ -2472,10 +2472,12 @@ Last updated: 2026-05-11
   - Deleted branch `worker/111-post-110-root-cause-audit`.
   - Verified no `rnskia-worker-111` tmux session, worker 111 worktree, or worker 111 branch remained.
 - Prepared worker 112 as the next step: guard published `src/specs/*` deep imports and harden the package export boundary.
+- Created `worker-112-package-export-boundary` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-112-package-export-boundary` as a top-level tmux subprocess.
+- Worker 112 passed the visible `GOAL_CREATED: Guard published src/specs deep imports and prove the package export boundary.` gate as the first worker message.
 
 ## Active Workers
 
-- None; worker 112 is prepared but not launched yet.
+- `rnskia-worker-112-package-export-boundary`: running from `worker/112-package-export-boundary`; guarding published `src/specs/*` deep imports and proving the package export boundary.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2610,7 +2612,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- `worker-112-package-export-boundary`: pending launch to guard published `src/specs/*` deep imports and harden the package export boundary.
+- None; worker 112 is active.
 
 ## Decisions
 
