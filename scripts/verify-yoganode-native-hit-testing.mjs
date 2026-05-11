@@ -133,7 +133,7 @@ try {
 
 	console.log("YogaNode native hit-testing verifier passed:")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, upstream Yoga sources, RN Skia macOS archives, and the helper sources required for object emission.")
-	console.log("- The executable asserted YogaNode::hitTestTagAt / hitTestInternal behavior for pointerEvents, child z-order, layout coordinate translation, matrix inversion, clipping, hitSlop, precise-hit geometry, and interactive descendant count propagation.")
+	console.log("- The executable asserted YogaNode::hitTestTagAt / hitTestInternal behavior for pointerEvents, child z-order, layout coordinate translation, matrix inversion, composed public transform-array inversion, clipping, hitSlop, precise-hit geometry, and interactive descendant count propagation.")
 	console.log("- Host-only direct interaction-field setup is limited to the JSI config boundary; hit-test traversal, layout, clipping, transform inversion, precise command checks, and descendant count mutation execute the real native runtime path.")
 	console.log("- -Wl,-undefined,dynamic_lookup is limited to unentered host-incompatible entry points in the shared translation unit.")
 } finally {
@@ -357,9 +357,31 @@ using margelo::nitro::RNSkiaYoga::NodeStyle;
 using margelo::nitro::RNSkiaYoga::Overflow;
 using margelo::nitro::RNSkiaYoga::PointerEventsMode;
 using margelo::nitro::RNSkiaYoga::Position;
+using margelo::nitro::RNSkiaYoga::TransformRotateX;
+using margelo::nitro::RNSkiaYoga::TransformRotateY;
+using margelo::nitro::RNSkiaYoga::TransformRotateZ;
+using margelo::nitro::RNSkiaYoga::TransformScale;
+using margelo::nitro::RNSkiaYoga::TransformScaleX;
+using margelo::nitro::RNSkiaYoga::TransformScaleY;
+using margelo::nitro::RNSkiaYoga::TransformSkewX;
+using margelo::nitro::RNSkiaYoga::TransformSkewY;
+using margelo::nitro::RNSkiaYoga::TransformTranslateX;
+using margelo::nitro::RNSkiaYoga::TransformTranslateY;
 using margelo::nitro::RNSkiaYoga::YogaNode;
 using margelo::nitro::RNSkiaYoga::YogaNodeCommand;
 using margelo::nitro::RNSkiaYoga::YogaNodeLayout;
+
+using NodeTransformOperation = std::variant<
+    TransformRotateX,
+    TransformRotateY,
+    TransformRotateZ,
+    TransformScale,
+    TransformScaleX,
+    TransformScaleY,
+    TransformTranslateX,
+    TransformTranslateY,
+    TransformSkewX,
+    TransformSkewY>;
 
 namespace {
 
@@ -591,6 +613,49 @@ void inverseMatrixTransforms()
     expectTag(root->hitTestTagAt(55, 20), 0.0, "inverse matrix rejects point outside scaled local bounds");
 }
 
+void composedTransformArrayInversion()
+{
+    {
+        auto root = makeNode(100, 100);
+        auto child = makeAbsoluteNode(10, 10, 20, 20);
+        auto style = absoluteStyle(10, 10, 20, 20);
+        style.transform = std::vector<NodeTransformOperation> {
+            TransformTranslateX(5.0),
+            TransformTranslateY(4.0),
+            TransformScale(2.0),
+        };
+        child->setStyle(style);
+        root->insertChild(child, std::nullopt);
+
+        configureInteraction(child, 302.0);
+        compute(root);
+
+        expect(child->_matrix != nullptr, "translate+scale transform array creates native matrix for hit testing");
+        expectTag(root->hitTestTagAt(52, 45), 302.0, "inverse composed translate+scale maps visual point back inside local bounds");
+        expectTag(root->hitTestTagAt(12, 45), 0.0, "inverse composed translateX+scale rejects point a scale-only transform would include");
+        expectTag(root->hitTestTagAt(20, 12), 0.0, "inverse composed translateY+scale rejects point a scale-only transform would include");
+    }
+
+    {
+        auto root = makeNode(100, 100);
+        auto child = makeAbsoluteNode(10, 10, 20, 10);
+        auto style = absoluteStyle(10, 10, 20, 10);
+        style.transform = std::vector<NodeTransformOperation> {
+            TransformTranslateX(30.0),
+            TransformRotateZ(1.5707963267948966),
+        };
+        child->setStyle(style);
+        root->insertChild(child, std::nullopt);
+
+        configureInteraction(child, 303.0);
+        compute(root);
+
+        expect(child->_matrix != nullptr, "translate+rotateZ transform array creates native matrix for hit testing");
+        expectTag(root->hitTestTagAt(35, 19), 303.0, "inverse composed translate+rotateZ maps rotated visual point back inside local bounds");
+        expectTag(root->hitTestTagAt(45, 19), 0.0, "inverse composed translate+rotateZ rejects point outside the rotated visual bounds");
+    }
+}
+
 void clipsToBounds()
 {
     auto root = makeNode(50, 50);
@@ -774,6 +839,7 @@ int main()
     reverseTraversalTopmostWins();
     parentToLocalCoordinateTranslation();
     inverseMatrixTransforms();
+    composedTransformArrayInversion();
     clipsToBounds();
     explicitClipRect();
     explicitClipPath();
