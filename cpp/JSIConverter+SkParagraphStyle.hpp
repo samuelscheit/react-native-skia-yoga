@@ -79,6 +79,54 @@ inline std::string paragraphStyleEllipsisToUtf8(
   return utf16ToUtf8(paragraphStyle.getEllipsisUtf16());
 }
 
+inline void applyParagraphStyleStrutStyleOverlay(
+    jsi::Runtime& runtime,
+    const jsi::Value& value,
+    skia::textlayout::ParagraphStyle& paragraphStyle)
+{
+  auto object = value.asObject(runtime);
+  if (!object.hasProperty(runtime, "strutStyle")) {
+    return;
+  }
+
+  auto strutValue = object.getProperty(runtime, "strutStyle");
+  auto strutObject = strutValue.asObject(runtime);
+  if (auto families = parseOptionalFontFamilies(runtime, strutObject)) {
+    auto strutStyle = paragraphStyle.getStrutStyle();
+    strutStyle.setFontFamilies(families.value());
+    paragraphStyle.setStrutStyle(strutStyle);
+  }
+}
+
+inline jsi::Object strutStyleToJSI(
+    jsi::Runtime& runtime,
+    const skia::textlayout::StrutStyle& strutStyle)
+{
+  jsi::Object object(runtime);
+  object.setProperty(runtime, "strutEnabled", strutStyle.getStrutEnabled());
+  object.setProperty(
+      runtime,
+      "fontFamilies",
+      textStyleFontFamiliesToJSI(runtime, strutStyle.getFontFamilies()));
+  object.setProperty(
+      runtime,
+      "fontStyle",
+      textStyleFontStyleToJSI(runtime, strutStyle.getFontStyle()));
+  object.setProperty(runtime, "fontSize", static_cast<double>(strutStyle.getFontSize()));
+  if (strutStyle.getHeightOverride()) {
+    object.setProperty(runtime, "heightMultiplier", static_cast<double>(strutStyle.getHeight()));
+  }
+  object.setProperty(runtime, "halfLeading", strutStyle.getHalfLeading());
+  object.setProperty(runtime, "leading", static_cast<double>(strutStyle.getLeading()));
+  object.setProperty(runtime, "forceStrutHeight", strutStyle.getForceStrutHeight());
+  return object;
+}
+
+inline bool shouldEmitStrutStyle(const skia::textlayout::StrutStyle& strutStyle)
+{
+  return !(strutStyle == skia::textlayout::StrutStyle());
+}
+
 } // namespace
 
 template <>
@@ -95,6 +143,7 @@ struct JSIConverter<skia::textlayout::ParagraphStyle> final {
       auto textStyle = paragraphStyle.getTextStyle();
       applyTextStyle(runtime, arg, textStyle);
       paragraphStyle.setTextStyle(textStyle);
+      applyParagraphStyleStrutStyleOverlay(runtime, arg, paragraphStyle);
     }
 
     return paragraphStyle;
@@ -131,6 +180,10 @@ struct JSIConverter<skia::textlayout::ParagraphStyle> final {
     }
 
     writeTextStylePublicFieldsToJSI(runtime, object, arg.getTextStyle(), false);
+    const auto& strutStyle = arg.getStrutStyle();
+    if (shouldEmitStrutStyle(strutStyle)) {
+      object.setProperty(runtime, "strutStyle", strutStyleToJSI(runtime, strutStyle));
+    }
     return object;
   }
 
