@@ -3400,6 +3400,7 @@ Accepted worker reports:
 - Worker 154 accepted Worker 153's proof boundary, reconfirmed the worker 28-command feasible matrix in `4m 35s`, confirmed platform-native app build/run remains locally blocked, and selected generated materialized `YogaNode.setStyle(...)` coverage for `clip`, `matrix`, `transform`, and `invertClip` as the next strongest locally unblocked target.
 - Worker 155 closed generated materialized `YogaNode.setStyle(...)` coverage for `clip`, `matrix`, `transform`, and `invertClip`, including clip path/rect/rrect native state, matrix-array delivery, transform-over-matrix precedence, and invertClip predicate state. Main post-merge verification passed the focused materialization check and the full 28-command feasible matrix in `4m 21s`.
 - Worker 156 accepted Worker 155's proof boundary, reconfirmed the worker 28-command feasible matrix in `4m 32s`, confirmed platform-native app build/run remains locally blocked, and selected generated materialized 16-value `style.matrix` array conversion as the next strongest locally unblocked target.
+- Worker 157 closed generated materialized 16-value `style.matrix` array proof by adding public MatrixArray16 source guards, generated NodeStyle/SkMatrix converter guards, and a fresh materialized `setStyle(...)` wrapper assertion for native `_style.matrix` and `_matrix` state. Main post-merge verification passed `git diff --check HEAD~1 HEAD`, `node --check scripts/verify-yoganode-nitro-materialization.mjs`, `npm run check:yoganode-nitro-materialization`, and the full 28-command feasible matrix in `4m 51s`.
 
 ## Evidence Summary
 
@@ -3450,8 +3451,8 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor Worker 157's generated materialized `YogaNode.setStyle(...)`
-  16-value `style.matrix` proof.
+- Start Worker 158 as a fresh post-worker-157 root-cause audit and next-target
+  selection pass.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
