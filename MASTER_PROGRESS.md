@@ -2677,10 +2677,24 @@ Last updated: 2026-05-11
   - Closed `/root/worker_124_post_123_root_cause_audit`.
   - Removed `../worker-124-post-123-root-cause-audit`.
   - Deleted branch `worker/124-post-123-root-cause-audit`.
+- Created `worker-125-textstyle-fontfeatures-tojsi` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_125_textstyle_fontfeatures_tojsi` as a managed worker subagent with `goal: true`.
+- Worker 125 completed and reported `Goal finished.` It wrote `worker-progress/worker-125-textstyle-fontfeatures-tojsi.md`.
+- Worker 125 added bounded `TextStyle.fontFeatures` `toJSI(...)` serialization as public-shaped `{ name, value }` entries, omitted the field when empty, and reused the shared text-style writer so flattened `ParagraphStyle::toJSI(...)` inherits the field.
+- Worker 125 expanded `check:yoganode-native-commands-render` with direct `TextStyle` empty omission and feature round trips plus representative `NodeCommand` `text.textStyle` and flattened `paragraph.paragraphStyle` round trips.
+- Worker 125 branch commit: `815cf27 Add TextStyle fontFeatures serialization`.
+- Merged worker 125 into `main` as `c28a454 Merge worker 125 TextStyle fontFeatures serialization`.
+- Orchestrator independent acceptance passed: report/diff review, `git diff --check`, `node --check scripts/verify-yoganode-native-commands-render.mjs`, `npm run check:yoganode-native-commands-render`, and `npm run check:yoganode-nitro-materialization`.
+- Main post-merge verification:
+  - `node --check scripts/verify-yoganode-native-commands-render.mjs`: passed.
+  - `npm run check:feasible-matrix`: passed all 28 commands in `4m 41s`.
+- Worker 125 cleanup:
+  - Closed `/root/worker_125_textstyle_fontfeatures_tojsi`.
+  - Removed `../worker-125-textstyle-fontfeatures-tojsi`.
+  - Deleted branch `worker/125-textstyle-fontfeatures-tojsi`.
 
 ## Active Workers
 
-- `/root/worker_125_textstyle_fontfeatures_tojsi`: implementing bounded `TextStyle.fontFeatures` `toJSI(...)` serialization in isolated worktree `../worker-125-textstyle-fontfeatures-tojsi`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2825,6 +2839,7 @@ Accepted worker reports:
 - `worker-progress/worker-122-post-121-root-cause-audit.md`
 - `worker-progress/worker-123-textstyle-tojsi-serialization.md`
 - `worker-progress/worker-124-post-123-root-cause-audit.md`
+- `worker-progress/worker-125-textstyle-fontfeatures-tojsi.md`
 
 ## Pending Workers
 
@@ -2859,6 +2874,7 @@ Accepted worker reports:
 - Worker 122 accepted worker 121's boundary, reconfirmed the main 28-command feasible matrix, and selected bounded additional `TextStyle` `toJSI(...)` serialization because the native converter parses meaningful public fields that current serialization still drops.
 - Worker 123 closed the selected `TextStyle` serialization target for background/foreground colors, decoration fields, font style, shadows, and text baseline, and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-123 audit.
 - Worker 124 accepted worker 123's boundary, reconfirmed the main 28-command feasible matrix, and selected bounded `TextStyle.fontFeatures` `toJSI(...)` serialization because it remains a public-shaped field parsed by `fromJSI(...)` but dropped by `toJSI(...)`.
+- Worker 125 closed the selected `TextStyle.fontFeatures` serialization target, added direct and representative command round-trip proof, and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-125 audit.
 
 ## Evidence Summary
 
@@ -2909,7 +2925,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Add bounded `TextStyle.fontFeatures` `toJSI(...)` serialization and prove direct plus representative command round trips.
+- Run a fresh post-worker-125 root-cause audit to rerank remaining locally unblocked gaps under the current proof surface.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
