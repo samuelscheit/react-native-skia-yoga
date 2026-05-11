@@ -98,7 +98,7 @@ try {
 		"- Public package entrypoints and lowercase intrinsic JSX compiled from the installed package.",
 	)
 	console.log(
-		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias and style.layer Skia.Paint() authoring.",
+		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, and whole SharedValue<YogaNodeStyle> authoring.",
 	)
 	console.log(
 		"- Packed consumer TypeScript accepted legacy style.antiaAlias while canonical style.antiAlias remains the preferred public authoring key.",
@@ -295,7 +295,7 @@ function writeConsumerProject(consumerDir, packedTarball) {
 
 function consumerSource() {
 	return `import * as React from "react"
-import { Skia, type FilterMode, type SamplingOptions, type SkPath } from "@shopify/react-native-skia"
+import { Skia, type FilterMode, type SamplingOptions, type SkPaint, type SkPath } from "@shopify/react-native-skia"
 import type { SharedValue } from "react-native-reanimated"
 import {
 \tYogaCanvas,
@@ -351,6 +351,9 @@ const sharedParagraphTextStyleColor = null as unknown as SharedValue<string>
 const sharedParagraphTextStyleFontSize = null as unknown as SharedValue<number>
 const sharedSampling = null as unknown as SharedValue<SamplingOptions>
 const sharedSamplingFilter = null as unknown as SharedValue<FilterMode>
+const sharedLayerPaint = null as unknown as SharedValue<SkPaint>
+const sharedLayerOpacity = null as unknown as SharedValue<number>
+const sharedWholeStyle = null as unknown as SharedValue<YogaNodeStyle>
 const compileOnlyPath = null as unknown as SkPath
 
 const dynamicPathProps: YogaIntrinsicElements["path"] = {
@@ -398,6 +401,13 @@ const dynamicNestedParagraphTextStyleProps: YogaIntrinsicElements["paragraph"] =
 \t},
 \tstyle: { height: 32, width: 140 },
 \ttext: "dynamic nested paragraph color",
+}
+
+const dynamicLayerGroupProps: YogaIntrinsicElements["group"] = {
+\tstyle: {
+\t\tlayer: sharedLayerPaint,
+\t\topacity: sharedLayerOpacity,
+\t},
 }
 
 const unsupportedNestedSamplingProps: YogaIntrinsicElements["image"] = {
@@ -486,6 +496,9 @@ export function PackedPackageSmoke() {
 \t\t\t\t\t\t\t\tpointMode="points"
 \t\t\t\t\t\t\t\tpoints={[{ x: sharedPointX, y: 0 }]}
 \t\t\t\t\t\t\t/>
+\t\t\t\t\t\t\t<group {...dynamicLayerGroupProps}>
+\t\t\t\t\t\t\t\t<rect style={sharedWholeStyle} />
+\t\t\t\t\t\t\t</group>
 \t\t\t\t\t\t\t<image sampling={sharedSampling} />
 \t\t\t\t\t\t</rrect>
 \t\t\t\t\t</group>
