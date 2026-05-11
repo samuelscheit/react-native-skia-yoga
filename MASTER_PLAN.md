@@ -257,7 +257,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Assign a worker to add packed TypeScript and Reconciler JS-mode proof for dynamic nested `paragraphStyle.textStyle` `SharedValue` leaves.
+- Monitor worker 137, which is adding packed TypeScript and Reconciler JS-mode proof for dynamic nested `paragraphStyle.textStyle` `SharedValue` leaves.
 
 Acceptance criteria:
 
