@@ -268,7 +268,9 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Assign bounded style serializer field-inventory/proof-boundary cleanup.
+- Monitor worker 145, which is adding bounded style serializer
+  field-inventory/proof-boundary cleanup in isolated worktree
+  `../worker-145-style-serializer-inventory`.
 
 Acceptance criteria:
 
