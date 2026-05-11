@@ -2729,10 +2729,11 @@ Last updated: 2026-05-11
   - Closed `/root/worker_128_post_127_root_cause_audit`.
   - Removed `../worker-128-post-127-root-cause-audit`.
   - Deleted branch `worker/128-post-127-root-cause-audit`.
+- Created `worker-129-paragraphstyle-strutstyle-tojsi` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_129_paragraphstyle_strutstyle_tojsi` as a managed worker subagent with `goal: true`.
 
 ## Active Workers
 
-- None.
+- `/root/worker_129_paragraphstyle_strutstyle_tojsi`: adding bounded `ParagraphStyle.strutStyle` parser/serializer coverage in isolated worktree `../worker-129-paragraphstyle-strutstyle-tojsi`.
 
 Invalid/stale tmux sessions cleaned up:
 

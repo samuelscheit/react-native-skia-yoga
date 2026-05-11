@@ -249,7 +249,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch worker 129 to add bounded `ParagraphStyle.strutStyle` parser/serializer coverage and direct plus representative command round-trip proof.
+- Monitor worker 129, which is adding bounded `ParagraphStyle.strutStyle` parser/serializer coverage and direct plus representative command round-trip proof.
 
 Acceptance criteria:
 
