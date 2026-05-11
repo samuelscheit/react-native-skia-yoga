@@ -267,8 +267,10 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Assign a fresh post-worker-145 audit to rerank remaining locally unblocked
-  proof, API-contract, example, and platform-runtime gaps.
+- Monitor worker 146, which is auditing the post-worker-145 proof surface and
+  reranking remaining locally unblocked proof, API-contract, example, and
+  platform-runtime gaps in isolated worktree
+  `../worker-146-post-145-root-cause-audit`.
 
 Acceptance criteria:
 
