@@ -1,6 +1,6 @@
 # React Native Skia Yoga Master Plan
 
-Last updated: 2026-05-11
+Last updated: 2026-05-12
 
 ## Mission
 
@@ -16,8 +16,11 @@ Breaking changes are acceptable when they remove root causes instead of preservi
   from isolated git worktrees.
 - Before spawning a writable or report-writing worker, create or assign an
   isolated git worktree and branch for that worker.
-- Launch implementation workers with `agent_type: "worker"`, `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and `reasoning_effort: "xhigh"`.
-- Worker prompts must include the full task prompt, absolute worktree path, write scope, verification expectations, and overlap boundaries.
+- Launch implementation workers with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`.
+- Worker prompts must include the full task prompt, absolute worktree path,
+  write scope, verification expectations, and overlap boundaries.
 - Starting workers with `goal: true` replaces the former manual
   `create_goal`/`GOAL_CREATED` acceptance gate. No dedicated goal-lifecycle or
   `update_goal` evidence is required; the final response/report must end with
@@ -25,7 +28,11 @@ Breaking changes are acceptable when they remove root causes instead of preservi
 - Workers must keep their own progress files under `worker-progress/`.
 - Workers must review quality, maintainability, performance, and security before reporting completion.
 - Workers must use nested subagents/explorers when testing uncertain root-cause hypotheses, and must document those subagent results in their progress files.
-- Finished worker branches are reviewed, verified, merged into `main`, then their subagent/worktree is cleaned up.
+- Finished worker branches are reviewed, verified, merged into `main`, then
+  their subagent/worktree is cleaned up.
+- Historical worker prompts and progress entries may mention tmux or manual
+  goal gates as archival facts; new top-level workers use `spawn_agent` with
+  `goal: true`.
 
 ## Current Repository Baseline
 
@@ -111,9 +118,9 @@ Acceptance criteria:
 
 Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, example bundle feedback-loop hygiene fixed, post-worker-035 root-cause audit accepted, RN Skia private import cleanup integrated, post-worker-037 root-cause audit accepted, packed-package TypeScript consumer smoke coverage integrated, post-worker-039 root-cause audit accepted, `react-reconciler` package-surface dependency hygiene integrated, post-worker-041 root-cause audit accepted, public declaration/export boundary cleanup integrated, post-worker-043 root-cause audit accepted, `SkiaYogaObject` lazy initialization integrated, post-worker-045 root-cause audit accepted, `src/util.ts` Nitro boxing lazy-init integrated, post-worker-047 root-cause audit accepted, Worklets transform/closure verification integrated, post-worker-049 root-cause audit accepted, example/Expo Worklets transform verification integrated, public-import graph verifier hardening integrated, direct `NativeSkiaYoga` deep-import hardening integrated, post-worker-056 codegen-schema audit accepted, RN codegen schema verifier integrated, post-worker-058 root-cause audit accepted, Reconciler/gesture Worklets transform verification integrated, post-worker-060 root-cause audit accepted, Reconciler animated binding runtime verifier integrated, YogaCanvas gesture/interaction runtime verifier integrated, post-worker-062 root-cause audit accepted, YogaCanvas lifecycle runtime verifier integrated, post-worker-065 root-cause audit accepted, packed-package RN codegen/autolinking verification integrated, post-worker-067 root-cause audit accepted, example native-generation verifier integrated, local-artifact preservation hardening integrated, post-worker-069 root-cause audit accepted, aggregate feasible-matrix verifier integrated, post-worker-071 root-cause audit accepted, host-native YogaNode hit-testing verifier integrated, post-worker-073 root-cause audit accepted, host-native `SkiaYoga` / `RNSkYogaView` runtime verifier integrated, post-worker-075 root-cause audit accepted, feasible-matrix temp isolation hardening integrated, YogaNode hybrid/JSI raw-method boundary verification integrated, post-worker-078 root-cause audit accepted, YogaNode command/render verification integrated, post-worker-080 audit accepted, deterministic command/render expansion integrated, post-worker-082 audit accepted, ImageCmd command/render verification integrated, post-worker-084 audit accepted, TextCmd/ParagraphCmd command/render verification integrated, post-worker-086 root-cause audit accepted, Nitro YogaNode materialization verification integrated, dynamic AnimatedDouble Synchronizable verification integrated, selected dynamic AnimatedDouble NodeCommand verification integrated, dynamic PathCmd trim verification integrated, Reconciler native command-binding coverage integrated, post-worker-095 root-cause audit accepted, public `path.stroke` payload contract integration accepted, post-worker-097 root-cause audit accepted, Reconciler JS-mode command listener coverage integrated, post-worker-099 root-cause audit accepted, generated Nitro `setCommand(...)` breadth coverage integrated, post-worker-101 root-cause audit accepted, ImageCmd fit-mode coverage integrated, post-worker-103 root-cause audit accepted, TextCmd/ParagraphCmd CSS color-string coverage integrated, post-worker-105 root-cause audit accepted, expanded generated Nitro `setCommand(...)` breadth integrated, post-worker-107 root-cause audit accepted, direct `StrokeOpts` converter consistency integrated, post-worker-109 root-cause audit accepted, packed dynamic JSX type-boundary coverage integrated, post-worker-111 root-cause audit accepted, package export-boundary hardening integrated, NodeCommand `toJSI(...)` serialization symmetry integrated, post-worker-114 root-cause audit accepted, materialized `YogaNode.getChildren()` identity/prototype hardening integrated, post-worker-115 root-cause audit accepted, post-worker-116 root-cause audit accepted, whole `image.sampling` `SharedValue<SamplingOptions>` type support integrated, post-worker-118 root-cause audit accepted, value-bearing style/sampling `toJSI(...)` serialization integrated, post-worker-120 root-cause audit accepted, canonical `style.antiAlias` support integrated, post-worker-122 root-cause audit accepted, expanded `TextStyle` `toJSI(...)` serialization integrated, post-worker-124 root-cause audit accepted, bounded `TextStyle.fontFeatures` serialization integrated, post-worker-126 root-cause audit accepted, bounded `ParagraphStyle` scalar serialization integrated, post-worker-128 root-cause audit accepted, bounded `ParagraphStyle.strutStyle` parser/serializer coverage integrated, post-worker-130 root-cause audit accepted, unsupported public `fontVariations` contract closure integrated, post-worker-132 root-cause audit accepted, simple `<text textStyle>` contract closure integrated, post-worker-134 root-cause audit accepted, nested `paragraphStyle.textStyle` CSS color parsing integrated, post-worker-136 root-cause audit accepted, dynamic nested `paragraphStyle.textStyle` Reconciler proof integrated, post-worker-138 root-cause audit accepted, nested `ParagraphStyle::toJSI(...)` shape preservation integrated, SkPaint-backed `backgroundColor` paint ordering integrated, post-worker-147 root-cause audit accepted, `style.layer` / `_layerPaint` proof integrated, post-worker-149 root-cause audit accepted, dynamic `style.layer` / opaque style `SharedValue` proof integrated, post-worker-152 root-cause audit accepted, and materialized `YogaNode.setStyle(...)` paint-field breadth proof integrated
 
-Latest integration: worker 158 accepted Worker 157's MatrixArray16 proof
-boundary and selected materialized `transform: []` matrix suppression as the
-next strongest locally unblocked target.
+Latest integration: worker 159 fixed and proved generated materialized
+`transform: []` matrix fallback semantics. Main post-merge verification passed
+the focused materialization checks and the full 28-command feasible matrix.
 
 Goals:
 
@@ -278,11 +285,13 @@ Accepted package-hygiene implementation:
 - `worker-156-post-155-root-cause-audit`: accepted Worker 155's proof boundary, reconfirmed the full 28-command feasible matrix, and selected generated materialized 16-value `style.matrix` array conversion.
 - `worker-157-materialized-matrix16`: expanded `check:yoganode-nitro-materialization` with generated materialized `setStyle(...)` proof for public 16-value `style.matrix` arrays, including native `_style.matrix` and `_matrix` state.
 - `worker-158-post-157-root-cause-audit`: accepted Worker 157's proof boundary, documented the SkMatrix converter branch nuance, and selected materialized `transform: []` matrix suppression as the next target.
+- `worker-159-transform-empty-matrix`: fixed empty public `transform: []` so it falls back to `style.matrix` when present, preserves non-empty transform precedence, and added generated materialized `setStyle(...)` proof for the fallback state.
 
 Current next step:
 
-- Monitor Worker 159's materialized `transform: []` matrix-suppression
-  implementation from isolated worktree `../worker-159-transform-empty-matrix`.
+- Launch a fresh post-worker-159 root-cause audit to accept the new proof
+  boundary, rerank remaining locally unblocked gaps, and select Worker 160's
+  target.
 
 Acceptance criteria:
 

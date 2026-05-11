@@ -16,8 +16,9 @@ preserving weak contracts.
 - Work only on your assigned objective and write scope.
 - You are running as a managed Codex subagent launched by the orchestrator with
   `goal: true`; do not perform a separate startup `create_goal` ritual or add a
-  dedicated goal-lifecycle evidence section. The final `Goal finished.` line is
-  the required completion signal.
+  dedicated goal-lifecycle evidence section. Do not report `create_goal`,
+  `GOAL_CREATED`, or `update_goal` tool-call evidence as acceptance evidence.
+  The final `Goal finished.` line is the required completion signal.
 - Use the assigned git worktree path from your prompt for all reads, edits, and
   verification commands. Do not edit the root checkout or another worker's
   worktree unless the prompt explicitly assigns that location.
