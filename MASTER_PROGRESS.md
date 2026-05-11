@@ -2895,10 +2895,20 @@ Last updated: 2026-05-11
   - Removed `../worker-140-post-139-root-cause-audit`.
   - Deleted branch `worker/140-post-139-root-cause-audit`.
 - Created `worker-141-readme-text-paragraph-docs` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_141_readme_text_paragraph_docs` as a managed worker subagent with `goal: true`.
+- Worker 141 completed and reported `Goal finished.` It wrote `worker-progress/worker-141-readme-text-paragraph-docs.md`.
+- Worker 141 documented the simple `<text textStyle>` versus rich `<paragraph paragraphStyle>` split in the README, added a nested `paragraphStyle.textStyle` example, and preserved the unsupported `fontVariations` boundary.
+- Worker 141 branch commit: `2912d45 Document text paragraph style split`.
+- Merged worker 141 into `main` as `0ef703a Merge worker 141 README text paragraph docs`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 141 cleanup:
+  - Closed `/root/worker_141_readme_text_paragraph_docs`.
+  - Removed `../worker-141-readme-text-paragraph-docs`.
+  - Deleted branch `worker/141-readme-text-paragraph-docs`.
 
 ## Active Workers
 
-- `/root/worker_141_readme_text_paragraph_docs`: updating README/API documentation for the simple `<text textStyle>` versus rich `<paragraph paragraphStyle>` styling split in isolated worktree `../worker-141-readme-text-paragraph-docs`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3059,6 +3069,7 @@ Accepted worker reports:
 - `worker-progress/worker-138-post-137-root-cause-audit.md`
 - `worker-progress/worker-139-paragraph-tojsi-nested-textstyle.md`
 - `worker-progress/worker-140-post-139-root-cause-audit.md`
+- `worker-progress/worker-141-readme-text-paragraph-docs.md`
 
 ## Pending Workers
 
@@ -3109,6 +3120,7 @@ Accepted worker reports:
 - Worker 138 accepted the post-worker-137 proof surface, reconfirmed the main 28-command feasible matrix in `4m 56s`, and selected nested `ParagraphStyle::toJSI(...)` outbound shape preservation, including the text-style `heightMultiplier` collision boundary, as the next target.
 - Worker 139 closed nested `ParagraphStyle::toJSI(...)` shape preservation with dual flat/nested output, distinct paragraph/text-style `heightMultiplier` round-trip proof, and the main 28-command feasible matrix passed in `4m 54s`.
 - Worker 140 accepted the post-worker-139 proof surface, reconfirmed the main 28-command feasible matrix in `4m 49s`, confirmed platform-native app build/run remains locally blocked, and selected README/API documentation for the simple `<text textStyle>` versus rich `<paragraph paragraphStyle>` split as the next strongest locally unblocked target.
+- Worker 141 closed the README/API docs target with simple text versus rich paragraph styling guidance, nested `paragraphStyle.textStyle` usage, unsupported `fontVariations` boundaries, and the main 28-command feasible matrix passed in `5m 2s`.
 
 ## Evidence Summary
 
@@ -3159,9 +3171,8 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor worker 141, which is updating README/API documentation for the
-  simple `<text textStyle>` versus rich `<paragraph paragraphStyle>` styling
-  split.
+- Assign a fresh post-worker-141 audit to rerank the remaining locally
+  unblocked proof, example, API-contract, and platform-runtime gaps.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
