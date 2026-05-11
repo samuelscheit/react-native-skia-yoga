@@ -280,8 +280,9 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch Worker 157 to expand generated materialized
-  `YogaNode.setStyle(...)` proof for 16-value `style.matrix` arrays.
+- Monitor Worker 157, which is expanding generated materialized
+  `YogaNode.setStyle(...)` proof for 16-value `style.matrix` arrays from
+  isolated worktree `../worker-157-materialized-matrix16`.
 
 Acceptance criteria:
 
