@@ -2410,10 +2410,26 @@ Last updated: 2026-05-11
 - Prepared worker 108 as the next step: align direct `JSIConverter<RNSkia::StrokeOpts>::canConvert(...)` with `fromJSI(...)` and add focused verifier coverage.
 - Created `worker-108-strokeopts-converter-contract` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-108-strokeopts-converter-contract` as a top-level tmux subprocess.
 - Worker 108 passed the visible `GOAL_CREATED: Align direct StrokeOpts converter canConvert with fromJSI and prove the contract.` gate as the first worker message.
+- Worker 108 completed and reported `Goal finished.` It wrote `worker-progress/worker-108-strokeopts-converter-contract.md`.
+- Worker 108 changed `cpp/JSIConverter+StrokeOpts.hpp` so direct `canConvert(...)` accepts only top-level objects, matching direct `fromJSI(...)`, and expanded `scripts/verify-yoganode-native-commands-render.mjs` with direct `StrokeOpts` converter consistency coverage for object, `null`, `undefined`, number, boolean, and string payloads.
+- Worker 108 preserved public `path.stroke` behavior at the command parser layer, including omitted `undefined`/`null`, non-object rejection, canonical `miter_limit`, deterministic `miterLimit` alias fallback, numeric/string join/cap parsing, and public `toJSI(...)` spelling.
+- Worker 108 branch commit: `8d76f64 Align StrokeOpts converter contract`.
+- Merged worker 108 into `main` as `469d86c Merge worker 108 StrokeOpts converter contract`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - `node --check scripts/verify-yoganode-native-commands-render.mjs`: passed.
+  - `npm run check:yoganode-native-commands-render`: passed.
+  - `npm run check:feasible-matrix`: passed all 28 commands in `4m 18s` command duration (`258.09s` real time).
+- Worker 108 cleanup:
+  - Killed `rnskia-worker-108-strokeopts-converter-contract`.
+  - Removed `../worker-108-strokeopts-converter-contract`.
+  - Deleted branch `worker/108-strokeopts-converter-contract`.
+  - Verified no `rnskia-worker-108` tmux session, worker 108 worktree, or worker 108 branch remained.
+- Prepared worker 109 as the next step: a read-only post-worker-108 root-cause audit to select the next strongest unblocked target.
 
 ## Active Workers
 
-- `rnskia-worker-108-strokeopts-converter-contract`: running from `worker/108-strokeopts-converter-contract`; aligning direct `JSIConverter<RNSkia::StrokeOpts>::canConvert(...)` with `fromJSI(...)` and adding focused verifier coverage.
+- None; worker 109 is prepared for launch.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2541,10 +2557,11 @@ Accepted worker reports:
 - `worker-progress/worker-105-post-104-root-cause-audit.md`
 - `worker-progress/worker-106-nitro-setcommand-more-breadth.md`
 - `worker-progress/worker-107-post-106-root-cause-audit.md`
+- `worker-progress/worker-108-strokeopts-converter-contract.md`
 
 ## Pending Workers
 
-- None; worker 108 is active.
+- `rnskia-worker-109-post-108-root-cause-audit`: planned from `worker/109-post-108-root-cause-audit`; audit the post-worker-108 state and select the next strongest unblocked root-cause target.
 
 ## Decisions
 
@@ -2558,6 +2575,7 @@ Accepted worker reports:
 - Report-recovery workers may use a smaller model when `gpt-5.5` usage exhaustion prevents completion; this exception is for report finalization only and must be recorded here.
 - Post-worker-102 target selection: worker 103 accepted worker 102's synthetic ImageCmd fit proof boundary, reconfirmed the 28-command feasible matrix, and selected bounded text/paragraph CSS color-string command conversion/render coverage as the strongest locally unblocked target because public JSX accepts string color values and native text-style conversion parses CSS strings while current text/paragraph command-render coverage uses numeric colors.
 - Post-worker-106 target selection: worker 107 accepted worker 106's expanded generated `setCommand(...)` breadth, reconfirmed the 28-command feasible matrix, and selected direct `StrokeOpts` converter consistency as the strongest locally unblocked product-source target because `fromJSI(...)` rejects non-objects while `canConvert(...)` still advertises objects, `null`, and `undefined` as convertible.
+- Post-worker-108 follow-up: direct `StrokeOpts` converter consistency is integrated; the next step is a fresh audit because worker 107's next-ranked TypeScript dynamic payload caveat needs API-boundary reassessment after the converter fix.
 
 ## Evidence Summary
 
@@ -2595,12 +2613,13 @@ Accepted worker reports:
 - Post-worker-104 target selection: worker 105 reconfirmed the 28-command feasible matrix in `4m 41s`, accepted worker 104's direct command/render proof boundary, and selected generated materialized `YogaNode.setCommand(...)` breadth as the next strongest unblocked target. Current `check:yoganode-nitro-materialization` still names generated wrapper coverage for `group`, `line`, `points`, and public-shaped `path` only; the next proof should add fresh materialized-node generated wrapper cases for additional command families without claiming render, platform app runtime, actual React Native bridge delivery, Nitro registry install inside React Native, UI-runtime Worklets, real Reanimated delivery, image asset loading, exact typography, or exact render fidelity.
 - Generated Nitro setCommand expanded breadth proof: worker 106 expanded `check:yoganode-nitro-materialization` with generated JS-facing `setCommand(...)` wrapper execution from fresh materialized YogaNode objects for `text`, `paragraph`, `circle`, `rrect`, `blurMaskFilter`, `rect`, `oval`, and synthetic `image`, in addition to the existing `group`, `line`, `points`, and public-shaped `path` cases. The verifier now asserts wrapper return values, NativeState identity, concrete command classes, representative native state, host CSS parser/platform context linkage for text/paragraph/image, and no-pixel state probes where needed, while still excluding command rendering, exact typography, image asset loading, React Native bridge delivery, Nitro registry install inside React Native, UI-runtime Worklets, platform app runtime, and exact render fidelity. The feasible matrix remained 28 commands and passed on main in `4m 27s`.
 - Post-worker-106 audit: worker 107 accepted the post-worker-106 baseline and reconfirmed the 28-command feasible matrix in `4m 28s` command duration (`268.09s` real time). Worker 107 ranked direct `JSIConverter<RNSkia::StrokeOpts>::canConvert(...)` / `fromJSI(...)` consistency first, because worker 106 closed the broader generated-materialized `setCommand(...)` gap and the remaining converter mismatch is source-confirmed: direct `fromJSI(...)` rejects non-object payloads while `canConvert(...)` still accepts object, `null`, and `undefined`. Worker 107 kept the public `path.stroke` command-path risk bounded because `parseStrokeOpts(...)` already treats `undefined`/`null` as omitted and rejects non-object stroke payloads, and worker 096 plus worker 106 already prove public-shaped `path.stroke.miter_limit` through direct command/render and generated wrapper paths.
+- Direct StrokeOpts converter consistency proof: worker 108 changed direct `JSIConverter<RNSkia::StrokeOpts>::canConvert(...)` to return `value.isObject()` only, matching direct `fromJSI(...)`'s top-level object precondition while leaving public `path.stroke` omitted/null semantics owned by `parseStrokeOpts(...)`. `check:yoganode-native-commands-render` now proves direct object acceptance and `null`, `undefined`, number, boolean, and string rejection by both direct converter entry points, while preserving public `path.stroke.miter_limit`, `miterLimit` alias fallback/public-key precedence, numeric/string join/cap parsing, non-object stroke rejection, invalid join/cap rejection, and public `StrokeOpts::toJSI(...)` spelling. The feasible matrix remained 28 commands and passed on main in `4m 18s`.
 - Example Worklets transform: worker 051 added the example/Expo Babel-config path to `check:skia-yoga-object-lazy-init`, proving package source `src/util.ts` keeps the same lazy Nitro closure/body contract when transformed through `example/babel.config.js` and the example dependency context.
 - Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the package lifecycle root-cause task, worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`. Worker 020 found the runtime-smoke archive discovery target, worker 021 completed it, worker 022 found the Android CMake archive-layout analogue, worker 023 completed it, worker 024 selected lint-ci root configuration/formatter repair as the next repo-owned feedback-loop fix, worker 025 completed that repair, worker 026 selected the remaining product-source React Native deep imports as the next implementation target, worker 027 completed that target, worker 028 selected example lint-contract cleanup, worker 029 completed it, worker 030 selected public README/API documentation drift, worker 031 completed that contract fix, worker 032 selected native publish-surface completeness, worker 033 completed that package-surface fix, worker 034 selected the unguarded Expo export path plus Metro config dump as the next example feedback-loop target, worker 035 completed that feedback-loop target, worker 036 confirmed platform-native build/run remains blocked by local toolchain gaps rather than a stronger repo-owned target, and worker 037 removed the strongest known unblocked RN Skia private-import target.
 
 ## Next Implementation Candidates
 
-- Monitor worker 108's direct `StrokeOpts` converter consistency work and accept/merge it if its implementation, verifier coverage, report, verification, and cleanup meet the prompt.
+- Monitor worker 109's post-worker-108 root-cause audit and accept/merge it if its report, verification, target selection, and cleanup meet the prompt.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
