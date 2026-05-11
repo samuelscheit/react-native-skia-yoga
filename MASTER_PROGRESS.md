@@ -2950,10 +2950,20 @@ Last updated: 2026-05-11
   - Removed `../worker-145-style-serializer-inventory`.
   - Deleted branch `worker/145-style-serializer-inventory`.
 - Created `worker-146-post-145-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_146_post_145_root_cause_audit` as a managed worker subagent with `goal: true`.
+- Worker 146 completed and reported `Goal finished.` It wrote `worker-progress/worker-146-post-145-root-cause-audit.md`.
+- Worker 146 accepted worker 145's inventory cleanup, reconfirmed the 28-command feasible matrix, and selected a concrete `YogaNode::setStyle(...)` paint-ordering target where `backgroundColor` as `SkPaint` can overwrite explicit style paint fields such as dither and stroke settings.
+- Worker 146 branch commit: `b691c24 Add worker 146 root cause audit`.
+- Merged worker 146 into `main` as `dbf43b1 Merge worker 146 post-145 root cause audit`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 146 cleanup:
+  - Closed `/root/worker_146_post_145_root_cause_audit`.
+  - Removed `../worker-146-post-145-root-cause-audit`.
+  - Deleted branch `worker/146-post-145-root-cause-audit`.
 
 ## Active Workers
 
-- `/root/worker_146_post_145_root_cause_audit`: auditing the post-worker-145 proof surface and reranking remaining locally unblocked proof, API-contract, example, and platform-runtime gaps in isolated worktree `../worker-146-post-145-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3119,6 +3129,7 @@ Accepted worker reports:
 - `worker-progress/worker-143-example-nested-paragraph-demo.md`
 - `worker-progress/worker-144-post-143-root-cause-audit.md`
 - `worker-progress/worker-145-style-serializer-inventory.md`
+- `worker-progress/worker-146-post-145-root-cause-audit.md`
 
 ## Pending Workers
 
@@ -3174,6 +3185,7 @@ Accepted worker reports:
 - Worker 143 closed the example-owned nested paragraph type/demo refresh with scoped example type/demo updates, kept simple text examples bounded to `fontSize`/`color`, and passed the main 28-command feasible matrix in `4m 58s`.
 - Worker 144 accepted the post-worker-143 proof surface, reconfirmed the main 28-command feasible matrix in `4m 31s`, confirmed platform-native app build/run remains locally blocked, and selected bounded style serializer field-inventory/proof-boundary cleanup as the next strongest locally unblocked target.
 - Worker 145 closed bounded style serializer field-inventory/proof-boundary cleanup by adding installed RN Skia public style/sampling inventory drift checks and tightening native command/render verifier proof-boundary output. The main 28-command feasible matrix passed in `4m 26s`.
+- Worker 146 accepted the post-worker-145 proof surface, reconfirmed the main 28-command feasible matrix, confirmed platform-native app build/run remains locally blocked, and selected SkPaint-backed `backgroundColor` ordering for explicit style paint fields as the next strongest locally unblocked target.
 
 ## Evidence Summary
 
@@ -3224,9 +3236,8 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor worker 146, which is auditing the post-worker-145 proof surface and
-  reranking remaining locally unblocked proof, API-contract, example, and
-  platform-runtime gaps.
+- Assign the SkPaint-backed `backgroundColor` ordering fix for explicit style
+  paint fields in `YogaNode::setStyle(...)`.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
