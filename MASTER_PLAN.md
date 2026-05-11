@@ -293,8 +293,8 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch Worker 163 on bounded transform composition render/hit-test proof from
-  an isolated worktree.
+- Monitor Worker 163's bounded transform composition render/hit-test proof from
+  isolated worktree `../worker-163-transform-composition-runtime`.
 
 Acceptance criteria:
 

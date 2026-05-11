@@ -3305,10 +3305,16 @@ Last updated: 2026-05-12
   - Deleted branch `worker/162-post-161-root-cause-audit`.
 - Next step selected by orchestration: launch Worker 163 for bounded transform
   composition render/hit-test proof.
+- Created `worker-163-transform-composition-runtime` from current `main`,
+  symlinked root/example dependencies from the main worktree, and prepared
+  `/root/worker_163_transform_composition_runtime` as a managed implementation
+  worker subagent with `goal: true`.
 
 ## Active Workers
 
-- None.
+- `/root/worker_163_transform_composition_runtime`: implementing bounded
+  transform composition render/hit-test proof from isolated worktree
+  `../worker-163-transform-composition-runtime`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3616,11 +3622,8 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Launch Worker 163 on bounded transform composition render/hit-test proof from
-  an isolated worktree. Expected focus: extend an existing host-native verifier
-  to compose public transform operations and prove concrete raster/hit-test
-  behavior through consumers of `_matrix`, without claiming platform runtime or
-  exact GPU fidelity.
+- Monitor Worker 163's bounded transform composition render/hit-test proof from
+  isolated worktree `../worker-163-transform-composition-runtime`.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
