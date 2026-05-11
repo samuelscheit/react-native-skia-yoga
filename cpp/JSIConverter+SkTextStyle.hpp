@@ -97,6 +97,23 @@ inline jsi::Array textStyleFontFamiliesToJSI(
     return array;
 }
 
+inline jsi::Array textStyleFontFeaturesToJSI(
+    jsi::Runtime& runtime,
+    const std::vector<skia::textlayout::FontFeature>& features)
+{
+    jsi::Array array(runtime, features.size());
+    for (size_t index = 0; index < features.size(); ++index) {
+        jsi::Object feature(runtime);
+        feature.setProperty(
+            runtime,
+            "name",
+            std::string(features[index].fName.c_str(), features[index].fName.size()));
+        feature.setProperty(runtime, "value", static_cast<double>(features[index].fValue));
+        array.setValueAtIndex(runtime, index, std::move(feature));
+    }
+    return array;
+}
+
 inline jsi::Object textStyleFontStyleToJSI(
     jsi::Runtime& runtime,
     const SkFontStyle& fontStyle)
@@ -180,6 +197,9 @@ inline void writeTextStylePublicFieldsToJSI(
     object.setProperty(runtime, "decorationColor", static_cast<double>(textStyle.getDecorationColor()));
     object.setProperty(runtime, "decorationThickness", static_cast<double>(textStyle.getDecorationThicknessMultiplier()));
     object.setProperty(runtime, "decorationStyle", static_cast<double>(textStyle.getDecorationStyle()));
+    if (textStyle.getFontFeatureNumber() > 0) {
+        object.setProperty(runtime, "fontFeatures", textStyleFontFeaturesToJSI(runtime, textStyle.getFontFeatures()));
+    }
     object.setProperty(runtime, "fontStyle", textStyleFontStyleToJSI(runtime, textStyle.getFontStyle()));
     if (includeHeightMultiplier && textStyle.getHeightOverride()) {
         object.setProperty(runtime, "heightMultiplier", static_cast<double>(textStyle.getHeight()));
