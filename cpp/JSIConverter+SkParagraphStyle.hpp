@@ -135,6 +135,23 @@ inline void applyNestedParagraphStyleTextStyleOverlay(
   paragraphStyle.setTextStyle(textStyle);
 }
 
+inline bool hasNestedParagraphStyleTextStyleHeightMultiplier(
+    jsi::Runtime& runtime,
+    const jsi::Object& object)
+{
+  if (!object.hasProperty(runtime, "textStyle")) {
+    return false;
+  }
+
+  auto textStyleValue = object.getProperty(runtime, "textStyle");
+  if (!textStyleValue.isObject()) {
+    return false;
+  }
+
+  auto textStyleObject = textStyleValue.asObject(runtime);
+  return textStyleObject.hasProperty(runtime, "heightMultiplier");
+}
+
 inline void applyParagraphStyleStrutStyleOverlay(
     jsi::Runtime& runtime,
     const jsi::Value& value,
@@ -227,7 +244,11 @@ struct JSIConverter<skia::textlayout::ParagraphStyle> final {
       // <text textStyle={...} />, including CSS color strings. Keep this after
       // the nested overlay so flattened fields retain public precedence.
       auto textStyle = paragraphStyle.getTextStyle();
-      applyTextStyle(runtime, arg, textStyle);
+      applyTextStyle(
+          runtime,
+          arg,
+          textStyle,
+          hasNestedParagraphStyleTextStyleHeightMultiplier(runtime, object));
       paragraphStyle.setTextStyle(textStyle);
       applyParagraphStyleStrutStyleOverlay(runtime, arg, paragraphStyle);
     }
@@ -264,6 +285,10 @@ struct JSIConverter<skia::textlayout::ParagraphStyle> final {
     if (!ellipsis.empty()) {
       object.setProperty(runtime, "ellipsis", ellipsis);
     }
+
+    jsi::Object textStyleObject(runtime);
+    writeTextStylePublicFieldsToJSI(runtime, textStyleObject, arg.getTextStyle());
+    object.setProperty(runtime, "textStyle", textStyleObject);
 
     writeTextStylePublicFieldsToJSI(runtime, object, arg.getTextStyle(), false);
     const auto& strutStyle = arg.getStrutStyle();
