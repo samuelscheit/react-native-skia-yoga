@@ -3309,12 +3309,29 @@ Last updated: 2026-05-12
   symlinked root/example dependencies from the main worktree, and prepared
   `/root/worker_163_transform_composition_runtime` as a managed implementation
   worker subagent with `goal: true`.
+- Worker 163 completed and reported `Goal finished.` It wrote
+  `worker-progress/worker-163-transform-composition-runtime.md`.
+- Worker 163 added proof-only host-native transform composition coverage:
+  `translateX + translateY + scale` and `translateX + rotateZ` hit-test
+  inversion through `YogaNode::hitTestInternal()`, plus bounded
+  `translateX + translateY + scale` raster assertions through
+  `YogaNode::renderToContext()` / canvas concat.
+- Worker 163 branch commit:
+  `863fb17 Add Worker 163 transform composition proof`.
+- Merged worker 163 into `main` as
+  `5cfe4bc Merge worker 163 transform composition proof`.
+- Post-merge `git diff --check HEAD~1 HEAD`: passed.
+- Worker 163 cleanup:
+  - Closed `/root/worker_163_transform_composition_runtime`.
+  - Removed `../worker-163-transform-composition-runtime`.
+  - Deleted branch `worker/163-transform-composition-runtime`.
+- Next step selected by orchestration: launch a fresh post-worker-163
+  root-cause audit to accept the new proof boundary, rerank remaining locally
+  unblocked gaps, and select Worker 165's target.
 
 ## Active Workers
 
-- `/root/worker_163_transform_composition_runtime`: implementing bounded
-  transform composition render/hit-test proof from isolated worktree
-  `../worker-163-transform-composition-runtime`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3497,6 +3514,7 @@ Accepted worker reports:
 - `worker-progress/worker-160-post-159-root-cause-audit.md`
 - `worker-progress/worker-161-materialized-transform-breadth.md`
 - `worker-progress/worker-162-post-161-root-cause-audit.md`
+- `worker-progress/worker-163-transform-composition-runtime.md`
 
 ## Pending Workers
 
@@ -3572,6 +3590,7 @@ Accepted worker reports:
 - Worker 160 accepted Worker 159's proof boundary, reconfirmed the full 28-command feasible matrix in `4m 45s`, preserved the Worker 158 SkMatrix converter nuance, and selected generated materialized transform-operation breadth plus explicit empty-transform/no-matrix reset proof as the next target.
 - Worker 161 expanded generated materialized transform proof across all public single-transform variants and added explicit empty-transform/no-matrix reset proof. Main post-merge verification passed `git diff --check HEAD~1 HEAD`, `node --check scripts/verify-yoganode-nitro-materialization.mjs`, `npm run check:yoganode-nitro-materialization`, and the full 28-command feasible matrix in `5m 32s`.
 - Worker 162 accepted Worker 161's proof boundary, reconfirmed the full 28-command feasible matrix in `4m 44s`, preserved the Worker 158 SkMatrix converter nuance, recorded the failed/stuck subagent recovery attempts, and selected bounded transform composition render/hit-test proof as the next target.
+- Worker 163 closed bounded transform composition render/hit-test proof by adding host-native hit-test inversion assertions for `translateX + translateY + scale` and `translateX + rotateZ`, plus bounded raster assertions for `translateX + translateY + scale`. Worker verification passed both edited verifier syntax checks, focused hit-testing, focused command/render, materialization, `git diff --check`, and the full 28-command feasible matrix in `4m 32s`.
 
 ## Evidence Summary
 
@@ -3622,8 +3641,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor Worker 163's bounded transform composition render/hit-test proof from
-  isolated worktree `../worker-163-transform-composition-runtime`.
+- Launch a fresh post-worker-163 root-cause audit from an isolated worktree.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
