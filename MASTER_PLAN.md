@@ -273,8 +273,9 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Assign a fresh post-worker-149 root-cause audit to rerank remaining locally
-  unblocked proof and product gaps after the layer proof.
+- Monitor worker 150, which is auditing the post-worker-149 proof surface and
+  reranking remaining locally unblocked proof and product gaps from isolated
+  worktree `../worker-150-post-149-root-cause-audit`.
 
 Acceptance criteria:
 
