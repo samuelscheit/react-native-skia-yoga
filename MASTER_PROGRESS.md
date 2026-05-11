@@ -3248,13 +3248,36 @@ Last updated: 2026-05-12
   symlinked root/example dependencies from the main worktree, and prepared
   `/root/worker_161_materialized_transform_breadth` as a managed
   implementation worker subagent with `goal: true`.
+- The first Worker 161 subagent exited after leaving a partial uncommitted edit
+  in `scripts/verify-yoganode-nitro-materialization.mjs` and no report.
+  Orchestration preserved the partial work and launched
+  `/root/worker_161_materialized_transform_breadth_recovery` on the same
+  branch/worktree.
+- Worker 161 recovery completed and reported `Goal finished.` It wrote
+  `worker-progress/worker-161-materialized-transform-breadth.md`.
+- Worker 161 expanded generated materialized `setStyle(...)` transform proof
+  across rotateX, rotateY, rotateZ, scale, scaleX, scaleY, translateX,
+  translateY, skewX, and skewY, and added explicit empty-transform/no-matrix
+  reset proof.
+- Worker 161 branch commit: `2df702a Expand materialized transform proof`.
+- Merged worker 161 into `main` as
+  `12e1106 Merge worker 161 materialized transform proof`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - `node --check scripts/verify-yoganode-nitro-materialization.mjs`: passed.
+  - `npm run check:yoganode-nitro-materialization`: passed.
+  - `npm run check:feasible-matrix`: passed 28/28 in `5m 32s`.
+- Worker 161 cleanup:
+  - Closed `/root/worker_161_materialized_transform_breadth_recovery`.
+  - Removed `../worker-161-materialized-transform-breadth`.
+  - Deleted branch `worker/161-materialized-transform-breadth`.
+- Next step selected by orchestration: launch a fresh post-worker-161
+  root-cause audit to accept the new proof boundary, rerank remaining locally
+  unblocked gaps, and select Worker 163's target.
 
 ## Active Workers
 
-- `/root/worker_161_materialized_transform_breadth`: expanding generated
-  materialized transform-operation breadth and explicit empty-transform
-  no-matrix reset proof from isolated worktree
-  `../worker-161-materialized-transform-breadth`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3500,6 +3523,7 @@ Accepted worker reports:
 - Worker 158 accepted Worker 157's MatrixArray16 proof boundary, documented that runtime JS arrays exercise the custom `std::shared_ptr<SkMatrix>` converter branch rather than the generated tuple-16 variant, and selected materialized `transform: []` matrix suppression/fallback as the next target.
 - Worker 159 closed materialized `transform: []` matrix fallback by updating `YogaNode::setStyle(...)` and adding generated materialized `setStyle(...)` proof for empty transform plus matrix fallback. Main post-merge verification passed `git diff --check HEAD~1 HEAD`, `node --check scripts/verify-yoganode-nitro-materialization.mjs`, `npm run check:yoganode-nitro-materialization`, and the full 28-command feasible matrix in `4m 45s`. The next step is a fresh post-worker-159 root-cause audit.
 - Worker 160 accepted Worker 159's proof boundary, reconfirmed the full 28-command feasible matrix in `4m 45s`, preserved the Worker 158 SkMatrix converter nuance, and selected generated materialized transform-operation breadth plus explicit empty-transform/no-matrix reset proof as the next target.
+- Worker 161 expanded generated materialized transform proof across all public single-transform variants and added explicit empty-transform/no-matrix reset proof. Main post-merge verification passed `git diff --check HEAD~1 HEAD`, `node --check scripts/verify-yoganode-nitro-materialization.mjs`, `npm run check:yoganode-nitro-materialization`, and the full 28-command feasible matrix in `5m 32s`.
 
 ## Evidence Summary
 
@@ -3550,8 +3574,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor Worker 161's generated materialized transform-operation breadth
-  implementation.
+- Launch Worker 162 as a fresh post-worker-161 root-cause audit.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
