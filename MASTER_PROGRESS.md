@@ -2704,10 +2704,23 @@ Last updated: 2026-05-11
   - Removed `../worker-126-post-125-root-cause-audit`.
   - Deleted branch `worker/126-post-125-root-cause-audit`.
 - Created `worker-127-paragraphstyle-scalar-tojsi` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_127_paragraphstyle_scalar_tojsi` as a managed worker subagent with `goal: true`.
+- Worker 127 completed and reported `Goal finished.` It wrote `worker-progress/worker-127-paragraphstyle-scalar-tojsi.md`.
+- Worker 127 added bounded `ParagraphStyle` scalar `toJSI(...)` serialization for `disableHinting`, `replaceTabCharacters`, `textDirection`, and `textHeightBehavior`, preserving existing paragraph and flattened text-style serialization.
+- Worker 127 expanded `check:yoganode-native-commands-render` with direct `ParagraphStyle` and representative `paragraph.paragraphStyle` `NodeCommand` round-trip proof for those scalar fields.
+- Worker 127 branch commit: `a6d3d00 Add ParagraphStyle scalar serialization`.
+- Merged worker 127 into `main` as `5391f8f Merge worker 127 ParagraphStyle scalar serialization`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - `node --check scripts/verify-yoganode-native-commands-render.mjs`: passed.
+  - `npm run check:feasible-matrix`: passed all 28 commands in `4m 32s`.
+- Worker 127 cleanup:
+  - Closed `/root/worker_127_paragraphstyle_scalar_tojsi`.
+  - Removed `../worker-127-paragraphstyle-scalar-tojsi`.
+  - Deleted branch `worker/127-paragraphstyle-scalar-tojsi`.
 
 ## Active Workers
 
-- `/root/worker_127_paragraphstyle_scalar_tojsi`: implementing bounded `ParagraphStyle` scalar `toJSI(...)` serialization in isolated worktree `../worker-127-paragraphstyle-scalar-tojsi`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2854,6 +2867,7 @@ Accepted worker reports:
 - `worker-progress/worker-124-post-123-root-cause-audit.md`
 - `worker-progress/worker-125-textstyle-fontfeatures-tojsi.md`
 - `worker-progress/worker-126-post-125-root-cause-audit.md`
+- `worker-progress/worker-127-paragraphstyle-scalar-tojsi.md`
 
 ## Pending Workers
 
@@ -2890,6 +2904,7 @@ Accepted worker reports:
 - Worker 124 accepted worker 123's boundary, reconfirmed the main 28-command feasible matrix, and selected bounded `TextStyle.fontFeatures` `toJSI(...)` serialization because it remains a public-shaped field parsed by `fromJSI(...)` but dropped by `toJSI(...)`.
 - Worker 125 closed the selected `TextStyle.fontFeatures` serialization target, added direct and representative command round-trip proof, and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-125 audit.
 - Worker 126 accepted the post-worker-125 proof surface, reconfirmed the main 28-command feasible matrix, and selected bounded `ParagraphStyle` scalar `toJSI(...)` serialization for `disableHinting`, `replaceTabCharacters`, `textDirection`, and `textHeightBehavior`.
+- Worker 127 closed the selected `ParagraphStyle` scalar serialization target and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-127 audit.
 
 ## Evidence Summary
 
@@ -2940,7 +2955,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Add bounded `ParagraphStyle` scalar `toJSI(...)` serialization for `disableHinting`, `replaceTabCharacters`, `textDirection`, and `textHeightBehavior`, with direct converter and representative `paragraph.paragraphStyle` `NodeCommand` round-trip proof.
+- Run a fresh post-worker-127 root-cause audit to rerank remaining locally unblocked gaps under the current proof surface.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
