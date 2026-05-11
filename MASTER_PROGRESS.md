@@ -2916,10 +2916,11 @@ Last updated: 2026-05-11
   - Closed `/root/worker_142_post_141_root_cause_audit`.
   - Removed `../worker-142-post-141-root-cause-audit`.
   - Deleted branch `worker/142-post-141-root-cause-audit`.
+- Created `worker-143-example-nested-paragraph-demo` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_143_example_nested_paragraph_demo` as a managed worker subagent with `goal: true`.
 
 ## Active Workers
 
-- None.
+- `/root/worker_143_example_nested_paragraph_demo`: refreshing example-owned nested paragraph type/demo coverage in isolated worktree `../worker-143-example-nested-paragraph-demo`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3184,7 +3185,8 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Assign the example-owned nested paragraph type/demo refresh.
+- Monitor worker 143, which is refreshing example-owned nested paragraph
+  type/demo coverage.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 

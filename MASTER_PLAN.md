@@ -266,7 +266,9 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Assign the example-owned nested paragraph type/demo refresh.
+- Monitor worker 143, which is refreshing example-owned nested paragraph
+  type/demo coverage in isolated worktree
+  `../worker-143-example-nested-paragraph-demo`.
 
 Acceptance criteria:
 
