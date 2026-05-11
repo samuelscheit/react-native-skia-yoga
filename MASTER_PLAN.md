@@ -253,7 +253,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Close the simple `<text textStyle>` contract drift by narrowing/rejecting rich text-style fields that `TextCmd` accepts but does not render.
+- Monitor worker 133, which is closing the simple `<text textStyle>` contract drift by narrowing/rejecting rich text-style fields that `TextCmd` accepts but does not render.
 
 Acceptance criteria:
 
