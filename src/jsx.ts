@@ -190,7 +190,7 @@ export interface YogaPointsProps extends YogaContainerProps {
 export interface YogaImageProps extends YogaContainerProps {
 	fit?: YogaDeepAnimated<Fit>
 	image?: YogaDeepAnimated<SkImage | null>
-	sampling?: YogaDeepAnimated<SamplingOptions>
+	sampling?: YogaDeepAnimated<SamplingOptions> | SharedValue<SamplingOptions>
 }
 
 export interface YogaBlurMaskFilterProps extends YogaContainerProps {
@@ -212,16 +212,4 @@ export interface YogaIntrinsicElements {
 	rect: YogaRectProps
 	rrect: YogaRoundedRectProps
 	text: YogaTextProps
-}
-
-declare global {
-	namespace JSX {
-		interface IntrinsicElements extends YogaIntrinsicElements {}
-	}
-
-	namespace React {
-		namespace JSX {
-			interface IntrinsicElements extends YogaIntrinsicElements {}
-		}
-	}
 }

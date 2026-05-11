@@ -95,6 +95,27 @@ const jsCommandBindingCases = [
 		type: "group",
 	},
 	{
+		cleanupKind: "delete",
+		cleanupPath: ["sampling"],
+		cleanupValue: undefined,
+		description: "top-level opaque image.sampling command prop",
+		expectedKey: "sampling",
+		initialValue: { filter: 1, mipmap: 2 },
+		lateValue: { filter: 2, mipmap: 0 },
+		nativeCommandBindingsEnabled: true,
+		nextValue: { filter: 0, mipmap: 1 },
+		path: ["sampling"],
+		props(harness, sharedValue) {
+			return harness.makeVmValue("({ sampling: bindings.value })", {
+				value: sharedValue,
+			})
+		},
+		cleanupProps(harness) {
+			return harness.makeVmValue("({})")
+		},
+		type: "image",
+	},
+	{
 		cleanupKind: "plain",
 		cleanupValue: 7,
 		description: "nested object command prop",
@@ -177,7 +198,7 @@ console.log(
 	`- Native command binding mode mirrors all whitelisted SharedValue command props (${formatNativeBindingCaseList(nativeCommandBindingCases)}) through Synchronizable.setBlocking.`,
 )
 console.log(
-	`- JS command listener path covers native-disabled, unsupported-native, nested object, post-096 stroke, and nested-array command props: ${formatJsCommandBindingCaseList(jsCommandBindingCases)}.`,
+	`- JS command listener path covers native-disabled, unsupported-native, top-level opaque image.sampling, nested object, post-096 stroke, and nested-array command props: ${formatJsCommandBindingCaseList(jsCommandBindingCases)}.`,
 )
 console.log(
 	"- Animated style listeners update host styles, invalidate, and toggle continuous redraw state.",

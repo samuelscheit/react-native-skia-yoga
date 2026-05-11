@@ -98,7 +98,10 @@ try {
 		"- Public package entrypoints and lowercase intrinsic JSX compiled from the installed package.",
 	)
 	console.log(
-		"- Packed consumer JSX compiled representative dynamic SharedValue command props: circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, path.trimEnd, path.stroke.miter_limit, line.from.x, and points.points[0].x.",
+		"- Packed consumer JSX compiled representative dynamic SharedValue command props: circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, path.trimEnd, path.stroke.miter_limit, line.from.x, points.points[0].x, and image.sampling.",
+	)
+	console.log(
+		"- Packed consumer TypeScript still rejected unsupported nested image.sampling SharedValue leaves while sampling remains opaque.",
 	)
 	console.log(
 		"- Public package boundary rejected internal top-level exports such as reconciler, NodeCommand, createYogaNode, and SkiaYoga.",
@@ -283,7 +286,7 @@ function writeConsumerProject(consumerDir, packedTarball) {
 
 function consumerSource() {
 	return `import * as React from "react"
-import type { SkPath } from "@shopify/react-native-skia"
+import type { FilterMode, SamplingOptions, SkPath } from "@shopify/react-native-skia"
 import type { SharedValue } from "react-native-reanimated"
 import {
 \tYogaCanvas,
@@ -328,6 +331,8 @@ const sharedPathTrimEnd = null as unknown as SharedValue<number>
 const sharedStrokeMiterLimit = null as unknown as SharedValue<number>
 const sharedLineFromX = null as unknown as SharedValue<number>
 const sharedPointX = null as unknown as SharedValue<number>
+const sharedSampling = null as unknown as SharedValue<SamplingOptions>
+const sharedSamplingFilter = null as unknown as SharedValue<FilterMode>
 const compileOnlyPath = null as unknown as SkPath
 
 const dynamicPathProps: YogaIntrinsicElements["path"] = {
@@ -336,6 +341,11 @@ const dynamicPathProps: YogaIntrinsicElements["path"] = {
 \tstyle: { height: 24, width: 48 },
 \ttrimEnd: sharedPathTrimEnd,
 \ttrimStart: sharedPathTrimStart,
+}
+
+const unsupportedNestedSamplingProps: YogaIntrinsicElements["image"] = {
+\t// @ts-expect-error nested image.sampling SharedValue leaves are not part of the opaque SamplingOptions contract.
+\tsampling: { filter: sharedSamplingFilter },
 }
 
 function handleProfileSample(sample: YogaCanvasProfileSample) {
@@ -380,6 +390,7 @@ export function PackedPackageSmoke() {
 \t\t\t\t\t\t\t\tpointMode="points"
 \t\t\t\t\t\t\t\tpoints={[{ x: sharedPointX, y: 0 }]}
 \t\t\t\t\t\t\t/>
+\t\t\t\t\t\t\t<image sampling={sharedSampling} />
 \t\t\t\t\t\t</rrect>
 \t\t\t\t\t</group>
 \t\t\t\t</rect>
@@ -395,6 +406,7 @@ const runtimeFragment = YogaRuntimeFragment
 void smokeElement
 void devRuntimeFragment
 void runtimeFragment
+void unsupportedNestedSamplingProps
 `
 }
 
