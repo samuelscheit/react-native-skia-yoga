@@ -2549,10 +2549,23 @@ Last updated: 2026-05-11
 - Prepared worker 116 as the next step: run a read-only post-worker-115 root-cause audit and select the next strongest locally unblocked target.
 - Created `worker-116-post-115-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-116-post-115-root-cause-audit` as a top-level tmux subprocess.
 - Worker 116 passed the visible `GOAL_CREATED: Audit post-worker-115 state and select the next strongest unblocked root-cause target.` gate as the first worker message.
+- Worker 116 completed and reported `Goal finished.` It wrote `worker-progress/worker-116-post-115-root-cause-audit.md`.
+- Worker 116 selected whole `SharedValue<SamplingOptions>` public type support for `image.sampling` as the next strongest locally unblocked target, correcting an initial nested-sampling traversal hypothesis because `SamplingOptions` is treated as opaque in `YogaDeepAnimated`.
+- Worker 116 verification passed `npm run check:feasible-matrix` with all 28 commands in `4m 43s`, focused syntax checks, and `git diff --check`.
+- Worker 116 branch commit: `cc9e2c9 Add worker 116 post-115 audit`.
+- Merged worker 116 into `main` as `05d9f66 Merge worker 116 post-115 audit`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 116 cleanup:
+  - Killed `rnskia-worker-116-post-115-root-cause-audit`.
+  - Removed `../worker-116-post-115-root-cause-audit`.
+  - Deleted branch `worker/116-post-115-root-cause-audit`.
+- Prepared worker 117 as the next step: implement public package support for whole `SharedValue<SamplingOptions>` on `image.sampling`.
+- Created `worker-117-sampling-sharedvalue-type-boundary` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-117-sampling-sharedvalue-type-boundary` as a top-level tmux subprocess.
 
 ## Active Workers
 
-- `rnskia-worker-116-post-115-root-cause-audit`: running from `worker/116-post-115-root-cause-audit`; read-only audit after worker 115 to select the next strongest locally unblocked target.
+- `rnskia-worker-117-sampling-sharedvalue-type-boundary`: running from `worker/117-sampling-sharedvalue-type-boundary`; implement public package support for whole `SharedValue<SamplingOptions>` on `image.sampling`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2691,7 +2704,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- None; worker 116 is active.
+- None; worker 117 is active.
 
 ## Decisions
 
@@ -2713,6 +2726,7 @@ Accepted worker reports:
 - Post-worker-113 follow-up: NodeCommand `toJSI(...)` serialization symmetry is integrated and the main 28-command feasible matrix passed; the next step is a fresh read-only root-cause audit because worker 111's ranked follow-ups are now closed or intentionally bounded.
 - Post-worker-114 target selection: worker 114 selected materialized `YogaNode.getChildren()` return identity/prototype coverage because Reconciler cleanup recursively depends on `getChildren()`, native `YogaNode::getChildren()` currently returns children through `JSIConverter<std::shared_ptr<YogaNode>>::toJSI(...)`, and that converter creates a fresh plain NativeState object instead of the cached Nitro-materialized object/prototype.
 - Post-worker-115 follow-up: materialized `YogaNode.getChildren()` identity/prototype behavior is integrated and the main 28-command feasible matrix passed; the next step is a fresh read-only root-cause audit because worker 115 closed the selected source/materialization boundary and the remaining gaps need reranking under the current proof surface.
+- Post-worker-116 target selection: worker 116 selected whole `SharedValue<SamplingOptions>` public type support for `image.sampling` because `SamplingOptions` is opaque but union-shaped, `YogaDeepAnimated<T>` currently distributes over that union, and the public type rejects `SharedValue<SamplingOptions>` while accepting narrower `SharedValue<FilterOptions>` / `SharedValue<CubicResampler>`.
 
 ## Evidence Summary
 
@@ -2763,7 +2777,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Run worker 116 as a read-only post-worker-115 root-cause audit to reassess remaining locally unblocked proof gaps after the `getChildren()` materialization hardening.
+- Complete worker 117's public `image.sampling` / `SharedValue<SamplingOptions>` type-boundary implementation and packed-consumer proof.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
