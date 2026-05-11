@@ -81,7 +81,10 @@ try {
 		"- Public package entrypoints and lowercase intrinsic JSX compiled from the installed package.",
 	)
 	console.log(
-		"- Public package boundary rejected internal top-level exports such as reconciler, createYogaNode, and SkiaYoga.",
+		"- Packed consumer JSX compiled representative dynamic SharedValue command props: circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, path.trimEnd, path.stroke.miter_limit, line.from.x, and points.points[0].x.",
+	)
+	console.log(
+		"- Public package boundary rejected internal top-level exports such as reconciler, NodeCommand, createYogaNode, and SkiaYoga.",
 	)
 	const consumerDevDependencies =
 		consumerDependencySummary.devDependencies.join(", ")
@@ -230,6 +233,8 @@ function writeConsumerProject(consumerDir, packedTarball) {
 
 function consumerSource() {
 	return `import * as React from "react"
+import type { SkPath } from "@shopify/react-native-skia"
+import type { SharedValue } from "react-native-reanimated"
 import {
 \tYogaCanvas,
 \ttype YogaCanvasProfileSample,
@@ -265,6 +270,24 @@ const interactiveGroupProps: YogaIntrinsicElements["group"] = {
 \tstyle: { opacity: 0.9 },
 }
 
+const sharedCircleRadius = null as unknown as SharedValue<number>
+const sharedRoundedRectCornerRadius = null as unknown as SharedValue<number>
+const sharedBlur = null as unknown as SharedValue<number>
+const sharedPathTrimStart = null as unknown as SharedValue<number>
+const sharedPathTrimEnd = null as unknown as SharedValue<number>
+const sharedStrokeMiterLimit = null as unknown as SharedValue<number>
+const sharedLineFromX = null as unknown as SharedValue<number>
+const sharedPointX = null as unknown as SharedValue<number>
+const compileOnlyPath = null as unknown as SkPath
+
+const dynamicPathProps: YogaIntrinsicElements["path"] = {
+\tpath: compileOnlyPath,
+\tstroke: { miter_limit: sharedStrokeMiterLimit },
+\tstyle: { height: 24, width: 48 },
+\ttrimEnd: sharedPathTrimEnd,
+\ttrimStart: sharedPathTrimStart,
+}
+
 function handleProfileSample(sample: YogaCanvasProfileSample) {
 \treturn sample.avgDrawMs + sample.avgPresentMs + sample.frames
 }
@@ -281,11 +304,11 @@ export function PackedPackageSmoke() {
 \t\t\t\t<rect style={rootStyle}>
 \t\t\t\t\t<group {...interactiveGroupProps}>
 \t\t\t\t\t\t<rrect
-\t\t\t\t\t\t\tcornerRadius={10}
+\t\t\t\t\t\t\tcornerRadius={sharedRoundedRectCornerRadius}
 \t\t\t\t\t\t\tstyle={panelStyle}
 \t\t\t\t\t\t>
 \t\t\t\t\t\t\t<circle
-\t\t\t\t\t\t\t\tradius={16}
+\t\t\t\t\t\t\t\tradius={sharedCircleRadius}
 \t\t\t\t\t\t\t\tstyle={{
 \t\t\t\t\t\t\t\t\tbackgroundColor: "#14b8a6",
 \t\t\t\t\t\t\t\t\theight: 32,
@@ -296,6 +319,16 @@ export function PackedPackageSmoke() {
 \t\t\t\t\t\t\t\tstyle={{ height: 24, width: 84 }}
 \t\t\t\t\t\t\t\ttext="packed"
 \t\t\t\t\t\t\t\ttextStyle={{ color: "white", fontSize: 14 }}
+\t\t\t\t\t\t\t/>
+\t\t\t\t\t\t\t<blurMaskFilter blur={sharedBlur} />
+\t\t\t\t\t\t\t<path {...dynamicPathProps} />
+\t\t\t\t\t\t\t<line
+\t\t\t\t\t\t\t\tfrom={{ x: sharedLineFromX, y: 0 }}
+\t\t\t\t\t\t\t\tto={{ x: 48, y: 12 }}
+\t\t\t\t\t\t\t/>
+\t\t\t\t\t\t\t<points
+\t\t\t\t\t\t\t\tpointMode="points"
+\t\t\t\t\t\t\t\tpoints={[{ x: sharedPointX, y: 0 }]}
 \t\t\t\t\t\t\t/>
 \t\t\t\t\t\t</rrect>
 \t\t\t\t\t</group>
@@ -332,9 +365,19 @@ void PublicRuntime.createYogaNode
 void PublicRuntime.SkiaYoga
 // @ts-expect-error YogaInteractionRegistry is internal canvas event plumbing.
 void PublicRuntime.YogaInteractionRegistry
+// @ts-expect-error NodeCommandKind is an internal command transport enum.
+void PublicRuntime.NodeCommandKind
 
 // @ts-expect-error YogaNodeFinal is internal native node plumbing.
 type HiddenYogaNodeFinal = PublicTypes.YogaNodeFinal
+// @ts-expect-error NodeCommand is an internal command transport union.
+type HiddenNodeCommand = PublicTypes.NodeCommand
+// @ts-expect-error NodeCommandNative is an internal Nitro command transport custom type.
+type HiddenNodeCommandNative = PublicTypes.NodeCommandNative
+// @ts-expect-error PathCommandPayload is an internal command transport payload.
+type HiddenPathCommandPayload = PublicTypes.PathCommandPayload
+// @ts-expect-error CircleCommandPayload is an internal command transport payload.
+type HiddenCircleCommandPayload = PublicTypes.CircleCommandPayload
 // @ts-expect-error YogaRootContainer is internal renderer state.
 type HiddenYogaRootContainer = PublicTypes.YogaRootContainer
 // @ts-expect-error SkiaYogaHostContext is internal renderer state.
