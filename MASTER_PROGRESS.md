@@ -2778,10 +2778,21 @@ Last updated: 2026-05-11
   - Removed `../worker-131-fontvariations-contract`.
   - Deleted branch `worker/131-fontvariations-contract`.
 - Created `worker-132-post-131-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_132_post_131_root_cause_audit` as a managed worker subagent with `goal: true`.
+- Worker 132 completed and reported `Goal finished.` It wrote `worker-progress/worker-132-post-131-root-cause-audit.md`.
+- Worker 132 reconfirmed the post-worker-131 baseline with `git diff --check`, `node --check scripts/verify-yoganode-native-commands-render.mjs`, `node --check scripts/verify-package-typescript-consumer.mjs`, `npm run check:package-typescript-consumer`, `npm run check:yoganode-native-commands-render`, and `npm run check:feasible-matrix`, which passed all 28 commands in `5m 22s`.
+- Worker 132 selected simple `<text textStyle>` contract closure as the next strongest locally unblocked implementation target because public text authoring accepts rich text-style fields that `TextCmd` currently converts but does not render.
+- Worker 132 branch commit: `8676f65 Add worker 132 root cause audit`.
+- Merged worker 132 into `main` as `1d0d700 Merge worker 132 post-131 root cause audit`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 132 cleanup:
+  - Closed `/root/worker_132_post_131_root_cause_audit`.
+  - Removed `../worker-132-post-131-root-cause-audit`.
+  - Deleted branch `worker/132-post-131-root-cause-audit`.
 
 ## Active Workers
 
-- `/root/worker_132_post_131_root_cause_audit`: running a report-only post-worker-131 root-cause audit in isolated worktree `../worker-132-post-131-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2933,6 +2944,7 @@ Accepted worker reports:
 - `worker-progress/worker-129-paragraphstyle-strutstyle-tojsi.md`
 - `worker-progress/worker-130-post-129-root-cause-audit.md`
 - `worker-progress/worker-131-fontvariations-contract.md`
+- `worker-progress/worker-132-post-131-root-cause-audit.md`
 
 ## Pending Workers
 
@@ -2974,6 +2986,7 @@ Accepted worker reports:
 - Worker 129 closed the selected `ParagraphStyle.strutStyle` parser/serializer target and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-129 audit.
 - Worker 130 accepted the post-worker-129 proof surface, reconfirmed the main 28-command feasible matrix, and selected unsupported public `fontVariations` contract closure with TypeScript narrowing and native rejection proof.
 - Worker 131 closed the unsupported public `fontVariations` Yoga text/paragraph style contract with packed-consumer TypeScript negatives and host-JSC/native rejection proof, then reconfirmed the main 28-command feasible matrix in `4m 59s`. The next step is a fresh post-worker-131 audit.
+- Worker 132 accepted the post-worker-131 proof surface, reconfirmed the main 28-command feasible matrix, and selected simple `<text textStyle>` contract closure because public text authoring accepts rich text-style fields that `TextCmd` currently converts but does not render.
 
 ## Evidence Summary
 
@@ -3024,7 +3037,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor worker 132, which is running a fresh post-worker-131 root-cause audit to rerank remaining proof, API-contract, and platform-runtime gaps.
+- Close the simple `<text textStyle>` contract drift by narrowing/rejecting rich text-style fields that `TextCmd` accepts but does not render.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
