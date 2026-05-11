@@ -2496,10 +2496,27 @@ Last updated: 2026-05-11
 - Prepared worker 113 as the next step: address `JSIConverter<NodeCommand>::toJSI(...)` serialization symmetry, the next-ranked target from worker 111.
 - Created `worker-113-nodecommand-tojsi-symmetry` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-113-nodecommand-tojsi-symmetry` as a top-level tmux subprocess.
 - Worker 113 passed the visible `GOAL_CREATED: Complete NodeCommand toJSI serialization symmetry and prove representative round-trip coverage.` gate as the first worker message.
+- Worker 113 completed and reported `Goal finished.` It wrote `worker-progress/worker-113-nodecommand-tojsi-symmetry.md`.
+- Worker 113 completed `JSIConverter<NodeCommand>::toJSI(...)` payload serialization for `blurMaskFilter`, `image`, `path`, `paragraph`, `line`, and `points`, using numeric enum output where `fromJSI(...)` already accepts it, preserving public `path.stroke.miter_limit`, and reusing existing converters for Skia host objects, sampling, paragraph style, and `AnimatedDouble`.
+- Worker 113 expanded `scripts/verify-yoganode-native-commands-render.mjs` with host-JSC/native `toJSI(...)` payload-shape assertions and representative `toJSI(...)` followed by `fromJSI(...)` round-trip coverage for the newly symmetric command families.
+- Worker 113 verification passed `git diff --check`, `node --check scripts/verify-yoganode-native-commands-render.mjs`, `npm run check:yoganode-native-commands-render`, `npm run check:yoganode-nitro-materialization`, `npm run check:animated-double-synchronizable`, `npm run typecheck`, and `npm run check:feasible-matrix` with all 28 commands in `4m 10s` command duration.
+- Worker 113 branch commit: `c52295f Complete NodeCommand toJSI symmetry`.
+- Merged worker 113 into `main` as `8e0114f Merge worker 113 NodeCommand toJSI symmetry`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - `node --check scripts/verify-yoganode-native-commands-render.mjs`: passed.
+  - `npm run check:yoganode-native-commands-render`: passed.
+  - `npm run check:feasible-matrix`: passed all 28 commands in `4m 18s` command duration (`258.63s` real time).
+- Worker 113 cleanup:
+  - Killed `rnskia-worker-113-nodecommand-tojsi-symmetry`.
+  - Removed `../worker-113-nodecommand-tojsi-symmetry`.
+  - Deleted branch `worker/113-nodecommand-tojsi-symmetry`.
+  - Verified no `rnskia-worker-113` tmux session, worker 113 worktree, or worker 113 branch remained.
+- Prepared worker 114 as the next step: run a read-only post-worker-113 root-cause audit and select the next strongest locally unblocked target.
 
 ## Active Workers
 
-- `rnskia-worker-113-nodecommand-tojsi-symmetry`: running from `worker/113-nodecommand-tojsi-symmetry`; completing `JSIConverter<NodeCommand>::toJSI(...)` serialization symmetry and representative round-trip coverage.
+- None; worker 114 is prepared but not launched yet.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2631,10 +2648,12 @@ Accepted worker reports:
 - `worker-progress/worker-109-post-108-root-cause-audit.md`
 - `worker-progress/worker-110-dynamic-jsx-type-boundary.md`
 - `worker-progress/worker-111-post-110-root-cause-audit.md`
+- `worker-progress/worker-112-package-export-boundary.md`
+- `worker-progress/worker-113-nodecommand-tojsi-symmetry.md`
 
 ## Pending Workers
 
-- None; worker 113 is active.
+- `worker-114-post-113-root-cause-audit`: prepared as the next read-only target-selection worker.
 
 ## Decisions
 
@@ -2653,6 +2672,7 @@ Accepted worker reports:
 - Post-worker-110 follow-up: packed dynamic JSX type-boundary proof is integrated; the next step is a fresh audit because worker 110 closed the public top-level TypeScript authoring proof while leaving deeper runtime/platform gaps intentionally out of scope.
 - Post-worker-111 target selection: worker 111 selected package export-boundary hardening because worker 110 clarified the supported top-level authoring API but `package.json.files` still publishes `src`, no `exports` map constrains resolver entrypoints, and `src/specs/SkiaYoga.nitro.ts` still re-exports command transport types to deep importers.
 - Post-worker-112 follow-up: package export-boundary hardening is integrated and the main 28-command feasible matrix passed; the next target is `JSIConverter<NodeCommand>::toJSI(...)` serialization symmetry, which worker 111 had ranked second after the package-boundary gap.
+- Post-worker-113 follow-up: NodeCommand `toJSI(...)` serialization symmetry is integrated and the main 28-command feasible matrix passed; the next step is a fresh read-only root-cause audit because worker 111's ranked follow-ups are now closed or intentionally bounded.
 
 ## Evidence Summary
 
@@ -2695,13 +2715,14 @@ Accepted worker reports:
 - Public dynamic JSX type-boundary proof: worker 110 kept `src/specs/*` command payload types transport/codegen-shaped and proved the supported top-level public authoring API through a packed tarball TypeScript consumer. `check:package-typescript-consumer` now compiles representative dynamic `SharedValue` JSX command props under `jsxImportSource: "react-native-skia-yoga"` for native-bound leaves (`circle.radius`, `rrect.cornerRadius`, `blurMaskFilter.blur`, `path.trimStart`, `path.trimEnd`) and JS-listener/nested leaves (`path.stroke.miter_limit`, `line.from.x`, `points.points[0].x`). It also rejects representative internal command transport and native plumbing names at the package root. The proof remains compile-only/package-surface evidence and does not claim real Reanimated delivery, UI-runtime Worklets execution, native bridge delivery, C++ conversion, rendering, Nitro registry install, platform-native app runtime, or deep-import prevention for published `src/specs/*`.
 - Post-worker-110 audit: worker 111 reconfirmed the 28-command feasible matrix in `4m 44s` command duration (`284.44s` real time) and selected package export-boundary hardening as the strongest locally unblocked target. The audit confirmed `package.json` has no `exports` map, `files` includes `src`, the packed manifest includes `src/specs/commands.ts`, `src/specs/SkiaYoga.nitro.ts`, `src/specs/NativeSkiaYoga.ts`, and `src/specs/SkiaYogaViewNativeComponent.ts`, and the spec module re-exports `NodeCommandKind`, `NodeCommand`, `NodeCommandNative`, and command payload types. Worker 111 ranked `JSIConverter<NodeCommand>::toJSI(...)` serialization symmetry second because the asymmetry is real but lower current public risk than the package boundary that worker 110 just clarified.
 - Package export-boundary proof: worker 112 added a resolver-level `exports` map for `react-native-skia-yoga`, `react-native-skia-yoga/jsx-runtime`, `react-native-skia-yoga/jsx-dev-runtime`, and `react-native-skia-yoga/package.json`, while leaving `main`, `module`, `types`, `react-native`, `source`, `files`, and `codegenConfig.jsSrcsDir` unchanged. `check:package-typescript-consumer` now proves supported root/JSX runtime imports from a packed tarball and rejects representative exports-aware `src/specs` deep imports under Bundler resolution. `check:package-surface` now asserts the exact export map, preserved entrypoint fields, preserved `./src/specs` codegen path, and physical publication of required spec files. Main post-merge verification passed the focused checks and the full 28-command feasible matrix in `4m 10s` command duration (`250.06s` real time).
+- NodeCommand toJSI symmetry proof: worker 113 completed `JSIConverter<NodeCommand>::toJSI(...)` payload serialization for the previously partial `blurMaskFilter`, `image`, `path`, `paragraph`, `line`, and `points` families. `check:yoganode-native-commands-render` now asserts representative serialized payload shape and `toJSI(...)`/`fromJSI(...)` round trips, including numeric `blurStyle`, `fillType`, and `pointMode`, public `path.stroke.miter_limit`, `SkPath`/`SkImage` host-object fields, paragraph/style object presence, line points, point arrays, and resolved-number `AnimatedDouble` behavior. Main post-merge verification passed the focused check and the full 28-command feasible matrix in `4m 18s` command duration (`258.63s` real time). Remaining boundaries still exclude React Native bridge delivery, generated wrapper return paths beyond existing materialization checks, UI-runtime Worklets/Reanimated delivery, Nitro registry install inside React Native, platform app build/run, image asset loading/decoding, exact render fidelity, exact typography, and value-exact paragraph/text style or sampling serialization beyond current converter support.
 - Example Worklets transform: worker 051 added the example/Expo Babel-config path to `check:skia-yoga-object-lazy-init`, proving package source `src/util.ts` keeps the same lazy Nitro closure/body contract when transformed through `example/babel.config.js` and the example dependency context.
 - Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the package lifecycle root-cause task, worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`. Worker 020 found the runtime-smoke archive discovery target, worker 021 completed it, worker 022 found the Android CMake archive-layout analogue, worker 023 completed it, worker 024 selected lint-ci root configuration/formatter repair as the next repo-owned feedback-loop fix, worker 025 completed that repair, worker 026 selected the remaining product-source React Native deep imports as the next implementation target, worker 027 completed that target, worker 028 selected example lint-contract cleanup, worker 029 completed it, worker 030 selected public README/API documentation drift, worker 031 completed that contract fix, worker 032 selected native publish-surface completeness, worker 033 completed that package-surface fix, worker 034 selected the unguarded Expo export path plus Metro config dump as the next example feedback-loop target, worker 035 completed that feedback-loop target, worker 036 confirmed platform-native build/run remains blocked by local toolchain gaps rather than a stronger repo-owned target, and worker 037 removed the strongest known unblocked RN Skia private-import target.
 
 ## Next Implementation Candidates
 
-- Run worker 113 to close the `JSIConverter<NodeCommand>::toJSI(...)` serialization symmetry gap identified by worker 111 after package-boundary hardening.
-- Keep platform/native runtime proof gaps separate from this converter serialization target.
+- Run worker 114 as a read-only post-worker-113 root-cause audit to select the next strongest locally unblocked target.
+- Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
