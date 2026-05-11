@@ -2376,10 +2376,12 @@ Last updated: 2026-05-11
   - Deleted branch `worker/105-post-104-root-cause-audit`.
   - Verified no `rnskia-worker-105` tmux session, worker 105 worktree, or worker 105 branch remained.
 - Prepared worker 106 as the next step: expand generated materialized `YogaNode.setCommand(...)` breadth in `check:yoganode-nitro-materialization`.
+- Created `worker-106-nitro-setcommand-more-breadth` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-106-nitro-setcommand-more-breadth` as a top-level tmux subprocess.
+- Worker 106 passed the visible `GOAL_CREATED: Expand generated YogaNode.setCommand materialization breadth for remaining command families.` gate as the first worker message.
 
 ## Active Workers
 
-- None; worker 106 is prepared for launch.
+- `rnskia-worker-106-nitro-setcommand-more-breadth`: running from `worker/106-nitro-setcommand-more-breadth`; expanding generated materialized `YogaNode.setCommand(...)` breadth beyond the current representative command cases.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2508,7 +2510,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- `rnskia-worker-106-nitro-setcommand-more-breadth`: planned from `worker/106-nitro-setcommand-more-breadth`; expand generated materialized `YogaNode.setCommand(...)` breadth beyond the current representative command cases.
+- None; worker 106 is active.
 
 ## Decisions
 
