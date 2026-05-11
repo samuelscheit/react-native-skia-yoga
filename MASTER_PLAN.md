@@ -274,9 +274,9 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch a fresh post-worker-151 root-cause audit to accept or challenge the
-  dynamic layer proof boundary, rerank remaining gaps, and select the next
-  implementation target.
+- Monitor worker 152, which is auditing the post-worker-151 proof surface,
+  reranking remaining gaps, and selecting the next implementation target from
+  isolated worktree `../worker-152-post-151-root-cause-audit`.
 
 Acceptance criteria:
 
