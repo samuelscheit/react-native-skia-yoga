@@ -167,15 +167,15 @@ try {
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, AnimatedDouble.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, RN Skia CSSColorParser, Worklets shared-item sources, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
 	console.log("- The executable created a JSC runtime, converted numeric, CSS color-string, and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), serialized representative payloads through JSIConverter<NodeCommand>::toJSI(...), and executed real YogaNode::setCommand().")
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
-	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, selected textStyle/paragraphStyle fields including fontFeatures and strutStyle, line from/to points, and points arrays.")
+	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, simple text.textStyle fields, selected paragraphStyle fields including fontFeatures and strutStyle, line from/to points, and points arrays.")
 	console.log("- The executable asserted selected value-bearing toJSI/fromJSI serialization for SkSamplingOptions filter/mipmap and cubic B/C, SkTextStyle fontSize/color/fontFamilies/fontFeatures/backgroundColor/foregroundColor/decoration fields/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, and SkParagraphStyle textAlign/maxLines/heightMultiplier/ellipsis/disableHinting/replaceTabCharacters/textDirection/textHeightBehavior, selected strutStyle fields, flattened default text style fields, and explicit unsupported fontVariations rejection.")
 	console.log("- The executable asserted generated NodeStyle transport and host-native SkPaint state for canonical style.antiAlias, legacy style.antiaAlias fallback, and canonical precedence when both keys are present.")
 	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
 	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
-	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) and flattened ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection, and unsupported text/paragraph fontVariations rejection in JSIConverter<NodeCommand>::fromJSI(...).")
+	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) and flattened ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection, unsupported paragraph fontVariations rejection, and text.textStyle rich-key rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, YogaNode::setStyle SkPaint antiAlias state, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, selected value-bearing SkSamplingOptions, SkTextStyle including fontFeatures and unsupported fontVariations rejection, and selected SkParagraphStyle serialization fields including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior and selected public-shaped strutStyle fields plus flattened/nested unsupported fontVariations rejection, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove unsupported SkSamplingOptions maxAniso preservation, every SkTextStyle/SkParagraphStyle field, fontVariations native support or preservation, nested paragraphStyle.textStyle shape preservation beyond unsupported-key rejection, CSS color string preservation, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, YogaNode::setStyle SkPaint antiAlias state, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, selected value-bearing SkSamplingOptions, SkTextStyle including fontFeatures and unsupported fontVariations rejection, selected simple TextCmd textStyle fields plus rich-key rejection, and selected SkParagraphStyle serialization fields including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior and selected public-shaped strutStyle fields plus flattened/nested unsupported fontVariations rejection, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove unsupported SkSamplingOptions maxAniso preservation, every SkTextStyle/SkParagraphStyle field, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, nested paragraphStyle.textStyle shape preservation beyond unsupported-key rejection, CSS color string preservation, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -1147,6 +1147,53 @@ void expectSerializedTextStyle(
         label + " textBaseline");
 }
 
+void expectSerializedSimpleTextStyle(
+    jsi::Runtime& runtime,
+    const jsi::Value& value,
+    double expectedFontSize,
+    SkColor expectedColor,
+    const std::string& label)
+{
+    expect(value.isObject(), label + " is an object");
+    auto object = value.asObject(runtime);
+    expectNear(object.getProperty(runtime, "fontSize").asNumber(), expectedFontSize, label + " fontSize");
+    expectNear(object.getProperty(runtime, "color").asNumber(), static_cast<double>(expectedColor), label + " numeric color");
+
+    const char* richKeys[] = {
+        "backgroundColor",
+        "decoration",
+        "decorationColor",
+        "decorationStyle",
+        "decorationThickness",
+        "fontFamilies",
+        "fontFeatures",
+        "fontStyle",
+        "fontVariations",
+        "foregroundColor",
+        "halfLeading",
+        "height",
+        "heightMultiplier",
+        "letterSpacing",
+        "locale",
+        "shadows",
+        "textBaseline",
+        "wordSpacing",
+    };
+    for (const auto* key : richKeys) {
+        expect(!object.hasProperty(runtime, key), label + " omits rich key " + key);
+    }
+}
+
+void expectSimpleTextStyleState(
+    const skia::textlayout::TextStyle& textStyle,
+    double expectedFontSize,
+    SkColor expectedColor,
+    const std::string& label)
+{
+    expectNear(textStyle.getFontSize(), expectedFontSize, label + " fontSize");
+    expectColorNear(textStyle.getColor(), expectedColor, 0, label + " color");
+}
+
 void expectTextStyleState(
     const skia::textlayout::TextStyle& textStyle,
     double expectedFontSize,
@@ -1802,7 +1849,7 @@ NodeCommand textSerializationCommand(jsi::Runtime& runtime)
 {
     jsi::Object data(runtime);
     data.setProperty(runtime, "text", "Serializable styled text");
-    data.setProperty(runtime, "textStyle", richTextStyleObject(runtime, 21.0, SK_ColorMAGENTA));
+    data.setProperty(runtime, "textStyle", textStyleObject(runtime, 21.0, SK_ColorMAGENTA));
 
     jsi::Object command(runtime);
     command.setProperty(runtime, "type", "text");
@@ -2248,7 +2295,7 @@ void assertFontVariationsUnsupportedRejections(jsi::Runtime& runtime)
             [&]() {
                 (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
             },
-            "TextStyle.fontVariations",
+            "text.textStyle.fontVariations",
             "NodeCommand conversion rejects unsupported text.textStyle fontVariations");
     }
 
@@ -2305,6 +2352,151 @@ void assertFontVariationsUnsupportedRejections(jsi::Runtime& runtime)
             "ParagraphStyle.textStyle.fontVariations",
             "NodeCommand conversion rejects unsupported nested paragraph.paragraphStyle.textStyle fontVariations");
     }
+}
+
+void expectTextCommandTextStyleUnsupportedKey(
+    jsi::Runtime& runtime,
+    const char* key,
+    const std::function<void(jsi::Runtime&, jsi::Object&)>& setUnsupportedValue)
+{
+    auto textStyle = textStyleObject(runtime, 18.0, SK_ColorBLACK);
+    setUnsupportedValue(runtime, textStyle);
+
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "text", "unsupported rich text style");
+    data.setProperty(runtime, "textStyle", std::move(textStyle));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "text");
+    command.setProperty(runtime, "data", std::move(data));
+    jsi::Value commandValue(runtime, command);
+
+    expect(
+        margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, commandValue),
+        std::string("NodeCommand converter canConvert accepts shaped text command before rejecting text.textStyle.") + key);
+    expectJsiThrows(
+        [&]() {
+            (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
+        },
+        "NodeCommand conversion failed for type \"text\"",
+        std::string("NodeCommand conversion scopes text.textStyle.") + key + " rejection to the text command");
+    expectJsiThrows(
+        [&]() {
+            (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
+        },
+        std::string("text.textStyle.") + key,
+        std::string("NodeCommand conversion rejects unsupported text.textStyle.") + key);
+}
+
+void assertTextCommandRichTextStyleUnsupportedRejections(jsi::Runtime& runtime)
+{
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "fontFamilies",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            textStyle.setProperty(runtime, "fontFamilies", stringArray(runtime, { "Inter", "System" }));
+        });
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "fontFeatures",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            textStyle.setProperty(runtime, "fontFeatures", textStyleFontFeatureArray(runtime));
+        });
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "fontStyle",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            jsi::Object fontStyle(runtime);
+            fontStyle.setProperty(runtime, "weight", static_cast<double>(SkFontStyle::Weight::kBold_Weight));
+            textStyle.setProperty(runtime, "fontStyle", std::move(fontStyle));
+        });
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "letterSpacing",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            textStyle.setProperty(runtime, "letterSpacing", 1.25);
+        });
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "decoration",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            textStyle.setProperty(runtime, "decoration", static_cast<double>(skia::textlayout::kUnderline));
+        });
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "decorationColor",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            textStyle.setProperty(runtime, "decorationColor", "#445566");
+        });
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "decorationThickness",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            textStyle.setProperty(runtime, "decorationThickness", 1.75);
+        });
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "decorationStyle",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            textStyle.setProperty(runtime, "decorationStyle", static_cast<double>(skia::textlayout::kWavy));
+        });
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "shadows",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            textStyle.setProperty(runtime, "shadows", textStyleShadowArray(runtime));
+        });
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "foregroundColor",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            textStyle.setProperty(runtime, "foregroundColor", "#203040");
+        });
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "backgroundColor",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            textStyle.setProperty(runtime, "backgroundColor", "#102030");
+        });
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "textBaseline",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            textStyle.setProperty(
+                runtime,
+                "textBaseline",
+                static_cast<double>(static_cast<int>(skia::textlayout::TextBaseline::kIdeographic)));
+        });
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "locale",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            textStyle.setProperty(runtime, "locale", "en-US");
+        });
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "height",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            textStyle.setProperty(runtime, "height", 1.35);
+        });
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "heightMultiplier",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            textStyle.setProperty(runtime, "heightMultiplier", 1.35);
+        });
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "halfLeading",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            textStyle.setProperty(runtime, "halfLeading", true);
+        });
+    expectTextCommandTextStyleUnsupportedKey(
+        runtime,
+        "wordSpacing",
+        [](jsi::Runtime& runtime, jsi::Object& textStyle) {
+            textStyle.setProperty(runtime, "wordSpacing", 2.5);
+        });
 }
 
 void assertNodeCommandToJSISerializationSymmetry(jsi::Runtime& runtime)
@@ -2439,13 +2631,13 @@ void assertNodeCommandToJSISerializationSymmetry(jsi::Runtime& runtime)
         expect(
             data.getProperty(runtime, "text").asString(runtime).utf8(runtime) == "Serializable styled text",
             "text toJSI text");
-        expectSerializedTextStyle(runtime, data.getProperty(runtime, "textStyle"), 21.0, SK_ColorMAGENTA, "text toJSI textStyle");
+        expectSerializedSimpleTextStyle(runtime, data.getProperty(runtime, "textStyle"), 21.0, SK_ColorMAGENTA, "text toJSI textStyle");
 
         auto roundTrip = roundTripSerializedCommand(runtime, serialized, "text");
         const auto& payload = std::get<TextCommandData>(roundTrip.data);
         expect(payload.text.has_value() && payload.text.value() == "Serializable styled text", "text toJSI/fromJSI text");
         expect(payload.textStyle.has_value(), "text toJSI/fromJSI textStyle");
-        expectTextStyleState(payload.textStyle.value(), 21.0, SK_ColorMAGENTA, "text toJSI/fromJSI textStyle");
+        expectSimpleTextStyleState(payload.textStyle.value(), 21.0, SK_ColorMAGENTA, "text toJSI/fromJSI textStyle");
     }
 
     {
@@ -3893,6 +4085,7 @@ int main()
     assertDynamicAnimatedDoubleNodeCommandPayloads(*runtime);
     assertValueBearingStyleConverters(*runtime);
     assertFontVariationsUnsupportedRejections(*runtime);
+    assertTextCommandRichTextStyleUnsupportedRejections(*runtime);
     assertNodeStyleAntiAliasTransportAndPaint(*runtime);
     assertNodeCommandToJSISerializationSymmetry(*runtime);
     assertRectOpacityRender(*runtime);

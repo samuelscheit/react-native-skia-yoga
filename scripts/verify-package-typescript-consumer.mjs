@@ -107,7 +107,7 @@ try {
 		"- Packed consumer TypeScript still rejected unsupported nested image.sampling SharedValue leaves while sampling remains opaque.",
 	)
 	console.log(
-		"- Packed consumer TypeScript rejected unsupported fontVariations authoring on text.textStyle, flattened paragraph.paragraphStyle, and nested paragraph.paragraphStyle.textStyle.",
+		"- Packed consumer TypeScript accepted simple text.textStyle color/fontSize authoring and rejected rich text.textStyle fontFamilies, fontFeatures, fontStyle, letterSpacing, and fontVariations authoring while preserving rich paragraphStyle text styling.",
 	)
 	console.log(
 		"- Public package boundary rejected internal top-level exports such as reconciler, NodeCommand, createYogaNode, and SkiaYoga.",
@@ -353,6 +353,23 @@ const dynamicPathProps: YogaIntrinsicElements["path"] = {
 \ttrimStart: sharedPathTrimStart,
 }
 
+const richParagraphProps: YogaIntrinsicElements["paragraph"] = {
+\tparagraphStyle: {
+\t\tcolor: "#f8fafc",
+\t\tfontFamilies: ["Inter", "System"],
+\t\tfontFeatures: [{ name: "kern", value: 1 }],
+\t\tfontSize: 16,
+\t\tfontStyle: {},
+\t\tletterSpacing: 0.25,
+\t\ttextStyle: {
+\t\t\tfontFeatures: [{ name: "liga", value: 0 }],
+\t\t\tletterSpacing: 0.5,
+\t\t},
+\t},
+\tstyle: { height: 32, width: 140 },
+\ttext: "rich paragraph",
+}
+
 const unsupportedNestedSamplingProps: YogaIntrinsicElements["image"] = {
 \t// @ts-expect-error nested image.sampling SharedValue leaves are not part of the opaque SamplingOptions contract.
 \tsampling: { filter: sharedSamplingFilter },
@@ -361,6 +378,26 @@ const unsupportedNestedSamplingProps: YogaIntrinsicElements["image"] = {
 const unsupportedTextFontVariationsElement = (
 \t// @ts-expect-error fontVariations is not a public Yoga textStyle authoring field.
 \t<text text="unsupported" textStyle={{ fontVariations: [{ axis: "wght", value: 700 }] }} />
+)
+
+const unsupportedTextFontFamiliesElement = (
+\t// @ts-expect-error fontFamilies is not a public simple text.textStyle authoring field.
+\t<text text="unsupported" textStyle={{ fontFamilies: ["Inter"] }} />
+)
+
+const unsupportedTextFontFeaturesElement = (
+\t// @ts-expect-error fontFeatures is not a public simple text.textStyle authoring field.
+\t<text text="unsupported" textStyle={{ fontFeatures: [{ name: "kern", value: 1 }] }} />
+)
+
+const unsupportedTextFontStyleElement = (
+\t// @ts-expect-error fontStyle is not a public simple text.textStyle authoring field.
+\t<text text="unsupported" textStyle={{ fontStyle: {} }} />
+)
+
+const unsupportedTextLetterSpacingElement = (
+\t// @ts-expect-error letterSpacing is not a public simple text.textStyle authoring field.
+\t<text text="unsupported" textStyle={{ letterSpacing: 1 }} />
 )
 
 const unsupportedParagraphFlattenedFontVariationsElement = (
@@ -406,6 +443,7 @@ export function PackedPackageSmoke() {
 \t\t\t\t\t\t\t\ttext="packed"
 \t\t\t\t\t\t\t\ttextStyle={{ color: "white", fontSize: 14 }}
 \t\t\t\t\t\t\t/>
+\t\t\t\t\t\t\t<paragraph {...richParagraphProps} />
 \t\t\t\t\t\t\t<blurMaskFilter blur={sharedBlur} />
 \t\t\t\t\t\t\t<path {...dynamicPathProps} />
 \t\t\t\t\t\t\t<line
@@ -434,6 +472,10 @@ void devRuntimeFragment
 void runtimeFragment
 void unsupportedNestedSamplingProps
 void unsupportedTextFontVariationsElement
+void unsupportedTextFontFamiliesElement
+void unsupportedTextFontFeaturesElement
+void unsupportedTextFontStyleElement
+void unsupportedTextLetterSpacingElement
 void unsupportedParagraphFlattenedFontVariationsElement
 void unsupportedParagraphNestedFontVariationsElement
 void legacyAntiAliasStyle
