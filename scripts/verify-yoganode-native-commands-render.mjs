@@ -3,6 +3,7 @@
 import {
 	existsSync,
 	mkdirSync,
+	readFileSync,
 	readdirSync,
 	realpathSync,
 	rmSync,
@@ -55,8 +56,111 @@ const skiaArchiveLayouts = [
 		matchesArchive: (entryPath) => entryPath.endsWith(".a"),
 	},
 ]
+const styleSerializerFieldInventory = [
+	{
+		surface: "SkTextStyle",
+		sourcePath: rnSkiaTypesPath("Paragraph", "TextStyle.ts"),
+		interfaceName: "SkTextStyle",
+		buckets: {
+			supportedParseSerialized: [
+				"decoration",
+				"decorationThickness",
+				"decorationStyle",
+				"fontFamilies",
+				"fontFeatures",
+				"fontSize",
+				"fontStyle",
+				"heightMultiplier",
+				"halfLeading",
+				"letterSpacing",
+				"locale",
+				"shadows",
+				"textBaseline",
+				"wordSpacing",
+			],
+			supportedWithNativeNormalization: [
+				"backgroundColor",
+				"color",
+				"decorationColor",
+				"foregroundColor",
+			],
+			intentionallyUnsupported: ["fontVariations"],
+			outsideLocalFidelityProof: [],
+		},
+	},
+	{
+		surface: "SkParagraphStyle",
+		sourcePath: rnSkiaTypesPath("Paragraph", "ParagraphStyle.ts"),
+		interfaceName: "SkParagraphStyle",
+		buckets: {
+			supportedParseSerialized: [
+				"disableHinting",
+				"ellipsis",
+				"heightMultiplier",
+				"maxLines",
+				"replaceTabCharacters",
+				"strutStyle",
+				"textAlign",
+				"textDirection",
+				"textHeightBehavior",
+				"textStyle",
+			],
+			supportedWithNativeNormalization: [],
+			intentionallyUnsupported: [],
+			outsideLocalFidelityProof: [],
+		},
+	},
+	{
+		surface: "SkStrutStyle",
+		sourcePath: rnSkiaTypesPath("Paragraph", "ParagraphStyle.ts"),
+		interfaceName: "SkStrutStyle",
+		buckets: {
+			supportedParseSerialized: [
+				"forceStrutHeight",
+				"fontFamilies",
+				"fontSize",
+				"fontStyle",
+				"halfLeading",
+				"heightMultiplier",
+				"leading",
+				"strutEnabled",
+			],
+			supportedWithNativeNormalization: [],
+			intentionallyUnsupported: [],
+			outsideLocalFidelityProof: [],
+		},
+	},
+	{
+		surface: "SamplingOptions.CubicResampler",
+		sourcePath: rnSkiaTypesPath("Image", "Image.ts"),
+		interfaceName: "CubicResampler",
+		buckets: {
+			supportedParseSerialized: ["B", "C"],
+			supportedWithNativeNormalization: [],
+			intentionallyUnsupported: [],
+			outsideLocalFidelityProof: [],
+		},
+	},
+	{
+		surface: "SamplingOptions.FilterOptions",
+		sourcePath: rnSkiaTypesPath("Image", "Image.ts"),
+		interfaceName: "FilterOptions",
+		buckets: {
+			supportedParseSerialized: ["filter", "mipmap"],
+			supportedWithNativeNormalization: [],
+			intentionallyUnsupported: [],
+			outsideLocalFidelityProof: [],
+		},
+	},
+]
+const samplingOptionsUnionInventory = {
+	sourcePath: rnSkiaTypesPath("Image", "Image.ts"),
+	typeName: "SamplingOptions",
+	members: ["CubicResampler", "FilterOptions"],
+}
 
 try {
+	assertInstalledStyleSerializerFieldInventory()
 	createNitroModulesShim(tmpDir)
 
 	const probePath = path.join(tmpDir, "yoganode-native-commands-render.cpp")
@@ -167,15 +271,16 @@ try {
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, AnimatedDouble.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, RN Skia CSSColorParser, Worklets shared-item sources, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
 	console.log("- The executable created a JSC runtime, converted numeric, CSS color-string, and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), serialized representative payloads through JSIConverter<NodeCommand>::toJSI(...), and executed real YogaNode::setCommand().")
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
-	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, simple text.textStyle fields, selected paragraphStyle fields including nested textStyle output, distinct paragraph/text-style heightMultiplier preservation, fontFeatures and strutStyle, line from/to points, and points arrays.")
-	console.log("- The executable asserted selected value-bearing toJSI/fromJSI serialization for SkSamplingOptions filter/mipmap and cubic B/C, SkTextStyle fontSize/color/fontFamilies/fontFeatures/backgroundColor/foregroundColor/decoration fields/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, and SkParagraphStyle textAlign/maxLines/heightMultiplier/ellipsis/disableHinting/replaceTabCharacters/textDirection/textHeightBehavior, selected strutStyle fields, dual flattened/nested default text style fields including nested textStyle heightMultiplier output, flattened fontSize/color precedence over nested values, and explicit unsupported fontVariations rejection.")
+	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, simple text.textStyle fontSize/color fields, inventory-backed paragraphStyle fields including nested textStyle output, distinct paragraph/text-style heightMultiplier preservation, fontFeatures and strutStyle, line from/to points, and points arrays.")
+	console.log(`- The verifier checked the installed RN Skia public style field inventory before native compilation: ${formatStyleInventorySummary()}`)
+	console.log("- The executable asserted inventory-backed value-bearing toJSI/fromJSI serialization for installed public SkSamplingOptions filter/mipmap and cubic B/C, installed public SkTextStyle supported fields including fontSize/fontFamilies/fontFeatures/decoration/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, normalized text color fields color/backgroundColor/foregroundColor/decorationColor, installed public SkParagraphStyle scalar/textStyle/strutStyle fields, installed public SkStrutStyle fields, dual flattened/nested default text style fields including nested textStyle heightMultiplier output, flattened fontSize/color precedence over nested values, and explicit unsupported fontVariations rejection.")
 	console.log("- The executable asserted generated NodeStyle transport and host-native SkPaint state for canonical style.antiAlias, legacy style.antiaAlias fallback, and canonical precedence when both keys are present.")
 	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
 	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) plus flattened and nested ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection including nested paragraphStyle.textStyle.color, unsupported paragraph fontVariations rejection, and text.textStyle rich-key rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, YogaNode::setStyle SkPaint antiAlias state, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, selected value-bearing SkSamplingOptions, SkTextStyle including fontFeatures and unsupported fontVariations rejection, selected simple TextCmd textStyle fields plus rich-key rejection, and selected SkParagraphStyle serialization fields including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior, selected public-shaped strutStyle fields, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove unsupported SkSamplingOptions maxAniso preservation, every SkTextStyle/SkParagraphStyle field, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, YogaNode::setStyle SkPaint antiAlias state, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -208,6 +313,160 @@ function assertLinkedBinary(binaryPath, diagnosticPaths) {
 			`diagnostics:\n${formatVerifierTempDiagnostics(diagnosticPaths)}`,
 		].join("\n\n"),
 	)
+}
+
+function assertInstalledStyleSerializerFieldInventory() {
+	const errors = []
+	for (const spec of styleSerializerFieldInventory) {
+		const actualFields = extractExportedInterfaceFields(
+			spec.sourcePath,
+			spec.interfaceName,
+		)
+		const inventoriedFields = inventoryFields(spec)
+		const duplicateFields = duplicateValues(inventoriedFields)
+		const missingFields = actualFields.filter(
+			(field) => !inventoriedFields.includes(field),
+		)
+		const staleFields = inventoriedFields.filter(
+			(field) => !actualFields.includes(field),
+		)
+
+		if (duplicateFields.length > 0) {
+			errors.push(
+				`${spec.surface} inventory assigns field(s) to multiple buckets: ${duplicateFields.join(", ")}`,
+			)
+		}
+		if (missingFields.length > 0) {
+			errors.push(
+				`${spec.surface} has installed public field(s) missing from the inventory: ${missingFields.join(", ")}`,
+			)
+		}
+		if (staleFields.length > 0) {
+			errors.push(
+				`${spec.surface} inventory contains field(s) no longer present in the installed type: ${staleFields.join(", ")}`,
+			)
+		}
+	}
+
+	const actualSamplingMembers = extractExportedTypeUnionMembers(
+		samplingOptionsUnionInventory.sourcePath,
+		samplingOptionsUnionInventory.typeName,
+	)
+	const missingSamplingMembers = actualSamplingMembers.filter(
+		(member) => !samplingOptionsUnionInventory.members.includes(member),
+	)
+	const staleSamplingMembers = samplingOptionsUnionInventory.members.filter(
+		(member) => !actualSamplingMembers.includes(member),
+	)
+	if (missingSamplingMembers.length > 0) {
+		errors.push(
+			`${samplingOptionsUnionInventory.typeName} has installed union member(s) missing from the inventory: ${missingSamplingMembers.join(", ")}`,
+		)
+	}
+	if (staleSamplingMembers.length > 0) {
+		errors.push(
+			`${samplingOptionsUnionInventory.typeName} inventory contains union member(s) no longer present in the installed type: ${staleSamplingMembers.join(", ")}`,
+		)
+	}
+
+	if (errors.length > 0) {
+		throw new Error(
+			[
+				"RN Skia public style serializer field inventory drift detected.",
+				"Update the inventory in scripts/verify-yoganode-native-commands-render.mjs after classifying each installed public field as supported, normalized, intentionally unsupported, or outside the local proof boundary.",
+				...errors.map((error) => `- ${error}`),
+			].join("\n"),
+		)
+	}
+}
+
+function formatStyleInventorySummary() {
+	return [
+		`${samplingOptionsUnionInventory.typeName} union=${samplingOptionsUnionInventory.members.join("|")}`,
+		...styleSerializerFieldInventory.map((spec) => {
+			const buckets = spec.buckets
+			return [
+				`${spec.surface} supported=[${buckets.supportedParseSerialized.join(",")}]`,
+				`normalized=[${buckets.supportedWithNativeNormalization.join(",") || "none"}]`,
+				`unsupported=[${buckets.intentionallyUnsupported.join(",") || "none"}]`,
+				`outside-field-proof=[${buckets.outsideLocalFidelityProof.join(",") || "none"}]`,
+			].join(" ")
+		}),
+	].join("; ")
+}
+
+function inventoryFields(spec) {
+	return Object.values(spec.buckets).flat()
+}
+
+function duplicateValues(values) {
+	const seen = new Set()
+	const duplicates = new Set()
+	for (const value of values) {
+		if (seen.has(value)) {
+			duplicates.add(value)
+		}
+		seen.add(value)
+	}
+	return [...duplicates]
+}
+
+function extractExportedInterfaceFields(sourcePath, interfaceName) {
+	const source = readProjectFile(sourcePath)
+	const interfaceMatch = source.match(
+		new RegExp(
+			`export\\s+interface\\s+${escapeRegExp(interfaceName)}\\s*\\{([\\s\\S]*?)\\n\\}`,
+		),
+	)
+	if (!interfaceMatch) {
+		throw new Error(
+			`Unable to find installed RN Skia interface ${interfaceName} in ${sourcePath}.`,
+		)
+	}
+
+	const body = interfaceMatch[1]
+		.replace(/\/\*[\s\S]*?\*\//g, "")
+		.replace(/\/\/.*$/gm, "")
+	return [...body.matchAll(/^\s*([A-Za-z_$][\w$]*)\??\s*:/gm)].map(
+		(match) => match[1],
+	)
+}
+
+function extractExportedTypeUnionMembers(sourcePath, typeName) {
+	const source = readProjectFile(sourcePath)
+	const typeMatch = source.match(
+		new RegExp(`export\\s+type\\s+${escapeRegExp(typeName)}\\s*=\\s*([^;]+);`),
+	)
+	if (!typeMatch) {
+		throw new Error(
+			`Unable to find installed RN Skia type alias ${typeName} in ${sourcePath}.`,
+		)
+	}
+
+	return typeMatch[1]
+		.split("|")
+		.map((member) => member.trim())
+		.filter(Boolean)
+}
+
+function readProjectFile(sourcePath) {
+	return readFileSync(projectPathChecked(sourcePath), "utf8")
+}
+
+function rnSkiaTypesPath(...segments) {
+	return path.join(
+		"node_modules",
+		"@shopify",
+		"react-native-skia",
+		"src",
+		"skia",
+		"types",
+		...segments,
+	)
+}
+
+function escapeRegExp(value) {
+	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 }
 
 function helperSourcePaths() {
