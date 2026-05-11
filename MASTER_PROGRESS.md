@@ -2730,10 +2730,26 @@ Last updated: 2026-05-11
   - Removed `../worker-128-post-127-root-cause-audit`.
   - Deleted branch `worker/128-post-127-root-cause-audit`.
 - Created `worker-129-paragraphstyle-strutstyle-tojsi` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_129_paragraphstyle_strutstyle_tojsi` as a managed worker subagent with `goal: true`.
+- Worker 129 completed and reported `Goal finished.` It wrote `worker-progress/worker-129-paragraphstyle-strutstyle-tojsi.md`.
+- Worker 129 added bounded `ParagraphStyle.strutStyle` parser/serializer coverage, including local `strutStyle.fontFamilies` preservation, direct converter round-trip proof, and representative `paragraph.paragraphStyle` `NodeCommand` round-trip proof.
+- Worker 129 branch commit: `116b659 Preserve paragraph strut style serialization`.
+- Merged worker 129 into `main` as `2c1146a Merge worker 129 ParagraphStyle strutStyle serialization`.
+- Independent worker-branch verification passed:
+  - `git diff --check HEAD~1 HEAD`
+  - `node --check scripts/verify-yoganode-native-commands-render.mjs`
+  - `npm run check:yoganode-native-commands-render`
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - `node --check scripts/verify-yoganode-native-commands-render.mjs`: passed.
+  - `npm run check:feasible-matrix`: passed all 28 commands in `4m 42s`.
+- Worker 129 cleanup:
+  - Closed `/root/worker_129_paragraphstyle_strutstyle_tojsi`.
+  - Removed `../worker-129-paragraphstyle-strutstyle-tojsi`.
+  - Deleted branch `worker/129-paragraphstyle-strutstyle-tojsi`.
 
 ## Active Workers
 
-- `/root/worker_129_paragraphstyle_strutstyle_tojsi`: adding bounded `ParagraphStyle.strutStyle` parser/serializer coverage in isolated worktree `../worker-129-paragraphstyle-strutstyle-tojsi`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2882,6 +2898,7 @@ Accepted worker reports:
 - `worker-progress/worker-126-post-125-root-cause-audit.md`
 - `worker-progress/worker-127-paragraphstyle-scalar-tojsi.md`
 - `worker-progress/worker-128-post-127-root-cause-audit.md`
+- `worker-progress/worker-129-paragraphstyle-strutstyle-tojsi.md`
 
 ## Pending Workers
 
@@ -2920,6 +2937,7 @@ Accepted worker reports:
 - Worker 126 accepted the post-worker-125 proof surface, reconfirmed the main 28-command feasible matrix, and selected bounded `ParagraphStyle` scalar `toJSI(...)` serialization for `disableHinting`, `replaceTabCharacters`, `textDirection`, and `textHeightBehavior`.
 - Worker 127 closed the selected `ParagraphStyle` scalar serialization target and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-127 audit.
 - Worker 128 accepted the post-worker-127 proof surface, reconfirmed the main 28-command feasible matrix, and selected bounded `ParagraphStyle.strutStyle` parser/serializer coverage including a local `fontFamilies` parser overlay.
+- Worker 129 closed the selected `ParagraphStyle.strutStyle` parser/serializer target and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-129 audit.
 
 ## Evidence Summary
 
@@ -2970,7 +2988,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Add bounded `ParagraphStyle.strutStyle` parser/serializer coverage, including a local `strutStyle.fontFamilies` parser overlay, with direct converter and representative `paragraph.paragraphStyle` `NodeCommand` round-trip proof.
+- Run a fresh post-worker-129 root-cause audit to rerank remaining locally unblocked gaps under the current proof surface.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
