@@ -2884,10 +2884,20 @@ Last updated: 2026-05-11
   - Removed `../worker-139-paragraph-tojsi-nested-textstyle`.
   - Deleted branch `worker/139-paragraph-tojsi-nested-textstyle`.
 - Created `worker-140-post-139-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_140_post_139_root_cause_audit` as a managed worker subagent with `goal: true`.
+- Worker 140 completed and reported `Goal finished.` It wrote `worker-progress/worker-140-post-139-root-cause-audit.md`.
+- Worker 140 accepted worker 139's nested `ParagraphStyle::toJSI(...)` proof surface, reconfirmed the 28-command feasible matrix in `4m 49s`, and selected README/API documentation for the simple `<text textStyle>` versus rich `<paragraph paragraphStyle>` split as the next target.
+- Worker 140 branch commit: `8e6e94f Add worker 140 root cause audit`.
+- Merged worker 140 into `main` as `a1f8446 Merge worker 140 post-139 root cause audit`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 140 cleanup:
+  - Closed `/root/worker_140_post_139_root_cause_audit`.
+  - Removed `../worker-140-post-139-root-cause-audit`.
+  - Deleted branch `worker/140-post-139-root-cause-audit`.
 
 ## Active Workers
 
-- `/root/worker_140_post_139_root_cause_audit`: auditing the post-worker-139 proof surface and reranking remaining proof, API-contract, documentation, and platform-runtime gaps in isolated worktree `../worker-140-post-139-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3047,6 +3057,7 @@ Accepted worker reports:
 - `worker-progress/worker-137-dynamic-paragraph-textstyle-reconciler.md`
 - `worker-progress/worker-138-post-137-root-cause-audit.md`
 - `worker-progress/worker-139-paragraph-tojsi-nested-textstyle.md`
+- `worker-progress/worker-140-post-139-root-cause-audit.md`
 
 ## Pending Workers
 
@@ -3095,7 +3106,8 @@ Accepted worker reports:
 - Worker 136 accepted the post-worker-135 proof surface, reconfirmed the main 28-command feasible matrix in `5m 12s`, and selected dynamic nested `paragraphStyle.textStyle` package/Reconciler proof for `SharedValue` leaves as the next target.
 - Worker 137 closed dynamic nested `paragraphStyle.textStyle` packed TypeScript/Reconciler JS-mode proof for `SharedValue` leaves. The main 28-command feasible matrix passed in `4m 46s`; the next step is a fresh post-worker-137 audit.
 - Worker 138 accepted the post-worker-137 proof surface, reconfirmed the main 28-command feasible matrix in `4m 56s`, and selected nested `ParagraphStyle::toJSI(...)` outbound shape preservation, including the text-style `heightMultiplier` collision boundary, as the next target.
-- Worker 139 closed nested `ParagraphStyle::toJSI(...)` shape preservation with dual flat/nested output, distinct paragraph/text-style `heightMultiplier` round-trip proof, and the main 28-command feasible matrix passed in `4m 54s`. The next step is a fresh post-worker-139 audit.
+- Worker 139 closed nested `ParagraphStyle::toJSI(...)` shape preservation with dual flat/nested output, distinct paragraph/text-style `heightMultiplier` round-trip proof, and the main 28-command feasible matrix passed in `4m 54s`.
+- Worker 140 accepted the post-worker-139 proof surface, reconfirmed the main 28-command feasible matrix in `4m 49s`, confirmed platform-native app build/run remains locally blocked, and selected README/API documentation for the simple `<text textStyle>` versus rich `<paragraph paragraphStyle>` split as the next strongest locally unblocked target.
 
 ## Evidence Summary
 
@@ -3146,7 +3158,8 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor worker 140, which is auditing the post-worker-139 proof surface and reranking remaining proof, API-contract, documentation, and platform-runtime gaps.
+- Assign the README/API docs worker for the simple `<text textStyle>` versus
+  rich `<paragraph paragraphStyle>` styling split.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
