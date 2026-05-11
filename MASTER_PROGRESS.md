@@ -2816,10 +2816,25 @@ Last updated: 2026-05-11
   - Removed `../worker-134-post-133-root-cause-audit`.
   - Deleted branch `worker/134-post-133-root-cause-audit`.
 - Created `worker-135-nested-paragraph-textstyle-color` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_135_nested_paragraph_textstyle_color` as a managed worker subagent with `goal: true`.
+- Worker 135 completed and reported `Goal finished.` It wrote `worker-progress/worker-135-nested-paragraph-textstyle-color.md`.
+- Worker 135 sanitized paragraph-style delegation so nested `paragraphStyle.textStyle` is parsed by the local CSS-aware text-style parser, then applies flattened fields last to preserve precedence.
+- Worker 135 added packed TypeScript, direct native, NodeCommand/render, invalid nested color, and Nitro materialization coverage.
+- Worker 135 branch commit: `212bd81 Fix nested paragraph textStyle color parsing`.
+- Merged worker 135 into `main` as `ccc1f1a Merge worker 135 nested paragraph textStyle color`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - `node --check scripts/verify-package-typescript-consumer.mjs`: passed.
+  - `node --check scripts/verify-yoganode-native-commands-render.mjs`: passed.
+  - `node --check scripts/verify-yoganode-nitro-materialization.mjs`: passed.
+  - `npm run check:feasible-matrix`: passed all 28 commands in `5m 7s`.
+- Worker 135 cleanup:
+  - Closed `/root/worker_135_nested_paragraph_textstyle_color`.
+  - Removed `../worker-135-nested-paragraph-textstyle-color`.
+  - Deleted branch `worker/135-nested-paragraph-textstyle-color`.
 
 ## Active Workers
 
-- `/root/worker_135_nested_paragraph_textstyle_color`: closing nested `paragraphStyle.textStyle` CSS string/color parsing proof and fix in isolated worktree `../worker-135-nested-paragraph-textstyle-color`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2974,6 +2989,7 @@ Accepted worker reports:
 - `worker-progress/worker-132-post-131-root-cause-audit.md`
 - `worker-progress/worker-133-simple-textstyle-contract.md`
 - `worker-progress/worker-134-post-133-root-cause-audit.md`
+- `worker-progress/worker-135-nested-paragraph-textstyle-color.md`
 
 ## Pending Workers
 
@@ -3018,6 +3034,7 @@ Accepted worker reports:
 - Worker 132 accepted the post-worker-131 proof surface, reconfirmed the main 28-command feasible matrix, and selected simple `<text textStyle>` contract closure because public text authoring accepts rich text-style fields that `TextCmd` currently converts but does not render.
 - Worker 133 closed the simple `<text textStyle>` contract drift with public type narrowing, scoped native rejection, packed TypeScript proof, and host-native verifier proof, then reconfirmed the main 28-command feasible matrix in `4m 29s`. The next step is a fresh post-worker-133 audit.
 - Worker 134 accepted the post-worker-133 proof surface, reconfirmed the main 28-command feasible matrix, and selected nested `paragraphStyle.textStyle` CSS string/color parsing proof and fix before broader nested serialization-shape work.
+- Worker 135 closed nested `paragraphStyle.textStyle` CSS string color parsing with package/native/render/Nitro proof and preserved flattened paragraph text-style precedence. The main 28-command feasible matrix passed in `5m 7s`; the next step is a fresh post-worker-135 audit.
 
 ## Evidence Summary
 
@@ -3068,7 +3085,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor worker 135, which is closing nested `paragraphStyle.textStyle` CSS string/color parsing proof and fix while preserving flattened paragraph text-style precedence.
+- Run a fresh post-worker-135 root-cause audit to rerank remaining proof, API-contract, and platform-runtime gaps.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
