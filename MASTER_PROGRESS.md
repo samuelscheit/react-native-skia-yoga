@@ -2562,10 +2562,29 @@ Last updated: 2026-05-11
   - Deleted branch `worker/116-post-115-root-cause-audit`.
 - Prepared worker 117 as the next step: implement public package support for whole `SharedValue<SamplingOptions>` on `image.sampling`.
 - Created `worker-117-sampling-sharedvalue-type-boundary` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-117-sampling-sharedvalue-type-boundary` as a top-level tmux subprocess.
+- Coordination policy changed after worker 117 was already running:
+  - Committed `36ca500 Switch orchestration docs to spawn_agent workers`.
+  - Added `WORKER_BRIEF.md` and updated `ORCHESTRATOR.md`, `MASTER_PLAN.md`, and this file so future top-level workers use `spawn_agent` with `agent_type: "worker"`, `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and `reasoning_effort: "xhigh"`.
+  - Removed manual `create_goal` / `GOAL_CREATED` evidence as an acceptance gate for future workers; `goal: true` owns worker startup goal lifecycle.
+- Worker 117 completed and reported `Goal finished.` It wrote `worker-progress/worker-117-sampling-sharedvalue-type-boundary.md`.
+- Worker 117 implemented whole `SharedValue<SamplingOptions>` public type support for `image.sampling`, preserved existing `SharedValue<FilterOptions>` / `SharedValue<CubicResampler>` support, kept nested sampling leaves rejected, removed redundant global JSX augmentation in favor of the documented `jsxImportSource` runtime, and added packed-consumer plus Reconciler JS listener coverage.
+- Worker 117 branch commit: `efe5d95 Add worker 117 sampling SharedValue support`.
+- Merged worker 117 into `main` as `e26ef7e Merge worker 117 sampling SharedValue support`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - `node --check scripts/verify-package-typescript-consumer.mjs`: passed.
+  - `node --check scripts/verify-reconciler-animated-bindings.mjs`: passed.
+  - `npm run typecheck`: passed.
+  - `npm run check:reconciler-animated-bindings`: passed.
+  - `npm run check:package-typescript-consumer`: passed.
+  - `npm run check:feasible-matrix`: passed all 28 commands in `4m 21s`.
+- Worker 117 cleanup:
+  - Removed `../worker-117-sampling-sharedvalue-type-boundary`.
+  - Deleted branch `worker/117-sampling-sharedvalue-type-boundary`.
 
 ## Active Workers
 
-- `rnskia-worker-117-sampling-sharedvalue-type-boundary`: running from `worker/117-sampling-sharedvalue-type-boundary`; implement public package support for whole `SharedValue<SamplingOptions>` on `image.sampling`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2701,10 +2720,12 @@ Accepted worker reports:
 - `worker-progress/worker-113-nodecommand-tojsi-symmetry.md`
 - `worker-progress/worker-114-post-113-root-cause-audit.md`
 - `worker-progress/worker-115-yoganode-getchildren-materialization.md`
+- `worker-progress/worker-116-post-115-root-cause-audit.md`
+- `worker-progress/worker-117-sampling-sharedvalue-type-boundary.md`
 
 ## Pending Workers
 
-- None; worker 117 is active.
+- None; next step is a post-worker-117 root-cause audit launched with the new `spawn_agent` worker model.
 
 ## Decisions
 
@@ -2727,6 +2748,7 @@ Accepted worker reports:
 - Post-worker-114 target selection: worker 114 selected materialized `YogaNode.getChildren()` return identity/prototype coverage because Reconciler cleanup recursively depends on `getChildren()`, native `YogaNode::getChildren()` currently returns children through `JSIConverter<std::shared_ptr<YogaNode>>::toJSI(...)`, and that converter creates a fresh plain NativeState object instead of the cached Nitro-materialized object/prototype.
 - Post-worker-115 follow-up: materialized `YogaNode.getChildren()` identity/prototype behavior is integrated and the main 28-command feasible matrix passed; the next step is a fresh read-only root-cause audit because worker 115 closed the selected source/materialization boundary and the remaining gaps need reranking under the current proof surface.
 - Post-worker-116 target selection: worker 116 selected whole `SharedValue<SamplingOptions>` public type support for `image.sampling` because `SamplingOptions` is opaque but union-shaped, `YogaDeepAnimated<T>` currently distributes over that union, and the public type rejects `SharedValue<SamplingOptions>` while accepting narrower `SharedValue<FilterOptions>` / `SharedValue<CubicResampler>`.
+- Worker 117 accepted that target within a TypeScript/package/source-level proof boundary. Whole `SharedValue<SamplingOptions>` now compiles for `image.sampling` from an installed tarball, nested sampling leaves remain rejected, Reconciler JS listener coverage includes top-level opaque `image.sampling`, and the main 28-command feasible matrix passed. The next step is a fresh post-worker-117 audit.
 
 ## Evidence Summary
 
@@ -2777,7 +2799,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Complete worker 117's public `image.sampling` / `SharedValue<SamplingOptions>` type-boundary implementation and packed-consumer proof.
+- Run a fresh post-worker-117 root-cause audit and select the next strongest locally unblocked implementation target.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
