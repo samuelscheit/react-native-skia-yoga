@@ -3036,13 +3036,25 @@ Last updated: 2026-05-11
   symlinked root/example dependencies from the main worktree, and queued
   `/root/worker_152_post_151_root_cause_audit` as a managed audit worker
   subagent with `goal: true`.
+- Worker 152 completed and reported `Goal finished.` It wrote
+  `worker-progress/worker-152-post-151-root-cause-audit.md`.
+- Worker 152 accepted Worker 151's dynamic layer proof boundary, reconfirmed
+  the 28-command feasible matrix, and selected generated materialized
+  `YogaNode.setStyle(...)` paint-field breadth as the next strongest locally
+  unblocked target.
+- Worker 152 branch commit: `3695b8b Add worker 152 root cause audit`.
+- Merged worker 152 into `main` as
+  `a3bf720 Merge worker 152 post-151 root cause audit`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 152 cleanup:
+  - Closed `/root/worker_152_post_151_root_cause_audit`.
+  - Removed `../worker-152-post-151-root-cause-audit`.
+  - Deleted branch `worker/152-post-151-root-cause-audit`.
 
 ## Active Workers
 
-- `/root/worker_152_post_151_root_cause_audit`: auditing the post-worker-151
-  proof surface and selecting the next strongest locally unblocked
-  implementation target from isolated worktree
-  `../worker-152-post-151-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3214,6 +3226,7 @@ Accepted worker reports:
 - `worker-progress/worker-149-layer-paint-proof.md`
 - `worker-progress/worker-150-post-149-root-cause-audit.md`
 - `worker-progress/worker-151-dynamic-layer-style-proof.md`
+- `worker-progress/worker-152-post-151-root-cause-audit.md`
 
 ## Pending Workers
 
@@ -3278,6 +3291,7 @@ Accepted worker reports:
 - Worker 149 closed bounded `style.layer` / `_layerPaint` proof with generated transport, materialized wrapper delivery, packed TypeScript authoring, storage/reset, `_paint` separation, and saveLayer alpha raster evidence. The main 28-command feasible matrix passed in `4m 47s`.
 - Worker 150 accepted the post-worker-149 proof surface, reconfirmed the main 28-command feasible matrix in `5m 17s`, confirmed platform-native app build/run remains locally blocked, and selected dynamic `style.layer` / opaque style `SharedValue` public source-path proof as the next strongest locally unblocked target.
 - Worker 151 closed dynamic `style.layer` / opaque style `SharedValue` public source-path proof with packed TypeScript authoring and source-level Reconciler delivery coverage. The main 28-command feasible matrix passed in `4m 42s`; the next step is a fresh post-worker-151 root-cause audit.
+- Worker 152 accepted the post-worker-151 proof surface, reconfirmed the main 28-command feasible matrix in `5m 48s`, confirmed platform-native app build/run remains locally blocked, and selected generated materialized `YogaNode.setStyle(...)` paint-field breadth as the next strongest locally unblocked target.
 
 ## Evidence Summary
 
@@ -3328,8 +3342,10 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor worker 152's post-worker-151 root-cause audit and next-target
-  recommendation.
+- Launch Worker 153 for generated materialized `YogaNode.setStyle(...)`
+  paint-field breadth covering SkPaint-backed `backgroundColor`, `borderWidth`,
+  `strokeCap`, `strokeJoin`, `strokeMiter`, `dither`, `opacity`, and
+  `blendMode`.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
