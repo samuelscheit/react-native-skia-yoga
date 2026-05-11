@@ -170,13 +170,13 @@ try {
 	console.log("- Prior risk source-confirmed: HybridObject::toObject() enters HybridObjectPrototype/JSICache, JSICache calls getRuntimeId(runtime), and getRuntimeId(runtime) depends on platform ThreadUtils; this verifier links the real iOS ThreadUtils implementation for the host-JSC probe.")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, generated HybridYogaNodeSpec.cpp, Nitro HybridObject/prototype/cache sources, platform ThreadUtils, React Native JSC, upstream Yoga sources, RN Skia macOS archives, RN Skia CSSColorParser, a host platform context, Worklets shared-item sources, ColorParser, PlatformContextAccessor, AnimatedDouble, and Nitro/JSI helper sources.")
 	console.log("- The executable created a shared YogaNode, called YogaNode::toObject(runtime), asserted the returned value is a JS object with NativeState wrapping the original YogaNode, and asserted repeated toObject(runtime) returns the cached JS object.")
-	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height/antiAlias/layer), setStyle(SkPaint-backed backgroundColor plus paint fields), setStyle(clip path/rect/rrect, 9- and 16-value matrix arrays, non-empty transform precedence, empty transform matrix fallback, invertClip), computeLayout(width, height), and the layout getter.")
+	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height/antiAlias/layer), setStyle(SkPaint-backed backgroundColor plus paint fields), setStyle(clip path/rect/rrect, 9- and 16-value matrix arrays, single-operation transform variants, non-empty transform precedence, empty transform matrix fallback, empty transform no-matrix reset, invertClip), computeLayout(width, height), and the layout getter.")
 	console.log("- The executable materialized parent/child YogaNodes, inserted the child through the generated parent.insertChild(...) wrapper, called materialized parent.getChildren(), and asserted the returned child is the cached materialized child object with generated and raw YogaNode prototype methods.")
 	console.log("- The executable called generated setStyle/computeLayout/insertChild and raw setInteractionConfig/hitTest/getChildren through the returned child object, then asserted recursive returned-grandchild identity through returnedChild.getChildren().")
 	console.log("- The executable used fresh materialized YogaNode objects to invoke generated JS-facing setCommand(line), setCommand(points), setCommand(path), setCommand(text), setCommand(paragraph), setCommand(circle), setCommand(rrect), setCommand(blurMaskFilter), setCommand(rect), setCommand(oval), and setCommand(image) wrappers, preserving the native no-command-kind-change invariant.")
-	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized invertClip delivery into _style.invertClip and the clipping predicate, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
+	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
 	console.log("- For CircleCmd, RRectCmd, and BlurMaskFilterCmd, selected no-pixel draw calls are used only to expose render-time native state/mask-filter side effects after generated wrapper delivery; no command-rendering or render-fidelity claim is made.")
-	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(clip/matrix-9/matrix-16/non-empty-transform/empty-transform/invertClip) delivery into native NodeStyle/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, and selected generated/raw YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, pixel rendering, exact hit-test behavior, command rendering, or exact render fidelity.")
+	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, and selected generated/raw YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, pixel rendering, exact hit-test behavior, command rendering, or exact render fidelity.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -612,7 +612,14 @@ using margelo::nitro::RNSkiaYoga::RRectCmd;
 using margelo::nitro::RNSkiaYoga::StrokeCap;
 using margelo::nitro::RNSkiaYoga::StrokeJoin;
 using margelo::nitro::RNSkiaYoga::TextCmd;
+using margelo::nitro::RNSkiaYoga::TransformRotateX;
+using margelo::nitro::RNSkiaYoga::TransformRotateY;
+using margelo::nitro::RNSkiaYoga::TransformRotateZ;
 using margelo::nitro::RNSkiaYoga::TransformScale;
+using margelo::nitro::RNSkiaYoga::TransformScaleX;
+using margelo::nitro::RNSkiaYoga::TransformScaleY;
+using margelo::nitro::RNSkiaYoga::TransformSkewX;
+using margelo::nitro::RNSkiaYoga::TransformSkewY;
 using margelo::nitro::RNSkiaYoga::TransformTranslateX;
 using margelo::nitro::RNSkiaYoga::TransformTranslateY;
 using margelo::nitro::RNSkiaYoga::YogaNode;
@@ -626,6 +633,11 @@ void expect(bool condition, const char* message)
         std::cerr << "FAIL: " << message << "\n";
         std::abort();
     }
+}
+
+void expect(bool condition, const std::string& message)
+{
+    expect(condition, message.c_str());
 }
 
 void expectNear(double actual, double expected, const char* message)
@@ -1041,6 +1053,196 @@ jsi::Object makeSingleTransformOp(jsi::Runtime& runtime, const char* key, double
     return op;
 }
 
+using MaterializedTransformOperation = std::variant<
+    TransformRotateX,
+    TransformRotateY,
+    TransformRotateZ,
+    TransformScale,
+    TransformScaleX,
+    TransformScaleY,
+    TransformTranslateX,
+    TransformTranslateY,
+    TransformSkewX,
+    TransformSkewY>;
+
+double transformValue(const TransformRotateX& op)
+{
+    return op.rotateX;
+}
+
+double transformValue(const TransformRotateY& op)
+{
+    return op.rotateY;
+}
+
+double transformValue(const TransformRotateZ& op)
+{
+    return op.rotateZ;
+}
+
+double transformValue(const TransformScale& op)
+{
+    return op.scale;
+}
+
+double transformValue(const TransformScaleX& op)
+{
+    return op.scaleX;
+}
+
+double transformValue(const TransformScaleY& op)
+{
+    return op.scaleY;
+}
+
+double transformValue(const TransformTranslateX& op)
+{
+    return op.translateX;
+}
+
+double transformValue(const TransformTranslateY& op)
+{
+    return op.translateY;
+}
+
+double transformValue(const TransformSkewX& op)
+{
+    return op.skewX;
+}
+
+double transformValue(const TransformSkewY& op)
+{
+    return op.skewY;
+}
+
+void applyExpectedTransform(SkM44& matrix, const TransformRotateX& op)
+{
+    SkM44 rotate;
+    rotate.setRotateUnit({ 1.0f, 0.0f, 0.0f }, static_cast<float>(op.rotateX));
+    matrix.preConcat(rotate);
+}
+
+void applyExpectedTransform(SkM44& matrix, const TransformRotateY& op)
+{
+    SkM44 rotate;
+    rotate.setRotateUnit({ 0.0f, 1.0f, 0.0f }, static_cast<float>(op.rotateY));
+    matrix.preConcat(rotate);
+}
+
+void applyExpectedTransform(SkM44& matrix, const TransformRotateZ& op)
+{
+    SkM44 rotate;
+    rotate.setRotateUnit({ 0.0f, 0.0f, 1.0f }, static_cast<float>(op.rotateZ));
+    matrix.preConcat(rotate);
+}
+
+void applyExpectedTransform(SkM44& matrix, const TransformScale& op)
+{
+    const float scale = static_cast<float>(op.scale);
+    matrix.preScale(scale, scale, 1.0f);
+}
+
+void applyExpectedTransform(SkM44& matrix, const TransformScaleX& op)
+{
+    matrix.preScale(static_cast<float>(op.scaleX), 1.0f, 1.0f);
+}
+
+void applyExpectedTransform(SkM44& matrix, const TransformScaleY& op)
+{
+    matrix.preScale(1.0f, static_cast<float>(op.scaleY), 1.0f);
+}
+
+void applyExpectedTransform(SkM44& matrix, const TransformTranslateX& op)
+{
+    matrix.preTranslate(static_cast<float>(op.translateX), 0.0f, 0.0f);
+}
+
+void applyExpectedTransform(SkM44& matrix, const TransformTranslateY& op)
+{
+    matrix.preTranslate(0.0f, static_cast<float>(op.translateY), 0.0f);
+}
+
+void applyExpectedTransform(SkM44& matrix, const TransformSkewX& op)
+{
+    const float tangent = static_cast<float>(std::tan(op.skewX));
+    SkM44 skew(
+        1.0f, 0.0f, 0.0f, 0.0f,
+        tangent, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f);
+    matrix.preConcat(skew);
+}
+
+void applyExpectedTransform(SkM44& matrix, const TransformSkewY& op)
+{
+    const float tangent = static_cast<float>(std::tan(op.skewY));
+    SkM44 skew(
+        1.0f, tangent, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f);
+    matrix.preConcat(skew);
+}
+
+template <typename TransformType>
+void expectGeneratedTransformVariant(
+    const MaterializedTransformOperation& actual,
+    double expectedValue,
+    const char* label)
+{
+    expect(
+        std::holds_alternative<TransformType>(actual),
+        std::string("generated transform operation must materialize ") + label + " variant");
+    const auto& op = std::get<TransformType>(actual);
+    expectNear(
+        transformValue(op),
+        expectedValue,
+        (std::string("generated transform operation ") + label + " value").c_str());
+}
+
+template <typename TransformType>
+SkMatrix makeExpectedSingleTransformMatrix(double value)
+{
+    SkM44 matrix;
+    matrix.setIdentity();
+    TransformType op(value);
+    applyExpectedTransform(matrix, op);
+    return matrix.asM33();
+}
+
+struct GeneratedTransformCase {
+    const char* key;
+    double value;
+    void (*expectVariant)(const MaterializedTransformOperation& actual, double expectedValue, const char* label);
+    SkMatrix (*makeExpectedMatrix)(double value);
+};
+
+std::array<GeneratedTransformCase, 10> generatedTransformCases()
+{
+    return {{
+        { "rotateX", 0.25, expectGeneratedTransformVariant<TransformRotateX>, makeExpectedSingleTransformMatrix<TransformRotateX> },
+        { "rotateY", 0.35, expectGeneratedTransformVariant<TransformRotateY>, makeExpectedSingleTransformMatrix<TransformRotateY> },
+        { "rotateZ", 0.45, expectGeneratedTransformVariant<TransformRotateZ>, makeExpectedSingleTransformMatrix<TransformRotateZ> },
+        { "scale", 1.5, expectGeneratedTransformVariant<TransformScale>, makeExpectedSingleTransformMatrix<TransformScale> },
+        { "scaleX", 2.0, expectGeneratedTransformVariant<TransformScaleX>, makeExpectedSingleTransformMatrix<TransformScaleX> },
+        { "scaleY", 0.75, expectGeneratedTransformVariant<TransformScaleY>, makeExpectedSingleTransformMatrix<TransformScaleY> },
+        { "translateX", 8.0, expectGeneratedTransformVariant<TransformTranslateX>, makeExpectedSingleTransformMatrix<TransformTranslateX> },
+        { "translateY", 13.0, expectGeneratedTransformVariant<TransformTranslateY>, makeExpectedSingleTransformMatrix<TransformTranslateY> },
+        { "skewX", 0.2, expectGeneratedTransformVariant<TransformSkewX>, makeExpectedSingleTransformMatrix<TransformSkewX> },
+        { "skewY", -0.15, expectGeneratedTransformVariant<TransformSkewY>, makeExpectedSingleTransformMatrix<TransformSkewY> },
+    }};
+}
+
+jsi::Object makeSingleTransformStyle(jsi::Runtime& runtime, const char* key, double value)
+{
+    jsi::Array transform(runtime, 1);
+    transform.setValueAtIndex(runtime, 0, jsi::Value(runtime, makeSingleTransformOp(runtime, key, value)));
+
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "transform", transform);
+    return style;
+}
+
 jsi::Object makeLineCommand(jsi::Runtime& runtime)
 {
     jsi::Object command(runtime);
@@ -1343,6 +1545,15 @@ jsi::Object makeEmptyTransformWithMatrixFallbackStyle(jsi::Runtime& runtime)
         runtime,
         "matrix",
         makeMatrixArray9(runtime, emptyTransformFallbackMatrixValues()));
+    return style;
+}
+
+jsi::Object makeEmptyTransformStyle(jsi::Runtime& runtime)
+{
+    jsi::Array transform(runtime, 0);
+
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "transform", transform);
     return style;
 }
 
@@ -2167,6 +2378,44 @@ void assertGeneratedMatrix16Style(jsi::Runtime& runtime)
     disposeMaterializedObject(runtime, materialized.object);
 }
 
+void assertGeneratedSingleTransformOperationStyles(jsi::Runtime& runtime)
+{
+    for (const auto& transformCase : generatedTransformCases()) {
+        auto materialized = materializeYogaNode(runtime);
+        auto setStyle = materialized.object.getPropertyAsFunction(runtime, "setStyle");
+        auto style = makeSingleTransformStyle(runtime, transformCase.key, transformCase.value);
+        callFunctionWithOneObject(
+            runtime,
+            materialized.object,
+            setStyle,
+            style,
+            "generated setStyle(single transform operation) must return undefined");
+
+        expect(
+            materialized.node->_style.transform.has_value(),
+            std::string("generated transform operation ") + transformCase.key + " must populate transform optional");
+        expect(
+            !materialized.node->_style.matrix.has_value(),
+            std::string("generated transform operation ") + transformCase.key + " must leave matrix optional absent");
+        const auto& transforms = *materialized.node->_style.transform;
+        expect(
+            transforms.size() == 1,
+            std::string("generated transform operation ") + transformCase.key + " must keep exactly one transform");
+        transformCase.expectVariant(transforms[0], transformCase.value, transformCase.key);
+
+        const auto expectedMatrix = transformCase.makeExpectedMatrix(transformCase.value);
+        expect(
+            materialized.node->_matrix != nullptr,
+            std::string("generated transform operation ") + transformCase.key + " must update YogaNode::_matrix");
+        expectSkMatrixNear(
+            *materialized.node->_matrix,
+            expectedMatrix,
+            (std::string("generated transform operation ") + transformCase.key + " native matrix").c_str());
+
+        disposeMaterializedObject(runtime, materialized.object);
+    }
+}
+
 void assertGeneratedTransformStylePrecedence(jsi::Runtime& runtime)
 {
     auto materialized = materializeYogaNode(runtime);
@@ -2235,6 +2484,36 @@ void assertGeneratedEmptyTransformMatrixFallbackStyle(jsi::Runtime& runtime)
     expectSkMatrixNear(*styleMatrix, expectedFallbackMatrix, "generated empty transform style matrix optional");
     expect(materialized.node->_matrix != nullptr, "generated empty transform style must fall back to YogaNode::_matrix");
     expectSkMatrixNear(*materialized.node->_matrix, expectedFallbackMatrix, "generated empty transform style native matrix fallback");
+
+    disposeMaterializedObject(runtime, materialized.object);
+}
+
+void assertGeneratedEmptyTransformWithoutMatrixStyle(jsi::Runtime& runtime)
+{
+    auto materialized = materializeYogaNode(runtime);
+    auto setStyle = materialized.object.getPropertyAsFunction(runtime, "setStyle");
+
+    auto matrixStyle = makeMatrixStyle(runtime);
+    callFunctionWithOneObject(
+        runtime,
+        materialized.object,
+        setStyle,
+        matrixStyle,
+        "generated setStyle(matrix before empty transform reset) must return undefined");
+    expect(materialized.node->_matrix != nullptr, "generated empty transform reset precondition must install an initial matrix");
+
+    auto emptyTransformStyle = makeEmptyTransformStyle(runtime);
+    callFunctionWithOneObject(
+        runtime,
+        materialized.object,
+        setStyle,
+        emptyTransformStyle,
+        "generated setStyle(empty transform without matrix) must return undefined");
+
+    expect(materialized.node->_style.transform.has_value(), "generated empty transform no-matrix style must populate transform optional");
+    expect(materialized.node->_style.transform->empty(), "generated empty transform no-matrix style must keep transform array empty");
+    expect(!materialized.node->_style.matrix.has_value(), "generated empty transform no-matrix style must leave matrix optional absent");
+    expect(materialized.node->_matrix == nullptr, "generated empty transform no-matrix style must reset YogaNode::_matrix");
 
     disposeMaterializedObject(runtime, materialized.object);
 }
@@ -2331,8 +2610,10 @@ int main()
     assertGeneratedInvertClipStyle(*runtime);
     assertGeneratedMatrixStyle(*runtime);
     assertGeneratedMatrix16Style(*runtime);
+    assertGeneratedSingleTransformOperationStyles(*runtime);
     assertGeneratedTransformStylePrecedence(*runtime);
     assertGeneratedEmptyTransformMatrixFallbackStyle(*runtime);
+    assertGeneratedEmptyTransformWithoutMatrixStyle(*runtime);
 
     std::cerr << "probe: call generated computeLayout" << std::endl;
     callComputeLayout(*runtime, object, computeLayout);
