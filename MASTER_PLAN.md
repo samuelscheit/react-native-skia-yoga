@@ -272,8 +272,9 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Assign bounded `style.layer` / `_layerPaint` generated transport and render
-  proof.
+- Monitor worker 149, which is adding bounded `style.layer` / `_layerPaint`
+  generated transport and render proof from isolated worktree
+  `../worker-149-layer-paint-proof`.
 
 Acceptance criteria:
 
