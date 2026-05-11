@@ -2639,10 +2639,21 @@ Last updated: 2026-05-11
   - Deleted branch `worker/121-canonical-antialias-style`.
 - Prepared worker 122 as the next step: run a fresh post-worker-121 root-cause audit and select the next locally unblocked target.
 - Created `worker-122-post-121-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_122_post_121_root_cause_audit` as a managed worker subagent with `goal: true`.
+- Worker 122 completed and reported `Goal finished.` It wrote `worker-progress/worker-122-post-121-root-cause-audit.md`.
+- Worker 122 accepted worker 121's canonical `style.antiAlias` proof boundary, reran `git diff --check`, focused verifier syntax checks, and `npm run check:feasible-matrix`, which passed all 28 commands in `4m 31s`.
+- Worker 122 selected bounded additional `TextStyle` `toJSI(...)` serialization for currently parsed but unserialized public text-style fields as the next strongest locally unblocked implementation target.
+- Worker 122 branch commit: `8c6c3df Add worker 122 post-121 root cause audit`.
+- Merged worker 122 into `main` as `0c6bdb4 Merge worker 122 post-121 root cause audit`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 122 cleanup:
+  - Closed `/root/worker_122_post_121_root_cause_audit`.
+  - Removed `../worker-122-post-121-root-cause-audit`.
+  - Deleted branch `worker/122-post-121-root-cause-audit`.
 
 ## Active Workers
 
-- `/root/worker_122_post_121_root_cause_audit`: auditing the post-worker-121 state in isolated worktree `../worker-122-post-121-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2784,10 +2795,11 @@ Accepted worker reports:
 - `worker-progress/worker-119-value-bearing-style-tojsi.md`
 - `worker-progress/worker-120-post-119-root-cause-audit.md`
 - `worker-progress/worker-121-canonical-antialias-style.md`
+- `worker-progress/worker-122-post-121-root-cause-audit.md`
 
 ## Pending Workers
 
-- None beyond monitoring active worker 122.
+- Launch worker 123 for bounded additional `TextStyle` `toJSI(...)` serialization.
 
 ## Decisions
 
@@ -2815,6 +2827,7 @@ Accepted worker reports:
 - Worker 119 closed the selected serialization target for bounded stable fields and reconfirmed the main 28-command feasible matrix. Remaining style/sampling risks are unsupported `maxAniso`, un-serialized text/paragraph fields, CSS string preservation, exact typography/shaping/render fidelity, and platform/runtime proof gaps.
 - Worker 120 accepted the post-worker-119 proof boundary and selected canonical `style.antiAlias` support because the public/generated/native contract currently exposes the misspelled `antiaAlias`, while Skia/RN Skia spelling and expected authoring use `antiAlias`.
 - Worker 121 closed canonical `style.antiAlias` support within a public TypeScript/generated/native/host-SkPaint proof boundary, preserved deprecated `style.antiaAlias` fallback with canonical precedence, and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-121 audit.
+- Worker 122 accepted worker 121's boundary, reconfirmed the main 28-command feasible matrix, and selected bounded additional `TextStyle` `toJSI(...)` serialization because the native converter parses meaningful public fields that current serialization still drops.
 
 ## Evidence Summary
 
@@ -2865,7 +2878,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Run a fresh post-worker-121 root-cause audit and rank the next locally unblocked target.
+- Add bounded additional `TextStyle` `toJSI(...)` serialization for currently parsed but unserialized public text-style fields, with direct converter and `NodeCommand` round-trip proof.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
