@@ -675,10 +675,6 @@ void YogaNode::setStyle(const NodeStyle& style)
         _layerPaint = *value;
     }
 
-    if (const auto& value = style.antiaAlias) {
-        _paint.setAntiAlias(*value);
-    }
-
     if (const auto& value = style.dither) {
         _paint.setDither(*value);
     }
@@ -695,6 +691,10 @@ void YogaNode::setStyle(const NodeStyle& style)
             const auto& p = std::get<SkPaint>(*value);
             _paint = p;
         }
+    }
+
+    if (const auto& value = style.antiAlias.has_value() ? style.antiAlias : style.antiaAlias) {
+        _paint.setAntiAlias(*value);
     }
 
     if (const auto& value = style.opacity) {

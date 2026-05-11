@@ -169,12 +169,13 @@ try {
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
 	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, selected textStyle/paragraphStyle fields, line from/to points, and points arrays.")
 	console.log("- The executable asserted selected value-bearing toJSI/fromJSI serialization for SkSamplingOptions filter/mipmap and cubic B/C, SkTextStyle fontSize/color/fontFamilies/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale, and SkParagraphStyle textAlign/maxLines/heightMultiplier/ellipsis plus flattened default text style fields.")
+	console.log("- The executable asserted generated NodeStyle transport and host-native SkPaint state for canonical style.antiAlias, legacy style.antiaAlias fallback, and canonical precedence when both keys are present.")
 	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
 	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) and flattened ParagraphCmd hex colors, named-color conversion, and invalid text/paragraph color-string rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, selected value-bearing SkSamplingOptions, SkTextStyle, and SkParagraphStyle serialization fields, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove unsupported SkSamplingOptions maxAniso preservation, every SkTextStyle/SkParagraphStyle field, CSS color string preservation, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, YogaNode::setStyle SkPaint antiAlias state, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, selected value-bearing SkSamplingOptions, SkTextStyle, and SkParagraphStyle serialization fields, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove unsupported SkSamplingOptions maxAniso preservation, every SkTextStyle/SkParagraphStyle field, CSS color string preservation, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -711,7 +712,7 @@ NodeStyle fixedStyle(double width, double height, SkColor color, std::optional<d
     style.width = points(width);
     style.height = points(height);
     style.backgroundColor = colorPaint(color);
-    style.antiaAlias = false;
+    style.antiAlias = false;
     if (opacity.has_value()) {
         style.opacity = opacity;
     }
@@ -730,7 +731,7 @@ NodeStyle strokeStyle(double width, double height, SkColor color, float strokeWi
     paint.setStrokeWidth(strokeWidth);
     paint.setStrokeCap(SkPaint::kButt_Cap);
     style.backgroundColor = paint;
-    style.antiaAlias = false;
+    style.antiAlias = false;
     return style;
 }
 
@@ -757,7 +758,7 @@ NodeStyle groupStyle(double width, double height)
     NodeStyle style {};
     style.width = points(width);
     style.height = points(height);
-    style.antiaAlias = false;
+    style.antiAlias = false;
     return style;
 }
 
@@ -765,7 +766,7 @@ NodeStyle widthOnlyStyle(double width)
 {
     NodeStyle style {};
     style.width = points(width);
-    style.antiaAlias = false;
+    style.antiAlias = false;
     return style;
 }
 
@@ -1590,6 +1591,82 @@ std::shared_ptr<YogaNode> makeYogaNode(NodeStyle style, NodeCommand command)
     node->setStyle(style);
     node->setCommand(std::move(command));
     return node;
+}
+
+NodeStyle convertNodeStyle(jsi::Runtime& runtime, jsi::Object styleObject, const std::string& label)
+{
+    jsi::Value styleValue(runtime, styleObject);
+    expect(
+        margelo::nitro::JSIConverter<NodeStyle>::canConvert(runtime, styleValue),
+        label + " generated NodeStyle converter accepts the style object");
+    return margelo::nitro::JSIConverter<NodeStyle>::fromJSI(runtime, styleValue);
+}
+
+void assertNodeStyleAntiAliasTransportAndPaint(jsi::Runtime& runtime)
+{
+    {
+        jsi::Object styleObject(runtime);
+        styleObject.setProperty(runtime, "antiAlias", false);
+        auto style = convertNodeStyle(runtime, std::move(styleObject), "canonical antiAlias");
+        expect(style.antiAlias.has_value(), "canonical antiAlias populates NodeStyle.antiAlias");
+        expect(!style.antiAlias.value(), "canonical antiAlias keeps false value");
+        expect(!style.antiaAlias.has_value(), "canonical antiAlias does not populate legacy NodeStyle.antiaAlias");
+
+        auto serialized = margelo::nitro::JSIConverter<NodeStyle>::toJSI(runtime, style);
+        expect(serialized.isObject(), "canonical antiAlias NodeStyle toJSI returns an object");
+        auto serializedStyle = serialized.asObject(runtime);
+        expect(!serializedStyle.getProperty(runtime, "antiAlias").getBool(), "canonical antiAlias serializes under antiAlias");
+        expect(serializedStyle.getProperty(runtime, "antiaAlias").isUndefined(), "canonical antiAlias does not serialize a legacy value");
+
+        YogaNode node;
+        node._paint.setAntiAlias(true);
+        node.setStyle(style);
+        expect(!node._paint.isAntiAlias(), "canonical antiAlias false reaches SkPaint::setAntiAlias(false)");
+
+        auto styleWithPaint = style;
+        SkPaint backgroundPaint;
+        backgroundPaint.setAntiAlias(true);
+        styleWithPaint.backgroundColor = backgroundPaint;
+        YogaNode nodeWithPaint;
+        nodeWithPaint.setStyle(styleWithPaint);
+        expect(!nodeWithPaint._paint.isAntiAlias(), "canonical antiAlias applies after SkPaint backgroundColor assignment");
+    }
+
+    {
+        jsi::Object styleObject(runtime);
+        styleObject.setProperty(runtime, "antiaAlias", true);
+        auto style = convertNodeStyle(runtime, std::move(styleObject), "legacy antiaAlias");
+        expect(!style.antiAlias.has_value(), "legacy antiaAlias does not populate canonical NodeStyle.antiAlias");
+        expect(style.antiaAlias.has_value(), "legacy antiaAlias populates NodeStyle.antiaAlias");
+        expect(style.antiaAlias.value(), "legacy antiaAlias keeps true value");
+
+        auto serialized = margelo::nitro::JSIConverter<NodeStyle>::toJSI(runtime, style);
+        expect(serialized.isObject(), "legacy antiaAlias NodeStyle toJSI returns an object");
+        auto serializedStyle = serialized.asObject(runtime);
+        expect(serializedStyle.getProperty(runtime, "antiAlias").isUndefined(), "legacy antiaAlias does not invent canonical serialization");
+        expect(serializedStyle.getProperty(runtime, "antiaAlias").getBool(), "legacy antiaAlias serializes under antiaAlias");
+
+        YogaNode node;
+        node._paint.setAntiAlias(false);
+        node.setStyle(style);
+        expect(node._paint.isAntiAlias(), "legacy antiaAlias falls back to SkPaint::setAntiAlias(true)");
+    }
+
+    {
+        jsi::Object styleObject(runtime);
+        styleObject.setProperty(runtime, "antiAlias", false);
+        styleObject.setProperty(runtime, "antiaAlias", true);
+        auto style = convertNodeStyle(runtime, std::move(styleObject), "antiAlias precedence");
+        expect(style.antiAlias.has_value(), "precedence style populates NodeStyle.antiAlias");
+        expect(style.antiaAlias.has_value(), "precedence style preserves legacy NodeStyle.antiaAlias");
+        expect(!style.antiAlias.value(), "precedence style keeps canonical false value");
+        expect(style.antiaAlias.value(), "precedence style keeps legacy true value");
+
+        YogaNode node;
+        node._paint.setAntiAlias(true);
+        node.setStyle(style);
+        expect(!node._paint.isAntiAlias(), "canonical antiAlias wins over legacy antiaAlias in YogaNode::setStyle");
+    }
 }
 
 void assertStaticAnimatedDoubleNodeCommandPayloads(jsi::Runtime& runtime)
@@ -3348,6 +3425,7 @@ int main()
     assertStaticAnimatedDoubleNodeCommandPayloads(*runtime);
     assertDynamicAnimatedDoubleNodeCommandPayloads(*runtime);
     assertValueBearingStyleConverters(*runtime);
+    assertNodeStyleAntiAliasTransportAndPaint(*runtime);
     assertNodeCommandToJSISerializationSymmetry(*runtime);
     assertRectOpacityRender(*runtime);
     assertParentChildLayoutRender(*runtime);

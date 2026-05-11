@@ -173,10 +173,10 @@ export const paintSections = [
 				),
 			},
 			{
-				example: "antiaAlias: true",
-				name: "antiaAlias",
+				example: "antiAlias: true",
+				name: "antiAlias",
 				preview: sceneWithSingleBox({
-					antiaAlias: true,
+					antiAlias: true,
 					backgroundColor: "#7dd3fc",
 					transform: [{ rotateZ: 0.2 }],
 				}),
