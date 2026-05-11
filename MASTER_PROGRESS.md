@@ -2856,10 +2856,21 @@ Last updated: 2026-05-11
   - Removed `../worker-137-dynamic-paragraph-textstyle-reconciler`.
   - Deleted branch `worker/137-dynamic-paragraph-textstyle-reconciler`.
 - Created `worker-138-post-137-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_138_post_137_root_cause_audit` as a managed worker subagent with `goal: true`.
+- Worker 138 completed and reported `Goal finished.` It wrote `worker-progress/worker-138-post-137-root-cause-audit.md`.
+- Worker 138 reconfirmed the post-worker-137 baseline with `git diff --check`, syntax checks for package/Reconciler/native verifiers, `npm run check:package-typescript-consumer`, `npm run check:reconciler-animated-bindings`, and `npm run check:feasible-matrix`, which passed all 28 commands in `4m 56s`.
+- Worker 138 selected nested `ParagraphStyle::toJSI(...)` outbound shape preservation, including the text-style `heightMultiplier` collision boundary, as the next strongest locally unblocked target.
+- Worker 138 branch commit: `31546c5 Add worker 138 root cause audit`.
+- Merged worker 138 into `main` as `9984f1d Merge worker 138 post-137 root cause audit`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 138 cleanup:
+  - Closed `/root/worker_138_post_137_root_cause_audit`.
+  - Removed `../worker-138-post-137-root-cause-audit`.
+  - Deleted branch `worker/138-post-137-root-cause-audit`.
 
 ## Active Workers
 
-- `/root/worker_138_post_137_root_cause_audit`: auditing the post-worker-137 proof surface and reranking remaining proof, API-contract, and platform-runtime gaps in isolated worktree `../worker-138-post-137-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3017,6 +3028,7 @@ Accepted worker reports:
 - `worker-progress/worker-135-nested-paragraph-textstyle-color.md`
 - `worker-progress/worker-136-post-135-root-cause-audit.md`
 - `worker-progress/worker-137-dynamic-paragraph-textstyle-reconciler.md`
+- `worker-progress/worker-138-post-137-root-cause-audit.md`
 
 ## Pending Workers
 
@@ -3064,6 +3076,7 @@ Accepted worker reports:
 - Worker 135 closed nested `paragraphStyle.textStyle` CSS string color parsing with package/native/render/Nitro proof and preserved flattened paragraph text-style precedence. The main 28-command feasible matrix passed in `5m 7s`; the next step is a fresh post-worker-135 audit.
 - Worker 136 accepted the post-worker-135 proof surface, reconfirmed the main 28-command feasible matrix in `5m 12s`, and selected dynamic nested `paragraphStyle.textStyle` package/Reconciler proof for `SharedValue` leaves as the next target.
 - Worker 137 closed dynamic nested `paragraphStyle.textStyle` packed TypeScript/Reconciler JS-mode proof for `SharedValue` leaves. The main 28-command feasible matrix passed in `4m 46s`; the next step is a fresh post-worker-137 audit.
+- Worker 138 accepted the post-worker-137 proof surface, reconfirmed the main 28-command feasible matrix in `4m 56s`, and selected nested `ParagraphStyle::toJSI(...)` outbound shape preservation, including the text-style `heightMultiplier` collision boundary, as the next target.
 
 ## Evidence Summary
 
@@ -3114,7 +3127,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor worker 138, which is auditing the post-worker-137 proof surface and reranking remaining proof, API-contract, and platform-runtime gaps.
+- Assign a worker to define and prove nested `ParagraphStyle::toJSI(...)` outbound shape preservation, including the text-style `heightMultiplier` collision boundary.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
