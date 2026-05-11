@@ -2692,10 +2692,21 @@ Last updated: 2026-05-11
   - Removed `../worker-125-textstyle-fontfeatures-tojsi`.
   - Deleted branch `worker/125-textstyle-fontfeatures-tojsi`.
 - Created `worker-126-post-125-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_126_post_125_root_cause_audit` as a managed worker subagent with `goal: true`.
+- Worker 126 completed and reported `Goal finished.` It wrote `worker-progress/worker-126-post-125-root-cause-audit.md`.
+- Worker 126 reconfirmed the post-worker-125 baseline with `git diff --check`, `node --check scripts/verify-yoganode-native-commands-render.mjs`, and `npm run check:feasible-matrix`, which passed all 28 commands in `4m 42s`.
+- Worker 126 selected bounded `ParagraphStyle` scalar `toJSI(...)` serialization for `disableHinting`, `replaceTabCharacters`, `textDirection`, and `textHeightBehavior` as the next strongest locally unblocked implementation target.
+- Worker 126 branch commit: `c40e449 Add worker 126 post-125 root cause audit`.
+- Merged worker 126 into `main` as `82c1cd8 Merge worker 126 post-125 root cause audit`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 126 cleanup:
+  - Closed `/root/worker_126_post_125_root_cause_audit`.
+  - Removed `../worker-126-post-125-root-cause-audit`.
+  - Deleted branch `worker/126-post-125-root-cause-audit`.
 
 ## Active Workers
 
-- `/root/worker_126_post_125_root_cause_audit`: auditing the post-worker-125 state in isolated worktree `../worker-126-post-125-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2841,6 +2852,7 @@ Accepted worker reports:
 - `worker-progress/worker-123-textstyle-tojsi-serialization.md`
 - `worker-progress/worker-124-post-123-root-cause-audit.md`
 - `worker-progress/worker-125-textstyle-fontfeatures-tojsi.md`
+- `worker-progress/worker-126-post-125-root-cause-audit.md`
 
 ## Pending Workers
 
@@ -2876,6 +2888,7 @@ Accepted worker reports:
 - Worker 123 closed the selected `TextStyle` serialization target for background/foreground colors, decoration fields, font style, shadows, and text baseline, and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-123 audit.
 - Worker 124 accepted worker 123's boundary, reconfirmed the main 28-command feasible matrix, and selected bounded `TextStyle.fontFeatures` `toJSI(...)` serialization because it remains a public-shaped field parsed by `fromJSI(...)` but dropped by `toJSI(...)`.
 - Worker 125 closed the selected `TextStyle.fontFeatures` serialization target, added direct and representative command round-trip proof, and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-125 audit.
+- Worker 126 accepted the post-worker-125 proof surface, reconfirmed the main 28-command feasible matrix, and selected bounded `ParagraphStyle` scalar `toJSI(...)` serialization for `disableHinting`, `replaceTabCharacters`, `textDirection`, and `textHeightBehavior`.
 
 ## Evidence Summary
 
@@ -2926,7 +2939,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Run a fresh post-worker-125 root-cause audit to rerank remaining locally unblocked gaps under the current proof surface.
+- Add bounded `ParagraphStyle` scalar `toJSI(...)` serialization for `disableHinting`, `replaceTabCharacters`, `textDirection`, and `textHeightBehavior`, with direct converter and representative `paragraph.paragraphStyle` `NodeCommand` round-trip proof.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
