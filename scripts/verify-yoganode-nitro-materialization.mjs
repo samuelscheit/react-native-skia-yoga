@@ -171,10 +171,12 @@ try {
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, generated HybridYogaNodeSpec.cpp, Nitro HybridObject/prototype/cache sources, platform ThreadUtils, React Native JSC, upstream Yoga sources, RN Skia macOS archives, RN Skia CSSColorParser, a host platform context, Worklets shared-item sources, ColorParser, PlatformContextAccessor, AnimatedDouble, and Nitro/JSI helper sources.")
 	console.log("- The executable created a shared YogaNode, called YogaNode::toObject(runtime), asserted the returned value is a JS object with NativeState wrapping the original YogaNode, and asserted repeated toObject(runtime) returns the cached JS object.")
 	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height), computeLayout(width, height), and the layout getter.")
+	console.log("- The executable materialized parent/child YogaNodes, inserted the child through the generated parent.insertChild(...) wrapper, called materialized parent.getChildren(), and asserted the returned child is the cached materialized child object with generated and raw YogaNode prototype methods.")
+	console.log("- The executable called generated setStyle/computeLayout/insertChild and raw setInteractionConfig/hitTest/getChildren through the returned child object, then asserted recursive returned-grandchild identity through returnedChild.getChildren().")
 	console.log("- The executable used fresh materialized YogaNode objects to invoke generated JS-facing setCommand(line), setCommand(points), setCommand(path), setCommand(text), setCommand(paragraph), setCommand(circle), setCommand(rrect), setCommand(blurMaskFilter), setCommand(rect), setCommand(oval), and setCommand(image) wrappers, preserving the native no-command-kind-change invariant.")
 	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/paragraphStyle measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height state, Yoga layout computation, and generated layout getter values.")
 	console.log("- For CircleCmd, RRectCmd, and BlurMaskFilterCmd, selected no-pixel draw calls are used only to expose render-time native state/mask-filter side effects after generated wrapper delivery; no command-rendering or render-fidelity claim is made.")
-	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization and selected generated YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, image assets/decoding/loading, exact typography, command rendering, or exact render fidelity.")
+	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, and selected generated/raw YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, image assets/decoding/loading, exact typography, command rendering, or exact render fidelity.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -193,6 +195,9 @@ function assertCurrentGapAndRisk() {
 	const worker099Report = readProjectFile(
 		"worker-progress/worker-099-post-098-root-cause-audit.md",
 	)
+	const reconciler = readProjectFile("src/Reconciler.ts")
+	const yogaNodeCpp = readProjectFile("cpp/YogaNode.cpp")
+	const yogaNodeConverter = readProjectFile("cpp/JSIConverter+YogaNode.hpp")
 	const generatedSpec = readProjectFile(
 		"nitrogen/generated/shared/c++/HybridYogaNodeSpec.cpp",
 	)
@@ -237,6 +242,22 @@ function assertCurrentGapAndRisk() {
 		worker088Report.includes("setCommand({ type: \"group\"") &&
 			worker099Report.includes("current `check:yoganode-nitro-materialization` invokes generated `setCommand(group)` only"),
 		"Accepted reports must retain the pre-expansion generated setCommand(group)-only materialization gap.",
+	)
+	assert(
+		reconciler.includes("for (const child of node.getChildren())") &&
+			reconciler.includes("for (const child of container.node.getChildren())"),
+		"Reconciler cleanup must still recursively depend on materialized YogaNode.getChildren().",
+	)
+	assert(
+		yogaNodeCpp.includes("_children[i]->toObject(runtime)") &&
+			!yogaNodeCpp.includes("JSIConverter<std::shared_ptr<margelo::nitro::RNSkiaYoga::YogaNode>>::toJSI(runtime, _children[i])"),
+		"YogaNode::getChildren must materialize returned children with YogaNode::toObject(runtime), not a bare NativeState wrapper path.",
+	)
+	assert(
+		yogaNodeConverter.includes("return arg->toObject(runtime);") &&
+			!yogaNodeConverter.includes("jsi::Object obj(runtime);") &&
+			!yogaNodeConverter.includes("obj.setNativeState("),
+		"YogaNode shared_ptr converter must delegate to Nitro materialization instead of creating NativeState-only objects.",
 	)
 	for (const member of ["setCommand", "setStyle", "computeLayout", "layout"]) {
 		assert(
@@ -973,10 +994,28 @@ jsi::Object makeStyle(jsi::Runtime& runtime, double width, double height)
 
 void expectObjectFunction(jsi::Runtime& runtime, const jsi::Object& object, const char* name)
 {
-    expect(object.hasProperty(runtime, name), "materialized object must expose generated member");
+    expect(object.hasProperty(runtime, name), "materialized YogaNode object must expose expected function");
     const auto value = object.getProperty(runtime, name);
-    expect(value.isObject(), "generated member must be an object");
-    expect(value.asObject(runtime).isFunction(runtime), "generated member must be a function");
+    expect(value.isObject(), "materialized YogaNode member must be an object");
+    expect(value.asObject(runtime).isFunction(runtime), "materialized YogaNode member must be a function");
+}
+
+void expectYogaNodePrototypeSurface(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* message)
+{
+    (void)message;
+    expectObjectFunction(runtime, object, "setCommand");
+    expectObjectFunction(runtime, object, "setStyle");
+    expectObjectFunction(runtime, object, "insertChild");
+    expectObjectFunction(runtime, object, "removeChild");
+    expectObjectFunction(runtime, object, "removeAllChildren");
+    expectObjectFunction(runtime, object, "computeLayout");
+    expect(object.hasProperty(runtime, "layout"), "materialized YogaNode object must expose generated layout getter");
+    expectObjectFunction(runtime, object, "getChildren");
+    expectObjectFunction(runtime, object, "hitTest");
+    expectObjectFunction(runtime, object, "setInteractionConfig");
 }
 
 void expectNativeStateWrapsOriginal(
@@ -1095,6 +1134,198 @@ double getNumberProperty(jsi::Runtime& runtime, const jsi::Object& object, const
     const auto value = object.getProperty(runtime, name);
     expect(value.isNumber(), "layout property must be numeric");
     return value.asNumber();
+}
+
+jsi::Array callGetChildren(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* message)
+{
+    expectObjectFunction(runtime, object, "getChildren");
+    auto getChildren = object.getPropertyAsFunction(runtime, "getChildren");
+    const jsi::Value* noArgs = nullptr;
+    auto result = getChildren.callWithThis(runtime, object, noArgs, static_cast<size_t>(0));
+    expect(result.isObject(), message);
+    auto resultObject = result.asObject(runtime);
+    expect(resultObject.isArray(runtime), message);
+    return resultObject.asArray(runtime);
+}
+
+void callGeneratedInsertChild(
+    jsi::Runtime& runtime,
+    const jsi::Object& parentObject,
+    const jsi::Object& childObject,
+    const char* message)
+{
+    expectObjectFunction(runtime, parentObject, "insertChild");
+    auto insertChild = parentObject.getPropertyAsFunction(runtime, "insertChild");
+    jsi::Value args[] = {jsi::Value(runtime, childObject)};
+    auto result = insertChild.callWithThis(
+        runtime,
+        parentObject,
+        static_cast<const jsi::Value*>(args),
+        static_cast<size_t>(1));
+    expect(result.isUndefined(), message);
+}
+
+void callGeneratedRemoveChild(
+    jsi::Runtime& runtime,
+    const jsi::Object& parentObject,
+    const jsi::Object& childObject,
+    const char* message)
+{
+    expectObjectFunction(runtime, parentObject, "removeChild");
+    auto removeChild = parentObject.getPropertyAsFunction(runtime, "removeChild");
+    jsi::Value args[] = {jsi::Value(runtime, childObject)};
+    auto result = removeChild.callWithThis(
+        runtime,
+        parentObject,
+        static_cast<const jsi::Value*>(args),
+        static_cast<size_t>(1));
+    expect(result.isUndefined(), message);
+}
+
+jsi::Object makeInteractionConfig(jsi::Runtime& runtime, double eventTag)
+{
+    jsi::Object config(runtime);
+    config.setProperty(runtime, "eventTag", eventTag);
+    config.setProperty(runtime, "pointerEvents", "auto");
+    config.setProperty(runtime, "preciseHit", false);
+    config.setProperty(runtime, "hitSlop", 0.0);
+    return config;
+}
+
+void callRawSetInteractionConfig(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    jsi::Object config,
+    const char* message)
+{
+    expectObjectFunction(runtime, object, "setInteractionConfig");
+    auto setInteractionConfig = object.getPropertyAsFunction(runtime, "setInteractionConfig");
+    jsi::Value args[] = {jsi::Value(runtime, config)};
+    auto result = setInteractionConfig.callWithThis(
+        runtime,
+        object,
+        static_cast<const jsi::Value*>(args),
+        static_cast<size_t>(1));
+    expect(result.isUndefined(), message);
+}
+
+double callRawHitTest(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    double x,
+    double y)
+{
+    expectObjectFunction(runtime, object, "hitTest");
+    auto hitTest = object.getPropertyAsFunction(runtime, "hitTest");
+    jsi::Value args[] = {jsi::Value(x), jsi::Value(y)};
+    auto result = hitTest.callWithThis(
+        runtime,
+        object,
+        static_cast<const jsi::Value*>(args),
+        static_cast<size_t>(2));
+    expect(result.isNumber(), "raw hitTest through materialized YogaNode object must return a number");
+    return result.asNumber();
+}
+
+void assertMaterializedGetChildren(jsi::Runtime& runtime)
+{
+    auto parent = materializeYogaNode(runtime);
+    auto child = materializeYogaNode(runtime);
+    auto grandchild = materializeYogaNode(runtime);
+
+    expectYogaNodePrototypeSurface(runtime, parent.object, "direct parent materialized object");
+    expectYogaNodePrototypeSurface(runtime, child.object, "direct child materialized object");
+
+    callGeneratedInsertChild(
+        runtime,
+        parent.object,
+        child.object,
+        "generated parent.insertChild(child) must return undefined");
+    expect(parent.node->_children.size() == 1, "generated parent.insertChild(child) must attach one native child");
+    expect(parent.node->_children[0].get() == child.node.get(), "generated parent.insertChild(child) must attach the expected native child");
+
+    auto children = callGetChildren(
+        runtime,
+        parent.object,
+        "materialized parent.getChildren() must return an array");
+    expect(children.size(runtime) == 1, "materialized parent.getChildren() must return one child");
+
+    auto returnedChildValue = children.getValueAtIndex(runtime, 0);
+    expect(returnedChildValue.isObject(), "materialized parent.getChildren()[0] must be an object");
+    jsi::Value childObjectValue(runtime, child.object);
+    expect(
+        jsi::Value::strictEquals(runtime, childObjectValue, returnedChildValue),
+        "materialized parent.getChildren()[0] must be the cached materialized child object");
+    auto returnedChildObject = returnedChildValue.asObject(runtime);
+    expectNativeStateWrapsOriginal(runtime, returnedChildObject, child.node);
+    expectYogaNodePrototypeSurface(runtime, returnedChildObject, "returned child materialized object");
+
+    auto returnedChildSetStyle = returnedChildObject.getPropertyAsFunction(runtime, "setStyle");
+    callFunctionWithOneObject(
+        runtime,
+        returnedChildObject,
+        returnedChildSetStyle,
+        makeStyle(runtime, 32.0, 16.0),
+        "generated setStyle through returned child must return undefined");
+    auto returnedChildComputeLayout = returnedChildObject.getPropertyAsFunction(runtime, "computeLayout");
+    callComputeLayout(runtime, returnedChildObject, returnedChildComputeLayout);
+    expect(child.node->_hasLayoutBeenComputed, "generated computeLayout through returned child must compute native layout");
+    expectNear(child.node->_layout.width, 32.0, "returned child generated computeLayout width");
+    expectNear(child.node->_layout.height, 16.0, "returned child generated computeLayout height");
+
+    auto returnedChildLayout = returnedChildObject.getProperty(runtime, "layout");
+    expect(returnedChildLayout.isObject(), "returned child generated layout getter must return an object");
+    auto returnedChildLayoutObject = returnedChildLayout.asObject(runtime);
+    expectNear(getNumberProperty(runtime, returnedChildLayoutObject, "width"), 32.0, "returned child generated layout getter width");
+    expectNear(getNumberProperty(runtime, returnedChildLayoutObject, "height"), 16.0, "returned child generated layout getter height");
+
+    callRawSetInteractionConfig(
+        runtime,
+        returnedChildObject,
+        makeInteractionConfig(runtime, 115.0),
+        "raw setInteractionConfig through returned child must return undefined");
+    expectNear(child.node->_eventTag, 115.0, "raw setInteractionConfig through returned child must set eventTag");
+    expectNear(
+        callRawHitTest(runtime, returnedChildObject, 4.0, 4.0),
+        115.0,
+        "raw hitTest through returned child must use returned-child native state");
+
+    callGeneratedInsertChild(
+        runtime,
+        returnedChildObject,
+        grandchild.object,
+        "generated insertChild through returned child must return undefined");
+    expect(child.node->_children.size() == 1, "generated insertChild through returned child must attach native grandchild");
+    expect(child.node->_children[0].get() == grandchild.node.get(), "generated insertChild through returned child must attach expected grandchild");
+
+    auto grandchildren = callGetChildren(
+        runtime,
+        returnedChildObject,
+        "returned child.getChildren() must return an array");
+    expect(grandchildren.size(runtime) == 1, "returned child.getChildren() must return one grandchild");
+    auto returnedGrandchildValue = grandchildren.getValueAtIndex(runtime, 0);
+    expect(returnedGrandchildValue.isObject(), "returned child.getChildren()[0] must be an object");
+    jsi::Value grandchildObjectValue(runtime, grandchild.object);
+    expect(
+        jsi::Value::strictEquals(runtime, grandchildObjectValue, returnedGrandchildValue),
+        "returned child.getChildren()[0] must be the cached materialized grandchild object");
+    auto returnedGrandchildObject = returnedGrandchildValue.asObject(runtime);
+    expectNativeStateWrapsOriginal(runtime, returnedGrandchildObject, grandchild.node);
+    expectYogaNodePrototypeSurface(runtime, returnedGrandchildObject, "returned grandchild materialized object");
+
+    callGeneratedRemoveChild(
+        runtime,
+        returnedChildObject,
+        grandchild.object,
+        "generated removeChild through returned child must return undefined");
+    expect(child.node->_children.empty(), "generated removeChild through returned child must detach native grandchild");
+
+    disposeMaterializedObject(runtime, grandchild.object);
+    disposeMaterializedObject(runtime, child.object);
+    disposeMaterializedObject(runtime, parent.object);
 }
 
 void assertGeneratedLineSetCommand(jsi::Runtime& runtime)
@@ -1470,6 +1701,9 @@ int main()
         },
         "NodeCommand.data must be an object",
         "generated setCommand must reject invalid command payload");
+
+    std::cerr << "probe: call materialized getChildren" << std::endl;
+    assertMaterializedGetChildren(*runtime);
 
     std::cerr << "probe: call generated setCommand breadth cases" << std::endl;
     assertGeneratedLineSetCommand(*runtime);
