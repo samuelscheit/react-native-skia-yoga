@@ -270,8 +270,9 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Assign a fresh post-worker-147 root-cause audit to rerank the remaining
-  locally unblocked proof and product gaps after the paint-ordering fix.
+- Monitor worker 148, which is auditing the post-worker-147 proof surface and
+  reranking remaining locally unblocked proof and product gaps from isolated
+  worktree `../worker-148-post-147-root-cause-audit`.
 
 Acceptance criteria:
 
