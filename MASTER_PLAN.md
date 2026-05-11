@@ -242,7 +242,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch worker 127 to add bounded `ParagraphStyle` scalar `toJSI(...)` serialization and direct plus representative command round-trip proof.
+- Monitor worker 127, which is adding bounded `ParagraphStyle` scalar `toJSI(...)` serialization and direct plus representative command round-trip proof.
 
 Acceptance criteria:
 
