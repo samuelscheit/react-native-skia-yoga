@@ -292,9 +292,8 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch Worker 162 as a fresh post-worker-161 root-cause audit to accept the
-  new proof boundary, rerank remaining locally unblocked gaps, and select
-  Worker 163's target.
+- Monitor Worker 162's post-worker-161 root-cause audit from isolated worktree
+  `../worker-162-post-161-root-cause-audit`.
 
 Acceptance criteria:
 
