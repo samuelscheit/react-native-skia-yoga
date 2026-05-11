@@ -2378,10 +2378,26 @@ Last updated: 2026-05-11
 - Prepared worker 106 as the next step: expand generated materialized `YogaNode.setCommand(...)` breadth in `check:yoganode-nitro-materialization`.
 - Created `worker-106-nitro-setcommand-more-breadth` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-106-nitro-setcommand-more-breadth` as a top-level tmux subprocess.
 - Worker 106 passed the visible `GOAL_CREATED: Expand generated YogaNode.setCommand materialization breadth for remaining command families.` gate as the first worker message.
+- Worker 106 completed and reported `Goal finished.` It wrote `worker-progress/worker-106-nitro-setcommand-more-breadth.md`.
+- Worker 106 expanded `check:yoganode-nitro-materialization` with fresh materialized generated-wrapper cases for `text`, `paragraph`, `circle`, `rrect`, `blurMaskFilter`, `rect`, `oval`, and synthetic `image`, while preserving existing `group`, `line`, `points`, public-shaped `path`, `setStyle`, `computeLayout`, layout getter, NativeState identity, and cached-object stability coverage.
+- Worker 106 did not change product C++ or TypeScript source.
+- Worker 106 branch commit: `1421125 Expand Nitro setCommand materialization breadth`.
+- Merged worker 106 into `main` as `67127d8 Merge worker 106 Nitro setCommand breadth`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - `node --check scripts/verify-yoganode-nitro-materialization.mjs`: passed.
+  - `npm run check:yoganode-nitro-materialization`: passed.
+  - `npm run check:feasible-matrix`: passed all 28 commands in `4m 27s` command duration (`267.42s` real time).
+- Worker 106 cleanup:
+  - Killed `rnskia-worker-106-nitro-setcommand-more-breadth`.
+  - Removed `../worker-106-nitro-setcommand-more-breadth`.
+  - Deleted branch `worker/106-nitro-setcommand-more-breadth`.
+  - Verified no `rnskia-worker-106` tmux session, worker 106 worktree, or worker 106 branch remained.
+- Prepared worker 107 as the next step: a read-only post-worker-106 root-cause audit to select the next strongest unblocked target.
 
 ## Active Workers
 
-- `rnskia-worker-106-nitro-setcommand-more-breadth`: running from `worker/106-nitro-setcommand-more-breadth`; expanding generated materialized `YogaNode.setCommand(...)` breadth beyond the current representative command cases.
+- None; worker 107 is prepared for launch.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2507,10 +2523,11 @@ Accepted worker reports:
 - `worker-progress/worker-103-post-102-root-cause-audit.md`
 - `worker-progress/worker-104-text-paragraph-css-color.md`
 - `worker-progress/worker-105-post-104-root-cause-audit.md`
+- `worker-progress/worker-106-nitro-setcommand-more-breadth.md`
 
 ## Pending Workers
 
-- None; worker 106 is active.
+- `rnskia-worker-107-post-106-root-cause-audit`: planned from `worker/107-post-106-root-cause-audit`; audit the post-worker-106 state and select the next strongest unblocked root-cause target.
 
 ## Decisions
 
@@ -2558,12 +2575,13 @@ Accepted worker reports:
 - Post-worker-102 target selection: worker 103 reconfirmed the 28-command feasible matrix in `4m 52s`, accepted worker 102's synthetic ImageCmd fit-mode proof boundary, and selected bounded `TextCmd` / `ParagraphCmd` CSS color-string command conversion/render coverage as the next strongest unblocked target. The gap is that `src/jsx.ts` exposes text color fields as strings or Skia colors, `src/Reconciler.ts` forwards text and flattened paragraph styles into command payloads, and native text/paragraph style converters parse CSS color strings, while current command-render text/paragraph coverage uses numeric `SK_ColorBLUE`. The next proof should extend `scripts/verify-yoganode-native-commands-render.mjs` with named/hex/rgb string-color payloads, command state assertions, bounded raster evidence, and invalid string rejection without claiming exact typography, shaping, font fallback, platform app runtime, real React Native bridge delivery, Nitro registry install, UI-runtime Worklets, or real Reanimated delivery.
 - TextCmd/ParagraphCmd CSS color-string proof: worker 104 expanded `check:yoganode-native-commands-render` with selected text/paragraph CSS string payloads through real host-native `JSIConverter<NodeCommand>::fromJSI(...)`, `YogaNode::setCommand()`, `TextCmd` / `ParagraphCmd` state, paragraph measurement, and bounded raster evidence. Coverage includes `TextCmd textStyle.color` via `rgba(255,0,0,1)`, flattened `ParagraphCmd paragraphStyle.color` via `#00ff00`, named color conversion via `blue`, invalid string rejection for both command types, and explicit RN Skia `CSSColorParser.cpp` linkage in the host probe. The feasible matrix remained 28 commands and passed on main in `4m 17s`.
 - Post-worker-104 target selection: worker 105 reconfirmed the 28-command feasible matrix in `4m 41s`, accepted worker 104's direct command/render proof boundary, and selected generated materialized `YogaNode.setCommand(...)` breadth as the next strongest unblocked target. Current `check:yoganode-nitro-materialization` still names generated wrapper coverage for `group`, `line`, `points`, and public-shaped `path` only; the next proof should add fresh materialized-node generated wrapper cases for additional command families without claiming render, platform app runtime, actual React Native bridge delivery, Nitro registry install inside React Native, UI-runtime Worklets, real Reanimated delivery, image asset loading, exact typography, or exact render fidelity.
+- Generated Nitro setCommand expanded breadth proof: worker 106 expanded `check:yoganode-nitro-materialization` with generated JS-facing `setCommand(...)` wrapper execution from fresh materialized YogaNode objects for `text`, `paragraph`, `circle`, `rrect`, `blurMaskFilter`, `rect`, `oval`, and synthetic `image`, in addition to the existing `group`, `line`, `points`, and public-shaped `path` cases. The verifier now asserts wrapper return values, NativeState identity, concrete command classes, representative native state, host CSS parser/platform context linkage for text/paragraph/image, and no-pixel state probes where needed, while still excluding command rendering, exact typography, image asset loading, React Native bridge delivery, Nitro registry install inside React Native, UI-runtime Worklets, platform app runtime, and exact render fidelity. The feasible matrix remained 28 commands and passed on main in `4m 27s`.
 - Example Worklets transform: worker 051 added the example/Expo Babel-config path to `check:skia-yoga-object-lazy-init`, proving package source `src/util.ts` keeps the same lazy Nitro closure/body contract when transformed through `example/babel.config.js` and the example dependency context.
 - Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the package lifecycle root-cause task, worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`. Worker 020 found the runtime-smoke archive discovery target, worker 021 completed it, worker 022 found the Android CMake archive-layout analogue, worker 023 completed it, worker 024 selected lint-ci root configuration/formatter repair as the next repo-owned feedback-loop fix, worker 025 completed that repair, worker 026 selected the remaining product-source React Native deep imports as the next implementation target, worker 027 completed that target, worker 028 selected example lint-contract cleanup, worker 029 completed it, worker 030 selected public README/API documentation drift, worker 031 completed that contract fix, worker 032 selected native publish-surface completeness, worker 033 completed that package-surface fix, worker 034 selected the unguarded Expo export path plus Metro config dump as the next example feedback-loop target, worker 035 completed that feedback-loop target, worker 036 confirmed platform-native build/run remains blocked by local toolchain gaps rather than a stronger repo-owned target, and worker 037 removed the strongest known unblocked RN Skia private-import target.
 
 ## Next Implementation Candidates
 
-- Monitor worker 106's generated materialized `YogaNode.setCommand(...)` breadth expansion and accept/merge it if its report, verification, target implementation, and cleanup meet the prompt.
+- Monitor worker 107's post-worker-106 root-cause audit and accept/merge it if its report, verification, target selection, and cleanup meet the prompt.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
