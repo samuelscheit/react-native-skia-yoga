@@ -237,7 +237,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch a fresh post-worker-121 root-cause audit to verify the accepted proof boundary and rank the next locally unblocked target.
+- Monitor worker 122, a fresh post-worker-121 root-cause audit that verifies the accepted proof boundary and ranks the next locally unblocked target.
 
 Acceptance criteria:
 
