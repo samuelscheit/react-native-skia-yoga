@@ -238,7 +238,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch a bounded implementation worker for additional `TextStyle` `toJSI(...)` serialization and host-native round-trip proof.
+- Monitor worker 123, which is implementing bounded additional `TextStyle` `toJSI(...)` serialization and host-native round-trip proof.
 
 Acceptance criteria:
 

@@ -2653,7 +2653,7 @@ Last updated: 2026-05-11
 
 ## Active Workers
 
-- None.
+- `/root/worker_123_textstyle_tojsi_serialization`: implementing bounded additional `TextStyle` `toJSI(...)` serialization in isolated worktree `../worker-123-textstyle-tojsi-serialization`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2799,7 +2799,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- Launch worker 123 for bounded additional `TextStyle` `toJSI(...)` serialization.
+- None beyond monitoring active worker 123.
 
 ## Decisions
 
