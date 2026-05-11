@@ -265,8 +265,9 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Assign the README/API docs worker for the simple `<text textStyle>` versus
-  rich `<paragraph paragraphStyle>` styling split.
+- Monitor worker 141, which is updating README/API documentation for the
+  simple `<text textStyle>` versus rich `<paragraph paragraphStyle>` styling
+  split in isolated worktree `../worker-141-readme-text-paragraph-docs`.
 
 Acceptance criteria:
 
