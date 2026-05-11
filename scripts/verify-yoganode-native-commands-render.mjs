@@ -167,13 +167,14 @@ try {
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, AnimatedDouble.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, RN Skia CSSColorParser, Worklets shared-item sources, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
 	console.log("- The executable created a JSC runtime, converted numeric, CSS color-string, and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), serialized representative payloads through JSIConverter<NodeCommand>::toJSI(...), and executed real YogaNode::setCommand().")
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
-	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, line from/to points, and points arrays.")
+	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, selected textStyle/paragraphStyle fields, line from/to points, and points arrays.")
+	console.log("- The executable asserted selected value-bearing toJSI/fromJSI serialization for SkSamplingOptions filter/mipmap and cubic B/C, SkTextStyle fontSize/color/fontFamilies/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale, and SkParagraphStyle textAlign/maxLines/heightMultiplier/ellipsis plus flattened default text style fields.")
 	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
 	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) and flattened ParagraphCmd hex colors, named-color conversion, and invalid text/paragraph color-string rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, value-exact paragraphStyle/textStyle or sampling serialization beyond current converter support, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, selected value-bearing SkSamplingOptions, SkTextStyle, and SkParagraphStyle serialization fields, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove unsupported SkSamplingOptions maxAniso preservation, every SkTextStyle/SkParagraphStyle field, CSS color string preservation, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -987,6 +988,100 @@ void expectSerializedPoint(
     expectNear(point.getProperty(runtime, "y").asNumber(), expectedY, label + " y");
 }
 
+void expectSerializedStringArray(
+    jsi::Runtime& runtime,
+    const jsi::Value& value,
+    const std::vector<std::string>& expected,
+    const std::string& label)
+{
+    expect(value.isObject(), label + " is an array object");
+    auto array = value.asObject(runtime).asArray(runtime);
+    expect(array.size(runtime) == expected.size(), label + " size");
+    for (size_t index = 0; index < expected.size(); ++index) {
+        expect(
+            array.getValueAtIndex(runtime, index).asString(runtime).utf8(runtime) == expected[index],
+            label + "[" + std::to_string(index) + "]");
+    }
+}
+
+void expectSerializedTextStyle(
+    jsi::Runtime& runtime,
+    const jsi::Value& value,
+    double expectedFontSize,
+    SkColor expectedColor,
+    const std::string& label)
+{
+    expect(value.isObject(), label + " is an object");
+    auto object = value.asObject(runtime);
+    expectNear(object.getProperty(runtime, "fontSize").asNumber(), expectedFontSize, label + " fontSize");
+    expectNear(object.getProperty(runtime, "color").asNumber(), static_cast<double>(expectedColor), label + " numeric color");
+    expectSerializedStringArray(
+        runtime,
+        object.getProperty(runtime, "fontFamilies"),
+        { "Inter", "System" },
+        label + " fontFamilies");
+    expectNear(object.getProperty(runtime, "heightMultiplier").asNumber(), 1.35, label + " heightMultiplier");
+    expect(object.getProperty(runtime, "halfLeading").getBool(), label + " halfLeading");
+    expectNear(object.getProperty(runtime, "letterSpacing").asNumber(), 1.25, label + " letterSpacing");
+    expectNear(object.getProperty(runtime, "wordSpacing").asNumber(), 2.5, label + " wordSpacing");
+    expect(
+        object.getProperty(runtime, "locale").asString(runtime).utf8(runtime) == "en-US",
+        label + " locale");
+}
+
+void expectTextStyleState(
+    const skia::textlayout::TextStyle& textStyle,
+    double expectedFontSize,
+    SkColor expectedColor,
+    const std::string& label)
+{
+    expectNear(textStyle.getFontSize(), expectedFontSize, label + " fontSize");
+    expectColorNear(textStyle.getColor(), expectedColor, 0, label + " color");
+    const auto& families = textStyle.getFontFamilies();
+    expect(families.size() == 2, label + " fontFamilies size");
+    expect(std::string(families[0].c_str(), families[0].size()) == "Inter", label + " fontFamilies[0]");
+    expect(std::string(families[1].c_str(), families[1].size()) == "System", label + " fontFamilies[1]");
+    expect(textStyle.getHeightOverride(), label + " height override");
+    expectNear(textStyle.getHeight(), 1.35, label + " heightMultiplier");
+    expect(textStyle.getHalfLeading(), label + " halfLeading");
+    expectNear(textStyle.getLetterSpacing(), 1.25, label + " letterSpacing");
+    expectNear(textStyle.getWordSpacing(), 2.5, label + " wordSpacing");
+    const auto locale = textStyle.getLocale();
+    expect(std::string(locale.c_str(), locale.size()) == "en-US", label + " locale");
+}
+
+void expectSerializedParagraphStyle(
+    jsi::Runtime& runtime,
+    const jsi::Value& value,
+    const std::string& label)
+{
+    expect(value.isObject(), label + " is an object");
+    auto object = value.asObject(runtime);
+    expectNear(
+        object.getProperty(runtime, "textAlign").asNumber(),
+        static_cast<int>(skia::textlayout::TextAlign::kCenter),
+        label + " textAlign");
+    expectNear(object.getProperty(runtime, "maxLines").asNumber(), 2.0, label + " maxLines");
+    expectNear(object.getProperty(runtime, "heightMultiplier").asNumber(), 1.35, label + " heightMultiplier");
+    expect(
+        object.getProperty(runtime, "ellipsis").asString(runtime).utf8(runtime) == "...",
+        label + " ellipsis");
+    expectSerializedTextStyle(runtime, value, 18.0, SK_ColorBLUE, label + " flattened textStyle");
+}
+
+void expectParagraphStyleState(
+    const skia::textlayout::ParagraphStyle& paragraphStyle,
+    const std::string& label)
+{
+    expect(
+        paragraphStyle.getTextAlign() == skia::textlayout::TextAlign::kCenter,
+        label + " textAlign");
+    expect(paragraphStyle.getMaxLines() == 2, label + " maxLines");
+    expectNear(paragraphStyle.getHeight(), 1.35, label + " heightMultiplier");
+    expect(paragraphStyle.getEllipsisUtf16() == std::u16string(u"..."), label + " ellipsis");
+    expectTextStyleState(paragraphStyle.getTextStyle(), 18.0, SK_ColorBLUE, label + " textStyle");
+}
+
 void expectPathBounds(
     const SkPath& path,
     float expectedLeft,
@@ -1312,6 +1407,10 @@ jsi::Object imageCommandObject(jsi::Runtime& runtime, std::optional<std::string>
         runtime,
         "filter",
         static_cast<double>(static_cast<int>(SkFilterMode::kNearest)));
+    sampling.setProperty(
+        runtime,
+        "mipmap",
+        static_cast<double>(static_cast<int>(SkMipmapMode::kLinear)));
 
     auto imageHostObject = jsi::Object::createFromHostObject(
         runtime,
@@ -1352,6 +1451,53 @@ jsi::Object textStyleObject(jsi::Runtime& runtime, double fontSize, const char* 
     textStyle.setProperty(runtime, "fontSize", fontSize);
     textStyle.setProperty(runtime, "color", color);
     return textStyle;
+}
+
+jsi::Array stringArray(jsi::Runtime& runtime, const std::vector<std::string>& values)
+{
+    jsi::Array array(runtime, values.size());
+    for (size_t index = 0; index < values.size(); ++index) {
+        array.setValueAtIndex(runtime, index, values[index]);
+    }
+    return array;
+}
+
+jsi::Object richTextStyleObject(jsi::Runtime& runtime, double fontSize, SkColor color)
+{
+    jsi::Object textStyle(runtime);
+    textStyle.setProperty(runtime, "fontSize", fontSize);
+    textStyle.setProperty(runtime, "color", static_cast<double>(color));
+    textStyle.setProperty(runtime, "fontFamilies", stringArray(runtime, { "Inter", "System" }));
+    textStyle.setProperty(runtime, "heightMultiplier", 1.35);
+    textStyle.setProperty(runtime, "halfLeading", true);
+    textStyle.setProperty(runtime, "letterSpacing", 1.25);
+    textStyle.setProperty(runtime, "wordSpacing", 2.5);
+    textStyle.setProperty(runtime, "locale", "en-US");
+    return textStyle;
+}
+
+jsi::Object paragraphStyleSerializationObject(jsi::Runtime& runtime)
+{
+    auto paragraphStyle = richTextStyleObject(runtime, 18.0, SK_ColorBLUE);
+    paragraphStyle.setProperty(
+        runtime,
+        "textAlign",
+        static_cast<double>(static_cast<int>(skia::textlayout::TextAlign::kCenter)));
+    paragraphStyle.setProperty(runtime, "maxLines", 2.0);
+    paragraphStyle.setProperty(runtime, "ellipsis", "...");
+    return paragraphStyle;
+}
+
+NodeCommand textSerializationCommand(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "text", "Serializable styled text");
+    data.setProperty(runtime, "textStyle", richTextStyleObject(runtime, 21.0, SK_ColorMAGENTA));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "text");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
 }
 
 NodeCommand defaultTextCommand(jsi::Runtime& runtime)
@@ -1418,7 +1564,7 @@ NodeCommand paragraphSerializationCommand(jsi::Runtime& runtime)
     jsi::Object data(runtime);
     data.setProperty(runtime, "paragraph", jsi::Value::null());
     data.setProperty(runtime, "text", "Serializable paragraph text");
-    data.setProperty(runtime, "paragraphStyle", textStyleObject(runtime, 18.0, SK_ColorBLUE));
+    data.setProperty(runtime, "paragraphStyle", paragraphStyleSerializationObject(runtime));
 
     jsi::Object command(runtime);
     command.setProperty(runtime, "type", "paragraph");
@@ -1556,6 +1702,67 @@ void assertDynamicAnimatedDoubleNodeCommandPayloads(jsi::Runtime& runtime)
     RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(&runtime);
 }
 
+void assertValueBearingStyleConverters(jsi::Runtime& runtime)
+{
+    {
+        SkSamplingOptions sampling(SkFilterMode::kLinear, SkMipmapMode::kNearest);
+        auto serialized = margelo::nitro::JSIConverter<SkSamplingOptions>::toJSI(runtime, sampling);
+        expect(serialized.isObject(), "direct SkSamplingOptions filter/mipmap toJSI returns object");
+        auto object = serialized.asObject(runtime);
+        expectNear(
+            object.getProperty(runtime, "filter").asNumber(),
+            static_cast<int>(SkFilterMode::kLinear),
+            "direct SkSamplingOptions toJSI filter");
+        expectNear(
+            object.getProperty(runtime, "mipmap").asNumber(),
+            static_cast<int>(SkMipmapMode::kNearest),
+            "direct SkSamplingOptions toJSI mipmap");
+
+        auto roundTrip = margelo::nitro::JSIConverter<SkSamplingOptions>::fromJSI(runtime, serialized);
+        expect(!roundTrip.useCubic, "direct SkSamplingOptions filter/mipmap round-trip is non-cubic");
+        expect(roundTrip.filter == SkFilterMode::kLinear, "direct SkSamplingOptions round-trip filter");
+        expect(roundTrip.mipmap == SkMipmapMode::kNearest, "direct SkSamplingOptions round-trip mipmap");
+    }
+
+    {
+        SkSamplingOptions sampling(SkCubicResampler { 0.25f, 0.75f });
+        auto serialized = margelo::nitro::JSIConverter<SkSamplingOptions>::toJSI(runtime, sampling);
+        expect(serialized.isObject(), "direct cubic SkSamplingOptions toJSI returns object");
+        auto object = serialized.asObject(runtime);
+        expectNear(object.getProperty(runtime, "B").asNumber(), 0.25, "direct cubic SkSamplingOptions B");
+        expectNear(object.getProperty(runtime, "C").asNumber(), 0.75, "direct cubic SkSamplingOptions C");
+
+        auto roundTrip = margelo::nitro::JSIConverter<SkSamplingOptions>::fromJSI(runtime, serialized);
+        expect(roundTrip.useCubic, "direct cubic SkSamplingOptions round-trip is cubic");
+        expectNear(roundTrip.cubic.B, 0.25, "direct cubic SkSamplingOptions round-trip B");
+        expectNear(roundTrip.cubic.C, 0.75, "direct cubic SkSamplingOptions round-trip C");
+    }
+
+    {
+        auto styleObject = richTextStyleObject(runtime, 21.0, SK_ColorMAGENTA);
+        auto textStyle = margelo::nitro::JSIConverter<skia::textlayout::TextStyle>::fromJSI(
+            runtime,
+            jsi::Value(runtime, styleObject));
+        auto serialized = margelo::nitro::JSIConverter<skia::textlayout::TextStyle>::toJSI(runtime, textStyle);
+        expectSerializedTextStyle(runtime, serialized, 21.0, SK_ColorMAGENTA, "direct TextStyle toJSI");
+
+        auto roundTrip = margelo::nitro::JSIConverter<skia::textlayout::TextStyle>::fromJSI(runtime, serialized);
+        expectTextStyleState(roundTrip, 21.0, SK_ColorMAGENTA, "direct TextStyle toJSI/fromJSI");
+    }
+
+    {
+        auto styleObject = paragraphStyleSerializationObject(runtime);
+        auto paragraphStyle = margelo::nitro::JSIConverter<skia::textlayout::ParagraphStyle>::fromJSI(
+            runtime,
+            jsi::Value(runtime, styleObject));
+        auto serialized = margelo::nitro::JSIConverter<skia::textlayout::ParagraphStyle>::toJSI(runtime, paragraphStyle);
+        expectSerializedParagraphStyle(runtime, serialized, "direct ParagraphStyle toJSI");
+
+        auto roundTrip = margelo::nitro::JSIConverter<skia::textlayout::ParagraphStyle>::fromJSI(runtime, serialized);
+        expectParagraphStyleState(roundTrip, "direct ParagraphStyle toJSI/fromJSI");
+    }
+}
+
 void assertNodeCommandToJSISerializationSymmetry(jsi::Runtime& runtime)
 {
     {
@@ -1606,7 +1813,17 @@ void assertNodeCommandToJSISerializationSymmetry(jsi::Runtime& runtime)
         expect(serializedImage != nullptr, "image toJSI host object resolves to SkImage");
         expect(serializedImage->width() == 8, "image toJSI host object width");
         expect(serializedImage->height() == 4, "image toJSI host object height");
-        expect(data.getProperty(runtime, "sampling").isObject(), "image toJSI emits sampling object through existing converter");
+        auto samplingValue = data.getProperty(runtime, "sampling");
+        expect(samplingValue.isObject(), "image toJSI emits value-bearing sampling object");
+        auto sampling = samplingValue.asObject(runtime);
+        expectNear(
+            sampling.getProperty(runtime, "filter").asNumber(),
+            static_cast<int>(SkFilterMode::kNearest),
+            "image toJSI sampling.filter");
+        expectNear(
+            sampling.getProperty(runtime, "mipmap").asNumber(),
+            static_cast<int>(SkMipmapMode::kLinear),
+            "image toJSI sampling.mipmap");
 
         auto roundTrip = roundTripSerializedCommand(runtime, serialized, "image");
         const auto& payload = std::get<ImageCommandData>(roundTrip.data);
@@ -1615,6 +1832,8 @@ void assertNodeCommandToJSISerializationSymmetry(jsi::Runtime& runtime)
         expect(payload.image.value()->width() == 8, "image toJSI/fromJSI image width");
         expect(payload.image.value()->height() == 4, "image toJSI/fromJSI image height");
         expect(payload.sampling.has_value(), "image toJSI/fromJSI keeps a sampling payload object");
+        expect(payload.sampling->filter == SkFilterMode::kNearest, "image toJSI/fromJSI sampling.filter");
+        expect(payload.sampling->mipmap == SkMipmapMode::kLinear, "image toJSI/fromJSI sampling.mipmap");
     }
 
     {
@@ -1670,11 +1889,30 @@ void assertNodeCommandToJSISerializationSymmetry(jsi::Runtime& runtime)
     }
 
     {
+        auto command = textSerializationCommand(runtime);
+        auto serialized = serializedCommandValue(runtime, command, "text");
+        auto data = serializedDataObject(runtime, serialized, "text", "text");
+        expect(
+            data.getProperty(runtime, "text").asString(runtime).utf8(runtime) == "Serializable styled text",
+            "text toJSI text");
+        expectSerializedTextStyle(runtime, data.getProperty(runtime, "textStyle"), 21.0, SK_ColorMAGENTA, "text toJSI textStyle");
+
+        auto roundTrip = roundTripSerializedCommand(runtime, serialized, "text");
+        const auto& payload = std::get<TextCommandData>(roundTrip.data);
+        expect(payload.text.has_value() && payload.text.value() == "Serializable styled text", "text toJSI/fromJSI text");
+        expect(payload.textStyle.has_value(), "text toJSI/fromJSI textStyle");
+        expectTextStyleState(payload.textStyle.value(), 21.0, SK_ColorMAGENTA, "text toJSI/fromJSI textStyle");
+    }
+
+    {
         auto command = paragraphSerializationCommand(runtime);
         auto serialized = serializedCommandValue(runtime, command, "paragraph");
         auto data = serializedDataObject(runtime, serialized, "paragraph", "paragraph");
         expect(data.getProperty(runtime, "paragraph").isNull(), "paragraph toJSI emits explicit null paragraph payload");
-        expect(data.getProperty(runtime, "paragraphStyle").isObject(), "paragraph toJSI emits paragraphStyle object through existing converter");
+        expectSerializedParagraphStyle(
+            runtime,
+            data.getProperty(runtime, "paragraphStyle"),
+            "paragraph toJSI paragraphStyle");
         expect(
             data.getProperty(runtime, "text").asString(runtime).utf8(runtime) == "Serializable paragraph text",
             "paragraph toJSI text");
@@ -1683,6 +1921,7 @@ void assertNodeCommandToJSISerializationSymmetry(jsi::Runtime& runtime)
         const auto& payload = std::get<ParagraphCommandData>(roundTrip.data);
         expect(payload.paragraph.has_value() && payload.paragraph.value() == nullptr, "paragraph toJSI/fromJSI null paragraph");
         expect(payload.paragraphStyle.has_value(), "paragraph toJSI/fromJSI paragraphStyle object");
+        expectParagraphStyleState(payload.paragraphStyle.value(), "paragraph toJSI/fromJSI paragraphStyle");
         expect(payload.text.has_value() && payload.text.value() == "Serializable paragraph text", "paragraph toJSI/fromJSI text");
     }
 
@@ -3108,6 +3347,7 @@ int main()
 
     assertStaticAnimatedDoubleNodeCommandPayloads(*runtime);
     assertDynamicAnimatedDoubleNodeCommandPayloads(*runtime);
+    assertValueBearingStyleConverters(*runtime);
     assertNodeCommandToJSISerializationSymmetry(*runtime);
     assertRectOpacityRender(*runtime);
     assertParentChildLayoutRender(*runtime);

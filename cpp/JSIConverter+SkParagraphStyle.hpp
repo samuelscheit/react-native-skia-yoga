@@ -11,10 +11,75 @@
 #include "SkiaGlue.hpp"
 #include "JsiSkParagraphStyle.h"
 #include "JSIConverter+SkTextStyle.hpp"
+#include <cstdint>
+#include <string>
 
 namespace margelo::nitro {
 
 using namespace facebook;
+
+namespace {
+
+inline void appendUtf8CodePoint(std::string& output, uint32_t codePoint)
+{
+  if (codePoint <= 0x7F) {
+    output.push_back(static_cast<char>(codePoint));
+  } else if (codePoint <= 0x7FF) {
+    output.push_back(static_cast<char>(0xC0 | (codePoint >> 6)));
+    output.push_back(static_cast<char>(0x80 | (codePoint & 0x3F)));
+  } else if (codePoint <= 0xFFFF) {
+    output.push_back(static_cast<char>(0xE0 | (codePoint >> 12)));
+    output.push_back(static_cast<char>(0x80 | ((codePoint >> 6) & 0x3F)));
+    output.push_back(static_cast<char>(0x80 | (codePoint & 0x3F)));
+  } else {
+    output.push_back(static_cast<char>(0xF0 | (codePoint >> 18)));
+    output.push_back(static_cast<char>(0x80 | ((codePoint >> 12) & 0x3F)));
+    output.push_back(static_cast<char>(0x80 | ((codePoint >> 6) & 0x3F)));
+    output.push_back(static_cast<char>(0x80 | (codePoint & 0x3F)));
+  }
+}
+
+inline std::string utf16ToUtf8(const std::u16string& input)
+{
+  std::string output;
+  output.reserve(input.size());
+
+  for (size_t index = 0; index < input.size(); ++index) {
+    uint32_t codePoint = input[index];
+    if (codePoint >= 0xD800 && codePoint <= 0xDBFF) {
+      if (index + 1 < input.size()) {
+        const auto trailing = static_cast<uint32_t>(input[index + 1]);
+        if (trailing >= 0xDC00 && trailing <= 0xDFFF) {
+          codePoint =
+              0x10000 + (((codePoint - 0xD800) << 10) | (trailing - 0xDC00));
+          ++index;
+        } else {
+          codePoint = 0xFFFD;
+        }
+      } else {
+        codePoint = 0xFFFD;
+      }
+    } else if (codePoint >= 0xDC00 && codePoint <= 0xDFFF) {
+      codePoint = 0xFFFD;
+    }
+
+    appendUtf8CodePoint(output, codePoint);
+  }
+
+  return output;
+}
+
+inline std::string paragraphStyleEllipsisToUtf8(
+    const skia::textlayout::ParagraphStyle& paragraphStyle)
+{
+  auto ellipsis = paragraphStyle.getEllipsis();
+  if (!ellipsis.isEmpty()) {
+    return std::string(ellipsis.c_str(), ellipsis.size());
+  }
+  return utf16ToUtf8(paragraphStyle.getEllipsisUtf16());
+}
+
+} // namespace
 
 template <>
 struct JSIConverter<skia::textlayout::ParagraphStyle> final {
@@ -38,8 +103,25 @@ struct JSIConverter<skia::textlayout::ParagraphStyle> final {
   static inline jsi::Value toJSI(
       jsi::Runtime& runtime,
       const skia::textlayout::ParagraphStyle& arg) {
-    (void)arg;
-    return jsi::Object(runtime);
+    jsi::Object object(runtime);
+    object.setProperty(
+        runtime,
+        "textAlign",
+        static_cast<double>(static_cast<int>(arg.getTextAlign())));
+    if (!arg.unlimited_lines()) {
+      object.setProperty(runtime, "maxLines", static_cast<double>(arg.getMaxLines()));
+    }
+    if (arg.getHeight() != 0) {
+      object.setProperty(runtime, "heightMultiplier", static_cast<double>(arg.getHeight()));
+    }
+
+    const auto ellipsis = paragraphStyleEllipsisToUtf8(arg);
+    if (!ellipsis.empty()) {
+      object.setProperty(runtime, "ellipsis", ellipsis);
+    }
+
+    writeTextStylePublicFieldsToJSI(runtime, object, arg.getTextStyle(), false);
+    return object;
   }
 
   static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {

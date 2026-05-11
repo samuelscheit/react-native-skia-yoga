@@ -26,8 +26,22 @@ struct JSIConverter<SkSamplingOptions> final {
   static inline jsi::Value toJSI(
       jsi::Runtime& runtime,
       const SkSamplingOptions& arg) {
-    (void)arg;
-    return jsi::Object(runtime);
+    jsi::Object object(runtime);
+    if (arg.useCubic) {
+      object.setProperty(runtime, "B", static_cast<double>(arg.cubic.B));
+      object.setProperty(runtime, "C", static_cast<double>(arg.cubic.C));
+      return object;
+    }
+
+    object.setProperty(
+        runtime,
+        "filter",
+        static_cast<double>(static_cast<int>(arg.filter)));
+    object.setProperty(
+        runtime,
+        "mipmap",
+        static_cast<double>(static_cast<int>(arg.mipmap)));
+    return object;
   }
 
   static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
