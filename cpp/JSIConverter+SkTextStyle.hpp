@@ -82,6 +82,42 @@ inline std::optional<std::vector<SkString>> parseOptionalFontFamilies(jsi::Runti
     return families;
 }
 
+inline jsi::Array textStyleFontFamiliesToJSI(
+    jsi::Runtime& runtime,
+    const std::vector<SkString>& families)
+{
+    jsi::Array array(runtime, families.size());
+    for (size_t index = 0; index < families.size(); ++index) {
+        array.setValueAtIndex(
+            runtime,
+            index,
+            std::string(families[index].c_str(), families[index].size()));
+    }
+    return array;
+}
+
+inline void writeTextStylePublicFieldsToJSI(
+    jsi::Runtime& runtime,
+    jsi::Object& object,
+    const skia::textlayout::TextStyle& textStyle,
+    bool includeHeightMultiplier = true)
+{
+    object.setProperty(runtime, "fontSize", static_cast<double>(textStyle.getFontSize()));
+    object.setProperty(runtime, "color", static_cast<double>(textStyle.getColor()));
+    object.setProperty(runtime, "fontFamilies", textStyleFontFamiliesToJSI(runtime, textStyle.getFontFamilies()));
+    if (includeHeightMultiplier && textStyle.getHeightOverride()) {
+        object.setProperty(runtime, "heightMultiplier", static_cast<double>(textStyle.getHeight()));
+    }
+    object.setProperty(runtime, "halfLeading", textStyle.getHalfLeading());
+    object.setProperty(runtime, "letterSpacing", static_cast<double>(textStyle.getLetterSpacing()));
+    object.setProperty(runtime, "wordSpacing", static_cast<double>(textStyle.getWordSpacing()));
+
+    auto locale = textStyle.getLocale();
+    if (!locale.isEmpty()) {
+        object.setProperty(runtime, "locale", std::string(locale.c_str(), locale.size()));
+    }
+}
+
 inline void applyTextStyle(jsi::Runtime& runtime, const jsi::Value& value, skia::textlayout::TextStyle& textStyle)
 {
     if (value.isUndefined() || value.isNull()) {
@@ -202,8 +238,9 @@ struct JSIConverter<skia::textlayout::TextStyle> final {
   static inline jsi::Value toJSI(
       jsi::Runtime& runtime,
       const skia::textlayout::TextStyle& arg) {
-    (void)arg;
-    return jsi::Object(runtime);
+    jsi::Object object(runtime);
+    writeTextStylePublicFieldsToJSI(runtime, object, arg);
+    return object;
   }
 
   static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
