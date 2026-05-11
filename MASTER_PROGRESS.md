@@ -2345,10 +2345,26 @@ Last updated: 2026-05-11
 - Prepared worker 104 as the next step: add bounded `TextCmd` / `ParagraphCmd` CSS color-string command-render coverage in `check:yoganode-native-commands-render`.
 - Created `worker-104-text-paragraph-css-color` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-104-text-paragraph-css-color` as a top-level tmux subprocess.
 - Worker 104 passed the visible `GOAL_CREATED: Add bounded TextCmd/ParagraphCmd CSS color-string command-render coverage.` gate as the first worker message.
+- Worker 104 completed and reported `Goal finished.` It wrote `worker-progress/worker-104-text-paragraph-css-color.md`.
+- Worker 104 expanded `check:yoganode-native-commands-render` with `TextCmd textStyle.color` CSS string coverage using `rgba(255,0,0,1)`, flattened `ParagraphCmd paragraphStyle.color` CSS string coverage using `#00ff00`, named-color conversion using `blue`, invalid text/paragraph color-string rejection through `JSIConverter<NodeCommand>::fromJSI(...)`, and verifier-local linkage for RN Skia's `CSSColorParser.cpp`.
+- Worker 104 did not change product C++ or TypeScript source.
+- Worker 104 branch commit: `0c7fc0d Add text paragraph CSS color command coverage`.
+- Merged worker 104 into `main` as `48fea00 Merge worker 104 text paragraph CSS color coverage`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - `node --check scripts/verify-yoganode-native-commands-render.mjs`: passed.
+  - `npm run check:yoganode-native-commands-render`: passed.
+  - `npm run check:feasible-matrix`: passed all 28 commands in `4m 17s` command duration (`257.23s` real time).
+- Worker 104 cleanup:
+  - Killed `rnskia-worker-104-text-paragraph-css-color`.
+  - Removed `../worker-104-text-paragraph-css-color`.
+  - Deleted branch `worker/104-text-paragraph-css-color`.
+  - Verified no `rnskia-worker-104` tmux session, worker 104 worktree, or worker 104 branch remained.
+- Prepared worker 105 as the next step: a read-only post-worker-104 root-cause audit to select the next strongest unblocked target.
 
 ## Active Workers
 
-- `rnskia-worker-104-text-paragraph-css-color`: running from `worker/104-text-paragraph-css-color`; adding bounded `TextCmd` / `ParagraphCmd` CSS color-string command-render coverage.
+- None; worker 105 is prepared for launch.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2472,10 +2488,11 @@ Accepted worker reports:
 - `worker-progress/worker-101-post-100-root-cause-audit.md`
 - `worker-progress/worker-102-image-fit-coverage.md`
 - `worker-progress/worker-103-post-102-root-cause-audit.md`
+- `worker-progress/worker-104-text-paragraph-css-color.md`
 
 ## Pending Workers
 
-- None; worker 104 is active.
+- `rnskia-worker-105-post-104-root-cause-audit`: planned from `worker/105-post-104-root-cause-audit`; audit the post-worker-104 state and select the next strongest unblocked root-cause target.
 
 ## Decisions
 
@@ -2521,12 +2538,13 @@ Accepted worker reports:
 - Post-worker-100 target selection: worker 101 reconfirmed the 28-command feasible matrix in `4m 55s`, accepted worker 100's host-JSC generated wrapper proof boundary, and selected synthetic `ImageCmd` fit-mode/default/invalid coverage as the next strongest unblocked target. The gap is that `src/specs/commands.ts` exposes image fits `cover`, `contain`, `fill`, `fitHeight`, `fitWidth`, `none`, and `scaleDown`; `cpp/JSIConverter+NodeCommand.hpp` accepts those strings; `cpp/YogaNode.cpp` defaults missing image fit to `contain`; but `check:yoganode-native-commands-render` currently proves only synthetic `fit: "fill"` and still excludes full image-fit coverage. The next target should table-drive bounded synthetic `JsiSkImage` command conversion/render cases, including default/missing fit and invalid-fit rejection, without claiming asset loading/decoding, `useImage`, local/remote asset resolution, React Native bridge delivery, platform app runtime, exact render fidelity, Nitro registry install, UI-runtime Worklets, or real Reanimated delivery.
 - ImageCmd fit-mode proof: worker 102 expanded `check:yoganode-native-commands-render` with an 8x4 synthetic non-square `SkImage` wrapped in a real `JsiSkImage`, direct `RNSkiaImage::fitRects(...)` assertions, converter/state/render cases for explicit `fill`, omitted/default `contain`, `cover`, `none`, `scaleDown`, `fitWidth`, and `fitHeight`, and invalid `fit: "stretch"` rejection through `JSIConverter<NodeCommand>::fromJSI(...)`. The proof covers host-native synthetic image command conversion, real `YogaNode::setCommand()`, real `ImageCmd`, draw bounds, and bounded raster evidence while still excluding asset loading/decoding, `useImage`, local/remote asset resolution, texture-backed images, platform app runtime, exact image render fidelity, React Native bridge delivery, Nitro registry install, UI-runtime Worklets, and real Reanimated delivery. The feasible matrix remained 28 commands and passed on main in `4m 49s`.
 - Post-worker-102 target selection: worker 103 reconfirmed the 28-command feasible matrix in `4m 52s`, accepted worker 102's synthetic ImageCmd fit-mode proof boundary, and selected bounded `TextCmd` / `ParagraphCmd` CSS color-string command conversion/render coverage as the next strongest unblocked target. The gap is that `src/jsx.ts` exposes text color fields as strings or Skia colors, `src/Reconciler.ts` forwards text and flattened paragraph styles into command payloads, and native text/paragraph style converters parse CSS color strings, while current command-render text/paragraph coverage uses numeric `SK_ColorBLUE`. The next proof should extend `scripts/verify-yoganode-native-commands-render.mjs` with named/hex/rgb string-color payloads, command state assertions, bounded raster evidence, and invalid string rejection without claiming exact typography, shaping, font fallback, platform app runtime, real React Native bridge delivery, Nitro registry install, UI-runtime Worklets, or real Reanimated delivery.
+- TextCmd/ParagraphCmd CSS color-string proof: worker 104 expanded `check:yoganode-native-commands-render` with selected text/paragraph CSS string payloads through real host-native `JSIConverter<NodeCommand>::fromJSI(...)`, `YogaNode::setCommand()`, `TextCmd` / `ParagraphCmd` state, paragraph measurement, and bounded raster evidence. Coverage includes `TextCmd textStyle.color` via `rgba(255,0,0,1)`, flattened `ParagraphCmd paragraphStyle.color` via `#00ff00`, named color conversion via `blue`, invalid string rejection for both command types, and explicit RN Skia `CSSColorParser.cpp` linkage in the host probe. The feasible matrix remained 28 commands and passed on main in `4m 17s`.
 - Example Worklets transform: worker 051 added the example/Expo Babel-config path to `check:skia-yoga-object-lazy-init`, proving package source `src/util.ts` keeps the same lazy Nitro closure/body contract when transformed through `example/babel.config.js` and the example dependency context.
 - Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the package lifecycle root-cause task, worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`. Worker 020 found the runtime-smoke archive discovery target, worker 021 completed it, worker 022 found the Android CMake archive-layout analogue, worker 023 completed it, worker 024 selected lint-ci root configuration/formatter repair as the next repo-owned feedback-loop fix, worker 025 completed that repair, worker 026 selected the remaining product-source React Native deep imports as the next implementation target, worker 027 completed that target, worker 028 selected example lint-contract cleanup, worker 029 completed it, worker 030 selected public README/API documentation drift, worker 031 completed that contract fix, worker 032 selected native publish-surface completeness, worker 033 completed that package-surface fix, worker 034 selected the unguarded Expo export path plus Metro config dump as the next example feedback-loop target, worker 035 completed that feedback-loop target, worker 036 confirmed platform-native build/run remains blocked by local toolchain gaps rather than a stronger repo-owned target, and worker 037 removed the strongest known unblocked RN Skia private-import target.
 
 ## Next Implementation Candidates
 
-- Monitor worker 104's bounded `TextCmd` / `ParagraphCmd` CSS color-string command-render coverage and accept/merge it if its report, verification, target implementation, and cleanup meet the prompt.
+- Monitor worker 105's post-worker-104 root-cause audit and accept/merge it if its report, verification, target selection, and cleanup meet the prompt.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
 ## Known Hygiene Notes
