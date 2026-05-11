@@ -25,6 +25,7 @@ export function SkiaYogaTypecheck() {
 	const sharedTrimEnd = null as unknown as SharedValue<number>
 	const sharedBlur = null as unknown as SharedValue<number>
 	const sharedText = null as unknown as SharedValue<string>
+	const sharedParagraphTextColor = null as unknown as SharedValue<string>
 	const sharedFontSize = null as unknown as SharedValue<number>
 	const sharedStrokeWidth = null as unknown as SharedValue<number>
 	const sharedLineX = null as unknown as SharedValue<number>
@@ -150,8 +151,10 @@ export function SkiaYogaTypecheck() {
 						maxWidth: 260,
 					}}
 					paragraphStyle={{
-						color: "#f2f7f5",
-						fontSize: sharedFontSize,
+						textStyle: {
+							color: sharedParagraphTextColor,
+							fontSize: sharedFontSize,
+						},
 					}}
 					text="Package-owned JSX typings compile against the supported node set."
 				/>

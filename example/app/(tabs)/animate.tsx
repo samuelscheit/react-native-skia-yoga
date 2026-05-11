@@ -73,10 +73,12 @@ function AnimatedCommandPropsDemo() {
 					maxWidth: 280,
 				}}
 				paragraphStyle={{
-					color: "#dbe7f0",
-					fontSize,
+					textStyle: {
+						color: "#dbe7f0",
+						fontSize,
+					},
 				}}
-				text="This tab animates typed command props directly, including nested paragraphStyle.fontSize and stroke.width."
+				text="This tab animates typed command props, including paragraphStyle.textStyle.fontSize and stroke.width."
 			/>
 			<blurMaskFilter blur={blur} blurStyle="solid">
 				<group
