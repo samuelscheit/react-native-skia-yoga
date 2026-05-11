@@ -64,6 +64,38 @@ function Example() {
 }
 ```
 
+## Text Styling
+
+Use `<text />` for simple labels. Its `textStyle` is intentionally limited to
+the simple fields rendered by the current text command: `fontSize` and `color`.
+Rich text-style fields such as `fontFamilies`, `fontFeatures`, `fontStyle`,
+`letterSpacing`, decorations, shadows, locale, and height behavior are not part
+of simple `<text textStyle={...}>` authoring.
+
+For richer typography, use `<paragraph text="..." paragraphStyle={...} />`.
+Paragraph styling supports rich fields on the root `paragraphStyle` object and
+text-level fields inside nested `paragraphStyle.textStyle`:
+
+```tsx
+<paragraph
+	text="Rich paragraph copy"
+	style={{ width: 260, height: 72 }}
+	paragraphStyle={{
+		fontFamilies: ["Inter", "System"],
+		fontSize: 18,
+		letterSpacing: 0.25,
+		textStyle: {
+			color: "#0f172a",
+			fontSize: 18,
+		},
+	}}
+/>
+```
+
+Keep simple labels on `<text />`; move richer typography to `<paragraph />`.
+`fontVariations` is still unsupported for simple text and paragraph style
+authoring unless future proof expands that contract.
+
 ## Interactivity
 
 `YogaCanvas` now installs a single `react-native-gesture-handler` detector around the Skia surface and uses native hit-testing against the retained Yoga/Skia node tree.
