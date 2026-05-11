@@ -276,10 +276,9 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch Worker 153 to expand generated materialized `YogaNode.setStyle(...)`
-  paint-field breadth for SkPaint-backed `backgroundColor`, `borderWidth`,
-  `strokeCap`, `strokeJoin`, `strokeMiter`, `dither`, `opacity`, and
-  `blendMode`.
+- Monitor Worker 153, which is expanding generated materialized
+  `YogaNode.setStyle(...)` paint-field breadth from isolated worktree
+  `../worker-153-materialized-style-paint-breadth`.
 
 Acceptance criteria:
 
