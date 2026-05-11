@@ -243,7 +243,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Run a fresh post-worker-127 root-cause audit to rerank remaining locally unblocked gaps under the current proof surface.
+- Monitor worker 128, which is auditing the post-worker-127 state and selecting the next strongest locally unblocked root-cause target.
 
 Acceptance criteria:
 

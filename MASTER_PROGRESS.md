@@ -2717,10 +2717,11 @@ Last updated: 2026-05-11
   - Closed `/root/worker_127_paragraphstyle_scalar_tojsi`.
   - Removed `../worker-127-paragraphstyle-scalar-tojsi`.
   - Deleted branch `worker/127-paragraphstyle-scalar-tojsi`.
+- Created `worker-128-post-127-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_128_post_127_root_cause_audit` as a managed worker subagent with `goal: true`.
 
 ## Active Workers
 
-- None.
+- `/root/worker_128_post_127_root_cause_audit`: auditing the post-worker-127 state in isolated worktree `../worker-128-post-127-root-cause-audit`.
 
 Invalid/stale tmux sessions cleaned up:
 
