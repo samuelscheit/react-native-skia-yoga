@@ -2440,10 +2440,12 @@ Last updated: 2026-05-11
   - Deleted branch `worker/109-post-108-root-cause-audit`.
   - Verified no `rnskia-worker-109` tmux session, worker 109 worktree, or worker 109 branch remained.
 - Prepared worker 110 as the next step: resolve the public TypeScript dynamic command payload boundary and prove packed dynamic JSX command-prop usage.
+- Created `worker-110-dynamic-jsx-type-boundary` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-110-dynamic-jsx-type-boundary` as a top-level tmux subprocess.
+- Worker 110 passed the visible `GOAL_CREATED: Resolve public dynamic JSX command prop TypeScript boundary and prove packed usage.` gate as the first worker message.
 
 ## Active Workers
 
-- None; worker 110 is prepared for launch.
+- `rnskia-worker-110-dynamic-jsx-type-boundary`: running from `worker/110-dynamic-jsx-type-boundary`; resolving the public TypeScript dynamic command payload boundary and proving packed dynamic JSX command-prop usage.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2576,7 +2578,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- `rnskia-worker-110-dynamic-jsx-type-boundary`: planned from `worker/110-dynamic-jsx-type-boundary`; resolve the public TypeScript dynamic command payload boundary and prove packed dynamic JSX command-prop usage.
+- None; worker 110 is active.
 
 ## Decisions
 
