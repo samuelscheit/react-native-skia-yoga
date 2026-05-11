@@ -14,6 +14,7 @@
 #include "JSIConverter+SkSamplingOptions.hpp"
 #include "JSIConverter+SkTextStyle.hpp"
 #include "JSIConverter+AnimatedDouble.hpp"
+#include "JSIConverter+StrokeOpts.hpp"
 #include "NodeCommand.hpp"
 #include <NitroModules/JSIConverter+Optional.hpp>
 #include <NitroModules/NitroHash.hpp>
@@ -292,6 +293,50 @@ inline std::vector<::SkPoint> parsePoints(jsi::Runtime& runtime, const jsi::Valu
     return points;
 }
 
+template <typename T>
+inline jsi::Value optionalNumericEnumToJSI(jsi::Runtime& runtime, const std::optional<T>& value)
+{
+    (void)runtime;
+    if (!value.has_value()) {
+        return jsi::Value::undefined();
+    }
+    return jsi::Value(static_cast<double>(static_cast<int>(value.value())));
+}
+
+inline jsi::Object pointToJSI(jsi::Runtime& runtime, const ::SkPoint& point)
+{
+    jsi::Object object(runtime);
+    object.setProperty(runtime, "x", static_cast<double>(point.x()));
+    object.setProperty(runtime, "y", static_cast<double>(point.y()));
+    return object;
+}
+
+inline jsi::Array pointsToJSI(jsi::Runtime& runtime, const std::vector<::SkPoint>& points)
+{
+    jsi::Array array(runtime, points.size());
+    for (size_t index = 0; index < points.size(); ++index) {
+        array.setValueAtIndex(runtime, index, jsi::Value(runtime, pointToJSI(runtime, points[index])));
+    }
+    return array;
+}
+
+inline jsi::Value pathStrokeOptsToJSI(
+    jsi::Runtime& runtime,
+    const std::optional<margelo::nitro::RNSkiaYoga::PathCommandData::StrokeOptsData>& stroke)
+{
+    if (!stroke.has_value()) {
+        return jsi::Value::undefined();
+    }
+
+    RNSkia::StrokeOpts opts;
+    opts.width = stroke->width;
+    opts.miter_limit = stroke->miterLimit;
+    opts.precision = stroke->precision;
+    opts.join = stroke->join;
+    opts.cap = stroke->cap;
+    return JSIConverter<RNSkia::StrokeOpts>::toJSI(runtime, opts);
+}
+
 } // namespace
 
 template <>
@@ -411,20 +456,33 @@ struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeCommand> final {
             object.setProperty(runtime, "type", "blurMaskFilter");
             const auto& payload = std::get<BlurMaskFilterCommandData>(arg.data);
             data.setProperty(runtime, "blur", JSIConverter<AnimatedDouble>::toJSI(runtime, payload.blur));
+            data.setProperty(runtime, "blurStyle", optionalNumericEnumToJSI(runtime, payload.blurStyle));
+            data.setProperty(runtime, "respectCTM", JSIConverter<std::optional<bool>>::toJSI(runtime, payload.respectCTM));
             break;
         }
         case NodeCommandKind::IMAGE: {
             object.setProperty(runtime, "type", "image");
             const auto& payload = std::get<ImageCommandData>(arg.data);
             data.setProperty(runtime, "fit", JSIConverter<std::optional<std::string>>::toJSI(runtime, payload.fit));
+            data.setProperty(runtime, "image", JSIConverter<std::optional<sk_sp<SkImage>>>::toJSI(runtime, payload.image));
+            data.setProperty(runtime, "sampling", JSIConverter<std::optional<SkSamplingOptions>>::toJSI(runtime, payload.sampling));
             break;
         }
-        case NodeCommandKind::PATH:
+        case NodeCommandKind::PATH: {
             object.setProperty(runtime, "type", "path");
+            const auto& payload = std::get<PathCommandData>(arg.data);
+            data.setProperty(runtime, "fillType", optionalNumericEnumToJSI(runtime, payload.fillType));
+            data.setProperty(runtime, "path", JSIConverter<SkPath>::toJSI(runtime, payload.path));
+            data.setProperty(runtime, "stroke", pathStrokeOptsToJSI(runtime, payload.stroke));
+            data.setProperty(runtime, "trimEnd", JSIConverter<AnimatedDouble>::toJSI(runtime, payload.trimEnd));
+            data.setProperty(runtime, "trimStart", JSIConverter<AnimatedDouble>::toJSI(runtime, payload.trimStart));
             break;
+        }
         case NodeCommandKind::PARAGRAPH: {
             object.setProperty(runtime, "type", "paragraph");
             const auto& payload = std::get<ParagraphCommandData>(arg.data);
+            data.setProperty(runtime, "paragraph", JSIConverter<std::optional<std::shared_ptr<RNSkia::JsiSkParagraph>>>::toJSI(runtime, payload.paragraph));
+            data.setProperty(runtime, "paragraphStyle", JSIConverter<std::optional<skia::textlayout::ParagraphStyle>>::toJSI(runtime, payload.paragraphStyle));
             data.setProperty(runtime, "text", JSIConverter<std::optional<std::string>>::toJSI(runtime, payload.text));
             break;
         }
@@ -434,15 +492,23 @@ struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeCommand> final {
             data.setProperty(runtime, "radius", JSIConverter<AnimatedDouble>::toJSI(runtime, payload.radius));
             break;
         }
-        case NodeCommandKind::LINE:
+        case NodeCommandKind::LINE: {
             object.setProperty(runtime, "type", "line");
+            const auto& payload = std::get<LineCommandData>(arg.data);
+            data.setProperty(runtime, "from", pointToJSI(runtime, payload.from));
+            data.setProperty(runtime, "to", pointToJSI(runtime, payload.to));
             break;
+        }
         case NodeCommandKind::OVAL:
             object.setProperty(runtime, "type", "oval");
             break;
-        case NodeCommandKind::POINTS:
+        case NodeCommandKind::POINTS: {
             object.setProperty(runtime, "type", "points");
+            const auto& payload = std::get<PointsCommandData>(arg.data);
+            data.setProperty(runtime, "pointMode", optionalNumericEnumToJSI(runtime, payload.pointMode));
+            data.setProperty(runtime, "points", pointsToJSI(runtime, payload.points));
             break;
+        }
         }
 
         object.setProperty(runtime, "data", data);

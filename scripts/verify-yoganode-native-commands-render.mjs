@@ -165,14 +165,15 @@ try {
 
 	console.log("YogaNode native command/render verifier passed:")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, AnimatedDouble.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, RN Skia CSSColorParser, Worklets shared-item sources, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
-	console.log("- The executable created a JSC runtime, converted numeric, CSS color-string, and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), and executed real YogaNode::setCommand().")
+	console.log("- The executable created a JSC runtime, converted numeric, CSS color-string, and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), serialized representative payloads through JSIConverter<NodeCommand>::toJSI(...), and executed real YogaNode::setCommand().")
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
+	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, line from/to points, and points arrays.")
 	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
 	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) and flattened ParagraphCmd hex colors, named-color conversion, and invalid text/paragraph color-string rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, all text/paragraph styles beyond selected color strings, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, value-exact paragraphStyle/textStyle or sampling serialization beyond current converter support, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -469,6 +470,7 @@ using margelo::nitro::RNSkiaYoga::NodeCommand;
 using margelo::nitro::RNSkiaYoga::NodeStyle;
 using margelo::nitro::RNSkiaYoga::CircleCommandData;
 using margelo::nitro::RNSkiaYoga::ImageCommandData;
+using margelo::nitro::RNSkiaYoga::LineCommandData;
 using margelo::nitro::RNSkiaYoga::NodeCommandKind;
 using margelo::nitro::RNSkiaYoga::ParagraphCommandData;
 using margelo::nitro::RNSkiaYoga::PathCommandData;
@@ -941,6 +943,65 @@ NodeCommand convertCommand(jsi::Runtime& runtime, jsi::Object command)
     return margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
 }
 
+jsi::Value serializedCommandValue(jsi::Runtime& runtime, const NodeCommand& command, const std::string& label)
+{
+    auto serialized = margelo::nitro::JSIConverter<NodeCommand>::toJSI(runtime, command);
+    expect(serialized.isObject(), label + " toJSI returns an object");
+    expect(
+        margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, serialized),
+        label + " serialized command keeps the NodeCommand transport shape");
+    return serialized;
+}
+
+jsi::Object serializedDataObject(
+    jsi::Runtime& runtime,
+    const jsi::Value& serialized,
+    const std::string& expectedType,
+    const std::string& label)
+{
+    auto object = serialized.asObject(runtime);
+    expect(
+        object.getProperty(runtime, "type").asString(runtime).utf8(runtime) == expectedType,
+        label + " serialized type");
+    auto dataValue = object.getProperty(runtime, "data");
+    expect(dataValue.isObject(), label + " serialized data object");
+    return dataValue.asObject(runtime);
+}
+
+NodeCommand roundTripSerializedCommand(jsi::Runtime& runtime, const jsi::Value& serialized, const std::string& label)
+{
+    (void)label;
+    return margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, serialized);
+}
+
+void expectSerializedPoint(
+    jsi::Runtime& runtime,
+    const jsi::Value& pointValue,
+    double expectedX,
+    double expectedY,
+    const std::string& label)
+{
+    expect(pointValue.isObject(), label + " point is an object");
+    auto point = pointValue.asObject(runtime);
+    expectNear(point.getProperty(runtime, "x").asNumber(), expectedX, label + " x");
+    expectNear(point.getProperty(runtime, "y").asNumber(), expectedY, label + " y");
+}
+
+void expectPathBounds(
+    const SkPath& path,
+    float expectedLeft,
+    float expectedTop,
+    float expectedWidth,
+    float expectedHeight,
+    const std::string& label)
+{
+    const auto bounds = path.getBounds();
+    expectNear(bounds.left(), expectedLeft, label + " left");
+    expectNear(bounds.top(), expectedTop, label + " top");
+    expectNear(bounds.width(), expectedWidth, label + " width");
+    expectNear(bounds.height(), expectedHeight, label + " height");
+}
+
 NodeCommand rectCommand(jsi::Runtime& runtime)
 {
     jsi::Object command(runtime);
@@ -967,6 +1028,22 @@ NodeCommand pointsCommand(jsi::Runtime& runtime)
 
     jsi::Object data(runtime);
     data.setProperty(runtime, "pointMode", "points");
+    data.setProperty(runtime, "points", std::move(points));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "points");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand pointsSerializationCommand(jsi::Runtime& runtime)
+{
+    jsi::Array points(runtime, 2);
+    points.setValueAtIndex(runtime, 0, jsi::Value(runtime, makePointObject(runtime, 2.0, 4.0)));
+    points.setValueAtIndex(runtime, 1, jsi::Value(runtime, makePointObject(runtime, 14.0, 18.0)));
+
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "pointMode", "polygon");
     data.setProperty(runtime, "points", std::move(points));
 
     jsi::Object command(runtime);
@@ -1071,6 +1148,19 @@ NodeCommand dynamicBlurMaskFilterCommand(
     return convertCommand(runtime, std::move(command));
 }
 
+NodeCommand blurMaskFilterSerializationCommand(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "blur", 3.5);
+    data.setProperty(runtime, "blurStyle", "inner");
+    data.setProperty(runtime, "respectCTM", true);
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "blurMaskFilter");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
 SkPath makeTrimProbePath()
 {
     SkPath path;
@@ -1120,6 +1210,37 @@ NodeCommand publicPathStrokeCommand(jsi::Runtime& runtime)
     data.setProperty(runtime, "stroke", std::move(stroke));
     data.setProperty(runtime, "trimStart", 0.0);
     data.setProperty(runtime, "trimEnd", 1.0);
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "path");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand pathSerializationCommand(jsi::Runtime& runtime)
+{
+    SkPath path;
+    path.addRect(SkRect::MakeXYWH(1.0f, 2.0f, 10.0f, 6.0f));
+
+    jsi::Object stroke(runtime);
+    stroke.setProperty(runtime, "width", 4.0);
+    stroke.setProperty(runtime, "miter_limit", 7.0);
+    stroke.setProperty(runtime, "precision", 1.25);
+    stroke.setProperty(
+        runtime,
+        "join",
+        static_cast<double>(static_cast<int>(SkPaint::Join::kMiter_Join)));
+    stroke.setProperty(
+        runtime,
+        "cap",
+        static_cast<double>(static_cast<int>(SkPaint::Cap::kSquare_Cap)));
+
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "fillType", "evenOdd");
+    data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
+    data.setProperty(runtime, "stroke", std::move(stroke));
+    data.setProperty(runtime, "trimStart", 0.25);
+    data.setProperty(runtime, "trimEnd", 0.75);
 
     jsi::Object command(runtime);
     command.setProperty(runtime, "type", "path");
@@ -1292,6 +1413,19 @@ NodeCommand paragraphCommand(jsi::Runtime& runtime)
     return convertCommand(runtime, std::move(command));
 }
 
+NodeCommand paragraphSerializationCommand(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "paragraph", jsi::Value::null());
+    data.setProperty(runtime, "text", "Serializable paragraph text");
+    data.setProperty(runtime, "paragraphStyle", textStyleObject(runtime, 18.0, SK_ColorBLUE));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "paragraph");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
 NodeCommand cssColorParagraphCommand(jsi::Runtime& runtime)
 {
     jsi::Object data(runtime);
@@ -1420,6 +1554,179 @@ void assertDynamicAnimatedDoubleNodeCommandPayloads(jsi::Runtime& runtime)
         "path.trimEnd");
 
     RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(&runtime);
+}
+
+void assertNodeCommandToJSISerializationSymmetry(jsi::Runtime& runtime)
+{
+    {
+        auto command = blurMaskFilterSerializationCommand(runtime);
+        auto serialized = serializedCommandValue(runtime, command, "blurMaskFilter");
+        auto data = serializedDataObject(runtime, serialized, "blurMaskFilter", "blurMaskFilter");
+        expectNear(data.getProperty(runtime, "blur").asNumber(), 3.5, "blurMaskFilter toJSI blur");
+        expectNear(
+            data.getProperty(runtime, "blurStyle").asNumber(),
+            static_cast<int>(SkBlurStyle::kInner_SkBlurStyle),
+            "blurMaskFilter toJSI numeric blurStyle");
+        expect(data.getProperty(runtime, "respectCTM").getBool(), "blurMaskFilter toJSI respectCTM");
+
+        auto roundTrip = roundTripSerializedCommand(runtime, serialized, "blurMaskFilter");
+        const auto& payload = std::get<BlurMaskFilterCommandData>(roundTrip.data);
+        expectOptionalNear(payload.blur.value, 3.5, "blurMaskFilter toJSI/fromJSI blur");
+        expect(
+            payload.blurStyle.has_value() && payload.blurStyle.value() == SkBlurStyle::kInner_SkBlurStyle,
+            "blurMaskFilter toJSI/fromJSI blurStyle");
+        expect(
+            payload.respectCTM.has_value() && payload.respectCTM.value(),
+            "blurMaskFilter toJSI/fromJSI respectCTM");
+    }
+
+    {
+        auto dynamicBlur = makeSynchronizable(runtime, 6.25);
+        auto command = dynamicBlurMaskFilterCommand(runtime, dynamicBlur);
+        RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(&runtime);
+        auto serialized = serializedCommandValue(runtime, command, "dynamic blurMaskFilter");
+        auto data = serializedDataObject(runtime, serialized, "blurMaskFilter", "dynamic blurMaskFilter");
+        expectNear(data.getProperty(runtime, "blur").asNumber(), 6.25, "dynamic AnimatedDouble toJSI emits resolved blur value");
+        auto roundTrip = roundTripSerializedCommand(runtime, serialized, "dynamic blurMaskFilter");
+        const auto& payload = std::get<BlurMaskFilterCommandData>(roundTrip.data);
+        expect(!payload.blur.isDynamic(), "dynamic AnimatedDouble toJSI/fromJSI round-trip becomes a static resolved value");
+        expectOptionalNear(payload.blur.value, 6.25, "dynamic AnimatedDouble toJSI/fromJSI resolved blur value");
+    }
+
+    {
+        auto command = imageCommand(runtime, std::optional<std::string>("cover"));
+        auto serialized = serializedCommandValue(runtime, command, "image");
+        auto data = serializedDataObject(runtime, serialized, "image", "image");
+        expect(data.getProperty(runtime, "fit").asString(runtime).utf8(runtime) == "cover", "image toJSI fit");
+        auto imageValue = data.getProperty(runtime, "image");
+        expect(
+            margelo::nitro::JSIConverter<sk_sp<SkImage>>::canConvert(runtime, imageValue),
+            "image toJSI emits a JsiSkImage host object");
+        auto serializedImage = margelo::nitro::JSIConverter<sk_sp<SkImage>>::fromJSI(runtime, imageValue);
+        expect(serializedImage != nullptr, "image toJSI host object resolves to SkImage");
+        expect(serializedImage->width() == 8, "image toJSI host object width");
+        expect(serializedImage->height() == 4, "image toJSI host object height");
+        expect(data.getProperty(runtime, "sampling").isObject(), "image toJSI emits sampling object through existing converter");
+
+        auto roundTrip = roundTripSerializedCommand(runtime, serialized, "image");
+        const auto& payload = std::get<ImageCommandData>(roundTrip.data);
+        expect(payload.fit.has_value() && payload.fit.value() == "cover", "image toJSI/fromJSI fit");
+        expect(payload.image.has_value() && payload.image.value() != nullptr, "image toJSI/fromJSI image");
+        expect(payload.image.value()->width() == 8, "image toJSI/fromJSI image width");
+        expect(payload.image.value()->height() == 4, "image toJSI/fromJSI image height");
+        expect(payload.sampling.has_value(), "image toJSI/fromJSI keeps a sampling payload object");
+    }
+
+    {
+        auto command = pathSerializationCommand(runtime);
+        auto serialized = serializedCommandValue(runtime, command, "path");
+        auto data = serializedDataObject(runtime, serialized, "path", "path");
+        expectNear(
+            data.getProperty(runtime, "fillType").asNumber(),
+            static_cast<int>(SkPathFillType::kEvenOdd),
+            "path toJSI numeric fillType");
+        auto pathValue = data.getProperty(runtime, "path");
+        expect(
+            margelo::nitro::JSIConverter<SkPath>::canConvert(runtime, pathValue),
+            "path toJSI emits a JsiSkPath host object");
+        auto serializedPath = margelo::nitro::JSIConverter<SkPath>::fromJSI(runtime, pathValue);
+        expectPathBounds(serializedPath, 1.0f, 2.0f, 10.0f, 6.0f, "path toJSI host object bounds");
+        auto strokeValue = data.getProperty(runtime, "stroke");
+        expect(strokeValue.isObject(), "path toJSI stroke object");
+        auto stroke = strokeValue.asObject(runtime);
+        expectNear(stroke.getProperty(runtime, "width").asNumber(), 4.0, "path toJSI stroke.width");
+        expectNear(stroke.getProperty(runtime, "miter_limit").asNumber(), 7.0, "path toJSI public stroke.miter_limit");
+        expect(stroke.getProperty(runtime, "miterLimit").isUndefined(), "path toJSI omits private stroke.miterLimit alias");
+        expectNear(stroke.getProperty(runtime, "precision").asNumber(), 1.25, "path toJSI stroke.precision");
+        expectNear(
+            stroke.getProperty(runtime, "join").asNumber(),
+            static_cast<int>(SkPaint::Join::kMiter_Join),
+            "path toJSI numeric stroke.join");
+        expectNear(
+            stroke.getProperty(runtime, "cap").asNumber(),
+            static_cast<int>(SkPaint::Cap::kSquare_Cap),
+            "path toJSI numeric stroke.cap");
+        expectNear(data.getProperty(runtime, "trimStart").asNumber(), 0.25, "path toJSI trimStart");
+        expectNear(data.getProperty(runtime, "trimEnd").asNumber(), 0.75, "path toJSI trimEnd");
+
+        auto roundTrip = roundTripSerializedCommand(runtime, serialized, "path");
+        const auto& payload = std::get<PathCommandData>(roundTrip.data);
+        expect(
+            payload.fillType.has_value() && payload.fillType.value() == SkPathFillType::kEvenOdd,
+            "path toJSI/fromJSI fillType");
+        expectPathBounds(payload.path, 1.0f, 2.0f, 10.0f, 6.0f, "path toJSI/fromJSI path bounds");
+        expect(payload.stroke.has_value(), "path toJSI/fromJSI stroke");
+        expectOptionalFloatNear(payload.stroke->width, 4.0, "path toJSI/fromJSI stroke.width");
+        expectOptionalFloatNear(payload.stroke->miterLimit, 7.0, "path toJSI/fromJSI stroke.miter_limit");
+        expectOptionalFloatNear(payload.stroke->precision, 1.25, "path toJSI/fromJSI stroke.precision");
+        expect(
+            payload.stroke->join.has_value() && payload.stroke->join.value() == SkPaint::Join::kMiter_Join,
+            "path toJSI/fromJSI stroke.join");
+        expect(
+            payload.stroke->cap.has_value() && payload.stroke->cap.value() == SkPaint::Cap::kSquare_Cap,
+            "path toJSI/fromJSI stroke.cap");
+        expectOptionalNear(payload.trimStart.value, 0.25, "path toJSI/fromJSI trimStart");
+        expectOptionalNear(payload.trimEnd.value, 0.75, "path toJSI/fromJSI trimEnd");
+    }
+
+    {
+        auto command = paragraphSerializationCommand(runtime);
+        auto serialized = serializedCommandValue(runtime, command, "paragraph");
+        auto data = serializedDataObject(runtime, serialized, "paragraph", "paragraph");
+        expect(data.getProperty(runtime, "paragraph").isNull(), "paragraph toJSI emits explicit null paragraph payload");
+        expect(data.getProperty(runtime, "paragraphStyle").isObject(), "paragraph toJSI emits paragraphStyle object through existing converter");
+        expect(
+            data.getProperty(runtime, "text").asString(runtime).utf8(runtime) == "Serializable paragraph text",
+            "paragraph toJSI text");
+
+        auto roundTrip = roundTripSerializedCommand(runtime, serialized, "paragraph");
+        const auto& payload = std::get<ParagraphCommandData>(roundTrip.data);
+        expect(payload.paragraph.has_value() && payload.paragraph.value() == nullptr, "paragraph toJSI/fromJSI null paragraph");
+        expect(payload.paragraphStyle.has_value(), "paragraph toJSI/fromJSI paragraphStyle object");
+        expect(payload.text.has_value() && payload.text.value() == "Serializable paragraph text", "paragraph toJSI/fromJSI text");
+    }
+
+    {
+        auto command = lineCommand(runtime);
+        auto serialized = serializedCommandValue(runtime, command, "line");
+        auto data = serializedDataObject(runtime, serialized, "line", "line");
+        expectSerializedPoint(runtime, data.getProperty(runtime, "from"), 0.0, 3.0, "line toJSI from");
+        expectSerializedPoint(runtime, data.getProperty(runtime, "to"), 20.0, 3.0, "line toJSI to");
+
+        auto roundTrip = roundTripSerializedCommand(runtime, serialized, "line");
+        const auto& payload = std::get<LineCommandData>(roundTrip.data);
+        expectNear(payload.from.x(), 0.0, "line toJSI/fromJSI from.x");
+        expectNear(payload.from.y(), 3.0, "line toJSI/fromJSI from.y");
+        expectNear(payload.to.x(), 20.0, "line toJSI/fromJSI to.x");
+        expectNear(payload.to.y(), 3.0, "line toJSI/fromJSI to.y");
+    }
+
+    {
+        auto command = pointsSerializationCommand(runtime);
+        auto serialized = serializedCommandValue(runtime, command, "points");
+        auto data = serializedDataObject(runtime, serialized, "points", "points");
+        expectNear(
+            data.getProperty(runtime, "pointMode").asNumber(),
+            static_cast<int>(SkCanvas::PointMode::kPolygon_PointMode),
+            "points toJSI numeric pointMode");
+        auto pointsValue = data.getProperty(runtime, "points");
+        expect(pointsValue.isObject(), "points toJSI points array object");
+        auto points = pointsValue.asObject(runtime).asArray(runtime);
+        expect(points.size(runtime) == 2, "points toJSI points array size");
+        expectSerializedPoint(runtime, points.getValueAtIndex(runtime, 0), 2.0, 4.0, "points toJSI points[0]");
+        expectSerializedPoint(runtime, points.getValueAtIndex(runtime, 1), 14.0, 18.0, "points toJSI points[1]");
+
+        auto roundTrip = roundTripSerializedCommand(runtime, serialized, "points");
+        const auto& payload = std::get<PointsCommandData>(roundTrip.data);
+        expect(
+            payload.pointMode.has_value() && payload.pointMode.value() == SkCanvas::PointMode::kPolygon_PointMode,
+            "points toJSI/fromJSI pointMode");
+        expect(payload.points.size() == 2, "points toJSI/fromJSI points size");
+        expectNear(payload.points[0].x(), 2.0, "points toJSI/fromJSI points[0].x");
+        expectNear(payload.points[0].y(), 4.0, "points toJSI/fromJSI points[0].y");
+        expectNear(payload.points[1].x(), 14.0, "points toJSI/fromJSI points[1].x");
+        expectNear(payload.points[1].y(), 18.0, "points toJSI/fromJSI points[1].y");
+    }
 }
 
 void assertRectOpacityRender(jsi::Runtime& runtime)
@@ -2801,6 +3108,7 @@ int main()
 
     assertStaticAnimatedDoubleNodeCommandPayloads(*runtime);
     assertDynamicAnimatedDoubleNodeCommandPayloads(*runtime);
+    assertNodeCommandToJSISerializationSymmetry(*runtime);
     assertRectOpacityRender(*runtime);
     assertParentChildLayoutRender(*runtime);
     assertGroupRasterCacheBehavior(*runtime);
