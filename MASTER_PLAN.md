@@ -250,7 +250,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch worker 130 for a fresh post-worker-129 root-cause audit and next-target selection.
+- Monitor worker 130, which is auditing the post-worker-129 proof surface and selecting the next strongest locally unblocked root-cause target.
 
 Acceptance criteria:
 
