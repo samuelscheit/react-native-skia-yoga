@@ -62,6 +62,18 @@ inline std::optional<SkPaint> parseOptionalPaint(jsi::Runtime& runtime, const js
     return paint;
 }
 
+inline void rejectUnsupportedFontVariations(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* path)
+{
+    if (object.hasProperty(runtime, "fontVariations")) {
+        throw jsi::JSError(
+            runtime,
+            std::string("fontVariations is not supported by react-native-skia-yoga native text styles: ") + path);
+    }
+}
+
 inline std::optional<std::vector<SkString>> parseOptionalFontFamilies(jsi::Runtime& runtime, const jsi::Object& object)
 {
     if (!object.hasProperty(runtime, "fontFamilies")) {
@@ -228,6 +240,7 @@ inline void applyTextStyle(jsi::Runtime& runtime, const jsi::Value& value, skia:
     }
 
     auto object = value.asObject(runtime);
+    rejectUnsupportedFontVariations(runtime, object, "TextStyle.fontVariations");
 
     if (auto backgroundPaint = parseOptionalPaint(runtime, object, "backgroundColor")) {
         textStyle.setBackgroundPaint(backgroundPaint.value());
