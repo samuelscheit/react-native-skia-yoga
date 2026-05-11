@@ -110,7 +110,7 @@ try {
 		"- Packed consumer TypeScript accepted simple text.textStyle color/fontSize authoring and rejected rich text.textStyle fontFamilies, fontFeatures, fontStyle, letterSpacing, and fontVariations authoring while preserving rich paragraphStyle text styling.",
 	)
 	console.log(
-		"- Packed consumer TypeScript accepted nested paragraphStyle.textStyle CSS color/fontSize authoring.",
+		"- Packed consumer TypeScript accepted static and dynamic nested paragraphStyle.textStyle CSS color/fontSize authoring.",
 	)
 	console.log(
 		"- Public package boundary rejected internal top-level exports such as reconciler, NodeCommand, createYogaNode, and SkiaYoga.",
@@ -344,6 +344,8 @@ const sharedPathTrimEnd = null as unknown as SharedValue<number>
 const sharedStrokeMiterLimit = null as unknown as SharedValue<number>
 const sharedLineFromX = null as unknown as SharedValue<number>
 const sharedPointX = null as unknown as SharedValue<number>
+const sharedParagraphTextStyleColor = null as unknown as SharedValue<string>
+const sharedParagraphTextStyleFontSize = null as unknown as SharedValue<number>
 const sharedSampling = null as unknown as SharedValue<SamplingOptions>
 const sharedSamplingFilter = null as unknown as SharedValue<FilterMode>
 const compileOnlyPath = null as unknown as SkPath
@@ -382,6 +384,17 @@ const nestedParagraphTextStyleProps: YogaIntrinsicElements["paragraph"] = {
 \t},
 \tstyle: { height: 32, width: 140 },
 \ttext: "nested paragraph color",
+}
+
+const dynamicNestedParagraphTextStyleProps: YogaIntrinsicElements["paragraph"] = {
+\tparagraphStyle: {
+\t\ttextStyle: {
+\t\t\tcolor: sharedParagraphTextStyleColor,
+\t\t\tfontSize: sharedParagraphTextStyleFontSize,
+\t\t},
+\t},
+\tstyle: { height: 32, width: 140 },
+\ttext: "dynamic nested paragraph color",
 }
 
 const unsupportedNestedSamplingProps: YogaIntrinsicElements["image"] = {
@@ -459,6 +472,7 @@ export function PackedPackageSmoke() {
 \t\t\t\t\t\t\t/>
 \t\t\t\t\t\t\t<paragraph {...richParagraphProps} />
 \t\t\t\t\t\t\t<paragraph {...nestedParagraphTextStyleProps} />
+\t\t\t\t\t\t\t<paragraph {...dynamicNestedParagraphTextStyleProps} />
 \t\t\t\t\t\t\t<blurMaskFilter blur={sharedBlur} />
 \t\t\t\t\t\t\t<path {...dynamicPathProps} />
 \t\t\t\t\t\t\t<line

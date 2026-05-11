@@ -161,6 +161,79 @@ const jsCommandBindingCases = [
 		type: "path",
 	},
 	{
+		assertCommandData(commandData, value) {
+			assertParagraphTextStyleCommandData(
+				commandData,
+				{
+					text: "dynamic nested paragraph color",
+					textStyle: {
+						color: value,
+						fontSize: 16,
+					},
+				},
+				"paragraph.paragraphStyle.textStyle.color should rebuild the full paragraph command payload shape",
+			)
+		},
+		cleanupKind: "plain",
+		cleanupValue: "#1d4ed8",
+		description: "nested paragraph textStyle color leaf",
+		expectedKey: "paragraphStyle.textStyle.color",
+		initialValue: "#16a34a",
+		lateValue: "#ef4444",
+		nativeCommandBindingsEnabled: true,
+		nextValue: "#f97316",
+		path: ["paragraphStyle", "textStyle", "color"],
+		props(harness, sharedValue) {
+			return harness.makeVmValue(
+				"({ text: 'dynamic nested paragraph color', paragraphStyle: { textStyle: { color: bindings.value, fontSize: 16 } } })",
+				{ value: sharedValue },
+			)
+		},
+		cleanupProps(harness) {
+			return harness.makeVmValue(
+				"({ text: 'dynamic nested paragraph color', paragraphStyle: { textStyle: { color: '#1d4ed8', fontSize: 16 } } })",
+			)
+		},
+		type: "paragraph",
+	},
+	{
+		assertCommandData(commandData, value) {
+			assertParagraphTextStyleCommandData(
+				commandData,
+				{
+					text: "dynamic nested paragraph font size",
+					textStyle: {
+						color: "#f8fafc",
+						fontSize: value,
+					},
+				},
+				"paragraph.paragraphStyle.textStyle.fontSize should rebuild the full paragraph command payload shape",
+			)
+		},
+		cleanupKind: "delete",
+		cleanupPath: ["paragraphStyle", "textStyle", "fontSize"],
+		cleanupValue: undefined,
+		description: "nested paragraph textStyle fontSize leaf",
+		expectedKey: "paragraphStyle.textStyle.fontSize",
+		initialValue: 14,
+		lateValue: 22,
+		nativeCommandBindingsEnabled: true,
+		nextValue: 18,
+		path: ["paragraphStyle", "textStyle", "fontSize"],
+		props(harness, sharedValue) {
+			return harness.makeVmValue(
+				"({ text: 'dynamic nested paragraph font size', paragraphStyle: { textStyle: { color: '#f8fafc', fontSize: bindings.value } } })",
+				{ value: sharedValue },
+			)
+		},
+		cleanupProps(harness) {
+			return harness.makeVmValue(
+				"({ text: 'dynamic nested paragraph font size', paragraphStyle: { textStyle: { color: '#f8fafc' } } })",
+			)
+		},
+		type: "paragraph",
+	},
+	{
 		cleanupKind: "unmount",
 		description: "nested-array command prop leaf",
 		expectedKey: "points.0.x",
@@ -198,7 +271,7 @@ console.log(
 	`- Native command binding mode mirrors all whitelisted SharedValue command props (${formatNativeBindingCaseList(nativeCommandBindingCases)}) through Synchronizable.setBlocking.`,
 )
 console.log(
-	`- JS command listener path covers native-disabled, unsupported-native, top-level opaque image.sampling, nested object, post-096 stroke, and nested-array command props: ${formatJsCommandBindingCaseList(jsCommandBindingCases)}.`,
+	`- JS command listener path covers native-disabled, unsupported-native, top-level opaque image.sampling, nested object, post-096 stroke, nested paragraph textStyle, and nested-array command props: ${formatJsCommandBindingCaseList(jsCommandBindingCases)}.`,
 )
 console.log(
 	"- Animated style listeners update host styles, invalidate, and toggle continuous redraw state.",
@@ -539,6 +612,47 @@ function getValueAtPath(target, valuePath) {
 	return current
 }
 
+function assertParagraphTextStyleCommandData(commandData, expected, message) {
+	assert.deepEqual(
+		Object.keys(commandData).sort(),
+		["paragraph", "paragraphStyle", "text"],
+		`${message}: paragraph command data keys`,
+	)
+	assert.equal(
+		commandData.paragraph,
+		undefined,
+		`${message}: paragraph host object should remain omitted`,
+	)
+	assert.equal(commandData.text, expected.text, `${message}: text`)
+	assert.equal(
+		isPlainVerifierObject(commandData.paragraphStyle),
+		true,
+		`${message}: paragraphStyle should be an object`,
+	)
+	assert.deepEqual(
+		Object.keys(commandData.paragraphStyle).sort(),
+		["textStyle"],
+		`${message}: paragraphStyle keys`,
+	)
+	assert.equal(
+		isPlainVerifierObject(commandData.paragraphStyle.textStyle),
+		true,
+		`${message}: nested textStyle should be an object`,
+	)
+	assert.deepEqual(
+		Object.keys(commandData.paragraphStyle.textStyle).sort(),
+		Object.keys(expected.textStyle).sort(),
+		`${message}: nested textStyle keys`,
+	)
+	for (const [key, value] of Object.entries(expected.textStyle)) {
+		assert.equal(
+			commandData.paragraphStyle.textStyle[key],
+			value,
+			`${message}: nested textStyle.${key}`,
+		)
+	}
+}
+
 function isPlainVerifierObject(value) {
 	return typeof value === "object" && value !== null && !Array.isArray(value)
 }
@@ -763,6 +877,10 @@ function verifyJsCommandBindingCaseRunsCommandUpdateCallback(testCase) {
 		testCase.initialValue,
 		`${label} should resolve the initial command prop value`,
 	)
+	testCase.assertCommandData?.(
+		last(node.commands).data,
+		testCase.initialValue,
+	)
 	assert.equal(
 		calls.nativeAnimationActive.length,
 		0,
@@ -786,6 +904,7 @@ function verifyJsCommandBindingCaseRunsCommandUpdateCallback(testCase) {
 		testCase.nextValue,
 		`${label} SharedValue command updates should rebuild the host command with the latest value`,
 	)
+	testCase.assertCommandData?.(last(node.commands).data, testCase.nextValue)
 	assert.equal(
 		calls.invalidations.length,
 		1,
