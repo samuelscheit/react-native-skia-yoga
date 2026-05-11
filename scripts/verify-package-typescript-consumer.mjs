@@ -69,6 +69,23 @@ try {
 		{ cwd: consumerDir, timeout: 120_000 },
 	)
 
+	run(
+		process.execPath,
+		[
+			path.join(
+				consumerDir,
+				"node_modules",
+				"typescript",
+				"lib",
+				"tsc.js",
+			),
+			"-p",
+			"tsconfig.package-exports.json",
+			"--noEmit",
+		],
+		{ cwd: consumerDir, timeout: 120_000 },
+	)
+
 	console.log("Packed package TypeScript consumer verifier passed:")
 	console.log("- npm pack created a real tarball outside the repository.")
 	console.log(
@@ -85,6 +102,9 @@ try {
 	)
 	console.log(
 		"- Public package boundary rejected internal top-level exports such as reconciler, NodeCommand, createYogaNode, and SkiaYoga.",
+	)
+	console.log(
+		"- Package exports boundary preserved root/JSX runtime imports and rejected representative src/specs deep imports under TypeScript moduleResolution: Bundler.",
 	)
 	const consumerDevDependencies =
 		consumerDependencySummary.devDependencies.join(", ")
@@ -121,8 +141,14 @@ function packPackage(tarballDir) {
 			cwd: rootDir,
 			diagnostics: () =>
 				formatVerifierTempDiagnostics([
-					{ label: "typescript consumer temp root", targetPath: tempRoot },
-					{ label: "npm pack tarball directory", targetPath: tarballDir },
+					{
+						label: "typescript consumer temp root",
+						targetPath: tempRoot,
+					},
+					{
+						label: "npm pack tarball directory",
+						targetPath: tarballDir,
+					},
 				]),
 			timeout: 120_000,
 		},
@@ -190,24 +216,40 @@ function writeConsumerProject(consumerDir, packedTarball) {
 			target: "ES2022",
 			types: ["react"],
 		},
-		include: ["src"],
+		include: [
+			"src/packed-package-smoke.tsx",
+			"src/public-boundary-negative.ts",
+		],
 	}
 
-	if (
-		Object.prototype.hasOwnProperty.call(
-			tsconfig.compilerOptions,
-			"paths",
-		) ||
-		Object.prototype.hasOwnProperty.call(
-			tsconfig.compilerOptions,
-			"baseUrl",
-		)
-	) {
-		throw new Error(
-			"Consumer tsconfig must not use paths or baseUrl shortcuts.",
-		)
+	const packageExportsTsconfig = {
+		compilerOptions: {
+			allowSyntheticDefaultImports: true,
+			esModuleInterop: true,
+			forceConsistentCasingInFileNames: true,
+			jsx: "react-jsx",
+			jsxImportSource: rootPackageJson.name,
+			lib: ["ES2022", "DOM"],
+			module: "ESNext",
+			moduleResolution: "Bundler",
+			noEmit: true,
+			resolvePackageJsonExports: true,
+			skipLibCheck: true,
+			strict: true,
+			target: "ES2022",
+			types: ["react"],
+		},
+		include: [
+			"src/packed-package-smoke.tsx",
+			"src/package-exports-boundary.ts",
+		],
 	}
 
+	assertNoPathShortcuts(tsconfig, "Consumer tsconfig")
+	assertNoPathShortcuts(
+		packageExportsTsconfig,
+		"Package exports boundary tsconfig",
+	)
 	assertConsumerDevDependencyAbsent(
 		consumerPackageJson,
 		"@types/react-reconciler",
@@ -215,6 +257,10 @@ function writeConsumerProject(consumerDir, packedTarball) {
 
 	writeJson(path.join(consumerDir, "package.json"), consumerPackageJson)
 	writeJson(path.join(consumerDir, "tsconfig.json"), tsconfig)
+	writeJson(
+		path.join(consumerDir, "tsconfig.package-exports.json"),
+		packageExportsTsconfig,
+	)
 	writeFileSync(
 		path.join(consumerDir, "src", "packed-package-smoke.tsx"),
 		consumerSource(),
@@ -222,6 +268,10 @@ function writeConsumerProject(consumerDir, packedTarball) {
 	writeFileSync(
 		path.join(consumerDir, "src", "public-boundary-negative.ts"),
 		consumerBoundarySource(),
+	)
+	writeFileSync(
+		path.join(consumerDir, "src", "package-exports-boundary.ts"),
+		consumerPackageExportsBoundarySource(),
 	)
 
 	return {
@@ -395,6 +445,33 @@ void publicGroupProps
 `
 }
 
+function consumerPackageExportsBoundarySource() {
+	return `import { YogaCanvas } from "react-native-skia-yoga"
+import type { YogaNodeStyle } from "react-native-skia-yoga"
+import { Fragment as YogaDevRuntimeFragment } from "react-native-skia-yoga/jsx-dev-runtime"
+import { Fragment as YogaRuntimeFragment } from "react-native-skia-yoga/jsx-runtime"
+
+// @ts-expect-error src/specs/commands is physically published for codegen but is not an exported package subpath.
+import type * as SpecCommands from "react-native-skia-yoga/src/specs/commands"
+// @ts-expect-error src/specs/SkiaYoga.nitro is physically published for codegen but is not an exported package subpath.
+import type * as NitroSpec from "react-native-skia-yoga/src/specs/SkiaYoga.nitro"
+// @ts-expect-error src/specs/NativeSkiaYoga is physically published for codegen but is not an exported package subpath.
+import type * as NativeSkiaYogaSpec from "react-native-skia-yoga/src/specs/NativeSkiaYoga"
+// @ts-expect-error src/specs/SkiaYogaViewNativeComponent is physically published for codegen but is not an exported package subpath.
+import type * as ViewSpec from "react-native-skia-yoga/src/specs/SkiaYogaViewNativeComponent"
+
+const style: YogaNodeStyle = { flex: 1 }
+const canvas = YogaCanvas
+const devRuntimeFragment = YogaDevRuntimeFragment
+const runtimeFragment = YogaRuntimeFragment
+
+void style
+void canvas
+void devRuntimeFragment
+void runtimeFragment
+`
+}
+
 function assertPackedPackageInstall(consumerDir) {
 	const packageRoot = path.join(
 		consumerDir,
@@ -460,6 +537,21 @@ function assertConsumerDevDependencyAbsent(consumerPackageJson, name) {
 		throw new Error(
 			`Temporary consumer must not declare ${name}; the packed package must provide its own type contract.`,
 		)
+	}
+}
+
+function assertNoPathShortcuts(tsconfig, label) {
+	if (
+		Object.prototype.hasOwnProperty.call(
+			tsconfig.compilerOptions,
+			"paths",
+		) ||
+		Object.prototype.hasOwnProperty.call(
+			tsconfig.compilerOptions,
+			"baseUrl",
+		)
+	) {
+		throw new Error(`${label} must not use paths or baseUrl shortcuts.`)
 	}
 }
 

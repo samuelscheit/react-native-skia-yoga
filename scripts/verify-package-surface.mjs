@@ -5,7 +5,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
 import path from "node:path"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
-const canonicalRepositoryUrl = "https://github.com/SamuelScheit/react-native-skia-yoga.git"
+const canonicalRepositoryUrl =
+	"https://github.com/SamuelScheit/react-native-skia-yoga.git"
 const representativeNativeFiles = [
 	"cpp/SkiaYoga.cpp",
 	"cpp/SkiaYoga.hpp",
@@ -31,10 +32,25 @@ const sourceFirstRuntimeFiles = [
 	"src/SkiaYogaObject.ts",
 	"src/util.ts",
 ]
+const sourceSpecFiles = [
+	"src/specs/commands.ts",
+	"src/specs/SkiaYoga.nitro.ts",
+	"src/specs/NativeSkiaYoga.ts",
+	"src/specs/SkiaYogaViewNativeComponent.ts",
+	"src/specs/style.ts",
+]
 
-const packageJson = JSON.parse(readFileSync(projectPath("package.json"), "utf8"))
+const packageJson = JSON.parse(
+	readFileSync(projectPath("package.json"), "utf8"),
+)
 const packageFiles = packageJson.files ?? []
-assertIncludes(packageFiles, "cpp", "package.json files must publish the shared native C++ directory.")
+assertPackageEntrypoints()
+assertPackageExportsBoundary()
+assertIncludes(
+	packageFiles,
+	"cpp",
+	"package.json files must publish the shared native C++ directory.",
+)
 assertIncludes(
 	packageFiles,
 	"android/fix-prefab.gradle",
@@ -75,7 +91,10 @@ assertContains(
 	"android/CMakeLists.txt must add the shared C++ files to the native target.",
 )
 
-const androidBuildGradle = readFileSync(projectPath("android/build.gradle"), "utf8")
+const androidBuildGradle = readFileSync(
+	projectPath("android/build.gradle"),
+	"utf8",
+)
 assertContains(
 	androidBuildGradle,
 	'apply from: "./fix-prefab.gradle"',
@@ -84,16 +103,24 @@ assertContains(
 assertPublicDeclarationBoundary()
 assertPublicSourceBoundary()
 
-const packResult = run("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], {
-	cwd: rootDir,
-})
+const packResult = run(
+	"npm",
+	["pack", "--dry-run", "--json", "--ignore-scripts"],
+	{
+		cwd: rootDir,
+	},
+)
 const packManifest = JSON.parse(packResult.stdout.trim())
 if (!Array.isArray(packManifest) || packManifest.length === 0) {
-	throw new Error("npm pack --dry-run --json --ignore-scripts returned no manifest entries.")
+	throw new Error(
+		"npm pack --dry-run --json --ignore-scripts returned no manifest entries.",
+	)
 }
 
 const packedEntry = packManifest[0]
-const packedPaths = new Set((packedEntry.files ?? []).map((entry) => normalizePackagePath(entry.path)))
+const packedPaths = new Set(
+	(packedEntry.files ?? []).map((entry) => normalizePackagePath(entry.path)),
+)
 if (packedPaths.size === 0) {
 	throw new Error("npm pack manifest did not include a files list.")
 }
@@ -102,29 +129,155 @@ const requiredPackedFiles = unique([
 	"package.json",
 	"README.md",
 	"index.d.ts",
+	"jsx-runtime.js",
+	"jsx-runtime.d.ts",
+	"jsx-dev-runtime.js",
+	"jsx-dev-runtime.d.ts",
 	"src/index.ts",
 	...sourceFirstRuntimeFiles,
+	...sourceSpecFiles,
 	...representativeNativeFiles,
 	...walkFiles(projectPath("cpp")).map((filePath) => toPackagePath(filePath)),
 ])
 
-const missingPackedFiles = requiredPackedFiles.filter((filePath) => !packedPaths.has(filePath))
+const missingPackedFiles = requiredPackedFiles.filter(
+	(filePath) => !packedPaths.has(filePath),
+)
 if (missingPackedFiles.length > 0) {
-	throw new Error([
-		"Package publish surface is missing required native/package files.",
-		...missingPackedFiles.map((filePath) => `- ${filePath}`),
-	].join("\n"))
+	throw new Error(
+		[
+			"Package publish surface is missing required native/package files.",
+			...missingPackedFiles.map((filePath) => `- ${filePath}`),
+		].join("\n"),
+	)
 }
 
 console.log("Package surface verifier passed:")
 console.log(`- npm pack manifest includes ${packedPaths.size} files.`)
-console.log(`- All ${walkFiles(projectPath("cpp")).length} files under cpp/ are published.`)
-console.log("- Representative iOS, Android, Nitrogen, and package entrypoint files are published.")
+console.log(
+	`- All ${walkFiles(projectPath("cpp")).length} files under cpp/ are published.`,
+)
+console.log(
+	"- Representative iOS, Android, Nitrogen, and package entrypoint files are published.",
+)
 console.log("- Podspec source metadata points at the canonical repository.")
-console.log("- Source-first runtime files remain published for React Native, while public declarations and the source barrel use explicit allowlists.")
+console.log(
+	"- Source-first runtime files remain published for React Native, while public declarations and the source barrel use explicit allowlists.",
+)
+console.log(
+	"- Package exports expose only the root entrypoint, JSX runtime subpaths, and package.json metadata; src/specs remains physically packed for codegen but unexported.",
+)
+console.log(
+	"- Required src/specs files remain published for React Native codegen and Nitrogen.",
+)
 
 function projectPath(...segments) {
 	return path.join(rootDir, ...segments)
+}
+
+function assertPackageEntrypoints() {
+	assertEqual(
+		packageJson.main,
+		"src/index",
+		'package.json main must preserve the source-first "src/index" entrypoint.',
+	)
+	assertEqual(
+		packageJson.module,
+		"src/index",
+		'package.json module must preserve the source-first "src/index" entrypoint.',
+	)
+	assertEqual(
+		packageJson.types,
+		"index.d.ts",
+		'package.json types must preserve the root "index.d.ts" declaration entrypoint.',
+	)
+	assertEqual(
+		packageJson["react-native"],
+		"src/index",
+		'package.json react-native must preserve the source-first "src/index" entrypoint.',
+	)
+	assertEqual(
+		packageJson.source,
+		"src/index",
+		'package.json source must preserve the source-first "src/index" entrypoint.',
+	)
+	assertEqual(
+		packageJson.codegenConfig?.jsSrcsDir,
+		"./src/specs",
+		'package.json codegenConfig.jsSrcsDir must preserve "./src/specs".',
+	)
+}
+
+function assertPackageExportsBoundary() {
+	const expectedExports = {
+		".": {
+			types: "./index.d.ts",
+			"react-native": "./src/index.ts",
+			source: "./src/index.ts",
+			import: "./src/index.ts",
+			require: "./src/index.ts",
+			default: "./src/index.ts",
+		},
+		"./jsx-runtime": {
+			types: "./jsx-runtime.d.ts",
+			import: "./jsx-runtime.js",
+			require: "./jsx-runtime.js",
+			default: "./jsx-runtime.js",
+		},
+		"./jsx-dev-runtime": {
+			types: "./jsx-dev-runtime.d.ts",
+			import: "./jsx-dev-runtime.js",
+			require: "./jsx-dev-runtime.js",
+			default: "./jsx-dev-runtime.js",
+		},
+		"./package.json": "./package.json",
+	}
+
+	assertPlainObject(
+		packageJson.exports,
+		"package.json must declare an exports map.",
+	)
+	assertObjectKeys(
+		packageJson.exports,
+		Object.keys(expectedExports),
+		"package.json exports must expose only the supported public entrypoints and package metadata.",
+	)
+
+	for (const [subpath, expectedTarget] of Object.entries(expectedExports)) {
+		if (typeof expectedTarget === "string") {
+			assertEqual(
+				packageJson.exports[subpath],
+				expectedTarget,
+				`package.json exports["${subpath}"] mismatch.`,
+			)
+			continue
+		}
+
+		assertPlainObject(
+			packageJson.exports[subpath],
+			`package.json exports["${subpath}"] must be a conditional export object.`,
+		)
+		assertObjectKeys(
+			packageJson.exports[subpath],
+			Object.keys(expectedTarget),
+			`package.json exports["${subpath}"] must keep the expected condition order and keys.`,
+		)
+		for (const [condition, target] of Object.entries(expectedTarget)) {
+			assertEqual(
+				packageJson.exports[subpath][condition],
+				target,
+				`package.json exports["${subpath}"].${condition} mismatch.`,
+			)
+		}
+	}
+
+	for (const subpath of Object.keys(packageJson.exports)) {
+		if (subpath.startsWith("./src")) {
+			throw new Error(
+				`package.json exports must not expose source deep imports: ${subpath}`,
+			)
+		}
+	}
 }
 
 function assertPublicDeclarationBoundary() {
@@ -248,11 +401,15 @@ function run(command, args, options) {
 	if (result.status !== 0) {
 		const stdout = result.stdout.trim()
 		const stderr = result.stderr.trim()
-		throw new Error([
-			`${command} ${args.join(" ")} failed with exit code ${result.status}.`,
-			stdout ? `stdout:\n${stdout}` : "",
-			stderr ? `stderr:\n${stderr}` : "",
-		].filter(Boolean).join("\n\n"))
+		throw new Error(
+			[
+				`${command} ${args.join(" ")} failed with exit code ${result.status}.`,
+				stdout ? `stdout:\n${stdout}` : "",
+				stderr ? `stderr:\n${stderr}` : "",
+			]
+				.filter(Boolean)
+				.join("\n\n"),
+		)
 	}
 
 	return result
@@ -260,7 +417,9 @@ function run(command, args, options) {
 
 function walkFiles(dir) {
 	if (!existsSync(dir)) {
-		throw new Error(`Missing required directory: ${path.relative(rootDir, dir)}`)
+		throw new Error(
+			`Missing required directory: ${path.relative(rootDir, dir)}`,
+		)
 	}
 
 	const files = []
@@ -291,6 +450,32 @@ function unique(values) {
 function assertIncludes(values, expected, message) {
 	if (!values.includes(expected)) {
 		throw new Error(message)
+	}
+}
+
+function assertEqual(actual, expected, message) {
+	if (actual !== expected) {
+		throw new Error(
+			`${message} Expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}.`,
+		)
+	}
+}
+
+function assertPlainObject(value, message) {
+	if (value == null || typeof value !== "object" || Array.isArray(value)) {
+		throw new Error(message)
+	}
+}
+
+function assertObjectKeys(value, expectedKeys, message) {
+	const actualKeys = Object.keys(value)
+	if (
+		actualKeys.length !== expectedKeys.length ||
+		actualKeys.some((key, index) => key !== expectedKeys[index])
+	) {
+		throw new Error(
+			`${message} Expected keys ${JSON.stringify(expectedKeys)}, got ${JSON.stringify(actualKeys)}.`,
+		)
 	}
 }
 
