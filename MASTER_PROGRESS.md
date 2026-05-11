@@ -2609,10 +2609,23 @@ Last updated: 2026-05-11
   - Closed `/root/worker_119_value_bearing_style_tojsi`.
   - Removed `../worker-119-value-bearing-style-tojsi`.
   - Deleted branch `worker/119-value-bearing-style-tojsi`.
+- Prepared worker 120 as the next step: run a read-only post-worker-119 root-cause audit and select the next locally unblocked target.
+- Created `worker-120-post-119-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_120_post_119_root_cause_audit` as a managed worker subagent with `goal: true`.
+- Worker 120 completed and reported `Goal finished.` It wrote `worker-progress/worker-120-post-119-root-cause-audit.md`.
+- Worker 120 reran `git diff --check`, `node --check scripts/verify-yoganode-native-commands-render.mjs`, and `npm run check:feasible-matrix`, which passed all 28 commands in `5m 49s`.
+- Worker 120 accepted worker 119's bounded style/sampling serialization proof boundary and selected canonical public `style.antiAlias` support as the next strongest locally unblocked target.
+- Worker 120 branch commit: `0f73676 Add worker 120 post-119 root cause audit`.
+- Merged worker 120 into `main` as `26db558 Merge worker 120 post-119 root cause audit`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 120 cleanup:
+  - Closed `/root/worker_120_post_119_root_cause_audit`.
+  - Removed `../worker-120-post-119-root-cause-audit`.
+  - Deleted branch `worker/120-post-119-root-cause-audit`.
 
 ## Active Workers
 
-- `/root/worker_120_post_119_root_cause_audit`: read-only post-worker-119 audit in isolated worktree `../worker-120-post-119-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2752,10 +2765,11 @@ Accepted worker reports:
 - `worker-progress/worker-117-sampling-sharedvalue-type-boundary.md`
 - `worker-progress/worker-118-post-117-root-cause-audit.md`
 - `worker-progress/worker-119-value-bearing-style-tojsi.md`
+- `worker-progress/worker-120-post-119-root-cause-audit.md`
 
 ## Pending Workers
 
-- None beyond monitoring active worker 120.
+- None; next step is worker 121 for canonical `style.antiAlias` support.
 
 ## Decisions
 
@@ -2781,6 +2795,7 @@ Accepted worker reports:
 - Worker 117 accepted that target within a TypeScript/package/source-level proof boundary. Whole `SharedValue<SamplingOptions>` now compiles for `image.sampling` from an installed tarball, nested sampling leaves remain rejected, Reconciler JS listener coverage includes top-level opaque `image.sampling`, and the main 28-command feasible matrix passed. The next step is a fresh post-worker-117 audit.
 - Worker 118 accepted the post-worker-117 baseline, reconfirmed the 28-command feasible matrix, and selected bounded value-bearing `toJSI(...)` serialization for `SkSamplingOptions`, `TextStyle`, and `ParagraphStyle` because those converters parse meaningful JS payloads but still serialize empty objects.
 - Worker 119 closed the selected serialization target for bounded stable fields and reconfirmed the main 28-command feasible matrix. Remaining style/sampling risks are unsupported `maxAniso`, un-serialized text/paragraph fields, CSS string preservation, exact typography/shaping/render fidelity, and platform/runtime proof gaps.
+- Worker 120 accepted the post-worker-119 proof boundary and selected canonical `style.antiAlias` support because the public/generated/native contract currently exposes the misspelled `antiaAlias`, while Skia/RN Skia spelling and expected authoring use `antiAlias`.
 
 ## Evidence Summary
 
@@ -2831,7 +2846,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Run a fresh post-worker-119 root-cause audit and select the next strongest locally unblocked implementation target.
+- Implement canonical public `style.antiAlias` support, preserve or explicitly retire `antiaAlias`, and prove packed-consumer authoring plus host-native SkPaint anti-alias behavior.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
