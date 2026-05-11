@@ -337,6 +337,70 @@ inline jsi::Value pathStrokeOptsToJSI(
     return JSIConverter<RNSkia::StrokeOpts>::toJSI(runtime, opts);
 }
 
+inline void rejectUnsupportedTextCommandTextStyleField(
+    jsi::Runtime& runtime,
+    const jsi::Object& textStyle,
+    const char* key)
+{
+    if (!textStyle.hasProperty(runtime, key)) {
+        return;
+    }
+
+    throw jsi::JSError(
+        runtime,
+        std::string("text.textStyle.") + key + " is not rendered by TextCmd; supported text.textStyle fields are fontSize and color.");
+}
+
+inline void rejectUnsupportedTextCommandTextStyleFields(
+    jsi::Runtime& runtime,
+    const jsi::Object& data)
+{
+    auto textStyleValue = data.getProperty(runtime, "textStyle");
+    if (textStyleValue.isUndefined() || textStyleValue.isNull() || !textStyleValue.isObject()) {
+        return;
+    }
+
+    auto textStyle = textStyleValue.asObject(runtime);
+    const char* unsupportedKeys[] = {
+        "backgroundColor",
+        "decoration",
+        "decorationColor",
+        "decorationStyle",
+        "decorationThickness",
+        "fontFamilies",
+        "fontFeatures",
+        "fontStyle",
+        "fontVariations",
+        "foregroundColor",
+        "halfLeading",
+        "height",
+        "heightMultiplier",
+        "letterSpacing",
+        "locale",
+        "shadows",
+        "textBaseline",
+        "wordSpacing",
+    };
+
+    for (const auto* key : unsupportedKeys) {
+        rejectUnsupportedTextCommandTextStyleField(runtime, textStyle, key);
+    }
+}
+
+inline jsi::Value textCommandTextStyleToJSI(
+    jsi::Runtime& runtime,
+    const std::optional<skia::textlayout::TextStyle>& textStyle)
+{
+    if (!textStyle.has_value()) {
+        return jsi::Value::undefined();
+    }
+
+    jsi::Object object(runtime);
+    object.setProperty(runtime, "fontSize", static_cast<double>(textStyle->getFontSize()));
+    object.setProperty(runtime, "color", static_cast<double>(textStyle->getColor()));
+    return object;
+}
+
 } // namespace
 
 template <>
@@ -359,6 +423,7 @@ struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeCommand> final {
                                                .cornerRadius = JSIConverter<AnimatedDouble>::fromJSI(runtime, data.getProperty(runtime, "cornerRadius")),
                                            } };
             case NodeCommandKind::TEXT:
+                rejectUnsupportedTextCommandTextStyleFields(runtime, data);
                 return NodeCommand { type, TextCommandData {
                                                .font = getOptionalProperty<SkFont>(runtime, data, "font"),
                                                .text = getOptionalProperty<std::string>(runtime, data, "text"),
@@ -440,7 +505,7 @@ struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeCommand> final {
             const auto& payload = std::get<TextCommandData>(arg.data);
             data.setProperty(runtime, "font", JSIConverter<std::optional<SkFont>>::toJSI(runtime, payload.font));
             data.setProperty(runtime, "text", JSIConverter<std::optional<std::string>>::toJSI(runtime, payload.text));
-            data.setProperty(runtime, "textStyle", JSIConverter<std::optional<skia::textlayout::TextStyle>>::toJSI(runtime, payload.textStyle));
+            data.setProperty(runtime, "textStyle", textCommandTextStyleToJSI(runtime, payload.textStyle));
             break;
         }
         case NodeCommandKind::GROUP:

@@ -49,6 +49,8 @@ export type YogaTextStyle = Omit<
 	foregroundColor?: YogaTextColor
 }
 
+export type YogaSimpleTextStyle = Pick<YogaTextStyle, "fontSize" | "color">
+
 export type YogaParagraphStyle = YogaTextStyle &
 	Omit<SkParagraphStyle, "textStyle"> & {
 		textStyle?: YogaTextStyle
@@ -131,7 +133,7 @@ export type YogaAnimatedStrokeOpts = {
 }
 
 export type YogaAnimatedTextStyleProps = {
-	[K in keyof YogaTextStyle]: YogaDeepAnimated<YogaTextStyle[K]>
+	[K in keyof YogaSimpleTextStyle]: YogaDeepAnimated<YogaSimpleTextStyle[K]>
 }
 
 export type YogaAnimatedParagraphStyleProps = {
@@ -165,7 +167,7 @@ export interface YogaOvalProps extends YogaContainerProps {}
 export interface YogaTextProps extends YogaStyleProps {
 	font?: YogaDeepAnimated<SkFont>
 	text?: YogaDeepAnimated<string>
-	textStyle?: YogaAnimatedTextStyleProps | YogaAnimatedProp<YogaTextStyle>
+	textStyle?: YogaAnimatedTextStyleProps | YogaAnimatedProp<YogaSimpleTextStyle>
 }
 
 export interface YogaParagraphProps extends YogaStyleProps {
