@@ -277,9 +277,10 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch a fresh post-worker-153 root-cause audit to accept the new proof
-  boundary, rerank the remaining locally unblocked gaps, and select the next
-  implementation target.
+- Monitor Worker 154, which is auditing the post-worker-153 proof boundary,
+  reranking remaining locally unblocked gaps, and selecting the next
+  implementation target from isolated worktree
+  `../worker-154-post-153-root-cause-audit`.
 
 Acceptance criteria:
 
