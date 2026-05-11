@@ -2513,10 +2513,12 @@ Last updated: 2026-05-11
   - Deleted branch `worker/113-nodecommand-tojsi-symmetry`.
   - Verified no `rnskia-worker-113` tmux session, worker 113 worktree, or worker 113 branch remained.
 - Prepared worker 114 as the next step: run a read-only post-worker-113 root-cause audit and select the next strongest locally unblocked target.
+- Created `worker-114-post-113-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-114-post-113-root-cause-audit` as a top-level tmux subprocess.
+- Worker 114 passed the visible `GOAL_CREATED: Audit post-worker-113 state and select the next strongest unblocked root-cause target.` gate as the first worker message.
 
 ## Active Workers
 
-- None; worker 114 is prepared but not launched yet.
+- `rnskia-worker-114-post-113-root-cause-audit`: running from `worker/114-post-113-root-cause-audit`; auditing post-worker-113 state and selecting the next strongest unblocked root-cause target.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2653,7 +2655,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- `worker-114-post-113-root-cause-audit`: prepared as the next read-only target-selection worker.
+- None; worker 114 is active.
 
 ## Decisions
 
