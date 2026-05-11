@@ -270,8 +270,9 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Assign the SkPaint-backed `backgroundColor` ordering fix for explicit style
-  paint fields in `YogaNode::setStyle(...)`.
+- Monitor worker 147, which is fixing SkPaint-backed `backgroundColor`
+  ordering for explicit style paint fields in `YogaNode::setStyle(...)` from
+  isolated worktree `../worker-147-paint-background-ordering`.
 
 Acceptance criteria:
 

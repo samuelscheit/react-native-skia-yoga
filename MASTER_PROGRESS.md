@@ -2960,10 +2960,11 @@ Last updated: 2026-05-11
   - Closed `/root/worker_146_post_145_root_cause_audit`.
   - Removed `../worker-146-post-145-root-cause-audit`.
   - Deleted branch `worker/146-post-145-root-cause-audit`.
+- Created `worker-147-paint-background-ordering` from current `main`, symlinked root/example dependencies from the main worktree, and queued `/root/worker_147_paint_background_ordering` as a managed implementation worker subagent with `goal: true`.
 
 ## Active Workers
 
-- None.
+- `/root/worker_147_paint_background_ordering`: fixing SkPaint-backed `backgroundColor` ordering for explicit style paint fields in isolated worktree `../worker-147-paint-background-ordering`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3236,8 +3237,8 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Assign the SkPaint-backed `backgroundColor` ordering fix for explicit style
-  paint fields in `YogaNode::setStyle(...)`.
+- Monitor worker 147's SkPaint-backed `backgroundColor` ordering fix for
+  explicit style paint fields in `YogaNode::setStyle(...)`.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
