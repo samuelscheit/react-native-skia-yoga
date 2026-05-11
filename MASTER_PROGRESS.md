@@ -2664,10 +2664,23 @@ Last updated: 2026-05-11
   - Closed `/root/worker_123_textstyle_tojsi_serialization`.
   - Removed `../worker-123-textstyle-tojsi-serialization`.
   - Deleted branch `worker/123-textstyle-tojsi-serialization`.
+- Prepared worker 124 as the next step: run a fresh post-worker-123 root-cause audit and select the next locally unblocked target.
+- Created `worker-124-post-123-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_124_post_123_root_cause_audit` as a managed worker subagent with `goal: true`.
+- Worker 124 completed and reported `Goal finished.` It wrote `worker-progress/worker-124-post-123-root-cause-audit.md`.
+- Worker 124 accepted worker 123's bounded `TextStyle` serialization proof boundary, reran focused syntax checks and `npm run check:feasible-matrix`, which passed all 28 commands in `4m 45s`.
+- Worker 124 selected bounded `TextStyle.fontFeatures` `toJSI(...)` serialization as the next strongest locally unblocked implementation target.
+- Worker 124 branch commit: `bc94ff0 Add worker 124 post-123 root cause audit`.
+- Merged worker 124 into `main` as `131e25f Merge worker 124 post-123 root cause audit`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 124 cleanup:
+  - Closed `/root/worker_124_post_123_root_cause_audit`.
+  - Removed `../worker-124-post-123-root-cause-audit`.
+  - Deleted branch `worker/124-post-123-root-cause-audit`.
 
 ## Active Workers
 
-- `/root/worker_124_post_123_root_cause_audit`: auditing the post-worker-123 state in isolated worktree `../worker-124-post-123-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2811,10 +2824,11 @@ Accepted worker reports:
 - `worker-progress/worker-121-canonical-antialias-style.md`
 - `worker-progress/worker-122-post-121-root-cause-audit.md`
 - `worker-progress/worker-123-textstyle-tojsi-serialization.md`
+- `worker-progress/worker-124-post-123-root-cause-audit.md`
 
 ## Pending Workers
 
-- None beyond monitoring active worker 124.
+- Launch worker 125 for bounded `TextStyle.fontFeatures` `toJSI(...)` serialization.
 
 ## Decisions
 
@@ -2844,6 +2858,7 @@ Accepted worker reports:
 - Worker 121 closed canonical `style.antiAlias` support within a public TypeScript/generated/native/host-SkPaint proof boundary, preserved deprecated `style.antiaAlias` fallback with canonical precedence, and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-121 audit.
 - Worker 122 accepted worker 121's boundary, reconfirmed the main 28-command feasible matrix, and selected bounded additional `TextStyle` `toJSI(...)` serialization because the native converter parses meaningful public fields that current serialization still drops.
 - Worker 123 closed the selected `TextStyle` serialization target for background/foreground colors, decoration fields, font style, shadows, and text baseline, and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-123 audit.
+- Worker 124 accepted worker 123's boundary, reconfirmed the main 28-command feasible matrix, and selected bounded `TextStyle.fontFeatures` `toJSI(...)` serialization because it remains a public-shaped field parsed by `fromJSI(...)` but dropped by `toJSI(...)`.
 
 ## Evidence Summary
 
@@ -2894,7 +2909,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Run a fresh post-worker-123 root-cause audit and rank the next locally unblocked target.
+- Add bounded `TextStyle.fontFeatures` `toJSI(...)` serialization and prove direct plus representative command round trips.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
