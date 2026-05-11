@@ -290,8 +290,9 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch Worker 161 for generated materialized transform-operation breadth and
-  explicit empty-transform/no-matrix reset proof.
+- Monitor Worker 161's generated materialized transform-operation breadth
+  implementation from isolated worktree
+  `../worker-161-materialized-transform-breadth`.
 
 Acceptance criteria:
 
