@@ -244,7 +244,9 @@ export type NodeStyle = {
 	// borderColor?: string | SkColorNative // mapped to SkPaint
 	// borderStyle?: "solid" | "dashed" | "dotted"
 	blendMode?: BlendMode
-	antiaAlias?: boolean // mapped to SkPaint antialias
+	antiAlias?: boolean // mapped to SkPaint antialias
+	/** @deprecated Use antiAlias. Preserved as a legacy alias. */
+	antiaAlias?: boolean
 	dither?: boolean // mapped to SkPaint dithering
 	opacity?: number // mapped to SkPaint alpha
 	/* End of Skia specific properties */

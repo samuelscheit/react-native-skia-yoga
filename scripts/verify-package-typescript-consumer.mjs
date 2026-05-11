@@ -98,7 +98,10 @@ try {
 		"- Public package entrypoints and lowercase intrinsic JSX compiled from the installed package.",
 	)
 	console.log(
-		"- Packed consumer JSX compiled representative dynamic SharedValue command props: circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, path.trimEnd, path.stroke.miter_limit, line.from.x, points.points[0].x, and image.sampling.",
+		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias authoring.",
+	)
+	console.log(
+		"- Packed consumer TypeScript accepted legacy style.antiaAlias while canonical style.antiAlias remains the preferred public authoring key.",
 	)
 	console.log(
 		"- Packed consumer TypeScript still rejected unsupported nested image.sampling SharedValue leaves while sampling remains opaque.",
@@ -316,6 +319,10 @@ const panelStyle: YogaNodeStyle = {
 \twidth: 180,
 }
 
+const legacyAntiAliasStyle: YogaNodeStyle = {
+\tantiaAlias: true,
+}
+
 const interactiveGroupProps: YogaIntrinsicElements["group"] = {
 \thitSlop: 8,
 \tonPress() {},
@@ -372,6 +379,7 @@ export function PackedPackageSmoke() {
 \t\t\t\t\t\t\t\tstyle={{
 \t\t\t\t\t\t\t\t\tbackgroundColor: "#14b8a6",
 \t\t\t\t\t\t\t\t\theight: 32,
+\t\t\t\t\t\t\t\t\tantiAlias: false,
 \t\t\t\t\t\t\t\t\twidth: 32,
 \t\t\t\t\t\t\t\t}}
 \t\t\t\t\t\t\t/>
@@ -407,6 +415,7 @@ void smokeElement
 void devRuntimeFragment
 void runtimeFragment
 void unsupportedNestedSamplingProps
+void legacyAntiAliasStyle
 `
 }
 
