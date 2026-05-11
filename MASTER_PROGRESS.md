@@ -2515,10 +2515,22 @@ Last updated: 2026-05-11
 - Prepared worker 114 as the next step: run a read-only post-worker-113 root-cause audit and select the next strongest locally unblocked target.
 - Created `worker-114-post-113-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-114-post-113-root-cause-audit` as a top-level tmux subprocess.
 - Worker 114 passed the visible `GOAL_CREATED: Audit post-worker-113 state and select the next strongest unblocked root-cause target.` gate as the first worker message.
+- Worker 114 completed and reported `Goal finished.` It wrote `worker-progress/worker-114-post-113-root-cause-audit.md`.
+- Worker 114 reconfirmed `npm run check:feasible-matrix` passed all 28 commands in `4m 30s` command duration (`270.53s` real time), documented platform-native blockers, and selected materialized `YogaNode.getChildren()` return identity/prototype coverage as the strongest locally unblocked target.
+- Worker 114 branch commit: `0b582a0 Audit post-worker-113 root-cause target`.
+- Merged worker 114 into `main` as `2be1a91 Merge worker 114 post-113 audit`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 114 cleanup:
+  - Killed `rnskia-worker-114-post-113-root-cause-audit`.
+  - Removed `../worker-114-post-113-root-cause-audit`.
+  - Deleted branch `worker/114-post-113-root-cause-audit`.
+  - Verified no `rnskia-worker-114` tmux session, worker 114 worktree, or worker 114 branch remained.
+- Prepared worker 115 as the next step: prove and, if needed, fix materialized `YogaNode.getChildren()` returned-child identity/prototype behavior.
 
 ## Active Workers
 
-- `rnskia-worker-114-post-113-root-cause-audit`: running from `worker/114-post-113-root-cause-audit`; auditing post-worker-113 state and selecting the next strongest unblocked root-cause target.
+- None; worker 115 is prepared but not launched yet.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2652,10 +2664,11 @@ Accepted worker reports:
 - `worker-progress/worker-111-post-110-root-cause-audit.md`
 - `worker-progress/worker-112-package-export-boundary.md`
 - `worker-progress/worker-113-nodecommand-tojsi-symmetry.md`
+- `worker-progress/worker-114-post-113-root-cause-audit.md`
 
 ## Pending Workers
 
-- None; worker 114 is active.
+- `worker-115-yoganode-getchildren-materialization`: prepared as the next implementation worker.
 
 ## Decisions
 
@@ -2675,6 +2688,7 @@ Accepted worker reports:
 - Post-worker-111 target selection: worker 111 selected package export-boundary hardening because worker 110 clarified the supported top-level authoring API but `package.json.files` still publishes `src`, no `exports` map constrains resolver entrypoints, and `src/specs/SkiaYoga.nitro.ts` still re-exports command transport types to deep importers.
 - Post-worker-112 follow-up: package export-boundary hardening is integrated and the main 28-command feasible matrix passed; the next target is `JSIConverter<NodeCommand>::toJSI(...)` serialization symmetry, which worker 111 had ranked second after the package-boundary gap.
 - Post-worker-113 follow-up: NodeCommand `toJSI(...)` serialization symmetry is integrated and the main 28-command feasible matrix passed; the next step is a fresh read-only root-cause audit because worker 111's ranked follow-ups are now closed or intentionally bounded.
+- Post-worker-114 target selection: worker 114 selected materialized `YogaNode.getChildren()` return identity/prototype coverage because Reconciler cleanup recursively depends on `getChildren()`, native `YogaNode::getChildren()` currently returns children through `JSIConverter<std::shared_ptr<YogaNode>>::toJSI(...)`, and that converter creates a fresh plain NativeState object instead of the cached Nitro-materialized object/prototype.
 
 ## Evidence Summary
 
@@ -2718,12 +2732,13 @@ Accepted worker reports:
 - Post-worker-110 audit: worker 111 reconfirmed the 28-command feasible matrix in `4m 44s` command duration (`284.44s` real time) and selected package export-boundary hardening as the strongest locally unblocked target. The audit confirmed `package.json` has no `exports` map, `files` includes `src`, the packed manifest includes `src/specs/commands.ts`, `src/specs/SkiaYoga.nitro.ts`, `src/specs/NativeSkiaYoga.ts`, and `src/specs/SkiaYogaViewNativeComponent.ts`, and the spec module re-exports `NodeCommandKind`, `NodeCommand`, `NodeCommandNative`, and command payload types. Worker 111 ranked `JSIConverter<NodeCommand>::toJSI(...)` serialization symmetry second because the asymmetry is real but lower current public risk than the package boundary that worker 110 just clarified.
 - Package export-boundary proof: worker 112 added a resolver-level `exports` map for `react-native-skia-yoga`, `react-native-skia-yoga/jsx-runtime`, `react-native-skia-yoga/jsx-dev-runtime`, and `react-native-skia-yoga/package.json`, while leaving `main`, `module`, `types`, `react-native`, `source`, `files`, and `codegenConfig.jsSrcsDir` unchanged. `check:package-typescript-consumer` now proves supported root/JSX runtime imports from a packed tarball and rejects representative exports-aware `src/specs` deep imports under Bundler resolution. `check:package-surface` now asserts the exact export map, preserved entrypoint fields, preserved `./src/specs` codegen path, and physical publication of required spec files. Main post-merge verification passed the focused checks and the full 28-command feasible matrix in `4m 10s` command duration (`250.06s` real time).
 - NodeCommand toJSI symmetry proof: worker 113 completed `JSIConverter<NodeCommand>::toJSI(...)` payload serialization for the previously partial `blurMaskFilter`, `image`, `path`, `paragraph`, `line`, and `points` families. `check:yoganode-native-commands-render` now asserts representative serialized payload shape and `toJSI(...)`/`fromJSI(...)` round trips, including numeric `blurStyle`, `fillType`, and `pointMode`, public `path.stroke.miter_limit`, `SkPath`/`SkImage` host-object fields, paragraph/style object presence, line points, point arrays, and resolved-number `AnimatedDouble` behavior. Main post-merge verification passed the focused check and the full 28-command feasible matrix in `4m 18s` command duration (`258.63s` real time). Remaining boundaries still exclude React Native bridge delivery, generated wrapper return paths beyond existing materialization checks, UI-runtime Worklets/Reanimated delivery, Nitro registry install inside React Native, platform app build/run, image asset loading/decoding, exact render fidelity, exact typography, and value-exact paragraph/text style or sampling serialization beyond current converter support.
+- Post-worker-113 audit: worker 114 reran the full 28-command feasible matrix in `4m 30s` command duration (`270.53s` real time), reconfirmed local platform-native blockers, and selected materialized `YogaNode.getChildren()` return identity/prototype coverage as the next target. The source-confirmed risk is that Reconciler cleanup calls `node.getChildren()` recursively, while native `YogaNode::getChildren()` currently serializes children through `JSIConverter<std::shared_ptr<YogaNode>>::toJSI(...)`, whose current implementation creates a fresh NativeState-only object rather than returning `YogaNode::toObject(runtime)` / the cached Nitro-materialized object with generated and raw methods.
 - Example Worklets transform: worker 051 added the example/Expo Babel-config path to `check:skia-yoga-object-lazy-init`, proving package source `src/util.ts` keeps the same lazy Nitro closure/body contract when transformed through `example/babel.config.js` and the example dependency context.
 - Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the package lifecycle root-cause task, worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`. Worker 020 found the runtime-smoke archive discovery target, worker 021 completed it, worker 022 found the Android CMake archive-layout analogue, worker 023 completed it, worker 024 selected lint-ci root configuration/formatter repair as the next repo-owned feedback-loop fix, worker 025 completed that repair, worker 026 selected the remaining product-source React Native deep imports as the next implementation target, worker 027 completed that target, worker 028 selected example lint-contract cleanup, worker 029 completed it, worker 030 selected public README/API documentation drift, worker 031 completed that contract fix, worker 032 selected native publish-surface completeness, worker 033 completed that package-surface fix, worker 034 selected the unguarded Expo export path plus Metro config dump as the next example feedback-loop target, worker 035 completed that feedback-loop target, worker 036 confirmed platform-native build/run remains blocked by local toolchain gaps rather than a stronger repo-owned target, and worker 037 removed the strongest known unblocked RN Skia private-import target.
 
 ## Next Implementation Candidates
 
-- Run worker 114 as a read-only post-worker-113 root-cause audit to select the next strongest locally unblocked target.
+- Run worker 115 to prove and, if needed, fix materialized `YogaNode.getChildren()` returned-child identity/prototype behavior.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
