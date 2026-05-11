@@ -114,6 +114,16 @@ struct JSIConverter<skia::textlayout::ParagraphStyle> final {
     if (arg.getHeight() != 0) {
       object.setProperty(runtime, "heightMultiplier", static_cast<double>(arg.getHeight()));
     }
+    object.setProperty(runtime, "disableHinting", !arg.hintingIsOn());
+    object.setProperty(runtime, "replaceTabCharacters", arg.getReplaceTabCharacters());
+    object.setProperty(
+        runtime,
+        "textDirection",
+        static_cast<double>(static_cast<int>(arg.getTextDirection())));
+    object.setProperty(
+        runtime,
+        "textHeightBehavior",
+        static_cast<double>(static_cast<int>(arg.getTextHeightBehavior())));
 
     const auto ellipsis = paragraphStyleEllipsisToUtf8(arg);
     if (!ellipsis.empty()) {
