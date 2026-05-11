@@ -274,8 +274,9 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Assign dynamic `style.layer` / opaque style `SharedValue` public source-path
-  proof.
+- Monitor worker 151, which is adding dynamic `style.layer` / opaque style
+  `SharedValue` public source-path proof from isolated worktree
+  `../worker-151-dynamic-layer-style-proof`.
 
 Acceptance criteria:
 
