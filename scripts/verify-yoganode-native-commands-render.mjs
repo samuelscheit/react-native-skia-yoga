@@ -275,12 +275,12 @@ try {
 	console.log(`- The verifier checked the installed RN Skia public style field inventory before native compilation: ${formatStyleInventorySummary()}`)
 	console.log("- The executable asserted inventory-backed value-bearing toJSI/fromJSI serialization for installed public SkSamplingOptions filter/mipmap and cubic B/C, installed public SkTextStyle supported fields including fontSize/fontFamilies/fontFeatures/decoration/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, normalized text color fields color/backgroundColor/foregroundColor/decorationColor, installed public SkParagraphStyle scalar/textStyle/strutStyle fields, installed public SkStrutStyle fields, dual flattened/nested default text style fields including nested textStyle heightMultiplier output, flattened fontSize/color precedence over nested values, and explicit unsupported fontVariations rejection.")
 	console.log("- The executable asserted generated NodeStyle transport and host-native SkPaint state for canonical style.antiAlias, legacy style.antiaAlias fallback, canonical precedence when both keys are present, generated style.layer JsiSkPaint host-object transport, YogaNode::_layerPaint storage/reset behavior, ordinary _paint separation, and explicit style paint fields overriding SkPaint-backed backgroundColor base paint values.")
-	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, style.layer saveLayer alpha modulation of a child subtree, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
+	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, composed public transform-array rendering, style.layer saveLayer alpha modulation of a child subtree, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
 	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) plus flattened and nested ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection including nested paragraphStyle.textStyle.color, unsupported paragraph fontVariations rejection, and text.textStyle rich-key rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -742,8 +742,30 @@ using margelo::nitro::RNSkiaYoga::RoundedRectCommandData;
 using margelo::nitro::RNSkiaYoga::StrokeCap;
 using margelo::nitro::RNSkiaYoga::StrokeJoin;
 using margelo::nitro::RNSkiaYoga::TextCommandData;
+using margelo::nitro::RNSkiaYoga::TransformRotateX;
+using margelo::nitro::RNSkiaYoga::TransformRotateY;
+using margelo::nitro::RNSkiaYoga::TransformRotateZ;
+using margelo::nitro::RNSkiaYoga::TransformScale;
+using margelo::nitro::RNSkiaYoga::TransformScaleX;
+using margelo::nitro::RNSkiaYoga::TransformScaleY;
+using margelo::nitro::RNSkiaYoga::TransformSkewX;
+using margelo::nitro::RNSkiaYoga::TransformSkewY;
+using margelo::nitro::RNSkiaYoga::TransformTranslateX;
+using margelo::nitro::RNSkiaYoga::TransformTranslateY;
 using margelo::nitro::RNSkiaYoga::YogaNode;
 using margelo::nitro::RNSkiaYoga::YogaNodeCommandKind;
+
+using NodeTransformOperation = std::variant<
+    TransformRotateX,
+    TransformRotateY,
+    TransformRotateZ,
+    TransformScale,
+    TransformScaleX,
+    TransformScaleY,
+    TransformTranslateX,
+    TransformTranslateY,
+    TransformSkewX,
+    TransformSkewY>;
 
 namespace {
 
@@ -3323,6 +3345,28 @@ void assertParentChildLayoutRender(jsi::Runtime& runtime)
     expectColorNear(pixelAt(surface, 22, 18), SK_ColorTRANSPARENT, 0, "pixels after child bottom-right remain transparent");
 }
 
+void assertComposedTransformRender(jsi::Runtime& runtime)
+{
+    auto root = makeYogaNode(groupStyle(36.0, 28.0), groupCommand(runtime, false));
+    auto childStyle = absoluteStyle(4.0, 5.0, 6.0, 4.0, SK_ColorGREEN);
+    childStyle.transform = std::vector<NodeTransformOperation> {
+        TransformTranslateX(6.0),
+        TransformTranslateY(3.0),
+        TransformScale(2.0),
+    };
+    auto child = makeYogaNode(childStyle, rectCommand(runtime));
+
+    root->insertChild(child, std::nullopt);
+    auto surface = makeSurface(44, 36);
+    renderNode(root, surface);
+
+    expect(child->_matrix != nullptr, "translate+scale transform array creates native matrix for render");
+    expectColorNear(pixelAt(surface, 11, 9), SK_ColorGREEN, 0, "composed translate+scale renders the shifted scaled rect");
+    expectColorNear(pixelAt(surface, 5, 9), SK_ColorTRANSPARENT, 0, "composed translate+scale shifts pixels away from the scale-only left edge");
+    expectColorNear(pixelAt(surface, 20, 14), SK_ColorGREEN, 0, "composed translate+scale expands pixels beyond translate-only width");
+    expectColorNear(pixelAt(surface, 24, 14), SK_ColorTRANSPARENT, 0, "composed translate+scale render remains bounded outside the scaled rect");
+}
+
 void assertLayerPaintSaveLayerRender(jsi::Runtime& runtime)
 {
     auto rootStyle = groupStyle(24.0, 20.0);
@@ -4767,6 +4811,7 @@ int main()
     assertNodeCommandToJSISerializationSymmetry(*runtime);
     assertRectOpacityRender(*runtime);
     assertParentChildLayoutRender(*runtime);
+    assertComposedTransformRender(*runtime);
     assertLayerPaintSaveLayerRender(*runtime);
     assertGroupRasterCacheBehavior(*runtime);
     assertDynamicRasterizedGroupBypassesCache(*runtime);
