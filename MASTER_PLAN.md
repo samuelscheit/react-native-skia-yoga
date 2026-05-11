@@ -255,7 +255,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Close nested `paragraphStyle.textStyle` CSS string/color parsing proof and fix, preserving flattened paragraph text-style precedence.
+- Monitor worker 135, which is closing nested `paragraphStyle.textStyle` CSS string/color parsing proof and fix while preserving flattened paragraph text-style precedence.
 
 Acceptance criteria:
 
