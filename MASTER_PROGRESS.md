@@ -2597,7 +2597,7 @@ Last updated: 2026-05-11
 
 ## Active Workers
 
-- None.
+- `/root/worker_119_value_bearing_style_tojsi`: implementing bounded value-bearing `toJSI(...)` serialization for `SkSamplingOptions`, `TextStyle`, and `ParagraphStyle` in isolated worktree `../worker-119-value-bearing-style-tojsi`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2739,7 +2739,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- None; next step is worker 119 for bounded value-bearing `toJSI(...)` serialization in `SkSamplingOptions`, `TextStyle`, and `ParagraphStyle`.
+- None beyond monitoring active worker 119.
 
 ## Decisions
 

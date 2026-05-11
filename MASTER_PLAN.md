@@ -234,7 +234,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch worker 119 to implement bounded value-bearing `toJSI(...)` serialization for `SkSamplingOptions`, `TextStyle`, and `ParagraphStyle`, with host-JSC/native verifier coverage and no platform-runtime overclaims.
+- Monitor worker 119, which is implementing bounded value-bearing `toJSI(...)` serialization for `SkSamplingOptions`, `TextStyle`, and `ParagraphStyle` with host-JSC/native verifier coverage and no platform-runtime overclaims.
 
 Acceptance criteria:
 
