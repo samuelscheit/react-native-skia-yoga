@@ -2759,10 +2759,28 @@ Last updated: 2026-05-11
   - Removed `../worker-130-post-129-root-cause-audit`.
   - Deleted branch `worker/130-post-129-root-cause-audit`.
 - Created `worker-131-fontvariations-contract` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_131_fontvariations_contract` as a managed worker subagent with `goal: true`.
+- Worker 131 completed and reported `Goal finished.` It wrote `worker-progress/worker-131-fontvariations-contract.md`.
+- Worker 131 removed unsupported `fontVariations` from the public Yoga text/paragraph style authoring contract, prevented `YogaParagraphStyle` from reintroducing raw RN Skia nested `SkParagraphStyle["textStyle"]`, and added explicit native rejection for direct text, direct paragraph, `text.textStyle`, flattened `paragraph.paragraphStyle`, and nested `paragraph.paragraphStyle.textStyle` payloads.
+- Worker 131 branch commit: `9fbd164 Close unsupported fontVariations style contract`.
+- Merged worker 131 into `main` as `9ad7069 Merge worker 131 fontVariations contract closure`.
+- Worker 131 focused verification passed:
+  - `git diff --check HEAD~1 HEAD`
+  - `node --check scripts/verify-yoganode-native-commands-render.mjs`
+  - `npm run check:package-typescript-consumer`
+  - `npm run check:yoganode-native-commands-render`
+  - `npm run typecheck`
+  - `cd example && bun run typecheck`
+  - `npm run check:feasible-matrix`
+- Main post-merge verification:
+  - `npm run check:feasible-matrix`: passed all 28 commands in `4m 59s`.
+- Worker 131 cleanup:
+  - Closed `/root/worker_131_fontvariations_contract`.
+  - Removed `../worker-131-fontvariations-contract`.
+  - Deleted branch `worker/131-fontvariations-contract`.
 
 ## Active Workers
 
-- `/root/worker_131_fontvariations_contract`: closing the unsupported public `fontVariations` contract in isolated worktree `../worker-131-fontvariations-contract`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2913,6 +2931,7 @@ Accepted worker reports:
 - `worker-progress/worker-128-post-127-root-cause-audit.md`
 - `worker-progress/worker-129-paragraphstyle-strutstyle-tojsi.md`
 - `worker-progress/worker-130-post-129-root-cause-audit.md`
+- `worker-progress/worker-131-fontvariations-contract.md`
 
 ## Pending Workers
 
@@ -2953,6 +2972,7 @@ Accepted worker reports:
 - Worker 128 accepted the post-worker-127 proof surface, reconfirmed the main 28-command feasible matrix, and selected bounded `ParagraphStyle.strutStyle` parser/serializer coverage including a local `fontFamilies` parser overlay.
 - Worker 129 closed the selected `ParagraphStyle.strutStyle` parser/serializer target and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-129 audit.
 - Worker 130 accepted the post-worker-129 proof surface, reconfirmed the main 28-command feasible matrix, and selected unsupported public `fontVariations` contract closure with TypeScript narrowing and native rejection proof.
+- Worker 131 closed the unsupported public `fontVariations` Yoga text/paragraph style contract with packed-consumer TypeScript negatives and host-JSC/native rejection proof, then reconfirmed the main 28-command feasible matrix in `4m 59s`. The next step is a fresh post-worker-131 audit.
 
 ## Evidence Summary
 
@@ -3003,7 +3023,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Close the unsupported public `fontVariations` contract for Yoga text and paragraph styles with TypeScript narrowing, packed-consumer negative coverage, and native converter rejection proof.
+- Run a fresh post-worker-131 root-cause audit to rerank remaining proof, API-contract, and platform-runtime gaps.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
