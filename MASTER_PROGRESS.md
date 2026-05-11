@@ -2961,10 +2961,23 @@ Last updated: 2026-05-11
   - Removed `../worker-146-post-145-root-cause-audit`.
   - Deleted branch `worker/146-post-145-root-cause-audit`.
 - Created `worker-147-paint-background-ordering` from current `main`, symlinked root/example dependencies from the main worktree, and queued `/root/worker_147_paint_background_ordering` as a managed implementation worker subagent with `goal: true`.
+- Worker 147 completed and reported `Goal finished.` It wrote `worker-progress/worker-147-paint-background-ordering.md`.
+- Worker 147 fixed `YogaNode::setStyle(...)` ordering so SkPaint-backed `backgroundColor` establishes base paint before explicit style paint fields override stroke width/borderWidth, stroke cap/join/miter, dither, antiAlias, opacity, and blendMode.
+- Worker 147 branch commit: `e1dc3d0 Fix style paint background ordering`.
+- Merged worker 147 into `main` as `36386c5 Merge worker 147 paint background ordering`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - `node --check scripts/verify-yoganode-native-commands-render.mjs`: passed.
+  - `npm run check:yoganode-native-commands-render`: passed.
+  - `npm run check:feasible-matrix`: passed all 28 commands in `4m 46s`.
+- Worker 147 cleanup:
+  - Closed `/root/worker_147_paint_background_ordering`.
+  - Removed `../worker-147-paint-background-ordering`.
+  - Deleted branch `worker/147-paint-background-ordering`.
 
 ## Active Workers
 
-- `/root/worker_147_paint_background_ordering`: fixing SkPaint-backed `backgroundColor` ordering for explicit style paint fields in isolated worktree `../worker-147-paint-background-ordering`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3131,6 +3144,7 @@ Accepted worker reports:
 - `worker-progress/worker-144-post-143-root-cause-audit.md`
 - `worker-progress/worker-145-style-serializer-inventory.md`
 - `worker-progress/worker-146-post-145-root-cause-audit.md`
+- `worker-progress/worker-147-paint-background-ordering.md`
 
 ## Pending Workers
 
@@ -3187,6 +3201,7 @@ Accepted worker reports:
 - Worker 144 accepted the post-worker-143 proof surface, reconfirmed the main 28-command feasible matrix in `4m 31s`, confirmed platform-native app build/run remains locally blocked, and selected bounded style serializer field-inventory/proof-boundary cleanup as the next strongest locally unblocked target.
 - Worker 145 closed bounded style serializer field-inventory/proof-boundary cleanup by adding installed RN Skia public style/sampling inventory drift checks and tightening native command/render verifier proof-boundary output. The main 28-command feasible matrix passed in `4m 26s`.
 - Worker 146 accepted the post-worker-145 proof surface, reconfirmed the main 28-command feasible matrix, confirmed platform-native app build/run remains locally blocked, and selected SkPaint-backed `backgroundColor` ordering for explicit style paint fields as the next strongest locally unblocked target.
+- Worker 147 closed SkPaint-backed `backgroundColor` ordering by moving base-paint assignment before explicit style paint fields and adding host-native precedence proof for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, antiAlias, opacity, and blendMode. The main 28-command feasible matrix passed in `4m 46s`.
 
 ## Evidence Summary
 
@@ -3237,8 +3252,8 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor worker 147's SkPaint-backed `backgroundColor` ordering fix for
-  explicit style paint fields in `YogaNode::setStyle(...)`.
+- Assign a fresh post-worker-147 root-cause audit to rerank remaining locally
+  unblocked proof and product gaps after the paint-ordering fix.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
