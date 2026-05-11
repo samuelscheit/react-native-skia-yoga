@@ -293,7 +293,8 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch a fresh post-worker-163 root-cause audit from an isolated worktree.
+- Monitor Worker 164's post-worker-163 root-cause audit from isolated worktree
+  `../worker-164-post-163-root-cause-audit`.
 
 Acceptance criteria:
 
