@@ -2867,10 +2867,11 @@ Last updated: 2026-05-11
   - Closed `/root/worker_138_post_137_root_cause_audit`.
   - Removed `../worker-138-post-137-root-cause-audit`.
   - Deleted branch `worker/138-post-137-root-cause-audit`.
+- Created `worker-139-paragraph-tojsi-nested-textstyle` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_139_paragraph_tojsi_nested_textstyle` as a managed worker subagent with `goal: true`.
 
 ## Active Workers
 
-- None.
+- `/root/worker_139_paragraph_tojsi_nested_textstyle`: defining and proving nested `ParagraphStyle::toJSI(...)` outbound shape preservation, including the text-style `heightMultiplier` collision boundary, in isolated worktree `../worker-139-paragraph-tojsi-nested-textstyle`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3127,7 +3128,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Assign a worker to define and prove nested `ParagraphStyle::toJSI(...)` outbound shape preservation, including the text-style `heightMultiplier` collision boundary.
+- Monitor worker 139, which is defining and proving nested `ParagraphStyle::toJSI(...)` outbound shape preservation, including the text-style `heightMultiplier` collision boundary.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 

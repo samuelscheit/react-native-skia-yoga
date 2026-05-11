@@ -259,7 +259,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Assign a worker to define and prove nested `ParagraphStyle::toJSI(...)` outbound shape preservation, including the text-style `heightMultiplier` collision boundary.
+- Monitor worker 139, which is defining and proving nested `ParagraphStyle::toJSI(...)` outbound shape preservation, including the text-style `heightMultiplier` collision boundary.
 
 Acceptance criteria:
 
