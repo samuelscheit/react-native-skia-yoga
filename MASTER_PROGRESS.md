@@ -2581,6 +2581,19 @@ Last updated: 2026-05-11
 - Worker 117 cleanup:
   - Removed `../worker-117-sampling-sharedvalue-type-boundary`.
   - Deleted branch `worker/117-sampling-sharedvalue-type-boundary`.
+- Prepared worker 118 as the next step: run a read-only post-worker-117 root-cause audit under the new `spawn_agent` worker model.
+- Created `worker-118-post-117-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_118_post_117_root_cause_audit` as a managed worker subagent with `goal: true`.
+- Worker 118 completed and reported `Goal finished.` It wrote `worker-progress/worker-118-post-117-root-cause-audit.md`.
+- Worker 118 verified worker 117's accepted proof boundary, ran `git diff --check`, and ran `npm run check:feasible-matrix`, which passed all 28 commands in `3m 58s`.
+- Worker 118 selected bounded value-bearing `toJSI(...)` serialization for `SkSamplingOptions`, `TextStyle`, and `ParagraphStyle` as the next strongest locally unblocked implementation target.
+- Worker 118 branch commit: `59c0e6e Add worker 118 post-117 root cause audit`.
+- Merged worker 118 into `main` as `7e9204c Merge worker 118 post-117 root cause audit`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 118 cleanup:
+  - Closed `/root/worker_118_post_117_root_cause_audit`.
+  - Removed `../worker-118-post-117-root-cause-audit`.
+  - Deleted branch `worker/118-post-117-root-cause-audit`.
 
 ## Active Workers
 
@@ -2722,10 +2735,11 @@ Accepted worker reports:
 - `worker-progress/worker-115-yoganode-getchildren-materialization.md`
 - `worker-progress/worker-116-post-115-root-cause-audit.md`
 - `worker-progress/worker-117-sampling-sharedvalue-type-boundary.md`
+- `worker-progress/worker-118-post-117-root-cause-audit.md`
 
 ## Pending Workers
 
-- None; next step is a post-worker-117 root-cause audit launched with the new `spawn_agent` worker model.
+- None; next step is worker 119 for bounded value-bearing `toJSI(...)` serialization in `SkSamplingOptions`, `TextStyle`, and `ParagraphStyle`.
 
 ## Decisions
 
@@ -2749,6 +2763,7 @@ Accepted worker reports:
 - Post-worker-115 follow-up: materialized `YogaNode.getChildren()` identity/prototype behavior is integrated and the main 28-command feasible matrix passed; the next step is a fresh read-only root-cause audit because worker 115 closed the selected source/materialization boundary and the remaining gaps need reranking under the current proof surface.
 - Post-worker-116 target selection: worker 116 selected whole `SharedValue<SamplingOptions>` public type support for `image.sampling` because `SamplingOptions` is opaque but union-shaped, `YogaDeepAnimated<T>` currently distributes over that union, and the public type rejects `SharedValue<SamplingOptions>` while accepting narrower `SharedValue<FilterOptions>` / `SharedValue<CubicResampler>`.
 - Worker 117 accepted that target within a TypeScript/package/source-level proof boundary. Whole `SharedValue<SamplingOptions>` now compiles for `image.sampling` from an installed tarball, nested sampling leaves remain rejected, Reconciler JS listener coverage includes top-level opaque `image.sampling`, and the main 28-command feasible matrix passed. The next step is a fresh post-worker-117 audit.
+- Worker 118 accepted the post-worker-117 baseline, reconfirmed the 28-command feasible matrix, and selected bounded value-bearing `toJSI(...)` serialization for `SkSamplingOptions`, `TextStyle`, and `ParagraphStyle` because those converters parse meaningful JS payloads but still serialize empty objects.
 
 ## Evidence Summary
 
@@ -2799,7 +2814,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Run a fresh post-worker-117 root-cause audit and select the next strongest locally unblocked implementation target.
+- Implement bounded value-bearing `toJSI(...)` serialization for `SkSamplingOptions`, `TextStyle`, and `ParagraphStyle`, and prove selected stable fields through host-JSC/native verifier coverage.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
