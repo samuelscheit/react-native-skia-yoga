@@ -2832,10 +2832,21 @@ Last updated: 2026-05-11
   - Removed `../worker-135-nested-paragraph-textstyle-color`.
   - Deleted branch `worker/135-nested-paragraph-textstyle-color`.
 - Created `worker-136-post-135-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_136_post_135_root_cause_audit` as a managed worker subagent with `goal: true`.
+- Worker 136 completed and reported `Goal finished.` It wrote `worker-progress/worker-136-post-135-root-cause-audit.md`.
+- Worker 136 reconfirmed the post-worker-135 baseline with `git diff --check`, syntax checks for package/native/Nitro verifiers, `npm run check:package-typescript-consumer`, `npm run check:yoganode-native-commands-render`, and `npm run check:feasible-matrix`, which passed all 28 commands in `5m 12s`.
+- Worker 136 selected dynamic nested `paragraphStyle.textStyle` package/Reconciler proof for `SharedValue` leaves as the next strongest locally unblocked target.
+- Worker 136 branch commit: `fba2438 Add worker 136 root cause audit`.
+- Merged worker 136 into `main` as `8600409 Merge worker 136 post-135 root cause audit`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 136 cleanup:
+  - Closed `/root/worker_136_post_135_root_cause_audit`.
+  - Removed `../worker-136-post-135-root-cause-audit`.
+  - Deleted branch `worker/136-post-135-root-cause-audit`.
 
 ## Active Workers
 
-- `/root/worker_136_post_135_root_cause_audit`: auditing the post-worker-135 proof surface and reranking remaining proof, API-contract, and platform-runtime gaps in isolated worktree `../worker-136-post-135-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2991,6 +3002,7 @@ Accepted worker reports:
 - `worker-progress/worker-133-simple-textstyle-contract.md`
 - `worker-progress/worker-134-post-133-root-cause-audit.md`
 - `worker-progress/worker-135-nested-paragraph-textstyle-color.md`
+- `worker-progress/worker-136-post-135-root-cause-audit.md`
 
 ## Pending Workers
 
@@ -3036,6 +3048,7 @@ Accepted worker reports:
 - Worker 133 closed the simple `<text textStyle>` contract drift with public type narrowing, scoped native rejection, packed TypeScript proof, and host-native verifier proof, then reconfirmed the main 28-command feasible matrix in `4m 29s`. The next step is a fresh post-worker-133 audit.
 - Worker 134 accepted the post-worker-133 proof surface, reconfirmed the main 28-command feasible matrix, and selected nested `paragraphStyle.textStyle` CSS string/color parsing proof and fix before broader nested serialization-shape work.
 - Worker 135 closed nested `paragraphStyle.textStyle` CSS string color parsing with package/native/render/Nitro proof and preserved flattened paragraph text-style precedence. The main 28-command feasible matrix passed in `5m 7s`; the next step is a fresh post-worker-135 audit.
+- Worker 136 accepted the post-worker-135 proof surface, reconfirmed the main 28-command feasible matrix in `5m 12s`, and selected dynamic nested `paragraphStyle.textStyle` package/Reconciler proof for `SharedValue` leaves as the next target.
 
 ## Evidence Summary
 
@@ -3086,7 +3099,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor worker 136, which is auditing the post-worker-135 proof surface and reranking remaining proof, API-contract, and platform-runtime gaps.
+- Assign a worker to add packed TypeScript and Reconciler JS-mode proof for dynamic nested `paragraphStyle.textStyle` `SharedValue` leaves.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
