@@ -3278,12 +3278,37 @@ Last updated: 2026-05-12
   symlinked root/example dependencies from the main worktree, and prepared
   `/root/worker_162_post_161_root_cause_audit` as a managed audit worker
   subagent with `goal: true`.
+- Worker 162 initial and recovery subagents produced repeated malformed
+  `completed: null` notifications with no report, commit, or worktree changes.
+- A third retry subagent,
+  `/root/worker_162_post_161_audit_retry`, was launched with a shorter prompt
+  against the same clean worktree. It remained running without producing a
+  report, commit, or worktree changes after multiple waits and a direct status
+  nudge, then was closed as stuck.
+- Recovered the report-only Worker 162 audit from the assigned clean worktree.
+  The recovered report transparently documents the subagent failures, accepts
+  Worker 161's proof boundary, reranks remaining locally unblocked gaps, and
+  selects bounded transform composition render/hit-test proof as Worker 163's
+  target.
+- Worker 162 verification in the assigned worktree:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - `node --check scripts/verify-yoganode-nitro-materialization.mjs`: passed.
+  - `npm run check:yoganode-nitro-materialization`: passed.
+  - `npm run check:feasible-matrix`: passed 28/28 in `4m 44s`.
+- Worker 162 branch commit: `3c8d2b3 Add Worker 162 post-161 audit`.
+- Merged worker 162 into `main` as
+  `9dc8d9d Merge worker 162 post-161 audit`.
+- Post-merge `git diff --check HEAD~1 HEAD`: passed.
+- Worker 162 cleanup:
+  - Closed stuck `/root/worker_162_post_161_audit_retry`.
+  - Removed `../worker-162-post-161-root-cause-audit`.
+  - Deleted branch `worker/162-post-161-root-cause-audit`.
+- Next step selected by orchestration: launch Worker 163 for bounded transform
+  composition render/hit-test proof.
 
 ## Active Workers
 
-- `/root/worker_162_post_161_root_cause_audit`: auditing the post-worker-161
-  proof boundary and selecting the next strongest locally unblocked target from
-  isolated worktree `../worker-162-post-161-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3456,6 +3481,16 @@ Accepted worker reports:
 - `worker-progress/worker-150-post-149-root-cause-audit.md`
 - `worker-progress/worker-151-dynamic-layer-style-proof.md`
 - `worker-progress/worker-152-post-151-root-cause-audit.md`
+- `worker-progress/worker-153-materialized-style-paint-breadth.md`
+- `worker-progress/worker-154-post-153-root-cause-audit.md`
+- `worker-progress/worker-155-materialized-clip-matrix-transform.md`
+- `worker-progress/worker-156-post-155-root-cause-audit.md`
+- `worker-progress/worker-157-materialized-matrix16.md`
+- `worker-progress/worker-158-post-157-root-cause-audit.md`
+- `worker-progress/worker-159-transform-empty-matrix.md`
+- `worker-progress/worker-160-post-159-root-cause-audit.md`
+- `worker-progress/worker-161-materialized-transform-breadth.md`
+- `worker-progress/worker-162-post-161-root-cause-audit.md`
 
 ## Pending Workers
 
@@ -3530,6 +3565,7 @@ Accepted worker reports:
 - Worker 159 closed materialized `transform: []` matrix fallback by updating `YogaNode::setStyle(...)` and adding generated materialized `setStyle(...)` proof for empty transform plus matrix fallback. Main post-merge verification passed `git diff --check HEAD~1 HEAD`, `node --check scripts/verify-yoganode-nitro-materialization.mjs`, `npm run check:yoganode-nitro-materialization`, and the full 28-command feasible matrix in `4m 45s`. The next step is a fresh post-worker-159 root-cause audit.
 - Worker 160 accepted Worker 159's proof boundary, reconfirmed the full 28-command feasible matrix in `4m 45s`, preserved the Worker 158 SkMatrix converter nuance, and selected generated materialized transform-operation breadth plus explicit empty-transform/no-matrix reset proof as the next target.
 - Worker 161 expanded generated materialized transform proof across all public single-transform variants and added explicit empty-transform/no-matrix reset proof. Main post-merge verification passed `git diff --check HEAD~1 HEAD`, `node --check scripts/verify-yoganode-nitro-materialization.mjs`, `npm run check:yoganode-nitro-materialization`, and the full 28-command feasible matrix in `5m 32s`.
+- Worker 162 accepted Worker 161's proof boundary, reconfirmed the full 28-command feasible matrix in `4m 44s`, preserved the Worker 158 SkMatrix converter nuance, recorded the failed/stuck subagent recovery attempts, and selected bounded transform composition render/hit-test proof as the next target.
 
 ## Evidence Summary
 
@@ -3580,7 +3616,11 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor Worker 162's post-worker-161 root-cause audit.
+- Launch Worker 163 on bounded transform composition render/hit-test proof from
+  an isolated worktree. Expected focus: extend an existing host-native verifier
+  to compose public transform operations and prove concrete raster/hit-test
+  behavior through consumers of `_matrix`, without claiming platform runtime or
+  exact GPU fidelity.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
