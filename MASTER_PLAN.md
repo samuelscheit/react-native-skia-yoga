@@ -251,7 +251,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch worker 131 to close the unsupported public `fontVariations` contract with TypeScript narrowing and native rejection proof.
+- Monitor worker 131, which is closing the unsupported public `fontVariations` contract with TypeScript narrowing and native rejection proof.
 
 Acceptance criteria:
 

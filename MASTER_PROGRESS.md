@@ -2758,10 +2758,11 @@ Last updated: 2026-05-11
   - Closed `/root/worker_130_post_129_root_cause_audit`.
   - Removed `../worker-130-post-129-root-cause-audit`.
   - Deleted branch `worker/130-post-129-root-cause-audit`.
+- Created `worker-131-fontvariations-contract` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_131_fontvariations_contract` as a managed worker subagent with `goal: true`.
 
 ## Active Workers
 
-- None.
+- `/root/worker_131_fontvariations_contract`: closing the unsupported public `fontVariations` contract in isolated worktree `../worker-131-fontvariations-contract`.
 
 Invalid/stale tmux sessions cleaned up:
 
