@@ -2622,10 +2622,25 @@ Last updated: 2026-05-11
   - Closed `/root/worker_120_post_119_root_cause_audit`.
   - Removed `../worker-120-post-119-root-cause-audit`.
   - Deleted branch `worker/120-post-119-root-cause-audit`.
+- Prepared worker 121 as the next step: implement canonical public `style.antiAlias` support with legacy `antiaAlias` fallback and precedence proof.
+- Created `worker-121-canonical-antialias-style` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_121_canonical_antialias_style` as a managed worker subagent with `goal: true`.
+- Worker 121 completed and reported `Goal finished.` It wrote `worker-progress/worker-121-canonical-antialias-style.md`.
+- Worker 121 added canonical `style.antiAlias` to the public style spec and generated `NodeStyle`, kept `style.antiaAlias` as a deprecated legacy alias, and made native style application prefer canonical `antiAlias` when both keys are present.
+- Worker 121 updated public example/verifier fixtures to prefer `antiAlias`, proved packed-consumer canonical authoring plus legacy alias type coverage, proved generated/native style transport, and proved host-native SkPaint anti-alias state including alias fallback and canonical precedence.
+- Worker 121 branch commit: `9a82fde Add canonical antiAlias style support`.
+- Merged worker 121 into `main` as `34708e9 Merge worker 121 canonical antiAlias style support`.
+- Main post-merge verification:
+  - `node --check scripts/verify-yoganode-native-commands-render.mjs`: passed.
+  - `node --check scripts/verify-yoganode-nitro-materialization.mjs`: passed.
+  - `npm run check:feasible-matrix`: passed all 28 commands in `4m 28s`.
+- Worker 121 cleanup:
+  - Closed `/root/worker_121_canonical_antialias_style`.
+  - Removed `../worker-121-canonical-antialias-style`.
+  - Deleted branch `worker/121-canonical-antialias-style`.
 
 ## Active Workers
 
-- `/root/worker_121_canonical_antialias_style`: implementing canonical `style.antiAlias` support in isolated worktree `../worker-121-canonical-antialias-style`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2766,10 +2781,11 @@ Accepted worker reports:
 - `worker-progress/worker-118-post-117-root-cause-audit.md`
 - `worker-progress/worker-119-value-bearing-style-tojsi.md`
 - `worker-progress/worker-120-post-119-root-cause-audit.md`
+- `worker-progress/worker-121-canonical-antialias-style.md`
 
 ## Pending Workers
 
-- None beyond monitoring active worker 121.
+- Launch worker 122 for a fresh post-worker-121 root-cause audit.
 
 ## Decisions
 
@@ -2796,6 +2812,7 @@ Accepted worker reports:
 - Worker 118 accepted the post-worker-117 baseline, reconfirmed the 28-command feasible matrix, and selected bounded value-bearing `toJSI(...)` serialization for `SkSamplingOptions`, `TextStyle`, and `ParagraphStyle` because those converters parse meaningful JS payloads but still serialize empty objects.
 - Worker 119 closed the selected serialization target for bounded stable fields and reconfirmed the main 28-command feasible matrix. Remaining style/sampling risks are unsupported `maxAniso`, un-serialized text/paragraph fields, CSS string preservation, exact typography/shaping/render fidelity, and platform/runtime proof gaps.
 - Worker 120 accepted the post-worker-119 proof boundary and selected canonical `style.antiAlias` support because the public/generated/native contract currently exposes the misspelled `antiaAlias`, while Skia/RN Skia spelling and expected authoring use `antiAlias`.
+- Worker 121 closed canonical `style.antiAlias` support within a public TypeScript/generated/native/host-SkPaint proof boundary, preserved deprecated `style.antiaAlias` fallback with canonical precedence, and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-121 audit.
 
 ## Evidence Summary
 
@@ -2846,7 +2863,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Implement canonical public `style.antiAlias` support, preserve or explicitly retire `antiaAlias`, and prove packed-consumer authoring plus host-native SkPaint anti-alias behavior.
+- Run a fresh post-worker-121 root-cause audit and rank the next locally unblocked target.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
