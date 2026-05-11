@@ -2650,10 +2650,24 @@ Last updated: 2026-05-11
   - Closed `/root/worker_122_post_121_root_cause_audit`.
   - Removed `../worker-122-post-121-root-cause-audit`.
   - Deleted branch `worker/122-post-121-root-cause-audit`.
+- Prepared worker 123 as the next step: implement bounded additional `TextStyle` `toJSI(...)` serialization and host-native round-trip proof.
+- Created `worker-123-textstyle-tojsi-serialization` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_123_textstyle_tojsi_serialization` as a managed worker subagent with `goal: true`.
+- Worker 123 completed and reported `Goal finished.` It wrote `worker-progress/worker-123-textstyle-tojsi-serialization.md`.
+- Worker 123 added bounded `TextStyle` `toJSI(...)` serialization for paint-backed `backgroundColor`/`foregroundColor`, decoration fields, `fontStyle`, non-empty `shadows`, and `textBaseline`, while preserving the worker 119 serialized fields.
+- Worker 123 expanded `check:yoganode-native-commands-render` with direct `TextStyle` converter round trips and representative `NodeCommand` `text.textStyle` plus flattened `paragraph.paragraphStyle` round trips.
+- Worker 123 branch commit: `c4bd620 Add bounded TextStyle toJSI serialization`.
+- Merged worker 123 into `main` as `e3228fe Merge worker 123 TextStyle toJSI serialization`.
+- Main post-merge verification:
+  - `node --check scripts/verify-yoganode-native-commands-render.mjs`: passed.
+  - `npm run check:feasible-matrix`: passed all 28 commands in `4m 28s`.
+- Worker 123 cleanup:
+  - Closed `/root/worker_123_textstyle_tojsi_serialization`.
+  - Removed `../worker-123-textstyle-tojsi-serialization`.
+  - Deleted branch `worker/123-textstyle-tojsi-serialization`.
 
 ## Active Workers
 
-- `/root/worker_123_textstyle_tojsi_serialization`: implementing bounded additional `TextStyle` `toJSI(...)` serialization in isolated worktree `../worker-123-textstyle-tojsi-serialization`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2796,10 +2810,11 @@ Accepted worker reports:
 - `worker-progress/worker-120-post-119-root-cause-audit.md`
 - `worker-progress/worker-121-canonical-antialias-style.md`
 - `worker-progress/worker-122-post-121-root-cause-audit.md`
+- `worker-progress/worker-123-textstyle-tojsi-serialization.md`
 
 ## Pending Workers
 
-- None beyond monitoring active worker 123.
+- Launch worker 124 for a fresh post-worker-123 root-cause audit.
 
 ## Decisions
 
@@ -2828,6 +2843,7 @@ Accepted worker reports:
 - Worker 120 accepted the post-worker-119 proof boundary and selected canonical `style.antiAlias` support because the public/generated/native contract currently exposes the misspelled `antiaAlias`, while Skia/RN Skia spelling and expected authoring use `antiAlias`.
 - Worker 121 closed canonical `style.antiAlias` support within a public TypeScript/generated/native/host-SkPaint proof boundary, preserved deprecated `style.antiaAlias` fallback with canonical precedence, and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-121 audit.
 - Worker 122 accepted worker 121's boundary, reconfirmed the main 28-command feasible matrix, and selected bounded additional `TextStyle` `toJSI(...)` serialization because the native converter parses meaningful public fields that current serialization still drops.
+- Worker 123 closed the selected `TextStyle` serialization target for background/foreground colors, decoration fields, font style, shadows, and text baseline, and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-123 audit.
 
 ## Evidence Summary
 
@@ -2878,7 +2894,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Add bounded additional `TextStyle` `toJSI(...)` serialization for currently parsed but unserialized public text-style fields, with direct converter and `NodeCommand` round-trip proof.
+- Run a fresh post-worker-123 root-cause audit and rank the next locally unblocked target.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
