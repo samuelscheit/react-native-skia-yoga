@@ -278,9 +278,10 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch Worker 155 to expand generated materialized
+- Monitor Worker 155, which is expanding generated materialized
   `YogaNode.setStyle(...)` proof for `clip`, `matrix`, `transform`, and
-  `invertClip`.
+  `invertClip` from isolated worktree
+  `../worker-155-materialized-clip-matrix-transform`.
 
 Acceptance criteria:
 
