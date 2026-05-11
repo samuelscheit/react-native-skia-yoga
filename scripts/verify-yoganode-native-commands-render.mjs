@@ -167,15 +167,15 @@ try {
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, AnimatedDouble.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, RN Skia CSSColorParser, Worklets shared-item sources, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
 	console.log("- The executable created a JSC runtime, converted numeric, CSS color-string, and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), serialized representative payloads through JSIConverter<NodeCommand>::toJSI(...), and executed real YogaNode::setCommand().")
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
-	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, simple text.textStyle fields, selected paragraphStyle fields including fontFeatures and strutStyle, line from/to points, and points arrays.")
-	console.log("- The executable asserted selected value-bearing toJSI/fromJSI serialization for SkSamplingOptions filter/mipmap and cubic B/C, SkTextStyle fontSize/color/fontFamilies/fontFeatures/backgroundColor/foregroundColor/decoration fields/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, and SkParagraphStyle textAlign/maxLines/heightMultiplier/ellipsis/disableHinting/replaceTabCharacters/textDirection/textHeightBehavior, selected strutStyle fields, flattened and nested default text style fields including flattened precedence over nested values, and explicit unsupported fontVariations rejection.")
+	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, simple text.textStyle fields, selected paragraphStyle fields including nested textStyle output, distinct paragraph/text-style heightMultiplier preservation, fontFeatures and strutStyle, line from/to points, and points arrays.")
+	console.log("- The executable asserted selected value-bearing toJSI/fromJSI serialization for SkSamplingOptions filter/mipmap and cubic B/C, SkTextStyle fontSize/color/fontFamilies/fontFeatures/backgroundColor/foregroundColor/decoration fields/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, and SkParagraphStyle textAlign/maxLines/heightMultiplier/ellipsis/disableHinting/replaceTabCharacters/textDirection/textHeightBehavior, selected strutStyle fields, dual flattened/nested default text style fields including nested textStyle heightMultiplier output, flattened fontSize/color precedence over nested values, and explicit unsupported fontVariations rejection.")
 	console.log("- The executable asserted generated NodeStyle transport and host-native SkPaint state for canonical style.antiAlias, legacy style.antiaAlias fallback, and canonical precedence when both keys are present.")
 	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
 	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) plus flattened and nested ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection including nested paragraphStyle.textStyle.color, unsupported paragraph fontVariations rejection, and text.textStyle rich-key rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, YogaNode::setStyle SkPaint antiAlias state, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, selected value-bearing SkSamplingOptions, SkTextStyle including fontFeatures and unsupported fontVariations rejection, selected simple TextCmd textStyle fields plus rich-key rejection, and selected SkParagraphStyle serialization fields including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior and selected public-shaped strutStyle fields plus flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened text-style precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove unsupported SkSamplingOptions maxAniso preservation, every SkTextStyle/SkParagraphStyle field, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, nested paragraphStyle.textStyle toJSI shape preservation, CSS color string preservation, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, YogaNode::setStyle SkPaint antiAlias state, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, selected value-bearing SkSamplingOptions, SkTextStyle including fontFeatures and unsupported fontVariations rejection, selected simple TextCmd textStyle fields plus rich-key rejection, and selected SkParagraphStyle serialization fields including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior, selected public-shaped strutStyle fields, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove unsupported SkSamplingOptions maxAniso preservation, every SkTextStyle/SkParagraphStyle field, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -1063,7 +1063,8 @@ void expectSerializedTextStyle(
     const jsi::Value& value,
     double expectedFontSize,
     SkColor expectedColor,
-    const std::string& label)
+    const std::string& label,
+    std::optional<double> expectedHeightMultiplier = 1.35)
 {
     expect(value.isObject(), label + " is an object");
     auto object = value.asObject(runtime);
@@ -1123,7 +1124,13 @@ void expectSerializedTextStyle(
         fontStyle.getProperty(runtime, "slant").asNumber(),
         static_cast<double>(SkFontStyle::Slant::kItalic_Slant),
         label + " fontStyle.slant");
-    expectNear(object.getProperty(runtime, "heightMultiplier").asNumber(), 1.35, label + " heightMultiplier");
+    if (expectedHeightMultiplier.has_value()) {
+        expect(object.hasProperty(runtime, "heightMultiplier"), label + " has heightMultiplier");
+        expectNear(
+            object.getProperty(runtime, "heightMultiplier").asNumber(),
+            expectedHeightMultiplier.value(),
+            label + " heightMultiplier");
+    }
     expect(object.getProperty(runtime, "halfLeading").getBool(), label + " halfLeading");
     expectNear(object.getProperty(runtime, "letterSpacing").asNumber(), 1.25, label + " letterSpacing");
     expectNear(object.getProperty(runtime, "wordSpacing").asNumber(), 2.5, label + " wordSpacing");
@@ -1198,7 +1205,8 @@ void expectTextStyleState(
     const skia::textlayout::TextStyle& textStyle,
     double expectedFontSize,
     SkColor expectedColor,
-    const std::string& label)
+    const std::string& label,
+    double expectedHeightMultiplier = 1.35)
 {
     expectNear(textStyle.getFontSize(), expectedFontSize, label + " fontSize");
     expectColorNear(textStyle.getColor(), expectedColor, 0, label + " color");
@@ -1240,7 +1248,7 @@ void expectTextStyleState(
     expect(fontStyle.width() == SkFontStyle::Width::kExpanded_Width, label + " fontStyle.width");
     expect(fontStyle.slant() == SkFontStyle::Slant::kItalic_Slant, label + " fontStyle.slant");
     expect(textStyle.getHeightOverride(), label + " height override");
-    expectNear(textStyle.getHeight(), 1.35, label + " heightMultiplier");
+    expectNear(textStyle.getHeight(), expectedHeightMultiplier, label + " heightMultiplier");
     expect(textStyle.getHalfLeading(), label + " halfLeading");
     expectNear(textStyle.getLetterSpacing(), 1.25, label + " letterSpacing");
     expectNear(textStyle.getWordSpacing(), 2.5, label + " wordSpacing");
@@ -1305,7 +1313,54 @@ void expectSerializedParagraphStyle(
         object.getProperty(runtime, "ellipsis").asString(runtime).utf8(runtime) == "...",
         label + " ellipsis");
     expectSerializedStrutStyle(runtime, object.getProperty(runtime, "strutStyle"), label + " strutStyle");
-    expectSerializedTextStyle(runtime, value, 18.0, SK_ColorBLUE, label + " flattened textStyle");
+    expectSerializedTextStyle(
+        runtime,
+        value,
+        18.0,
+        SK_ColorBLUE,
+        label + " flattened-compatible textStyle",
+        std::nullopt);
+    expectSerializedTextStyle(
+        runtime,
+        object.getProperty(runtime, "textStyle"),
+        18.0,
+        SK_ColorBLUE,
+        label + " nested textStyle");
+}
+
+void expectSerializedParagraphStyleDistinctTextStyleHeight(
+    jsi::Runtime& runtime,
+    const jsi::Value& value,
+    const std::string& label)
+{
+    expect(value.isObject(), label + " is an object");
+    auto object = value.asObject(runtime);
+    expectNear(
+        object.getProperty(runtime, "heightMultiplier").asNumber(),
+        1.75,
+        label + " paragraph heightMultiplier");
+    expectSerializedTextStyle(
+        runtime,
+        value,
+        24.0,
+        SK_ColorGREEN,
+        label + " flattened-compatible textStyle",
+        std::nullopt);
+    expectSerializedTextStyle(
+        runtime,
+        object.getProperty(runtime, "textStyle"),
+        24.0,
+        SK_ColorGREEN,
+        label + " nested textStyle",
+        1.25);
+}
+
+void expectParagraphStyleDistinctTextStyleHeightState(
+    const skia::textlayout::ParagraphStyle& paragraphStyle,
+    const std::string& label)
+{
+    expectNear(paragraphStyle.getHeight(), 1.75, label + " paragraph heightMultiplier");
+    expectTextStyleState(paragraphStyle.getTextStyle(), 24.0, SK_ColorGREEN, label + " textStyle", 1.25);
 }
 
 void expectParagraphStyleState(
@@ -1852,6 +1907,17 @@ jsi::Object paragraphStyleWithNestedTextStyleObject(jsi::Runtime& runtime, doubl
     return paragraphStyle;
 }
 
+jsi::Object paragraphStyleWithDistinctNestedTextStyleHeightObject(jsi::Runtime& runtime)
+{
+    auto textStyle = richTextStyleObject(runtime, 24.0, SK_ColorGREEN);
+    textStyle.setProperty(runtime, "heightMultiplier", 1.25);
+
+    jsi::Object paragraphStyle(runtime);
+    paragraphStyle.setProperty(runtime, "heightMultiplier", 1.75);
+    paragraphStyle.setProperty(runtime, "textStyle", std::move(textStyle));
+    return paragraphStyle;
+}
+
 jsi::Object paragraphStyleWithFlattenedAndNestedTextStyleObject(jsi::Runtime& runtime)
 {
     auto paragraphStyle = paragraphStyleWithNestedTextStyleObject(runtime, 16.0, "#00ff00");
@@ -1937,6 +2003,19 @@ NodeCommand paragraphSerializationCommand(jsi::Runtime& runtime)
     data.setProperty(runtime, "paragraph", jsi::Value::null());
     data.setProperty(runtime, "text", "Serializable paragraph text");
     data.setProperty(runtime, "paragraphStyle", paragraphStyleSerializationObject(runtime));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "paragraph");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand paragraphDistinctTextStyleHeightSerializationCommand(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "paragraph", jsi::Value::null());
+    data.setProperty(runtime, "text", "Serializable distinct-height paragraph");
+    data.setProperty(runtime, "paragraphStyle", paragraphStyleWithDistinctNestedTextStyleHeightObject(runtime));
 
     jsi::Object command(runtime);
     command.setProperty(runtime, "type", "paragraph");
@@ -2244,6 +2323,27 @@ void assertValueBearingStyleConverters(jsi::Runtime& runtime)
             SK_ColorGREEN,
             0,
             "direct ParagraphStyle conversion parses nested textStyle CSS color string");
+    }
+
+    {
+        auto styleObject = paragraphStyleWithDistinctNestedTextStyleHeightObject(runtime);
+        auto paragraphStyle = margelo::nitro::JSIConverter<skia::textlayout::ParagraphStyle>::fromJSI(
+            runtime,
+            jsi::Value(runtime, styleObject));
+        expectParagraphStyleDistinctTextStyleHeightState(
+            paragraphStyle,
+            "direct ParagraphStyle nested textStyle distinct-height input");
+
+        auto serialized = margelo::nitro::JSIConverter<skia::textlayout::ParagraphStyle>::toJSI(runtime, paragraphStyle);
+        expectSerializedParagraphStyleDistinctTextStyleHeight(
+            runtime,
+            serialized,
+            "direct ParagraphStyle nested textStyle distinct-height toJSI");
+
+        auto roundTrip = margelo::nitro::JSIConverter<skia::textlayout::ParagraphStyle>::fromJSI(runtime, serialized);
+        expectParagraphStyleDistinctTextStyleHeightState(
+            roundTrip,
+            "direct ParagraphStyle nested textStyle distinct-height toJSI/fromJSI");
     }
 
     {
@@ -2718,6 +2818,39 @@ void assertNodeCommandToJSISerializationSymmetry(jsi::Runtime& runtime)
         expect(payload.paragraphStyle.has_value(), "paragraph toJSI/fromJSI paragraphStyle object");
         expectParagraphStyleState(payload.paragraphStyle.value(), "paragraph toJSI/fromJSI paragraphStyle");
         expect(payload.text.has_value() && payload.text.value() == "Serializable paragraph text", "paragraph toJSI/fromJSI text");
+    }
+
+    {
+        auto command = paragraphDistinctTextStyleHeightSerializationCommand(runtime);
+        auto serialized = serializedCommandValue(runtime, command, "paragraph distinct textStyle height");
+        auto data = serializedDataObject(
+            runtime,
+            serialized,
+            "paragraph",
+            "paragraph distinct textStyle height");
+        expect(data.getProperty(runtime, "paragraph").isNull(), "paragraph distinct textStyle height toJSI emits explicit null paragraph payload");
+        expectSerializedParagraphStyleDistinctTextStyleHeight(
+            runtime,
+            data.getProperty(runtime, "paragraphStyle"),
+            "paragraph distinct textStyle height toJSI paragraphStyle");
+        expect(
+            data.getProperty(runtime, "text").asString(runtime).utf8(runtime) == "Serializable distinct-height paragraph",
+            "paragraph distinct textStyle height toJSI text");
+
+        auto roundTrip = roundTripSerializedCommand(runtime, serialized, "paragraph distinct textStyle height");
+        const auto& payload = std::get<ParagraphCommandData>(roundTrip.data);
+        expect(
+            payload.paragraph.has_value() && payload.paragraph.value() == nullptr,
+            "paragraph distinct textStyle height toJSI/fromJSI null paragraph");
+        expect(
+            payload.paragraphStyle.has_value(),
+            "paragraph distinct textStyle height toJSI/fromJSI paragraphStyle object");
+        expectParagraphStyleDistinctTextStyleHeightState(
+            payload.paragraphStyle.value(),
+            "paragraph distinct textStyle height toJSI/fromJSI paragraphStyle");
+        expect(
+            payload.text.has_value() && payload.text.value() == "Serializable distinct-height paragraph",
+            "paragraph distinct textStyle height toJSI/fromJSI text");
     }
 
     {

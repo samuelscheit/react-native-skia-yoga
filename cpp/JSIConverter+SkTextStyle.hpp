@@ -230,7 +230,11 @@ inline void writeTextStylePublicFieldsToJSI(
     object.setProperty(runtime, "textBaseline", static_cast<double>(textStyle.getTextBaseline()));
 }
 
-inline void applyTextStyle(jsi::Runtime& runtime, const jsi::Value& value, skia::textlayout::TextStyle& textStyle)
+inline void applyTextStyle(
+    jsi::Runtime& runtime,
+    const jsi::Value& value,
+    skia::textlayout::TextStyle& textStyle,
+    bool skipHeightMultiplier = false)
 {
     if (value.isUndefined() || value.isNull()) {
         return;
@@ -296,7 +300,7 @@ inline void applyTextStyle(jsi::Runtime& runtime, const jsi::Value& value, skia:
     if (auto foregroundPaint = parseOptionalPaint(runtime, object, "foregroundColor")) {
         textStyle.setForegroundColor(foregroundPaint.value());
     }
-    if (object.hasProperty(runtime, "heightMultiplier")) {
+    if (!skipHeightMultiplier && object.hasProperty(runtime, "heightMultiplier")) {
         textStyle.setHeight(object.getProperty(runtime, "heightMultiplier").asNumber());
         textStyle.setHeightOverride(true);
     }
