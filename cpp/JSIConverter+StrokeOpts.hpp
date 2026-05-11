@@ -148,7 +148,7 @@ struct JSIConverter<RNSkia::StrokeOpts> final {
 
   static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
     (void)runtime;
-    return value.isObject() || value.isNull() || value.isUndefined();
+    return value.isObject();
   }
 };
 

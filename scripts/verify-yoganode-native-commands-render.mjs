@@ -170,9 +170,9 @@ try {
 	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
 	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) and flattened ParagraphCmd hex colors, named-color conversion, and invalid text/paragraph color-string rejection in JSIConverter<NodeCommand>::fromJSI(...).")
-	console.log("- The executable asserted public path.stroke width, miter_limit, precision, join, and cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
+	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, all text/paragraph styles beyond selected color strings, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, all text/paragraph styles beyond selected color strings, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -1136,6 +1136,8 @@ NodeCommand pathStrokeAliasPrecedenceCommand(jsi::Runtime& runtime)
     stroke.setProperty(runtime, "width", 3.0);
     stroke.setProperty(runtime, "miterLimit", 2.0);
     stroke.setProperty(runtime, "miter_limit", 9.0);
+    stroke.setProperty(runtime, "join", "round");
+    stroke.setProperty(runtime, "cap", "butt");
 
     jsi::Object data(runtime);
     data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
@@ -1946,6 +1948,12 @@ void assertPathStrokeMiterAliasPrecedence(jsi::Runtime& runtime)
         payload.stroke->miterLimit,
         9.0,
         "path.stroke public miter_limit wins over miterLimit alias");
+    expect(
+        payload.stroke->join.has_value() && payload.stroke->join.value() == SkPaint::Join::kRound_Join,
+        "public path.stroke conversion accepts string join");
+    expect(
+        payload.stroke->cap.has_value() && payload.stroke->cap.value() == SkPaint::Cap::kButt_Cap,
+        "public path.stroke conversion accepts string cap");
 }
 
 void assertStrokeOptsConverterPublicMiterContract(jsi::Runtime& runtime)
@@ -1976,6 +1984,55 @@ void assertStrokeOptsConverterPublicMiterContract(jsi::Runtime& runtime)
     auto aliasOnlyValue = jsi::Value(runtime, aliasOnly);
     auto aliasConverted = margelo::nitro::JSIConverter<RNSkia::StrokeOpts>::fromJSI(runtime, aliasOnlyValue);
     expectOptionalFloatNear(aliasConverted.miter_limit, 3.0, "StrokeOpts fromJSI preserves miterLimit alias fallback");
+}
+
+void assertStrokeOptsConverterDirectConsistency(jsi::Runtime& runtime)
+{
+    jsi::Object stroke(runtime);
+    stroke.setProperty(runtime, "width", 4.0);
+    stroke.setProperty(runtime, "miter_limit", 8.0);
+    stroke.setProperty(runtime, "precision", 1.25);
+    stroke.setProperty(runtime, "join", "round");
+    stroke.setProperty(runtime, "cap", "butt");
+    jsi::Value strokeValue(runtime, stroke);
+
+    expect(
+        margelo::nitro::JSIConverter<RNSkia::StrokeOpts>::canConvert(runtime, strokeValue),
+        "StrokeOpts canConvert accepts object payloads");
+    auto converted = margelo::nitro::JSIConverter<RNSkia::StrokeOpts>::fromJSI(runtime, strokeValue);
+    expectOptionalFloatNear(converted.width, 4.0, "StrokeOpts direct fromJSI keeps object width");
+    expectOptionalFloatNear(converted.miter_limit, 8.0, "StrokeOpts direct fromJSI keeps object miter_limit");
+    expectOptionalFloatNear(converted.precision, 1.25, "StrokeOpts direct fromJSI keeps object precision");
+    expect(
+        converted.join.has_value() && converted.join.value() == SkPaint::Join::kRound_Join,
+        "StrokeOpts direct fromJSI keeps object join");
+    expect(
+        converted.cap.has_value() && converted.cap.value() == SkPaint::Cap::kButt_Cap,
+        "StrokeOpts direct fromJSI keeps object cap");
+
+    const auto expectRejected = [&](const jsi::Value& value, const std::string& label) {
+        expect(
+            !margelo::nitro::JSIConverter<RNSkia::StrokeOpts>::canConvert(runtime, value),
+            "StrokeOpts canConvert rejects " + label);
+        expectJsiThrows(
+            [&]() {
+                (void)margelo::nitro::JSIConverter<RNSkia::StrokeOpts>::fromJSI(runtime, value);
+            },
+            "Invalid prop value for StrokeOpts received",
+            "StrokeOpts fromJSI rejects " + label);
+    };
+
+    auto nullValue = jsi::Value::null();
+    auto undefinedValue = jsi::Value::undefined();
+    auto numberValue = jsi::Value(42.0);
+    auto boolValue = jsi::Value(true);
+    auto stringValue = jsi::Value(jsi::String::createFromUtf8(runtime, "stroke"));
+
+    expectRejected(nullValue, "null");
+    expectRejected(undefinedValue, "undefined");
+    expectRejected(numberValue, "number");
+    expectRejected(boolValue, "boolean");
+    expectRejected(stringValue, "string");
 }
 
 struct ExpectedPixel {
@@ -2762,6 +2819,7 @@ int main()
     assertPublicPathStrokeCommandRender(*runtime);
     assertPathStrokeMiterAliasPrecedence(*runtime);
     assertStrokeOptsConverterPublicMiterContract(*runtime);
+    assertStrokeOptsConverterDirectConsistency(*runtime);
     assertDynamicPathTrimCommandRender(*runtime);
     assertImageFitCommandRender(*runtime);
     assertTextCommandStateAndRender(*runtime);
