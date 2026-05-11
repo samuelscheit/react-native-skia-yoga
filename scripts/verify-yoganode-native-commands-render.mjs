@@ -164,14 +164,15 @@ try {
 	}
 
 	console.log("YogaNode native command/render verifier passed:")
-	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, AnimatedDouble.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, Worklets shared-item sources, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
-	console.log("- The executable created a JSC runtime, converted numeric and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), and executed real YogaNode::setCommand().")
+	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, AnimatedDouble.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, RN Skia CSSColorParser, Worklets shared-item sources, ColorParser, PlatformContextAccessor, and Nitro/JSI helper sources.")
+	console.log("- The executable created a JSC runtime, converted numeric, CSS color-string, and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), and executed real YogaNode::setCommand().")
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
-	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, bounded TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
+	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
 	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
+	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) and flattened ParagraphCmd hex colors, named-color conversion, and invalid text/paragraph color-string rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted public path.stroke width, miter_limit, precision, join, and cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, all text/paragraph styles, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, all text/paragraph styles beyond selected color strings, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -223,6 +224,7 @@ function helperSourcePaths() {
 		"node_modules/@shopify/react-native-skia/cpp/jsi/RuntimeLifecycleMonitor.cpp",
 		"node_modules/@shopify/react-native-skia/cpp/jsi/JsiPromises.cpp",
 		"node_modules/@shopify/react-native-skia/cpp/api/JsiSkDispatcher.cpp",
+		"node_modules/@shopify/react-native-skia/cpp/api/third_party/CSSColorParser.cpp",
 		"node_modules/react-native-nitro-modules/cpp/core/HybridObject.cpp",
 		"node_modules/react-native-nitro-modules/cpp/prototype/HybridObjectPrototype.cpp",
 		"node_modules/react-native-nitro-modules/cpp/utils/CommonGlobals.cpp",
@@ -882,6 +884,40 @@ bool hasAnyBlueDominantPixelInRegion(const sk_sp<SkSurface>& surface, int left, 
     return false;
 }
 
+bool hasAnyRedDominantPixelInRegion(const sk_sp<SkSurface>& surface, int left, int top, int right, int bottom)
+{
+    for (int y = top; y < bottom; ++y) {
+        for (int x = left; x < right; ++x) {
+            const auto color = pixelAt(surface, x, y);
+            if (
+                SkColorGetA(color) > 0 &&
+                SkColorGetR(color) > 48 &&
+                SkColorGetR(color) > SkColorGetG(color) + 16 &&
+                SkColorGetR(color) > SkColorGetB(color) + 16) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool hasAnyGreenDominantPixelInRegion(const sk_sp<SkSurface>& surface, int left, int top, int right, int bottom)
+{
+    for (int y = top; y < bottom; ++y) {
+        for (int x = left; x < right; ++x) {
+            const auto color = pixelAt(surface, x, y);
+            if (
+                SkColorGetA(color) > 0 &&
+                SkColorGetG(color) > 48 &&
+                SkColorGetG(color) > SkColorGetR(color) + 16 &&
+                SkColorGetG(color) > SkColorGetB(color) + 16) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void renderNode(const std::shared_ptr<YogaNode>& node, const sk_sp<SkSurface>& surface)
 {
     RNSkia::DrawingCtx ctx(surface->getCanvas());
@@ -1187,6 +1223,14 @@ jsi::Object textStyleObject(jsi::Runtime& runtime, double fontSize, SkColor colo
     return textStyle;
 }
 
+jsi::Object textStyleObject(jsi::Runtime& runtime, double fontSize, const char* color)
+{
+    jsi::Object textStyle(runtime);
+    textStyle.setProperty(runtime, "fontSize", fontSize);
+    textStyle.setProperty(runtime, "color", color);
+    return textStyle;
+}
+
 NodeCommand defaultTextCommand(jsi::Runtime& runtime)
 {
     jsi::Object data(runtime);
@@ -1210,11 +1254,47 @@ NodeCommand styledTextCommand(jsi::Runtime& runtime)
     return convertCommand(runtime, std::move(command));
 }
 
+NodeCommand cssColorTextCommand(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "text", "CSS Text");
+    data.setProperty(runtime, "textStyle", textStyleObject(runtime, 19.0, "rgba(255,0,0,1)"));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "text");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand namedColorTextCommand(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "text", "Named Color");
+    data.setProperty(runtime, "textStyle", textStyleObject(runtime, 17.0, "blue"));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "text");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
 NodeCommand paragraphCommand(jsi::Runtime& runtime)
 {
     jsi::Object data(runtime);
     data.setProperty(runtime, "text", "Paragraph host text");
     data.setProperty(runtime, "paragraphStyle", textStyleObject(runtime, 18.0, SK_ColorBLUE));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "paragraph");
+    command.setProperty(runtime, "data", std::move(data));
+    return convertCommand(runtime, std::move(command));
+}
+
+NodeCommand cssColorParagraphCommand(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "text", "CSS paragraph text");
+    data.setProperty(runtime, "paragraphStyle", textStyleObject(runtime, 18.0, "#00ff00"));
 
     jsi::Object command(runtime);
     command.setProperty(runtime, "type", "paragraph");
@@ -2218,6 +2298,44 @@ void assertTextCommandStateAndRender(jsi::Runtime& runtime)
     expect(
         !hasAnyAlphaInRegion(surface, 126, 48, 138, 62),
         "TextCmd render remains away from far outside pixels");
+
+    auto cssCommand = cssColorTextCommand(runtime);
+    const auto& cssPayload = std::get<TextCommandData>(cssCommand.data);
+    expect(cssPayload.text.has_value(), "CSS color text command conversion keeps text");
+    expect(cssPayload.text.value() == "CSS Text", "CSS color text command conversion keeps text value");
+    expect(cssPayload.textStyle.has_value(), "CSS color text command conversion keeps textStyle");
+    expectNear(cssPayload.textStyle->getFontSize(), 19.0, "CSS color text command conversion keeps font size");
+    expectColorNear(cssPayload.textStyle->getColor(), SK_ColorRED, 0, "TextCmd conversion parses rgba CSS color string");
+
+    auto cssRoot = makeYogaNode(
+        groupStyle(116.0, 44.0),
+        std::move(cssCommand));
+
+    expect(cssRoot->_commandKind == YogaNodeCommandKind::TEXT, "CSS color setCommand constructs a real TextCmd");
+    auto* cssTextCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::TextCmd*>(cssRoot->_command.get());
+    expect(cssTextCmd != nullptr, "CSS color installed command has TextCmd type");
+    expect(cssTextCmd->props.text == "CSS Text", "CSS color TextCmd keeps converted text payload");
+    expect(cssTextCmd->props.font.has_value(), "CSS color TextCmd has a font");
+    expectNear(cssTextCmd->props.font->getSize(), 19.0, "CSS color TextCmd applies textStyle font size");
+    expect(cssTextCmd->fallbackPaintColor().has_value(), "CSS color TextCmd exposes fallback paint color");
+    expectColorNear(*cssTextCmd->fallbackPaintColor(), SK_ColorRED, 0, "TextCmd fallback paint color comes from rgba CSS string");
+
+    auto cssSurface = makeSurface(140, 66);
+    renderNode(cssRoot, cssSurface);
+
+    expectNear(cssRoot->_layout.width, 116.0, "CSS text layout width");
+    expectNear(cssRoot->_layout.height, 44.0, "CSS text layout height");
+    expect(
+        hasAnyRedDominantPixelInRegion(cssSurface, 0, 1, 116, 36),
+        "TextCmd renders bounded red-dominant glyph pixels from rgba CSS color string");
+    expect(
+        !hasAnyAlphaInRegion(cssSurface, 126, 50, 138, 64),
+        "CSS TextCmd render remains away from far outside pixels");
+
+    auto namedCommand = namedColorTextCommand(runtime);
+    const auto& namedPayload = std::get<TextCommandData>(namedCommand.data);
+    expect(namedPayload.textStyle.has_value(), "named color text command conversion keeps textStyle");
+    expectColorNear(namedPayload.textStyle->getColor(), SK_ColorBLUE, 0, "TextCmd conversion parses named CSS color string");
 }
 
 void assertParagraphCommandMeasureAndRender(jsi::Runtime& runtime)
@@ -2267,6 +2385,52 @@ void assertParagraphCommandMeasureAndRender(jsi::Runtime& runtime)
     expect(
         !hasAnyAlphaInRegion(surface, 112, 96, 136, 116),
         "ParagraphCmd render remains bounded away from far outside pixels");
+
+    auto cssCommand = cssColorParagraphCommand(runtime);
+    const auto& cssPayload = std::get<ParagraphCommandData>(cssCommand.data);
+    expect(cssPayload.text.has_value(), "CSS color paragraph command conversion keeps text");
+    expect(cssPayload.text.value() == "CSS paragraph text", "CSS color paragraph command conversion keeps text value");
+    expect(cssPayload.paragraphStyle.has_value(), "CSS color paragraph command conversion keeps paragraphStyle");
+    expectNear(cssPayload.paragraphStyle->getTextStyle().getFontSize(), 18.0, "CSS color paragraph command conversion keeps flattened font size");
+    expectColorNear(cssPayload.paragraphStyle->getTextStyle().getColor(), SK_ColorGREEN, 0, "ParagraphCmd conversion parses flattened hex CSS color string");
+    expect(!cssPayload.paragraph.has_value(), "CSS color paragraph command conversion does not require a JS-created JsiSkParagraph");
+
+    auto cssRoot = makeYogaNode(
+        widthOnlyStyle(92.0),
+        std::move(cssCommand));
+
+    expect(cssRoot->_commandKind == YogaNodeCommandKind::PARAGRAPH, "CSS color setCommand constructs a real ParagraphCmd");
+    auto* cssParagraphCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::ParagraphCmd*>(cssRoot->_command.get());
+    expect(cssParagraphCmd != nullptr, "CSS color installed command has ParagraphCmd type");
+    expect(YGNodeHasMeasureFunc(cssRoot->_node), "CSS color ParagraphCmd installs a Yoga measure function");
+    expect(cssParagraphCmd->props.paragraph != nullptr, "CSS color ParagraphCmd builds a paragraph from text and paragraphStyle");
+
+    auto cssMeasured = margelo::nitro::RNSkiaYoga::ParagraphCmd::measureFunc(
+        cssRoot->_node,
+        92.0f,
+        YGMeasureModeAtMost,
+        YGUndefined,
+        YGMeasureModeUndefined);
+    expect(cssMeasured.width > 0.0f, "CSS color ParagraphCmd measure width is positive");
+    expect(cssMeasured.width <= 92.0f, "CSS color ParagraphCmd measure width is bounded by the available width");
+    expect(cssMeasured.height > 0.0f, "CSS color ParagraphCmd measure height is positive");
+    expect(cssMeasured.height < 140.0f, "CSS color ParagraphCmd measure height remains bounded for probe text");
+
+    auto cssSurface = makeSurface(140, 120);
+    renderNode(cssRoot, cssSurface);
+
+    expectNear(cssRoot->_layout.width, 92.0, "CSS color paragraph Yoga layout width follows style constraint");
+    expect(cssRoot->_layout.height > 0.0, "CSS color paragraph Yoga layout height comes from measure function");
+    expect(cssRoot->_layout.height < 140.0, "CSS color paragraph Yoga layout height remains bounded");
+    expectNear(cssParagraphCmd->props.width, 92.0, "CSS color ParagraphCmd draw width follows Yoga layout");
+    expect(cssParagraphCmd->props.paragraph->getObject()->getHeight() > 0.0f, "CSS color ParagraphCmd paragraph object has positive laid-out height");
+
+    expect(
+        hasAnyGreenDominantPixelInRegion(cssSurface, 2, 2, 90, 96),
+        "ParagraphCmd renders green-dominant glyph pixels from flattened hex CSS color string inside the debug border");
+    expect(
+        !hasAnyAlphaInRegion(cssSurface, 112, 96, 136, 116),
+        "CSS color ParagraphCmd render remains bounded away from far outside pixels");
 }
 
 void assertConverterErrorPath(jsi::Runtime& runtime)
@@ -2508,6 +2672,66 @@ void assertConverterErrorTextFont(jsi::Runtime& runtime)
     fail("text command conversion with a plain JS font object must fail in this host probe");
 }
 
+void assertConverterErrorTextStyleColorString(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "text", "bad CSS text color");
+    data.setProperty(runtime, "textStyle", textStyleObject(runtime, 18.0, "not-a-css-color"));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "text");
+    command.setProperty(runtime, "data", std::move(data));
+    jsi::Value commandValue(runtime, command);
+
+    expect(
+        margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, commandValue),
+        "NodeCommand converter canConvert accepts shaped text command before rejecting invalid CSS color string");
+    try {
+        (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
+    } catch (const jsi::JSError& error) {
+        const auto message = error.getMessage();
+        expect(
+            message.find("NodeCommand conversion failed for type \"text\"") != std::string::npos,
+            "text invalid color failure should be scoped to NodeCommand payload conversion");
+        expect(
+            message.find("Invalid color string for text style: not-a-css-color") != std::string::npos,
+            "text invalid color failure should report the invalid CSS color string");
+        return;
+    }
+
+    fail("text command conversion with an invalid textStyle CSS color string must fail");
+}
+
+void assertConverterErrorParagraphStyleColorString(jsi::Runtime& runtime)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "text", "bad CSS paragraph color");
+    data.setProperty(runtime, "paragraphStyle", textStyleObject(runtime, 18.0, "not-a-css-color"));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "paragraph");
+    command.setProperty(runtime, "data", std::move(data));
+    jsi::Value commandValue(runtime, command);
+
+    expect(
+        margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, commandValue),
+        "NodeCommand converter canConvert accepts shaped paragraph command before rejecting invalid CSS color string");
+    try {
+        (void)margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
+    } catch (const jsi::JSError& error) {
+        const auto message = error.getMessage();
+        expect(
+            message.find("NodeCommand conversion failed for type \"paragraph\"") != std::string::npos,
+            "paragraph invalid color failure should be scoped to NodeCommand payload conversion");
+        expect(
+            message.find("Invalid color string for text style: not-a-css-color") != std::string::npos,
+            "paragraph invalid color failure should report the invalid CSS color string");
+        return;
+    }
+
+    fail("paragraph command conversion with an invalid paragraphStyle CSS color string must fail");
+}
+
 } // namespace
 
 int main()
@@ -2548,6 +2772,8 @@ int main()
     assertConverterErrorImage(*runtime);
     assertConverterErrorImageFit(*runtime);
     assertConverterErrorTextFont(*runtime);
+    assertConverterErrorTextStyleColorString(*runtime);
+    assertConverterErrorParagraphStyleColorString(*runtime);
     assertDynamicAnimatedDoubleCommandRejections(*runtime);
 
     RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(nullptr);
