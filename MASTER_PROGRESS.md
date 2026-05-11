@@ -2691,10 +2691,11 @@ Last updated: 2026-05-11
   - Closed `/root/worker_125_textstyle_fontfeatures_tojsi`.
   - Removed `../worker-125-textstyle-fontfeatures-tojsi`.
   - Deleted branch `worker/125-textstyle-fontfeatures-tojsi`.
+- Created `worker-126-post-125-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_126_post_125_root_cause_audit` as a managed worker subagent with `goal: true`.
 
 ## Active Workers
 
-- None.
+- `/root/worker_126_post_125_root_cause_audit`: auditing the post-worker-125 state in isolated worktree `../worker-126-post-125-root-cause-audit`.
 
 Invalid/stale tmux sessions cleaned up:
 
