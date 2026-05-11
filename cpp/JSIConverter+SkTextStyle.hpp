@@ -14,6 +14,7 @@
 #include "SkiaGlue.hpp"
 #include <optional>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace margelo::nitro {
@@ -96,6 +97,70 @@ inline jsi::Array textStyleFontFamiliesToJSI(
     return array;
 }
 
+inline jsi::Object textStyleFontStyleToJSI(
+    jsi::Runtime& runtime,
+    const SkFontStyle& fontStyle)
+{
+    jsi::Object object(runtime);
+    object.setProperty(runtime, "weight", static_cast<double>(fontStyle.weight()));
+    object.setProperty(runtime, "width", static_cast<double>(fontStyle.width()));
+    object.setProperty(runtime, "slant", static_cast<double>(fontStyle.slant()));
+    return object;
+}
+
+inline jsi::Object textStylePointToJSI(
+    jsi::Runtime& runtime,
+    const SkPoint& point)
+{
+    jsi::Object object(runtime);
+    object.setProperty(runtime, "x", static_cast<double>(point.x()));
+    object.setProperty(runtime, "y", static_cast<double>(point.y()));
+    return object;
+}
+
+inline jsi::Array textStyleShadowsToJSI(
+    jsi::Runtime& runtime,
+    const std::vector<skia::textlayout::TextShadow>& shadows)
+{
+    jsi::Array array(runtime, shadows.size());
+    for (size_t index = 0; index < shadows.size(); ++index) {
+        jsi::Object shadow(runtime);
+        shadow.setProperty(runtime, "color", static_cast<double>(shadows[index].fColor));
+        shadow.setProperty(runtime, "offset", textStylePointToJSI(runtime, shadows[index].fOffset));
+        shadow.setProperty(runtime, "blurRadius", static_cast<double>(shadows[index].fBlurSigma));
+        array.setValueAtIndex(runtime, index, std::move(shadow));
+    }
+    return array;
+}
+
+inline std::optional<SkColor> textStyleForegroundColor(
+    const skia::textlayout::TextStyle& textStyle)
+{
+    if (!textStyle.hasForeground()) {
+        return std::nullopt;
+    }
+
+    auto paintOrID = textStyle.getForegroundPaintOrID();
+    if (const auto* paint = std::get_if<SkPaint>(&paintOrID)) {
+        return paint->getColor();
+    }
+    return std::nullopt;
+}
+
+inline std::optional<SkColor> textStyleBackgroundColor(
+    const skia::textlayout::TextStyle& textStyle)
+{
+    if (!textStyle.hasBackground()) {
+        return std::nullopt;
+    }
+
+    auto paintOrID = textStyle.getBackgroundPaintOrID();
+    if (const auto* paint = std::get_if<SkPaint>(&paintOrID)) {
+        return paint->getColor();
+    }
+    return std::nullopt;
+}
+
 inline void writeTextStylePublicFieldsToJSI(
     jsi::Runtime& runtime,
     jsi::Object& object,
@@ -105,6 +170,17 @@ inline void writeTextStylePublicFieldsToJSI(
     object.setProperty(runtime, "fontSize", static_cast<double>(textStyle.getFontSize()));
     object.setProperty(runtime, "color", static_cast<double>(textStyle.getColor()));
     object.setProperty(runtime, "fontFamilies", textStyleFontFamiliesToJSI(runtime, textStyle.getFontFamilies()));
+    if (const auto backgroundColor = textStyleBackgroundColor(textStyle)) {
+        object.setProperty(runtime, "backgroundColor", static_cast<double>(*backgroundColor));
+    }
+    if (const auto foregroundColor = textStyleForegroundColor(textStyle)) {
+        object.setProperty(runtime, "foregroundColor", static_cast<double>(*foregroundColor));
+    }
+    object.setProperty(runtime, "decoration", static_cast<double>(textStyle.getDecorationType()));
+    object.setProperty(runtime, "decorationColor", static_cast<double>(textStyle.getDecorationColor()));
+    object.setProperty(runtime, "decorationThickness", static_cast<double>(textStyle.getDecorationThicknessMultiplier()));
+    object.setProperty(runtime, "decorationStyle", static_cast<double>(textStyle.getDecorationStyle()));
+    object.setProperty(runtime, "fontStyle", textStyleFontStyleToJSI(runtime, textStyle.getFontStyle()));
     if (includeHeightMultiplier && textStyle.getHeightOverride()) {
         object.setProperty(runtime, "heightMultiplier", static_cast<double>(textStyle.getHeight()));
     }
@@ -116,6 +192,10 @@ inline void writeTextStylePublicFieldsToJSI(
     if (!locale.isEmpty()) {
         object.setProperty(runtime, "locale", std::string(locale.c_str(), locale.size()));
     }
+    if (textStyle.getShadowNumber() > 0) {
+        object.setProperty(runtime, "shadows", textStyleShadowsToJSI(runtime, textStyle.getShadows()));
+    }
+    object.setProperty(runtime, "textBaseline", static_cast<double>(textStyle.getTextBaseline()));
 }
 
 inline void applyTextStyle(jsi::Runtime& runtime, const jsi::Value& value, skia::textlayout::TextStyle& textStyle)

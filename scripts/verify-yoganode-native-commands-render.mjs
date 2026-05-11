@@ -168,7 +168,7 @@ try {
 	console.log("- The executable created a JSC runtime, converted numeric, CSS color-string, and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), serialized representative payloads through JSIConverter<NodeCommand>::toJSI(...), and executed real YogaNode::setCommand().")
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
 	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, selected textStyle/paragraphStyle fields, line from/to points, and points arrays.")
-	console.log("- The executable asserted selected value-bearing toJSI/fromJSI serialization for SkSamplingOptions filter/mipmap and cubic B/C, SkTextStyle fontSize/color/fontFamilies/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale, and SkParagraphStyle textAlign/maxLines/heightMultiplier/ellipsis plus flattened default text style fields.")
+	console.log("- The executable asserted selected value-bearing toJSI/fromJSI serialization for SkSamplingOptions filter/mipmap and cubic B/C, SkTextStyle fontSize/color/fontFamilies/backgroundColor/foregroundColor/decoration fields/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, and SkParagraphStyle textAlign/maxLines/heightMultiplier/ellipsis plus flattened default text style fields.")
 	console.log("- The executable asserted generated NodeStyle transport and host-native SkPaint state for canonical style.antiAlias, legacy style.antiaAlias fallback, and canonical precedence when both keys are present.")
 	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
 	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
@@ -1005,6 +1005,26 @@ void expectSerializedStringArray(
     }
 }
 
+SkColor expectedTextStyleBackgroundColor()
+{
+    return SkColorSetARGB(255, 0x10, 0x20, 0x30);
+}
+
+SkColor expectedTextStyleForegroundColor()
+{
+    return SkColorSetARGB(255, 0x20, 0x30, 0x40);
+}
+
+SkColor expectedTextStyleDecorationColor()
+{
+    return SkColorSetARGB(255, 0x44, 0x55, 0x66);
+}
+
+SkColor expectedTextStyleShadowColor()
+{
+    return SkColorSetARGB(255, 0x07, 0x08, 0x09);
+}
+
 void expectSerializedTextStyle(
     jsi::Runtime& runtime,
     const jsi::Value& value,
@@ -1021,6 +1041,43 @@ void expectSerializedTextStyle(
         object.getProperty(runtime, "fontFamilies"),
         { "Inter", "System" },
         label + " fontFamilies");
+    expectNear(
+        object.getProperty(runtime, "backgroundColor").asNumber(),
+        static_cast<double>(expectedTextStyleBackgroundColor()),
+        label + " normalized backgroundColor");
+    expectNear(
+        object.getProperty(runtime, "foregroundColor").asNumber(),
+        static_cast<double>(expectedTextStyleForegroundColor()),
+        label + " normalized foregroundColor");
+    expectNear(
+        object.getProperty(runtime, "decoration").asNumber(),
+        static_cast<double>(skia::textlayout::kUnderline | skia::textlayout::kOverline),
+        label + " decoration");
+    expectNear(
+        object.getProperty(runtime, "decorationColor").asNumber(),
+        static_cast<double>(expectedTextStyleDecorationColor()),
+        label + " normalized decorationColor");
+    expectNear(
+        object.getProperty(runtime, "decorationThickness").asNumber(),
+        1.75,
+        label + " decorationThickness");
+    expectNear(
+        object.getProperty(runtime, "decorationStyle").asNumber(),
+        static_cast<double>(skia::textlayout::kWavy),
+        label + " decorationStyle");
+    auto fontStyle = object.getProperty(runtime, "fontStyle").asObject(runtime);
+    expectNear(
+        fontStyle.getProperty(runtime, "weight").asNumber(),
+        static_cast<double>(SkFontStyle::Weight::kBold_Weight),
+        label + " fontStyle.weight");
+    expectNear(
+        fontStyle.getProperty(runtime, "width").asNumber(),
+        static_cast<double>(SkFontStyle::Width::kExpanded_Width),
+        label + " fontStyle.width");
+    expectNear(
+        fontStyle.getProperty(runtime, "slant").asNumber(),
+        static_cast<double>(SkFontStyle::Slant::kItalic_Slant),
+        label + " fontStyle.slant");
     expectNear(object.getProperty(runtime, "heightMultiplier").asNumber(), 1.35, label + " heightMultiplier");
     expect(object.getProperty(runtime, "halfLeading").getBool(), label + " halfLeading");
     expectNear(object.getProperty(runtime, "letterSpacing").asNumber(), 1.25, label + " letterSpacing");
@@ -1028,6 +1085,21 @@ void expectSerializedTextStyle(
     expect(
         object.getProperty(runtime, "locale").asString(runtime).utf8(runtime) == "en-US",
         label + " locale");
+    auto shadows = object.getProperty(runtime, "shadows").asObject(runtime).asArray(runtime);
+    expect(shadows.size(runtime) == 1, label + " shadows size");
+    auto shadow = shadows.getValueAtIndex(runtime, 0).asObject(runtime);
+    expectNear(
+        shadow.getProperty(runtime, "color").asNumber(),
+        static_cast<double>(expectedTextStyleShadowColor()),
+        label + " shadow color");
+    auto offset = shadow.getProperty(runtime, "offset").asObject(runtime);
+    expectNear(offset.getProperty(runtime, "x").asNumber(), 3.0, label + " shadow offset.x");
+    expectNear(offset.getProperty(runtime, "y").asNumber(), 4.0, label + " shadow offset.y");
+    expectNear(shadow.getProperty(runtime, "blurRadius").asNumber(), 2.25, label + " shadow blurRadius");
+    expectNear(
+        object.getProperty(runtime, "textBaseline").asNumber(),
+        static_cast<double>(static_cast<int>(skia::textlayout::TextBaseline::kIdeographic)),
+        label + " textBaseline");
 }
 
 void expectTextStyleState(
@@ -1042,6 +1114,33 @@ void expectTextStyleState(
     expect(families.size() == 2, label + " fontFamilies size");
     expect(std::string(families[0].c_str(), families[0].size()) == "Inter", label + " fontFamilies[0]");
     expect(std::string(families[1].c_str(), families[1].size()) == "System", label + " fontFamilies[1]");
+    expect(textStyle.hasBackground(), label + " has backgroundColor");
+    expectColorNear(
+        textStyle.getBackground().getColor(),
+        expectedTextStyleBackgroundColor(),
+        0,
+        label + " backgroundColor");
+    expect(textStyle.hasForeground(), label + " has foregroundColor");
+    expectColorNear(
+        textStyle.getForeground().getColor(),
+        expectedTextStyleForegroundColor(),
+        0,
+        label + " foregroundColor");
+    expect(
+        textStyle.getDecorationType() == static_cast<skia::textlayout::TextDecoration>(
+            skia::textlayout::kUnderline | skia::textlayout::kOverline),
+        label + " decoration");
+    expectColorNear(
+        textStyle.getDecorationColor(),
+        expectedTextStyleDecorationColor(),
+        0,
+        label + " decorationColor");
+    expectNear(textStyle.getDecorationThicknessMultiplier(), 1.75, label + " decorationThickness");
+    expect(textStyle.getDecorationStyle() == skia::textlayout::kWavy, label + " decorationStyle");
+    const auto fontStyle = textStyle.getFontStyle();
+    expect(fontStyle.weight() == SkFontStyle::Weight::kBold_Weight, label + " fontStyle.weight");
+    expect(fontStyle.width() == SkFontStyle::Width::kExpanded_Width, label + " fontStyle.width");
+    expect(fontStyle.slant() == SkFontStyle::Slant::kItalic_Slant, label + " fontStyle.slant");
     expect(textStyle.getHeightOverride(), label + " height override");
     expectNear(textStyle.getHeight(), 1.35, label + " heightMultiplier");
     expect(textStyle.getHalfLeading(), label + " halfLeading");
@@ -1049,6 +1148,15 @@ void expectTextStyleState(
     expectNear(textStyle.getWordSpacing(), 2.5, label + " wordSpacing");
     const auto locale = textStyle.getLocale();
     expect(std::string(locale.c_str(), locale.size()) == "en-US", label + " locale");
+    const auto shadows = textStyle.getShadows();
+    expect(shadows.size() == 1, label + " shadows size");
+    expectColorNear(shadows[0].fColor, expectedTextStyleShadowColor(), 0, label + " shadow color");
+    expectNear(shadows[0].fOffset.x(), 3.0, label + " shadow offset.x");
+    expectNear(shadows[0].fOffset.y(), 4.0, label + " shadow offset.y");
+    expectNear(shadows[0].fBlurSigma, 2.25, label + " shadow blurRadius");
+    expect(
+        textStyle.getTextBaseline() == skia::textlayout::TextBaseline::kIdeographic,
+        label + " textBaseline");
 }
 
 void expectSerializedParagraphStyle(
@@ -1463,17 +1571,55 @@ jsi::Array stringArray(jsi::Runtime& runtime, const std::vector<std::string>& va
     return array;
 }
 
+jsi::Object pointObject(jsi::Runtime& runtime, double x, double y)
+{
+    jsi::Object point(runtime);
+    point.setProperty(runtime, "x", x);
+    point.setProperty(runtime, "y", y);
+    return point;
+}
+
+jsi::Array textStyleShadowArray(jsi::Runtime& runtime)
+{
+    jsi::Array shadows(runtime, 1);
+    jsi::Object shadow(runtime);
+    shadow.setProperty(runtime, "color", "#070809");
+    shadow.setProperty(runtime, "offset", pointObject(runtime, 3.0, 4.0));
+    shadow.setProperty(runtime, "blurRadius", 2.25);
+    shadows.setValueAtIndex(runtime, 0, std::move(shadow));
+    return shadows;
+}
+
 jsi::Object richTextStyleObject(jsi::Runtime& runtime, double fontSize, SkColor color)
 {
     jsi::Object textStyle(runtime);
     textStyle.setProperty(runtime, "fontSize", fontSize);
     textStyle.setProperty(runtime, "color", static_cast<double>(color));
     textStyle.setProperty(runtime, "fontFamilies", stringArray(runtime, { "Inter", "System" }));
+    textStyle.setProperty(runtime, "backgroundColor", static_cast<double>(expectedTextStyleBackgroundColor()));
+    textStyle.setProperty(runtime, "foregroundColor", "#203040");
+    textStyle.setProperty(
+        runtime,
+        "decoration",
+        static_cast<double>(skia::textlayout::kUnderline | skia::textlayout::kOverline));
+    textStyle.setProperty(runtime, "decorationColor", "#445566");
+    textStyle.setProperty(runtime, "decorationThickness", 1.75);
+    textStyle.setProperty(runtime, "decorationStyle", static_cast<double>(skia::textlayout::kWavy));
+    jsi::Object fontStyle(runtime);
+    fontStyle.setProperty(runtime, "weight", static_cast<double>(SkFontStyle::Weight::kBold_Weight));
+    fontStyle.setProperty(runtime, "width", static_cast<double>(SkFontStyle::Width::kExpanded_Width));
+    fontStyle.setProperty(runtime, "slant", static_cast<double>(SkFontStyle::Slant::kItalic_Slant));
+    textStyle.setProperty(runtime, "fontStyle", std::move(fontStyle));
     textStyle.setProperty(runtime, "heightMultiplier", 1.35);
     textStyle.setProperty(runtime, "halfLeading", true);
     textStyle.setProperty(runtime, "letterSpacing", 1.25);
     textStyle.setProperty(runtime, "wordSpacing", 2.5);
     textStyle.setProperty(runtime, "locale", "en-US");
+    textStyle.setProperty(runtime, "shadows", textStyleShadowArray(runtime));
+    textStyle.setProperty(
+        runtime,
+        "textBaseline",
+        static_cast<double>(static_cast<int>(skia::textlayout::TextBaseline::kIdeographic)));
     return textStyle;
 }
 
