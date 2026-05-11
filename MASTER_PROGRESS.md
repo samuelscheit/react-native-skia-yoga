@@ -2711,11 +2711,11 @@ Accepted worker reports:
 - Keep orchestration documents inside the project repository so progress can be reviewed and merged.
 - Start with read-only evidence gathering before assigning implementation work.
 - Use separate git worktrees for top-level workers to avoid file conflicts.
-- Only tmux-backed Codex subprocesses count as top-level workers.
-- Top-level workers are accepted only after verified `create_goal` evidence.
-- Tool-managed `spawn_agent` workers may not replace top-level tmux workers. Any nested subagents must be spawned by the worker for hypothesis testing and documented by that worker.
-- The orchestrator must not use tool-managed worker/subagent tools for project work going forward.
-- Report-recovery workers may use a smaller model when `gpt-5.5` usage exhaustion prevents completion; this exception is for report finalization only and must be recorded here.
+- Top-level workers now run as managed Codex subagents launched with `spawn_agent`, not tmux subprocesses.
+- Implementation workers use isolated git worktrees and branches. Launch them with `agent_type: "worker"`, `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and `reasoning_effort: "xhigh"`.
+- Worker prompts include the full task prompt, absolute worktree path, write scope, verification expectations, and overlap boundaries.
+- `goal: true` replaces the former manual `create_goal`/`GOAL_CREATED` acceptance gate. Worker reports no longer need dedicated goal-lifecycle evidence.
+- Workers may spawn nested managed subagents for hypothesis testing and must document delegated checks that affect their conclusions.
 - Post-worker-102 target selection: worker 103 accepted worker 102's synthetic ImageCmd fit proof boundary, reconfirmed the 28-command feasible matrix, and selected bounded text/paragraph CSS color-string command conversion/render coverage as the strongest locally unblocked target because public JSX accepts string color values and native text-style conversion parses CSS strings while current text/paragraph command-render coverage uses numeric colors.
 - Post-worker-106 target selection: worker 107 accepted worker 106's expanded generated `setCommand(...)` breadth, reconfirmed the 28-command feasible matrix, and selected direct `StrokeOpts` converter consistency as the strongest locally unblocked product-source target because `fromJSI(...)` rejects non-objects while `canConvert(...)` still advertises objects, `null`, and `undefined` as convertible.
 - Post-worker-108 follow-up: direct `StrokeOpts` converter consistency is integrated; the next step is a fresh audit because worker 107's next-ranked TypeScript dynamic payload caveat needs API-boundary reassessment after the converter fix.

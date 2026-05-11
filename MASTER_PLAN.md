@@ -12,15 +12,15 @@ Breaking changes are acceptable when they remove root causes instead of preservi
 
 - The orchestrator owns planning, worker coordination, merge hygiene, and root-cause prioritization.
 - Product code changes are delegated to isolated workers.
-- Top-level workers must run as tmux-backed Codex subprocesses using separate git worktrees.
-- Tool-managed or in-process agents are not valid replacements for top-level workers.
-- The orchestrator must not call tool-managed worker/subagent tools for project work; nested subagents must be spawned and documented by tmux workers themselves.
-- Every top-level worker must call `create_goal` before any planning, research, installs, tests, or edits.
-- A worker is invalid unless its tmux log or progress report proves the initial `create_goal` call and exact objective.
+- Top-level workers are managed Codex subagents launched with `spawn_agent`.
+- Implementation workers use isolated git worktrees and branches.
+- Launch implementation workers with `agent_type: "worker"`, `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and `reasoning_effort: "xhigh"`.
+- Worker prompts must include the full task prompt, absolute worktree path, write scope, verification expectations, and overlap boundaries.
+- Starting workers with `goal: true` replaces the former manual `create_goal`/`GOAL_CREATED` acceptance gate.
 - Workers must keep their own progress files under `worker-progress/`.
 - Workers must review quality, maintainability, performance, and security before reporting completion.
 - Workers must use nested subagents/explorers when testing uncertain root-cause hypotheses, and must document those subagent results in their progress files.
-- Finished worker branches are reviewed, verified, merged into `main`, then their tmux session/worktree is cleaned up.
+- Finished worker branches are reviewed, verified, merged into `main`, then their subagent/worktree is cleaned up.
 
 ## Current Repository Baseline
 
@@ -61,7 +61,6 @@ Accepted worker wave:
 
 Acceptance criteria:
 
-- Each accepted worker is a tmux worker with verified `create_goal` evidence.
 - Each worker produces a progress report with concrete file references.
 - Each worker states tested hypotheses and evidence.
 - Each worker documents nested subagent/explorer use or an explicit reason it was not applicable.
@@ -241,7 +240,7 @@ Acceptance criteria:
 - A temporary tarball consumer install passes with scripts enabled and without Bun on `PATH`.
 - A temporary packed-package TypeScript consumer compile passes against public entrypoints and the `jsxImportSource` lowercase intrinsic-node contract.
 - Android/iOS build paths are verified to the extent available locally.
-- Cleanup removes stale worktrees, tmux sessions, logs, and temporary build outputs.
+- Cleanup removes stale subagents, abandoned worktrees, worker processes, and temporary build outputs.
 
 ## Open Questions for Workers
 
