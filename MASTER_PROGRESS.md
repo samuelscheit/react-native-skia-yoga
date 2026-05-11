@@ -2747,10 +2747,21 @@ Last updated: 2026-05-11
   - Removed `../worker-129-paragraphstyle-strutstyle-tojsi`.
   - Deleted branch `worker/129-paragraphstyle-strutstyle-tojsi`.
 - Created `worker-130-post-129-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_130_post_129_root_cause_audit` as a managed worker subagent with `goal: true`.
+- Worker 130 completed and reported `Goal finished.` It wrote `worker-progress/worker-130-post-129-root-cause-audit.md`.
+- Worker 130 reconfirmed the post-worker-129 baseline with `git diff --check`, `node --check scripts/verify-yoganode-native-commands-render.mjs`, and `npm run check:feasible-matrix`, which passed all 28 commands in `5m 10s`.
+- Worker 130 selected unsupported public `fontVariations` contract closure as the next strongest locally unblocked implementation target.
+- Worker 130 branch commit: `250ef31 Add worker 130 root cause audit report`.
+- Merged worker 130 into `main` as `00f759c Merge worker 130 post-129 root cause audit`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 130 cleanup:
+  - Closed `/root/worker_130_post_129_root_cause_audit`.
+  - Removed `../worker-130-post-129-root-cause-audit`.
+  - Deleted branch `worker/130-post-129-root-cause-audit`.
 
 ## Active Workers
 
-- `/root/worker_130_post_129_root_cause_audit`: auditing the post-worker-129 proof surface in isolated worktree `../worker-130-post-129-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2900,6 +2911,7 @@ Accepted worker reports:
 - `worker-progress/worker-127-paragraphstyle-scalar-tojsi.md`
 - `worker-progress/worker-128-post-127-root-cause-audit.md`
 - `worker-progress/worker-129-paragraphstyle-strutstyle-tojsi.md`
+- `worker-progress/worker-130-post-129-root-cause-audit.md`
 
 ## Pending Workers
 
@@ -2939,6 +2951,7 @@ Accepted worker reports:
 - Worker 127 closed the selected `ParagraphStyle` scalar serialization target and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-127 audit.
 - Worker 128 accepted the post-worker-127 proof surface, reconfirmed the main 28-command feasible matrix, and selected bounded `ParagraphStyle.strutStyle` parser/serializer coverage including a local `fontFamilies` parser overlay.
 - Worker 129 closed the selected `ParagraphStyle.strutStyle` parser/serializer target and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-129 audit.
+- Worker 130 accepted the post-worker-129 proof surface, reconfirmed the main 28-command feasible matrix, and selected unsupported public `fontVariations` contract closure with TypeScript narrowing and native rejection proof.
 
 ## Evidence Summary
 
@@ -2989,7 +3002,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Run a fresh post-worker-129 root-cause audit to rerank remaining locally unblocked gaps under the current proof surface.
+- Close the unsupported public `fontVariations` contract for Yoga text and paragraph styles with TypeScript narrowing, packed-consumer negative coverage, and native converter rejection proof.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
