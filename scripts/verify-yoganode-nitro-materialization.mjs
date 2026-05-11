@@ -170,13 +170,13 @@ try {
 	console.log("- Prior risk source-confirmed: HybridObject::toObject() enters HybridObjectPrototype/JSICache, JSICache calls getRuntimeId(runtime), and getRuntimeId(runtime) depends on platform ThreadUtils; this verifier links the real iOS ThreadUtils implementation for the host-JSC probe.")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, generated HybridYogaNodeSpec.cpp, Nitro HybridObject/prototype/cache sources, platform ThreadUtils, React Native JSC, upstream Yoga sources, RN Skia macOS archives, RN Skia CSSColorParser, a host platform context, Worklets shared-item sources, ColorParser, PlatformContextAccessor, AnimatedDouble, and Nitro/JSI helper sources.")
 	console.log("- The executable created a shared YogaNode, called YogaNode::toObject(runtime), asserted the returned value is a JS object with NativeState wrapping the original YogaNode, and asserted repeated toObject(runtime) returns the cached JS object.")
-	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height/antiAlias), computeLayout(width, height), and the layout getter.")
+	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height/antiAlias/layer), computeLayout(width, height), and the layout getter.")
 	console.log("- The executable materialized parent/child YogaNodes, inserted the child through the generated parent.insertChild(...) wrapper, called materialized parent.getChildren(), and asserted the returned child is the cached materialized child object with generated and raw YogaNode prototype methods.")
 	console.log("- The executable called generated setStyle/computeLayout/insertChild and raw setInteractionConfig/hitTest/getChildren through the returned child object, then asserted recursive returned-grandchild identity through returnedChild.getChildren().")
 	console.log("- The executable used fresh materialized YogaNode objects to invoke generated JS-facing setCommand(line), setCommand(points), setCommand(path), setCommand(text), setCommand(paragraph), setCommand(circle), setCommand(rrect), setCommand(blurMaskFilter), setCommand(rect), setCommand(oval), and setCommand(image) wrappers, preserving the native no-command-kind-change invariant.")
-	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias state, YogaNode::setStyle SkPaint antiAlias state, Yoga layout computation, and generated layout getter values.")
+	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
 	console.log("- For CircleCmd, RRectCmd, and BlurMaskFilterCmd, selected no-pixel draw calls are used only to expose render-time native state/mask-filter side effects after generated wrapper delivery; no command-rendering or render-fidelity claim is made.")
-	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, and selected generated/raw YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, image assets/decoding/loading, exact typography, command rendering, or exact render fidelity.")
+	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, and selected generated/raw YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, command rendering, or exact render fidelity.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -793,6 +793,15 @@ sk_sp<SkImage> makeSyntheticImage()
     return image;
 }
 
+jsi::Object makePaintHostObject(jsi::Runtime& runtime, const SkPaint& paint)
+{
+    return jsi::Object::createFromHostObject(
+        runtime,
+        std::make_shared<RNSkia::JsiSkPaint>(
+            margelo::nitro::RNSkiaYoga::GetPlatformContext(),
+            SkPaint(paint)));
+}
+
 std::string errorMessage(const jsi::JSError& error)
 {
     return error.getMessage();
@@ -997,6 +1006,19 @@ jsi::Object makeStyle(jsi::Runtime& runtime, double width, double height)
     style.setProperty(runtime, "width", width);
     style.setProperty(runtime, "height", height);
     style.setProperty(runtime, "antiAlias", false);
+    return style;
+}
+
+jsi::Object makeLayerStyle(jsi::Runtime& runtime, double width, double height)
+{
+    auto style = makeStyle(runtime, width, height);
+    SkPaint layerPaint;
+    layerPaint.setAlphaf(0.25f);
+    layerPaint.setBlendMode(SkBlendMode::kMultiply);
+    layerPaint.setAntiAlias(true);
+
+    style.setProperty(runtime, "backgroundColor", "#0000ff");
+    style.setProperty(runtime, "layer", makePaintHostObject(runtime, layerPaint));
     return style;
 }
 
@@ -1663,19 +1685,28 @@ int main()
 
     std::cerr << "probe: call generated setStyle" << std::endl;
     node->_paint.setAntiAlias(true);
-    auto style = makeStyle(*runtime, 64.0, 32.0);
+    auto style = makeLayerStyle(*runtime, 64.0, 32.0);
     callFunctionWithOneObject(
         *runtime,
         object,
         setStyle,
         style,
-        "generated setStyle(width/height) must return undefined");
+        "generated setStyle(width/height/layer) must return undefined");
     expect(node->_style.width.has_value(), "generated setStyle must populate native width");
     expect(node->_style.height.has_value(), "generated setStyle must populate native height");
     expect(node->_style.antiAlias.has_value(), "generated setStyle must populate native antiAlias");
+    expect(node->_style.layer.has_value(), "generated setStyle must populate native layer");
     expect(!node->_style.antiAlias.value(), "generated setStyle native antiAlias must keep false");
     expect(!node->_style.antiaAlias.has_value(), "generated setStyle canonical antiAlias must not populate legacy antiaAlias");
     expect(!node->_paint.isAntiAlias(), "generated setStyle canonical antiAlias must update SkPaint antiAlias state");
+    expect(node->_layerPaint.has_value(), "generated setStyle must update YogaNode::_layerPaint state");
+    expectNear(node->_layerPaint->getAlphaf(), 0.25, "generated setStyle layer paint alpha");
+    expect(node->_layerPaint->isAntiAlias(), "generated setStyle layer paint antiAlias");
+    auto layerBlendMode = node->_layerPaint->asBlendMode();
+    expect(layerBlendMode.has_value(), "generated setStyle layer paint keeps inspectable blend mode");
+    expect(layerBlendMode.value() == SkBlendMode::kMultiply, "generated setStyle layer paint blend mode");
+    expectColor(node->_paint.getColor(), SK_ColorBLUE, "generated setStyle backgroundColor keeps ordinary _paint separate from _layerPaint");
+    expectNear(node->_paint.getAlphaf(), 1.0, "generated setStyle ordinary _paint alpha stays separate from layer alpha");
     expectNear(std::get<double>(*node->_style.width), 64.0, "generated setStyle native width");
     expectNear(std::get<double>(*node->_style.height), 32.0, "generated setStyle native height");
 

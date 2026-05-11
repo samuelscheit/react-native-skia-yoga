@@ -98,7 +98,7 @@ try {
 		"- Public package entrypoints and lowercase intrinsic JSX compiled from the installed package.",
 	)
 	console.log(
-		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias authoring.",
+		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias and style.layer Skia.Paint() authoring.",
 	)
 	console.log(
 		"- Packed consumer TypeScript accepted legacy style.antiaAlias while canonical style.antiAlias remains the preferred public authoring key.",
@@ -295,7 +295,7 @@ function writeConsumerProject(consumerDir, packedTarball) {
 
 function consumerSource() {
 	return `import * as React from "react"
-import type { FilterMode, SamplingOptions, SkPath } from "@shopify/react-native-skia"
+import { Skia, type FilterMode, type SamplingOptions, type SkPath } from "@shopify/react-native-skia"
 import type { SharedValue } from "react-native-reanimated"
 import {
 \tYogaCanvas,
@@ -329,11 +329,14 @@ const legacyAntiAliasStyle: YogaNodeStyle = {
 \tantiaAlias: true,
 }
 
+const layerPaint = Skia.Paint()
+layerPaint.setAlphaf(0.75)
+
 const interactiveGroupProps: YogaIntrinsicElements["group"] = {
 \thitSlop: 8,
 \tonPress() {},
 \tpreciseHit: true,
-\tstyle: { opacity: 0.9 },
+\tstyle: { layer: layerPaint, opacity: 0.9 },
 }
 
 const sharedCircleRadius = null as unknown as SharedValue<number>
