@@ -170,13 +170,13 @@ try {
 	console.log("- Prior risk source-confirmed: HybridObject::toObject() enters HybridObjectPrototype/JSICache, JSICache calls getRuntimeId(runtime), and getRuntimeId(runtime) depends on platform ThreadUtils; this verifier links the real iOS ThreadUtils implementation for the host-JSC probe.")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, generated HybridYogaNodeSpec.cpp, Nitro HybridObject/prototype/cache sources, platform ThreadUtils, React Native JSC, upstream Yoga sources, RN Skia macOS archives, RN Skia CSSColorParser, a host platform context, Worklets shared-item sources, ColorParser, PlatformContextAccessor, AnimatedDouble, and Nitro/JSI helper sources.")
 	console.log("- The executable created a shared YogaNode, called YogaNode::toObject(runtime), asserted the returned value is a JS object with NativeState wrapping the original YogaNode, and asserted repeated toObject(runtime) returns the cached JS object.")
-	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height/antiAlias/layer), setStyle(SkPaint-backed backgroundColor plus paint fields), computeLayout(width, height), and the layout getter.")
+	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height/antiAlias/layer), setStyle(SkPaint-backed backgroundColor plus paint fields), setStyle(clip path/rect/rrect, matrix array, transform array with matrix fallback, invertClip), computeLayout(width, height), and the layout getter.")
 	console.log("- The executable materialized parent/child YogaNodes, inserted the child through the generated parent.insertChild(...) wrapper, called materialized parent.getChildren(), and asserted the returned child is the cached materialized child object with generated and raw YogaNode prototype methods.")
 	console.log("- The executable called generated setStyle/computeLayout/insertChild and raw setInteractionConfig/hitTest/getChildren through the returned child object, then asserted recursive returned-grandchild identity through returnedChild.getChildren().")
 	console.log("- The executable used fresh materialized YogaNode objects to invoke generated JS-facing setCommand(line), setCommand(points), setCommand(path), setCommand(text), setCommand(paragraph), setCommand(circle), setCommand(rrect), setCommand(blurMaskFilter), setCommand(rect), setCommand(oval), and setCommand(image) wrappers, preserving the native no-command-kind-change invariant.")
-	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
+	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect, generated materialized matrix array delivery into _style.matrix and _matrix, generated materialized transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized invertClip delivery into _style.invertClip and the clipping predicate, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
 	console.log("- For CircleCmd, RRectCmd, and BlurMaskFilterCmd, selected no-pixel draw calls are used only to expose render-time native state/mask-filter side effects after generated wrapper delivery; no command-rendering or render-fidelity claim is made.")
-	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, and selected generated/raw YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, command rendering, or exact render fidelity.")
+	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(clip/matrix/transform/invertClip) delivery into native NodeStyle/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, and selected generated/raw YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, pixel rendering, exact hit-test behavior, command rendering, or exact render fidelity.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -530,6 +530,7 @@ function includeFlags(shimDir) {
 function nativeProbeSource() {
 	return String.raw`
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdlib>
 #include <functional>
@@ -583,6 +584,9 @@ using margelo::nitro::RNSkiaYoga::RRectCmd;
 using margelo::nitro::RNSkiaYoga::StrokeCap;
 using margelo::nitro::RNSkiaYoga::StrokeJoin;
 using margelo::nitro::RNSkiaYoga::TextCmd;
+using margelo::nitro::RNSkiaYoga::TransformScale;
+using margelo::nitro::RNSkiaYoga::TransformTranslateX;
+using margelo::nitro::RNSkiaYoga::TransformTranslateY;
 using margelo::nitro::RNSkiaYoga::YogaNode;
 using margelo::nitro::RNSkiaYoga::YogaNodeCommandKind;
 
@@ -663,6 +667,48 @@ void expectSkRectNear(
     expectNear(actual.top(), expectedTop, message);
     expectNear(actual.width(), expectedWidth, message);
     expectNear(actual.height(), expectedHeight, message);
+}
+
+bool skMatrixNear(const SkMatrix& actual, const SkMatrix& expected)
+{
+    for (int i = 0; i < 9; ++i) {
+        if (std::fabs(actual.get(i) - expected.get(i)) > 0.001) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void expectSkMatrixNear(
+    const SkMatrix& actual,
+    const SkMatrix& expected,
+    const char* message)
+{
+    for (int i = 0; i < 9; ++i) {
+        if (std::fabs(actual.get(i) - expected.get(i)) > 0.001) {
+            std::cerr << "FAIL: " << message
+                      << " index=" << i
+                      << " expected=" << expected.get(i)
+                      << " actual=" << actual.get(i) << "\n";
+            std::abort();
+        }
+    }
+}
+
+void expectSkRRectNear(
+    const SkRRect& actual,
+    double expectedLeft,
+    double expectedTop,
+    double expectedWidth,
+    double expectedHeight,
+    double expectedRadiusX,
+    double expectedRadiusY,
+    const char* message)
+{
+    expectSkRectNear(actual.getBounds(), expectedLeft, expectedTop, expectedWidth, expectedHeight, message);
+    const auto radii = actual.getSimpleRadii();
+    expectNear(radii.x(), expectedRadiusX, message);
+    expectNear(radii.y(), expectedRadiusY, message);
 }
 
 class HostCallInvoker final : public facebook::react::CallInvoker {
@@ -868,6 +914,62 @@ jsi::Object makePointObject(jsi::Runtime& runtime, double x, double y)
     point.setProperty(runtime, "x", x);
     point.setProperty(runtime, "y", y);
     return point;
+}
+
+jsi::Object makeRectObject(jsi::Runtime& runtime, double x, double y, double width, double height)
+{
+    jsi::Object rect(runtime);
+    rect.setProperty(runtime, "x", x);
+    rect.setProperty(runtime, "y", y);
+    rect.setProperty(runtime, "width", width);
+    rect.setProperty(runtime, "height", height);
+    return rect;
+}
+
+jsi::Object makeRRectObject(
+    jsi::Runtime& runtime,
+    double x,
+    double y,
+    double width,
+    double height,
+    double radiusX,
+    double radiusY)
+{
+    jsi::Object rrect(runtime);
+    rrect.setProperty(runtime, "rect", makeRectObject(runtime, x, y, width, height));
+    rrect.setProperty(runtime, "rx", radiusX);
+    rrect.setProperty(runtime, "ry", radiusY);
+    return rrect;
+}
+
+jsi::Array makeMatrixArray9(jsi::Runtime& runtime, const std::array<double, 9>& values)
+{
+    jsi::Array matrix(runtime, values.size());
+    for (size_t i = 0; i < values.size(); ++i) {
+        matrix.setValueAtIndex(runtime, i, jsi::Value(values[i]));
+    }
+    return matrix;
+}
+
+SkMatrix makeSkMatrix9(const std::array<double, 9>& values)
+{
+    return SkMatrix::MakeAll(
+        static_cast<SkScalar>(values[0]),
+        static_cast<SkScalar>(values[1]),
+        static_cast<SkScalar>(values[2]),
+        static_cast<SkScalar>(values[3]),
+        static_cast<SkScalar>(values[4]),
+        static_cast<SkScalar>(values[5]),
+        static_cast<SkScalar>(values[6]),
+        static_cast<SkScalar>(values[7]),
+        static_cast<SkScalar>(values[8]));
+}
+
+jsi::Object makeSingleTransformOp(jsi::Runtime& runtime, const char* key, double value)
+{
+    jsi::Object op(runtime);
+    op.setProperty(runtime, key, value);
+    return op;
 }
 
 jsi::Object makeLineCommand(jsi::Runtime& runtime)
@@ -1080,6 +1182,75 @@ jsi::Object makePaintBackedStyle(jsi::Runtime& runtime)
         runtime,
         "blendMode",
         static_cast<double>(static_cast<int>(BlendMode::SCREEN)));
+    return style;
+}
+
+jsi::Object makeClipRectStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "clip", makeRectObject(runtime, 10.0, 12.0, 30.0, 18.0));
+    return style;
+}
+
+jsi::Object makeClipRRectStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "clip", makeRRectObject(runtime, 6.0, 8.0, 34.0, 22.0, 5.0, 7.0));
+    return style;
+}
+
+jsi::Object makeClipPathStyle(jsi::Runtime& runtime)
+{
+    SkPath path;
+    path.addCircle(24.0f, 26.0f, 9.0f);
+
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "clip", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
+    return style;
+}
+
+jsi::Object makeInvertedClipStyle(jsi::Runtime& runtime)
+{
+    auto style = makeClipRectStyle(runtime);
+    style.setProperty(runtime, "invertClip", true);
+    return style;
+}
+
+jsi::Object makeMatrixStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(
+        runtime,
+        "matrix",
+        makeMatrixArray9(
+            runtime,
+            std::array<double, 9> {
+                2.0, 0.0, 7.0,
+                0.0, 3.0, 11.0,
+                0.0, 0.0, 1.0,
+            }));
+    return style;
+}
+
+jsi::Object makeTransformWithMatrixFallbackStyle(jsi::Runtime& runtime)
+{
+    jsi::Array transform(runtime, 3);
+    transform.setValueAtIndex(runtime, 0, jsi::Value(runtime, makeSingleTransformOp(runtime, "translateX", 8.0)));
+    transform.setValueAtIndex(runtime, 1, jsi::Value(runtime, makeSingleTransformOp(runtime, "translateY", 13.0)));
+    transform.setValueAtIndex(runtime, 2, jsi::Value(runtime, makeSingleTransformOp(runtime, "scale", 1.5)));
+
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "transform", transform);
+    style.setProperty(
+        runtime,
+        "matrix",
+        makeMatrixArray9(
+            runtime,
+            std::array<double, 9> {
+                4.0, 0.0, 101.0,
+                0.0, 5.0, 202.0,
+                0.0, 0.0, 1.0,
+            }));
     return style;
 }
 
@@ -1755,6 +1926,172 @@ void assertGeneratedPaintBackedStyle(jsi::Runtime& runtime)
     disposeMaterializedObject(runtime, materialized.object);
 }
 
+void assertGeneratedClipRectStyle(jsi::Runtime& runtime)
+{
+    auto materialized = materializeYogaNode(runtime);
+    auto setStyle = materialized.object.getPropertyAsFunction(runtime, "setStyle");
+    auto style = makeClipRectStyle(runtime);
+    callFunctionWithOneObject(
+        runtime,
+        materialized.object,
+        setStyle,
+        style,
+        "generated setStyle(clip rect) must return undefined");
+
+    expect(materialized.node->_style.clip.has_value(), "generated clip rect style must populate clip optional");
+    expect(std::holds_alternative<SkRect>(*materialized.node->_style.clip), "generated clip rect style must materialize NodeStyle clip as SkRect");
+    expectSkRectNear(std::get<SkRect>(*materialized.node->_style.clip), 10.0, 12.0, 30.0, 18.0, "generated clip rect style optional");
+    expect(materialized.node->_clipRect.has_value(), "generated clip rect style must update YogaNode::_clipRect");
+    expectSkRectNear(*materialized.node->_clipRect, 10.0, 12.0, 30.0, 18.0, "generated clip rect native state");
+    expect(!materialized.node->_clipPath.has_value(), "generated clip rect style must leave _clipPath empty");
+    expect(!materialized.node->_clipRRect.has_value(), "generated clip rect style must leave _clipRRect empty");
+
+    disposeMaterializedObject(runtime, materialized.object);
+}
+
+void assertGeneratedClipRRectStyle(jsi::Runtime& runtime)
+{
+    auto materialized = materializeYogaNode(runtime);
+    auto setStyle = materialized.object.getPropertyAsFunction(runtime, "setStyle");
+    auto style = makeClipRRectStyle(runtime);
+    callFunctionWithOneObject(
+        runtime,
+        materialized.object,
+        setStyle,
+        style,
+        "generated setStyle(clip rrect) must return undefined");
+
+    expect(materialized.node->_style.clip.has_value(), "generated clip rrect style must populate clip optional");
+    expect(std::holds_alternative<SkRRect>(*materialized.node->_style.clip), "generated clip rrect style must materialize NodeStyle clip as SkRRect");
+    expectSkRRectNear(std::get<SkRRect>(*materialized.node->_style.clip), 6.0, 8.0, 34.0, 22.0, 5.0, 7.0, "generated clip rrect style optional");
+    expect(materialized.node->_clipRRect.has_value(), "generated clip rrect style must update YogaNode::_clipRRect");
+    expectSkRRectNear(*materialized.node->_clipRRect, 6.0, 8.0, 34.0, 22.0, 5.0, 7.0, "generated clip rrect native state");
+    expect(!materialized.node->_clipPath.has_value(), "generated clip rrect style must leave _clipPath empty");
+    expect(!materialized.node->_clipRect.has_value(), "generated clip rrect style must leave _clipRect empty");
+
+    disposeMaterializedObject(runtime, materialized.object);
+}
+
+void assertGeneratedClipPathStyle(jsi::Runtime& runtime)
+{
+    auto materialized = materializeYogaNode(runtime);
+    auto setStyle = materialized.object.getPropertyAsFunction(runtime, "setStyle");
+    auto style = makeClipPathStyle(runtime);
+    callFunctionWithOneObject(
+        runtime,
+        materialized.object,
+        setStyle,
+        style,
+        "generated setStyle(clip path) must return undefined");
+
+    expect(materialized.node->_style.clip.has_value(), "generated clip path style must populate clip optional");
+    expect(std::holds_alternative<SkPath>(*materialized.node->_style.clip), "generated clip path style must materialize NodeStyle clip as SkPath");
+    expect(std::get<SkPath>(*materialized.node->_style.clip).contains(24.0f, 26.0f), "generated clip path style optional must keep host-object circle path");
+    expect(materialized.node->_clipPath.has_value(), "generated clip path style must update YogaNode::_clipPath");
+    expect(materialized.node->_clipPath->contains(24.0f, 26.0f), "generated clip path native state must keep host-object circle path");
+    expect(!materialized.node->_clipPath->contains(4.0f, 4.0f), "generated clip path native state must reject outside point");
+    expect(!materialized.node->_clipRect.has_value(), "generated clip path style must leave _clipRect empty");
+    expect(!materialized.node->_clipRRect.has_value(), "generated clip path style must leave _clipRRect empty");
+
+    disposeMaterializedObject(runtime, materialized.object);
+}
+
+void assertGeneratedInvertClipStyle(jsi::Runtime& runtime)
+{
+    auto materialized = materializeYogaNode(runtime);
+    auto setStyle = materialized.object.getPropertyAsFunction(runtime, "setStyle");
+    auto style = makeInvertedClipStyle(runtime);
+    callFunctionWithOneObject(
+        runtime,
+        materialized.object,
+        setStyle,
+        style,
+        "generated setStyle(invertClip) must return undefined");
+
+    expect(materialized.node->_style.clip.has_value(), "generated invertClip style must populate clip optional");
+    expect(materialized.node->_style.invertClip.has_value(), "generated invertClip style must populate invertClip optional");
+    expect(materialized.node->_style.invertClip.value(), "generated invertClip style must keep true");
+    expect(materialized.node->_clipRect.has_value(), "generated invertClip style must update YogaNode::_clipRect");
+    expect(!materialized.node->pointPassesClipping(::SkPoint::Make(12.0f, 14.0f)), "generated invertClip style must invert inside explicit clip");
+    expect(materialized.node->pointPassesClipping(::SkPoint::Make(2.0f, 2.0f)), "generated invertClip style must allow outside explicit clip");
+
+    disposeMaterializedObject(runtime, materialized.object);
+}
+
+void assertGeneratedMatrixStyle(jsi::Runtime& runtime)
+{
+    auto materialized = materializeYogaNode(runtime);
+    auto setStyle = materialized.object.getPropertyAsFunction(runtime, "setStyle");
+    auto style = makeMatrixStyle(runtime);
+    callFunctionWithOneObject(
+        runtime,
+        materialized.object,
+        setStyle,
+        style,
+        "generated setStyle(matrix array) must return undefined");
+
+    const auto expected = makeSkMatrix9(std::array<double, 9> {
+        2.0, 0.0, 7.0,
+        0.0, 3.0, 11.0,
+        0.0, 0.0, 1.0,
+    });
+    expect(materialized.node->_style.matrix.has_value(), "generated matrix style must populate matrix optional");
+    expect(
+        std::holds_alternative<std::shared_ptr<SkMatrix>>(*materialized.node->_style.matrix),
+        "generated matrix style must materialize array through SkMatrix custom converter");
+    const auto& styleMatrix = std::get<std::shared_ptr<SkMatrix>>(*materialized.node->_style.matrix);
+    expect(styleMatrix != nullptr, "generated matrix style optional must hold a non-null SkMatrix");
+    expectSkMatrixNear(*styleMatrix, expected, "generated matrix style optional");
+    expect(materialized.node->_matrix != nullptr, "generated matrix style must update YogaNode::_matrix");
+    expectSkMatrixNear(*materialized.node->_matrix, expected, "generated matrix style native state");
+
+    disposeMaterializedObject(runtime, materialized.object);
+}
+
+void assertGeneratedTransformStylePrecedence(jsi::Runtime& runtime)
+{
+    auto materialized = materializeYogaNode(runtime);
+    auto setStyle = materialized.object.getPropertyAsFunction(runtime, "setStyle");
+    auto style = makeTransformWithMatrixFallbackStyle(runtime);
+    callFunctionWithOneObject(
+        runtime,
+        materialized.object,
+        setStyle,
+        style,
+        "generated setStyle(transform with matrix fallback) must return undefined");
+
+    expect(materialized.node->_style.transform.has_value(), "generated transform style must populate transform optional");
+    expect(materialized.node->_style.matrix.has_value(), "generated transform style must also populate matrix optional");
+    const auto& transforms = *materialized.node->_style.transform;
+    expect(transforms.size() == 3, "generated transform style must keep transform array size");
+    expect(std::holds_alternative<TransformTranslateX>(transforms[0]), "generated transform style must keep translateX op");
+    expectNear(std::get<TransformTranslateX>(transforms[0]).translateX, 8.0, "generated transform style translateX value");
+    expect(std::holds_alternative<TransformTranslateY>(transforms[1]), "generated transform style must keep translateY op");
+    expectNear(std::get<TransformTranslateY>(transforms[1]).translateY, 13.0, "generated transform style translateY value");
+    expect(std::holds_alternative<TransformScale>(transforms[2]), "generated transform style must keep scale op");
+    expectNear(std::get<TransformScale>(transforms[2]).scale, 1.5, "generated transform style scale value");
+
+    SkM44 expectedTransform;
+    expectedTransform.setIdentity();
+    expectedTransform.preTranslate(8.0f, 0.0f, 0.0f);
+    expectedTransform.preTranslate(0.0f, 13.0f, 0.0f);
+    expectedTransform.preScale(1.5f, 1.5f, 1.0f);
+    const SkMatrix expectedTransformMatrix = expectedTransform.asM33();
+    const auto fallbackMatrix = makeSkMatrix9(std::array<double, 9> {
+        4.0, 0.0, 101.0,
+        0.0, 5.0, 202.0,
+        0.0, 0.0, 1.0,
+    });
+
+    expect(materialized.node->_matrix != nullptr, "generated transform style must update YogaNode::_matrix");
+    expectSkMatrixNear(*materialized.node->_matrix, expectedTransformMatrix, "generated transform style native transform matrix");
+    expect(
+        !skMatrixNear(*materialized.node->_matrix, fallbackMatrix),
+        "generated transform style must prefer transform over matrix fallback");
+
+    disposeMaterializedObject(runtime, materialized.object);
+}
+
 } // namespace
 
 int main()
@@ -1839,6 +2176,14 @@ int main()
 
     std::cerr << "probe: call generated paint-backed setStyle" << std::endl;
     assertGeneratedPaintBackedStyle(*runtime);
+
+    std::cerr << "probe: call generated clip/matrix/transform setStyle" << std::endl;
+    assertGeneratedClipRectStyle(*runtime);
+    assertGeneratedClipRRectStyle(*runtime);
+    assertGeneratedClipPathStyle(*runtime);
+    assertGeneratedInvertClipStyle(*runtime);
+    assertGeneratedMatrixStyle(*runtime);
+    assertGeneratedTransformStylePrecedence(*runtime);
 
     std::cerr << "probe: call generated computeLayout" << std::endl;
     callComputeLayout(*runtime, object, computeLayout);
