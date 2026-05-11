@@ -2718,10 +2718,21 @@ Last updated: 2026-05-11
   - Removed `../worker-127-paragraphstyle-scalar-tojsi`.
   - Deleted branch `worker/127-paragraphstyle-scalar-tojsi`.
 - Created `worker-128-post-127-root-cause-audit` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_128_post_127_root_cause_audit` as a managed worker subagent with `goal: true`.
+- Worker 128 completed and reported `Goal finished.` It wrote `worker-progress/worker-128-post-127-root-cause-audit.md`.
+- Worker 128 reconfirmed the post-worker-127 baseline with `git diff --check`, `node --check scripts/verify-yoganode-native-commands-render.mjs`, and `npm run check:feasible-matrix`, which passed all 28 commands in `4m 26s`.
+- Worker 128 selected bounded `ParagraphStyle.strutStyle` parser/serializer coverage, including a local `strutStyle.fontFamilies` parser overlay, as the next strongest locally unblocked implementation target.
+- Worker 128 branch commit: `1380d8a Add worker 128 post-127 root cause audit`.
+- Merged worker 128 into `main` as `ed424eb Merge worker 128 post-127 root cause audit`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+- Worker 128 cleanup:
+  - Closed `/root/worker_128_post_127_root_cause_audit`.
+  - Removed `../worker-128-post-127-root-cause-audit`.
+  - Deleted branch `worker/128-post-127-root-cause-audit`.
 
 ## Active Workers
 
-- `/root/worker_128_post_127_root_cause_audit`: auditing the post-worker-127 state in isolated worktree `../worker-128-post-127-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2869,10 +2880,11 @@ Accepted worker reports:
 - `worker-progress/worker-125-textstyle-fontfeatures-tojsi.md`
 - `worker-progress/worker-126-post-125-root-cause-audit.md`
 - `worker-progress/worker-127-paragraphstyle-scalar-tojsi.md`
+- `worker-progress/worker-128-post-127-root-cause-audit.md`
 
 ## Pending Workers
 
-- None beyond monitoring active worker 125.
+- None.
 
 ## Decisions
 
@@ -2906,6 +2918,7 @@ Accepted worker reports:
 - Worker 125 closed the selected `TextStyle.fontFeatures` serialization target, added direct and representative command round-trip proof, and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-125 audit.
 - Worker 126 accepted the post-worker-125 proof surface, reconfirmed the main 28-command feasible matrix, and selected bounded `ParagraphStyle` scalar `toJSI(...)` serialization for `disableHinting`, `replaceTabCharacters`, `textDirection`, and `textHeightBehavior`.
 - Worker 127 closed the selected `ParagraphStyle` scalar serialization target and reconfirmed the main 28-command feasible matrix. The next step is a fresh post-worker-127 audit.
+- Worker 128 accepted the post-worker-127 proof surface, reconfirmed the main 28-command feasible matrix, and selected bounded `ParagraphStyle.strutStyle` parser/serializer coverage including a local `fontFamilies` parser overlay.
 
 ## Evidence Summary
 
@@ -2956,7 +2969,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Run a fresh post-worker-127 root-cause audit to rerank remaining locally unblocked gaps under the current proof surface.
+- Add bounded `ParagraphStyle.strutStyle` parser/serializer coverage, including a local `strutStyle.fontFamilies` parser overlay, with direct converter and representative `paragraph.paragraphStyle` `NodeCommand` round-trip proof.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
