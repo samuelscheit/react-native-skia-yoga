@@ -170,13 +170,13 @@ try {
 	console.log("- Prior risk source-confirmed: HybridObject::toObject() enters HybridObjectPrototype/JSICache, JSICache calls getRuntimeId(runtime), and getRuntimeId(runtime) depends on platform ThreadUtils; this verifier links the real iOS ThreadUtils implementation for the host-JSC probe.")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, generated HybridYogaNodeSpec.cpp, Nitro HybridObject/prototype/cache sources, platform ThreadUtils, React Native JSC, upstream Yoga sources, RN Skia macOS archives, RN Skia CSSColorParser, a host platform context, Worklets shared-item sources, ColorParser, PlatformContextAccessor, AnimatedDouble, and Nitro/JSI helper sources.")
 	console.log("- The executable created a shared YogaNode, called YogaNode::toObject(runtime), asserted the returned value is a JS object with NativeState wrapping the original YogaNode, and asserted repeated toObject(runtime) returns the cached JS object.")
-	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height/antiAlias/layer), computeLayout(width, height), and the layout getter.")
+	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height/antiAlias/layer), setStyle(SkPaint-backed backgroundColor plus paint fields), computeLayout(width, height), and the layout getter.")
 	console.log("- The executable materialized parent/child YogaNodes, inserted the child through the generated parent.insertChild(...) wrapper, called materialized parent.getChildren(), and asserted the returned child is the cached materialized child object with generated and raw YogaNode prototype methods.")
 	console.log("- The executable called generated setStyle/computeLayout/insertChild and raw setInteractionConfig/hitTest/getChildren through the returned child object, then asserted recursive returned-grandchild identity through returnedChild.getChildren().")
 	console.log("- The executable used fresh materialized YogaNode objects to invoke generated JS-facing setCommand(line), setCommand(points), setCommand(path), setCommand(text), setCommand(paragraph), setCommand(circle), setCommand(rrect), setCommand(blurMaskFilter), setCommand(rect), setCommand(oval), and setCommand(image) wrappers, preserving the native no-command-kind-change invariant.")
-	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
+	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
 	console.log("- For CircleCmd, RRectCmd, and BlurMaskFilterCmd, selected no-pixel draw calls are used only to expose render-time native state/mask-filter side effects after generated wrapper delivery; no command-rendering or render-fidelity claim is made.")
-	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, and selected generated/raw YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, command rendering, or exact render fidelity.")
+	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, and selected generated/raw YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, command rendering, or exact render fidelity.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -567,6 +567,7 @@ function nativeProbeSource() {
 #include "YogaNode.cpp"
 
 using margelo::nitro::RNSkiaYoga::BlurMaskFilterCmd;
+using margelo::nitro::RNSkiaYoga::BlendMode;
 using margelo::nitro::RNSkiaYoga::CircleCmd;
 using margelo::nitro::RNSkiaYoga::GroupCmd;
 using margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec;
@@ -579,6 +580,8 @@ using margelo::nitro::RNSkiaYoga::PathCmd;
 using margelo::nitro::RNSkiaYoga::PointsCmd;
 using margelo::nitro::RNSkiaYoga::RectCmd;
 using margelo::nitro::RNSkiaYoga::RRectCmd;
+using margelo::nitro::RNSkiaYoga::StrokeCap;
+using margelo::nitro::RNSkiaYoga::StrokeJoin;
 using margelo::nitro::RNSkiaYoga::TextCmd;
 using margelo::nitro::RNSkiaYoga::YogaNode;
 using margelo::nitro::RNSkiaYoga::YogaNodeCommandKind;
@@ -607,6 +610,12 @@ void expectOptionalFloatNear(const std::optional<float>& actual, double expected
     expectNear(*actual, expected, message);
 }
 
+void expectOptionalDoubleNear(const std::optional<double>& actual, double expected, const char* message)
+{
+    expect(actual.has_value(), message);
+    expectNear(*actual, expected, message);
+}
+
 void expectColor(SkColor actual, SkColor expected, const char* message)
 {
     if (actual != expected) {
@@ -620,6 +629,24 @@ void expectColor(SkColor actual, SkColor expected, const char* message)
                   << SkColorGetG(actual) << ", "
                   << SkColorGetB(actual) << ", "
                   << SkColorGetA(actual) << ")\n";
+        std::abort();
+    }
+}
+
+void expectColorRgb(SkColor actual, SkColor expected, const char* message)
+{
+    if (
+        SkColorGetR(actual) != SkColorGetR(expected) ||
+        SkColorGetG(actual) != SkColorGetG(expected) ||
+        SkColorGetB(actual) != SkColorGetB(expected)) {
+        std::cerr << "FAIL: " << message
+                  << " expected rgb("
+                  << SkColorGetR(expected) << ", "
+                  << SkColorGetG(expected) << ", "
+                  << SkColorGetB(expected) << ") actual rgb("
+                  << SkColorGetR(actual) << ", "
+                  << SkColorGetG(actual) << ", "
+                  << SkColorGetB(actual) << ")\n";
         std::abort();
     }
 }
@@ -1019,6 +1046,40 @@ jsi::Object makeLayerStyle(jsi::Runtime& runtime, double width, double height)
 
     style.setProperty(runtime, "backgroundColor", "#0000ff");
     style.setProperty(runtime, "layer", makePaintHostObject(runtime, layerPaint));
+    return style;
+}
+
+jsi::Object makePaintBackedStyle(jsi::Runtime& runtime)
+{
+    SkPaint backgroundPaint;
+    backgroundPaint.setAntiAlias(true);
+    backgroundPaint.setColor(SkColorSetARGB(255, 18, 52, 86));
+    backgroundPaint.setStrokeWidth(1.25f);
+    backgroundPaint.setStrokeCap(SkPaint::Cap::kButt_Cap);
+    backgroundPaint.setStrokeJoin(SkPaint::Join::kMiter_Join);
+    backgroundPaint.setStrokeMiter(2.5f);
+    backgroundPaint.setDither(false);
+    backgroundPaint.setAlphaf(0.35f);
+    backgroundPaint.setBlendMode(SkBlendMode::kMultiply);
+
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "backgroundColor", makePaintHostObject(runtime, backgroundPaint));
+    style.setProperty(runtime, "borderWidth", 7.25);
+    style.setProperty(
+        runtime,
+        "strokeCap",
+        static_cast<double>(static_cast<int>(StrokeCap::ROUND)));
+    style.setProperty(
+        runtime,
+        "strokeJoin",
+        static_cast<double>(static_cast<int>(StrokeJoin::BEVEL)));
+    style.setProperty(runtime, "strokeMiter", 11.5);
+    style.setProperty(runtime, "dither", true);
+    style.setProperty(runtime, "opacity", 0.6);
+    style.setProperty(
+        runtime,
+        "blendMode",
+        static_cast<double>(static_cast<int>(BlendMode::SCREEN)));
     return style;
 }
 
@@ -1628,6 +1689,72 @@ void assertGeneratedImageSetCommand(jsi::Runtime& runtime)
     disposeMaterializedObject(runtime, materialized.object);
 }
 
+void assertGeneratedPaintBackedStyle(jsi::Runtime& runtime)
+{
+    auto materialized = materializeYogaNode(runtime);
+    auto setStyle = materialized.object.getPropertyAsFunction(runtime, "setStyle");
+    auto style = makePaintBackedStyle(runtime);
+    callFunctionWithOneObject(
+        runtime,
+        materialized.object,
+        setStyle,
+        style,
+        "generated setStyle(SkPaint-backed backgroundColor plus paint fields) must return undefined");
+
+    expect(materialized.node->_style.backgroundColor.has_value(), "generated paint style must populate backgroundColor optional");
+    expect(materialized.node->_style.borderWidth.has_value(), "generated paint style must populate borderWidth optional");
+    expect(materialized.node->_style.strokeCap.has_value(), "generated paint style must populate strokeCap optional");
+    expect(materialized.node->_style.strokeJoin.has_value(), "generated paint style must populate strokeJoin optional");
+    expect(materialized.node->_style.strokeMiter.has_value(), "generated paint style must populate strokeMiter optional");
+    expect(materialized.node->_style.dither.has_value(), "generated paint style must populate dither optional");
+    expect(materialized.node->_style.opacity.has_value(), "generated paint style must populate opacity optional");
+    expect(materialized.node->_style.blendMode.has_value(), "generated paint style must populate blendMode optional");
+
+    const auto& backgroundColor = materialized.node->_style.backgroundColor.value();
+    expect(std::holds_alternative<SkPaint>(backgroundColor), "generated paint style backgroundColor must materialize as SkPaint");
+    const auto& backgroundPaint = std::get<SkPaint>(backgroundColor);
+    expect(backgroundPaint.isAntiAlias(), "generated paint style background SkPaint must keep base antiAlias");
+    expectColorRgb(backgroundPaint.getColor(), SkColorSetARGB(255, 18, 52, 86), "generated paint style background SkPaint must keep base color");
+    expectNear(backgroundPaint.getStrokeWidth(), 1.25, "generated paint style background SkPaint must keep base stroke width");
+    expect(backgroundPaint.getStrokeCap() == SkPaint::Cap::kButt_Cap, "generated paint style background SkPaint must keep base stroke cap");
+    expect(backgroundPaint.getStrokeJoin() == SkPaint::Join::kMiter_Join, "generated paint style background SkPaint must keep base stroke join");
+    expectNear(backgroundPaint.getStrokeMiter(), 2.5, "generated paint style background SkPaint must keep base stroke miter");
+    expect(!backgroundPaint.isDither(), "generated paint style background SkPaint must keep base dither");
+    expectNear(backgroundPaint.getAlphaf(), 0.35, "generated paint style background SkPaint must keep base alpha");
+    auto backgroundBlendMode = backgroundPaint.asBlendMode();
+    expect(backgroundBlendMode.has_value(), "generated paint style background SkPaint must keep inspectable blend mode");
+    expect(backgroundBlendMode.value() == SkBlendMode::kMultiply, "generated paint style background SkPaint must keep base blend mode");
+
+    expectOptionalDoubleNear(materialized.node->_style.borderWidth, 7.25, "generated paint style borderWidth optional");
+    expect(
+        materialized.node->_style.strokeCap.value() == StrokeCap::ROUND,
+        "generated paint style strokeCap optional");
+    expect(
+        materialized.node->_style.strokeJoin.value() == StrokeJoin::BEVEL,
+        "generated paint style strokeJoin optional");
+    expectOptionalDoubleNear(materialized.node->_style.strokeMiter, 11.5, "generated paint style strokeMiter optional");
+    expect(materialized.node->_style.dither.value(), "generated paint style dither optional");
+    expectOptionalDoubleNear(materialized.node->_style.opacity, 0.6, "generated paint style opacity optional");
+    expect(
+        materialized.node->_style.blendMode.value() == BlendMode::SCREEN,
+        "generated paint style blendMode optional");
+
+    expect(materialized.node->_paint.isAntiAlias(), "generated paint style _paint must start from SkPaint-backed backgroundColor base");
+    expectColorRgb(materialized.node->_paint.getColor(), SkColorSetARGB(255, 18, 52, 86), "generated paint style _paint must keep backgroundColor base rgb");
+    expectNear(materialized.node->_paint.getStrokeWidth(), 7.25, "generated paint style borderWidth must override _paint stroke width");
+    expect(materialized.node->_paint.getStrokeCap() == SkPaint::Cap::kRound_Cap, "generated paint style strokeCap must override _paint cap");
+    expect(materialized.node->_paint.getStrokeJoin() == SkPaint::Join::kBevel_Join, "generated paint style strokeJoin must override _paint join");
+    expectNear(materialized.node->_paint.getStrokeMiter(), 11.5, "generated paint style strokeMiter must override _paint miter");
+    expect(materialized.node->_paint.isDither(), "generated paint style dither must override _paint dither");
+    expectNear(materialized.node->_paint.getAlphaf(), 0.6, "generated paint style opacity must override _paint alpha");
+    auto paintBlendMode = materialized.node->_paint.asBlendMode();
+    expect(paintBlendMode.has_value(), "generated paint style _paint must keep inspectable blend mode");
+    expect(paintBlendMode.value() == SkBlendMode::kScreen, "generated paint style blendMode must override _paint blend mode");
+    expectNear(YGNodeStyleGetBorder(materialized.node->_node, YGEdgeAll), 7.25, "generated paint style borderWidth must write Yoga border state");
+
+    disposeMaterializedObject(runtime, materialized.object);
+}
+
 } // namespace
 
 int main()
@@ -1709,6 +1836,9 @@ int main()
     expectNear(node->_paint.getAlphaf(), 1.0, "generated setStyle ordinary _paint alpha stays separate from layer alpha");
     expectNear(std::get<double>(*node->_style.width), 64.0, "generated setStyle native width");
     expectNear(std::get<double>(*node->_style.height), 32.0, "generated setStyle native height");
+
+    std::cerr << "probe: call generated paint-backed setStyle" << std::endl;
+    assertGeneratedPaintBackedStyle(*runtime);
 
     std::cerr << "probe: call generated computeLayout" << std::endl;
     callComputeLayout(*runtime, object, computeLayout);
