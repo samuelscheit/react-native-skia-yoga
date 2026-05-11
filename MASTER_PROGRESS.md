@@ -2594,10 +2594,25 @@ Last updated: 2026-05-11
   - Closed `/root/worker_118_post_117_root_cause_audit`.
   - Removed `../worker-118-post-117-root-cause-audit`.
   - Deleted branch `worker/118-post-117-root-cause-audit`.
+- Prepared worker 119 as the next step: implement bounded value-bearing `toJSI(...)` serialization for `SkSamplingOptions`, `TextStyle`, and `ParagraphStyle`.
+- Created `worker-119-value-bearing-style-tojsi` from current `main`, symlinked root/example dependencies from the main worktree, and launched `/root/worker_119_value_bearing_style_tojsi` as a managed worker subagent with `goal: true`.
+- Worker 119 completed and reported `Goal finished.` It wrote `worker-progress/worker-119-value-bearing-style-tojsi.md`.
+- Worker 119 added selected value-bearing `toJSI(...)` serialization for sampling filter/mipmap and cubic B/C, text style font/color/family/spacing/height/locale fields, and paragraph style textAlign/maxLines/heightMultiplier/ellipsis plus flattened default text style fields.
+- Worker 119 expanded `check:yoganode-native-commands-render` with direct converter and NodeCommand `toJSI(...) -> fromJSI(...)` proof for the selected fields.
+- Worker 119 branch commit: `c802cf7 Add value-bearing style toJSI serialization`.
+- Merged worker 119 into `main` as `e212ae7 Merge worker 119 value-bearing style toJSI serialization`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - `node --check scripts/verify-yoganode-native-commands-render.mjs`: passed.
+  - `npm run check:feasible-matrix`: passed all 28 commands in `7m 35s`.
+- Worker 119 cleanup:
+  - Closed `/root/worker_119_value_bearing_style_tojsi`.
+  - Removed `../worker-119-value-bearing-style-tojsi`.
+  - Deleted branch `worker/119-value-bearing-style-tojsi`.
 
 ## Active Workers
 
-- `/root/worker_119_value_bearing_style_tojsi`: implementing bounded value-bearing `toJSI(...)` serialization for `SkSamplingOptions`, `TextStyle`, and `ParagraphStyle` in isolated worktree `../worker-119-value-bearing-style-tojsi`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2736,10 +2751,11 @@ Accepted worker reports:
 - `worker-progress/worker-116-post-115-root-cause-audit.md`
 - `worker-progress/worker-117-sampling-sharedvalue-type-boundary.md`
 - `worker-progress/worker-118-post-117-root-cause-audit.md`
+- `worker-progress/worker-119-value-bearing-style-tojsi.md`
 
 ## Pending Workers
 
-- None beyond monitoring active worker 119.
+- None; next step is a read-only post-worker-119 root-cause audit.
 
 ## Decisions
 
@@ -2764,6 +2780,7 @@ Accepted worker reports:
 - Post-worker-116 target selection: worker 116 selected whole `SharedValue<SamplingOptions>` public type support for `image.sampling` because `SamplingOptions` is opaque but union-shaped, `YogaDeepAnimated<T>` currently distributes over that union, and the public type rejects `SharedValue<SamplingOptions>` while accepting narrower `SharedValue<FilterOptions>` / `SharedValue<CubicResampler>`.
 - Worker 117 accepted that target within a TypeScript/package/source-level proof boundary. Whole `SharedValue<SamplingOptions>` now compiles for `image.sampling` from an installed tarball, nested sampling leaves remain rejected, Reconciler JS listener coverage includes top-level opaque `image.sampling`, and the main 28-command feasible matrix passed. The next step is a fresh post-worker-117 audit.
 - Worker 118 accepted the post-worker-117 baseline, reconfirmed the 28-command feasible matrix, and selected bounded value-bearing `toJSI(...)` serialization for `SkSamplingOptions`, `TextStyle`, and `ParagraphStyle` because those converters parse meaningful JS payloads but still serialize empty objects.
+- Worker 119 closed the selected serialization target for bounded stable fields and reconfirmed the main 28-command feasible matrix. Remaining style/sampling risks are unsupported `maxAniso`, un-serialized text/paragraph fields, CSS string preservation, exact typography/shaping/render fidelity, and platform/runtime proof gaps.
 
 ## Evidence Summary
 
@@ -2814,7 +2831,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Implement bounded value-bearing `toJSI(...)` serialization for `SkSamplingOptions`, `TextStyle`, and `ParagraphStyle`, and prove selected stable fields through host-JSC/native verifier coverage.
+- Run a fresh post-worker-119 root-cause audit and select the next strongest locally unblocked implementation target.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
