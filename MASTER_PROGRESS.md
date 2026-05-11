@@ -2494,10 +2494,12 @@ Last updated: 2026-05-11
   - Deleted branch `worker/112-package-export-boundary`.
   - Verified no `rnskia-worker-112` tmux session, worker 112 worktree, or worker 112 branch remained.
 - Prepared worker 113 as the next step: address `JSIConverter<NodeCommand>::toJSI(...)` serialization symmetry, the next-ranked target from worker 111.
+- Created `worker-113-nodecommand-tojsi-symmetry` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-113-nodecommand-tojsi-symmetry` as a top-level tmux subprocess.
+- Worker 113 passed the visible `GOAL_CREATED: Complete NodeCommand toJSI serialization symmetry and prove representative round-trip coverage.` gate as the first worker message.
 
 ## Active Workers
 
-- None; worker 113 is pending launch.
+- `rnskia-worker-113-nodecommand-tojsi-symmetry`: running from `worker/113-nodecommand-tojsi-symmetry`; completing `JSIConverter<NodeCommand>::toJSI(...)` serialization symmetry and representative round-trip coverage.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2632,7 +2634,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- Worker 113: pending launch for `JSIConverter<NodeCommand>::toJSI(...)` serialization symmetry.
+- None; worker 113 is active.
 
 ## Decisions
 
