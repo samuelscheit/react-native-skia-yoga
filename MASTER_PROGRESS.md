@@ -2408,10 +2408,12 @@ Last updated: 2026-05-11
   - Deleted branch `worker/107-post-106-root-cause-audit`.
   - Verified no `rnskia-worker-107` tmux session, worker 107 worktree, or worker 107 branch remained.
 - Prepared worker 108 as the next step: align direct `JSIConverter<RNSkia::StrokeOpts>::canConvert(...)` with `fromJSI(...)` and add focused verifier coverage.
+- Created `worker-108-strokeopts-converter-contract` from current `main`, symlinked root/example dependencies from the main worktree, and launched `rnskia-worker-108-strokeopts-converter-contract` as a top-level tmux subprocess.
+- Worker 108 passed the visible `GOAL_CREATED: Align direct StrokeOpts converter canConvert with fromJSI and prove the contract.` gate as the first worker message.
 
 ## Active Workers
 
-- None; worker 108 is prepared for launch.
+- `rnskia-worker-108-strokeopts-converter-contract`: running from `worker/108-strokeopts-converter-contract`; aligning direct `JSIConverter<RNSkia::StrokeOpts>::canConvert(...)` with `fromJSI(...)` and adding focused verifier coverage.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2542,7 +2544,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- `rnskia-worker-108-strokeopts-converter-contract`: planned from `worker/108-strokeopts-converter-contract`; align direct `JSIConverter<RNSkia::StrokeOpts>::canConvert(...)` with `fromJSI(...)` and add focused verifier coverage.
+- None; worker 108 is active.
 
 ## Decisions
 
