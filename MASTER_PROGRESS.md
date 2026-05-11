@@ -2680,7 +2680,7 @@ Last updated: 2026-05-11
 
 ## Active Workers
 
-- None.
+- `/root/worker_125_textstyle_fontfeatures_tojsi`: implementing bounded `TextStyle.fontFeatures` `toJSI(...)` serialization in isolated worktree `../worker-125-textstyle-fontfeatures-tojsi`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2828,7 +2828,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- Launch worker 125 for bounded `TextStyle.fontFeatures` `toJSI(...)` serialization.
+- None beyond monitoring active worker 125.
 
 ## Decisions
 

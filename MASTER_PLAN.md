@@ -240,7 +240,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch a bounded implementation worker for `TextStyle.fontFeatures` `toJSI(...)` serialization and host-native round-trip proof.
+- Monitor worker 125, which is implementing bounded `TextStyle.fontFeatures` `toJSI(...)` serialization and host-native round-trip proof.
 
 Acceptance criteria:
 
