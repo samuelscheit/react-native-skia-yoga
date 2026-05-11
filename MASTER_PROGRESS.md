@@ -2625,7 +2625,7 @@ Last updated: 2026-05-11
 
 ## Active Workers
 
-- None.
+- `/root/worker_121_canonical_antialias_style`: implementing canonical `style.antiAlias` support in isolated worktree `../worker-121-canonical-antialias-style`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2769,7 +2769,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- None; next step is worker 121 for canonical `style.antiAlias` support.
+- None beyond monitoring active worker 121.
 
 ## Decisions
 

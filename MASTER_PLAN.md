@@ -236,7 +236,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch worker 121 to canonicalize public `style.antiAlias`, preserve `antiaAlias` as a legacy alias unless intentionally breaking, and prove packed-consumer plus host-native style behavior.
+- Monitor worker 121, which is canonicalizing public `style.antiAlias`, preserving `antiaAlias` as a legacy alias unless intentionally breaking, and proving packed-consumer plus host-native style behavior.
 
 Acceptance criteria:
 
