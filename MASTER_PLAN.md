@@ -235,7 +235,7 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Launch a read-only post-worker-119 root-cause audit to validate the new proof boundary and select the next strongest locally unblocked target.
+- Monitor worker 120, which is auditing the post-worker-119 state and selecting the next strongest locally unblocked target.
 
 Acceptance criteria:
 

@@ -2612,7 +2612,7 @@ Last updated: 2026-05-11
 
 ## Active Workers
 
-- None.
+- `/root/worker_120_post_119_root_cause_audit`: read-only post-worker-119 audit in isolated worktree `../worker-120-post-119-root-cause-audit`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2755,7 +2755,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- None; next step is a read-only post-worker-119 root-cause audit.
+- None beyond monitoring active worker 120.
 
 ## Decisions
 
