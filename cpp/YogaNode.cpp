@@ -771,6 +771,14 @@ void YogaNode::setStyle(const NodeStyle& style)
         _clipRect.reset();
     }
 
+    auto applyMatrixStyle = [&]() {
+        if (const auto& value = style.matrix) {
+            _matrix = makeMatrixPointer(*value);
+        } else {
+            _matrix.reset();
+        }
+    };
+
     if (const auto& value = style.transform) {
         SkM44 matrix;
         matrix.setIdentity();
@@ -836,10 +844,10 @@ void YogaNode::setStyle(const NodeStyle& style)
         if (hasTransform) {
             _matrix = std::make_shared<SkMatrix>(matrix.asM33());
         } else {
-            _matrix.reset();
+            applyMatrixStyle();
         }
-    } else if (const auto& value = style.matrix) {
-        _matrix = makeMatrixPointer(*value);
+    } else {
+        applyMatrixStyle();
     }
 }
 
