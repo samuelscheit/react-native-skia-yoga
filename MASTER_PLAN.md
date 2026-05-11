@@ -14,13 +14,13 @@ Breaking changes are acceptable when they remove root causes instead of preservi
 - Product code changes are delegated to isolated workers.
 - Top-level workers are managed Codex subagents launched with `spawn_agent`
   from isolated git worktrees.
-- Before spawning a writable worker, create or assign an isolated git worktree
-  and branch for that worker.
+- Before spawning a writable or report-writing worker, create or assign an
+  isolated git worktree and branch for that worker.
 - Launch implementation workers with `agent_type: "worker"`, `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and `reasoning_effort: "xhigh"`.
 - Worker prompts must include the full task prompt, absolute worktree path, write scope, verification expectations, and overlap boundaries.
 - Starting workers with `goal: true` replaces the former manual
-  `create_goal`/`GOAL_CREATED` acceptance gate. No dedicated goal-lifecycle
-  evidence is required; the final response/report must end with
+  `create_goal`/`GOAL_CREATED` acceptance gate. No dedicated goal-lifecycle or
+  `update_goal` evidence is required; the final response/report must end with
   `Goal finished.`
 - Workers must keep their own progress files under `worker-progress/`.
 - Workers must review quality, maintainability, performance, and security before reporting completion.

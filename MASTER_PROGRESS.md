@@ -6,6 +6,10 @@ Last updated: 2026-05-11
 
 - Active role: orchestrator.
 - Goal state: active; do not mark complete.
+- Current top-level worker scheduling: managed Codex subagents launched with
+  `spawn_agent`, from isolated git worktrees for any writable/reporting worker.
+- Current worker goal handling: launch workers with `goal: true`; require
+  `Goal finished.` at completion, with no manual goal-lifecycle evidence gate.
 - Product code changes authored by orchestrator: none; product changes are accepted worker patches only.
 - Main worktree status at startup: clean on `main` tracking `origin/main`.
 - Existing tmux sessions at startup: one unrelated `fast-react-*` session, left untouched.
