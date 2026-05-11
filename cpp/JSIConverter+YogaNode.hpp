@@ -14,12 +14,10 @@ struct JSIConverter<std::shared_ptr<margelo::nitro::RNSkiaYoga::YogaNode>> {
   static jsi::Value toJSI(
       jsi::Runtime& runtime,
       const std::shared_ptr<margelo::nitro::RNSkiaYoga::YogaNode>& arg) {
-    jsi::Object obj(runtime);
-    // setNativeState(...) is NOT templated — pass a NativeState ptr
-    obj.setNativeState(
-        runtime,
-        std::static_pointer_cast<facebook::jsi::NativeState>(arg));
-    return obj;
+    if (!arg) {
+      throw jsi::JSError(runtime, "Cannot convert nullptr YogaNode to JSI.");
+    }
+    return arg->toObject(runtime);
   }
 
   static bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
@@ -30,4 +28,3 @@ struct JSIConverter<std::shared_ptr<margelo::nitro::RNSkiaYoga::YogaNode>> {
   }
 };
 } // namespace margelo::nitro
-

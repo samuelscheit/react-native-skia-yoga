@@ -1285,7 +1285,7 @@ jsi::Value YogaNode::getChildren(jsi::Runtime& runtime, const jsi::Value& thisAr
         (void)count;
         jsi::Array arr = jsi::Array(runtime, _children.size());
         for (size_t i = 0; i < _children.size(); ++i) {
-            auto obj = JSIConverter<std::shared_ptr<margelo::nitro::RNSkiaYoga::YogaNode>>::toJSI(runtime, _children[i]);
+            auto obj = _children[i]->toObject(runtime);
             arr.setValueAtIndex(runtime, i, obj);
         }
         return arr;
