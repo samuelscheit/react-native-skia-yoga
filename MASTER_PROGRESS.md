@@ -2667,7 +2667,7 @@ Last updated: 2026-05-11
 
 ## Active Workers
 
-- None.
+- `/root/worker_124_post_123_root_cause_audit`: auditing the post-worker-123 state in isolated worktree `../worker-124-post-123-root-cause-audit`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -2814,7 +2814,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- Launch worker 124 for a fresh post-worker-123 root-cause audit.
+- None beyond monitoring active worker 124.
 
 ## Decisions
 
