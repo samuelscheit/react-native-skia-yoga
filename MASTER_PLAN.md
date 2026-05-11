@@ -285,7 +285,7 @@ Acceptance criteria:
 - A temporary tarball consumer install passes with scripts enabled and without Bun on `PATH`.
 - A temporary packed-package TypeScript consumer compile passes against public entrypoints and the `jsxImportSource` lowercase intrinsic-node contract.
 - Android/iOS build paths are verified to the extent available locally.
-- Cleanup removes stale subagents, abandoned worktrees, worker processes, and temporary build outputs.
+- Cleanup removes stale subagents, abandoned worktrees, and temporary build outputs.
 
 ## Open Questions for Workers
 
