@@ -257,6 +257,8 @@ verifyNativeCommandBindingWhitelistMatchesCases()
 verifyNativeCommandBindingMirrorsSharedValue()
 verifyJsCommandBindingModeRunsCommandUpdateCallbacks()
 verifyStyleAnimatedListenerUpdatesStyleAndContinuousRedraw()
+verifyStyleLayerSharedValueUsesJsStyleDelivery()
+verifyWholeStyleSharedValueUsesJsStyleDelivery()
 verifyNativeBindingRefCountsAndDetachCleanup()
 verifyClearContainerCleansSubtreeAndRootChildren()
 
@@ -275,6 +277,12 @@ console.log(
 )
 console.log(
 	"- Animated style listeners update host styles, invalidate, and toggle continuous redraw state.",
+)
+console.log(
+	"- Top-level style.layer SharedValue listeners resolve initial SkPaint snapshots, rebuild full styles on updates, invalidate, clean up, and avoid native command mirrors.",
+)
+console.log(
+	"- Whole SharedValue<YogaNodeStyle> listeners resolve and update full style payloads through the same JS style delivery path.",
 )
 console.log(
 	"- Shared native binding ref-count cleanup is exercised through shared circle.radius mirror reuse.",
@@ -1131,6 +1139,342 @@ function verifyStyleAnimatedListenerUpdatesStyleAndContinuousRedraw() {
 		calls.invalidations.length,
 		1,
 		"removed style listeners should not invalidate after cleanup",
+	)
+}
+
+function verifyStyleLayerSharedValueUsesJsStyleDelivery() {
+	const harness = createReconcilerHarness()
+	const config = harness.loadReconcilerHostConfig()
+	const initialLayerPaint = { id: "initial-layer-paint" }
+	const nextLayerPaint = { id: "next-layer-paint" }
+	const lateLayerPaint = { id: "late-layer-paint" }
+	const layer = harness.makeSharedValue(initialLayerPaint, "style.layer")
+	const opacity = harness.makeSharedValue(0.25, "style.opacity")
+	const style = harness.makeVmValue(
+		`({
+			layer: bindings.layer,
+			opacity: bindings.opacity,
+			width: 48,
+		})`,
+		{ layer, opacity },
+	)
+	const { calls, container } = harness.makeRootContainer({
+		nativeCommandBindingsEnabled: true,
+	})
+
+	const node = config.createInstance(
+		"group",
+		{
+			rasterize: true,
+			style,
+		},
+		container,
+	)
+
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		"style.layer SharedValue should use JS style listeners rather than native command mirrors",
+	)
+	assert.equal(
+		layer.listenerCount(),
+		1,
+		"style.layer should register one SharedValue listener",
+	)
+	assert.equal(
+		opacity.listenerCount(),
+		1,
+		"style.opacity should register one SharedValue listener",
+	)
+	assert.deepEqual(
+		harness.calls.uiRuntimeCalls.map((call) => call.args[1]),
+		["layer", "opacity"],
+		"style SharedValue listeners should be keyed by top-level style property names",
+	)
+	assert.equal(
+		last(node.commands).data.rasterize,
+		true,
+		"group command props should still be applied while style.layer binding is active",
+	)
+	assert.equal(
+		last(node.styles).layer,
+		initialLayerPaint,
+		"style.layer should resolve the initial opaque SkPaint snapshot",
+	)
+	assert.equal(
+		last(node.styles).opacity,
+		0.25,
+		"style.opacity should resolve the initial scalar snapshot beside style.layer",
+	)
+	assert.equal(
+		last(node.styles).width,
+		48,
+		"static style fields should remain in the initial style payload",
+	)
+	assert.equal(
+		calls.nativeAnimationActive.length,
+		0,
+		"style.layer should not mark the node as natively animated",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		0,
+		"initial style.layer listener setup should not invalidate",
+	)
+
+	layer.emit(nextLayerPaint)
+
+	assert.deepEqual(
+		only(harness.calls.runOnJSCalls).args,
+		["layer", nextLayerPaint],
+		"style.layer updates should bridge the top-level listener key and opaque paint value through runOnJS",
+	)
+	assert.equal(
+		node.styles.length,
+		2,
+		"style.layer updates should call setStyle once after the initial style",
+	)
+	assert.equal(
+		last(node.styles).layer,
+		nextLayerPaint,
+		"style.layer updates should rebuild the host style with the latest opaque paint value",
+	)
+	assert.equal(
+		last(node.styles).opacity,
+		0.25,
+		"style.layer updates should rebuild the full style through getResolvedStyle, preserving sibling animated snapshots",
+	)
+	assert.equal(
+		last(node.styles).width,
+		48,
+		"style.layer updates should preserve static style fields in the rebuilt style",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		1,
+		"style.layer updates should invalidate the container",
+	)
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		"style.layer updates should still avoid native command mirrors",
+	)
+	assert.equal(
+		harness.calls.setBlocking.length,
+		0,
+		"style.layer updates should not use native mirror setBlocking updates",
+	)
+
+	opacity.emit(0.5)
+
+	assert.deepEqual(
+		last(harness.calls.runOnJSCalls).args,
+		["opacity", 0.5],
+		"style.opacity companion updates should bridge their own top-level listener key",
+	)
+	assert.equal(
+		last(node.styles).layer,
+		nextLayerPaint,
+		"style.opacity updates should preserve the last style.layer opaque paint snapshot",
+	)
+	assert.equal(
+		last(node.styles).opacity,
+		0.5,
+		"style.opacity updates should rebuild the host style with the latest scalar value",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		2,
+		"style.opacity updates should invalidate through the same style listener path",
+	)
+
+	const styleCallsAfterEmit = node.styles.length
+	const runOnJsCallsAfterEmit = harness.calls.runOnJSCalls.length
+	config.commitUpdate(
+		node,
+		"group",
+		{ rasterize: true, style },
+		{ rasterize: false, style: {} },
+		null,
+	)
+
+	assert.equal(
+		layer.listenerCount(),
+		0,
+		"commitUpdate should remove the style.layer listener",
+	)
+	assert.equal(
+		opacity.listenerCount(),
+		0,
+		"commitUpdate should remove the style.opacity listener",
+	)
+	assert.deepEqual(
+		harness.calls.sharedRemoveListener.map((call) => call.had),
+		[true, true],
+		"style.layer cleanup should remove existing SharedValue listener ids",
+	)
+	assert.equal(
+		last(node.commands).data.rasterize,
+		false,
+		"commitUpdate should still update command props while style.layer cleanup runs",
+	)
+	assert.deepEqual(
+		last(node.styles),
+		{},
+		"commitUpdate should apply the cleaned style after removing style.layer listeners",
+	)
+
+	layer.emit(lateLayerPaint)
+	opacity.emit(0.75)
+
+	assert.equal(
+		node.styles.length,
+		styleCallsAfterEmit + 1,
+		"removed style.layer and style.opacity listeners should not rebuild styles after cleanup",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		2,
+		"removed style.layer and style.opacity listeners should not invalidate after cleanup",
+	)
+	assert.equal(
+		harness.calls.runOnJSCalls.length,
+		runOnJsCallsAfterEmit,
+		"removed style.layer and style.opacity listeners should not bridge through runOnJS after cleanup",
+	)
+}
+
+function verifyWholeStyleSharedValueUsesJsStyleDelivery() {
+	const harness = createReconcilerHarness()
+	const config = harness.loadReconcilerHostConfig()
+	const initialLayerPaint = { id: "whole-initial-layer-paint" }
+	const nextLayerPaint = { id: "whole-next-layer-paint" }
+	const lateLayerPaint = { id: "whole-late-layer-paint" }
+	const initialStyle = {
+		height: 24,
+		layer: initialLayerPaint,
+		opacity: 0.2,
+		width: 64,
+	}
+	const nextStyle = {
+		height: 28,
+		layer: nextLayerPaint,
+		opacity: 0.6,
+		width: 72,
+	}
+	const lateStyle = {
+		height: 32,
+		layer: lateLayerPaint,
+		opacity: 0.9,
+		width: 80,
+	}
+	const wholeStyle = harness.makeSharedValue(
+		initialStyle,
+		"style.whole-node-style",
+	)
+	const { calls, container } = harness.makeRootContainer({
+		nativeCommandBindingsEnabled: true,
+	})
+
+	const node = config.createInstance(
+		"rect",
+		{
+			style: wholeStyle,
+		},
+		container,
+	)
+
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		"whole style SharedValue should use JS style listeners rather than native command mirrors",
+	)
+	assert.equal(
+		wholeStyle.listenerCount(),
+		1,
+		"whole style SharedValue should register one listener",
+	)
+	assert.equal(
+		only(harness.calls.uiRuntimeCalls).args[1],
+		"",
+		"whole style SharedValue should use the root style listener key",
+	)
+	assert.deepEqual(
+		last(node.styles),
+		initialStyle,
+		"whole style SharedValue should resolve the initial YogaNodeStyle snapshot",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		0,
+		"initial whole style listener setup should not invalidate",
+	)
+
+	wholeStyle.emit(nextStyle)
+
+	assert.deepEqual(
+		only(harness.calls.runOnJSCalls).args,
+		["", nextStyle],
+		"whole style SharedValue updates should bridge the root style listener key and full style payload",
+	)
+	assert.deepEqual(
+		last(node.styles),
+		nextStyle,
+		"whole style SharedValue updates should replace the host style with the latest YogaNodeStyle snapshot",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		1,
+		"whole style SharedValue updates should invalidate the container",
+	)
+	assert.equal(
+		harness.calls.setBlocking.length,
+		0,
+		"whole style SharedValue updates should not use native mirror setBlocking updates",
+	)
+
+	const styleCallsAfterEmit = node.styles.length
+	const runOnJsCallsAfterEmit = harness.calls.runOnJSCalls.length
+	config.commitUpdate(
+		node,
+		"rect",
+		{ style: wholeStyle },
+		{ style: { opacity: 0.8 } },
+		null,
+	)
+
+	assert.equal(
+		wholeStyle.listenerCount(),
+		0,
+		"commitUpdate should remove the whole style SharedValue listener",
+	)
+	assert.equal(
+		only(harness.calls.sharedRemoveListener).had,
+		true,
+		"whole style SharedValue cleanup should remove an existing listener id",
+	)
+	assert.deepEqual(
+		last(node.styles),
+		{ opacity: 0.8 },
+		"commitUpdate should apply the replacement static style after whole-style cleanup",
+	)
+
+	wholeStyle.emit(lateStyle)
+
+	assert.equal(
+		node.styles.length,
+		styleCallsAfterEmit + 1,
+		"removed whole style SharedValue listener should not rebuild styles after cleanup",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		1,
+		"removed whole style SharedValue listener should not invalidate after cleanup",
+	)
+	assert.equal(
+		harness.calls.runOnJSCalls.length,
+		runOnJsCallsAfterEmit,
+		"removed whole style SharedValue listener should not bridge through runOnJS after cleanup",
 	)
 }
 

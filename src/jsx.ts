@@ -56,6 +56,10 @@ export type YogaParagraphStyle = YogaTextStyle &
 		textStyle?: YogaTextStyle
 	}
 export type YogaAnimatedProp<T> = T | SharedValue<T>
+type YogaAnimatedStyleProp<T> =
+	| T
+	| SharedValue<T>
+	| SharedValue<NonNullable<T>>
 type YogaOpaqueValue =
 	| SkFont
 	| SkImage
@@ -118,7 +122,7 @@ type YogaAnimatedStyleValue<K extends keyof YogaNodeStyle> =
 			? YogaAnimatedProp<YogaStyleMatrix>
 			: K extends "transform"
 				? YogaAnimatedTransform
-				: YogaAnimatedProp<YogaNodeStyle[K]>
+				: YogaAnimatedStyleProp<YogaNodeStyle[K]>
 
 export type YogaAnimatedStyleObject = {
 	[K in keyof YogaNodeStyle]?: YogaAnimatedStyleValue<K>
