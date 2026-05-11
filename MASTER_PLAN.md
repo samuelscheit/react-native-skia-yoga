@@ -280,9 +280,8 @@ Accepted package-hygiene implementation:
 
 Current next step:
 
-- Start Worker 158 as a fresh post-worker-157 root-cause audit to accept the
-  current proof boundary, rerun or inspect the feasible matrix as needed, and
-  select the next strongest locally unblocked target.
+- Monitor Worker 158's fresh post-worker-157 root-cause audit from isolated
+  worktree `../worker-158-post-157-root-cause-audit`.
 
 Acceptance criteria:
 

@@ -3153,12 +3153,36 @@ Last updated: 2026-05-11
   root/example dependencies from the main worktree, and queued
   `/root/worker_157_materialized_matrix16` as a managed implementation worker
   subagent with `goal: true`.
+- Worker 157 completed and reported `Goal finished.` It wrote
+  `worker-progress/worker-157-materialized-matrix16.md`.
+- Worker 157 expanded generated materialized `YogaNode.setStyle(...)` proof
+  for 16-value `style.matrix` arrays and preserved the host-JSC/generated
+  materialization proof boundary.
+- Worker 157 branch commit: `31ecc75 Add materialized MatrixArray16 proof`.
+- Merged worker 157 into `main` as
+  `1b1d443 Merge worker 157 materialized MatrixArray16 proof`.
+- Main post-merge verification:
+  - `git diff --check HEAD~1 HEAD`: passed.
+  - `node --check scripts/verify-yoganode-nitro-materialization.mjs`: passed.
+  - `npm run check:yoganode-nitro-materialization`: passed.
+  - `npm run check:feasible-matrix`: passed 28/28 in `4m 51s`.
+- Worker 157 cleanup:
+  - Closed `/root/worker_157_materialized_matrix16`.
+  - Removed `../worker-157-materialized-matrix16`.
+  - Deleted branch `worker/157-materialized-matrix16`.
+- Next step selected by orchestration: launch a fresh post-worker-157
+  root-cause audit to accept the new proof boundary, rerank remaining locally
+  unblocked gaps, and select worker 159's target.
+- Created `worker-158-post-157-root-cause-audit` from current `main`,
+  symlinked root/example dependencies from the main worktree, and queued
+  `/root/worker_158_post_157_root_cause_audit` as a managed audit worker
+  subagent with `goal: true`.
 
 ## Active Workers
 
-- `/root/worker_157_materialized_matrix16`: expanding generated materialized
-  `YogaNode.setStyle(...)` proof for 16-value `style.matrix` arrays from
-  isolated worktree `../worker-157-materialized-matrix16`.
+- `/root/worker_158_post_157_root_cause_audit`: auditing the post-worker-157
+  proof surface and selecting the next strongest locally unblocked target from
+  isolated worktree `../worker-158-post-157-root-cause-audit`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3451,8 +3475,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Start Worker 158 as a fresh post-worker-157 root-cause audit and next-target
-  selection pass.
+- Monitor Worker 158's post-worker-157 audit and next-target selection.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
