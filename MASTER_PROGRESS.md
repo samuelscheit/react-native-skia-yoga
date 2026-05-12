@@ -3543,13 +3543,33 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 171 dynamic style corner-radius public/Reconciler proof accepted:
+  - Added packed-consumer public TypeScript coverage for
+    `style.borderTopLeftRadius` as whole `SharedValue<number>`, whole
+    `SharedValue<SkPoint>`, and nested `{ x, y }` SharedValue leaves.
+  - Added packed-consumer rejection coverage for invalid corner-radius point
+    leaves.
+  - Added Reconciler source-level proof for nested corner-radius leaf listeners
+    and whole `SharedValue<SkPoint>` snapshots/updates, including stable
+    listener keys, initial snapshots, `runOnJS` updates, full style rebuilds,
+    invalidation, cleanup, ignored late emits, explicit invalid-shape errors,
+    and no native command mirrors.
+  - Worker branch commit:
+    `61a5c69 Add corner-radius dynamic proof coverage`.
+  - Merged worker 171 into `main` as
+    `69ecacc Merge worker 171 corner radius dynamic proof`.
+  - Post-merge checks passed: `git diff --check HEAD~1 HEAD`, both edited
+    `node --check` commands, `npm run check:package-typescript-consumer`,
+    `npm run check:reconciler-animated-bindings`,
+    `npm run check:yoganode-nitro-materialization`,
+    `npm run check:yoganode-native-hit-testing`, and
+    `npm run check:feasible-matrix` 28/28 in `4m 26s`.
+- Next step selected by orchestration: launch Worker 172 for a post-Worker 171
+  root-cause audit.
 
 ## Active Workers
 
-- `/root/worker_171_corner_radius_dynamic_proof`: dynamic style corner-radius
-  public/Reconciler proof from isolated worktree
-  `../worker-171-corner-radius-dynamic-proof` on branch
-  `worker/171-corner-radius-dynamic-proof`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3740,6 +3760,7 @@ Accepted worker reports:
 - `worker-progress/worker-168-post-167-root-cause-audit.md`
 - `worker-progress/worker-169-matrix-sharedvalue-proof.md`
 - `worker-progress/worker-170-post-169-root-cause-audit.md`
+- `worker-progress/worker-171-corner-radius-dynamic-proof.md`
 
 ## Pending Workers
 
@@ -3866,16 +3887,11 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor Worker 171: dynamic style corner-radius public/Reconciler proof.
-  - Expected packed TypeScript consumer coverage: representative
-    SkPoint-capable corner-radius authoring, including whole
-    `SharedValue<number>`, whole `SharedValue<SkPoint>`, animated `{ x, y }`
-    leaves, and a negative invalid leaf case.
-  - Expected Reconciler animated-binding proof: nested corner-radius leaves and
-    whole `SharedValue<SkPoint>` snapshots/updates, including listener keys,
-    initial snapshot, `runOnJS` update, full style rebuild, invalidation,
-    cleanup, ignored late emits, no native mirror, and explicit invalid-shape
-    errors.
+- Launch Worker 172: post-Worker 171 root-cause audit.
+  - Accept or reject Worker 171's public packed TypeScript and Node VM
+    Reconciler source-level dynamic corner-radius proof boundary.
+  - Reconfirm focused/post-merge evidence and local platform-native blockers.
+  - Select the next strongest locally unblocked root-cause target.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
