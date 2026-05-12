@@ -133,9 +133,10 @@ layout unit string validation and generated materialized positive/negative
 proof for valid percentages, allowed `auto`, width-only special strings, and
 unsupported or malformed strings.
 
-Latest accepted audit: worker 207 accepted Worker 206's deterministic layout
-unit validation boundary and selected deterministic `style.backgroundColor`
-string validation as the next strongest locally unblocked target.
+Latest accepted audit: worker 209 accepted Worker 208's deterministic
+`style.backgroundColor` string validation boundary and selected deterministic
+finite-number validation for native style scalars as the next strongest
+locally unblocked target.
 
 Current active worker: none.
 
@@ -359,29 +360,31 @@ Accepted package-hygiene implementation:
   native `style.backgroundColor` string validation, added generated
   materialized state-preservation proof, and reconfirmed the full feasible
   matrix.
+- `worker-209-post-208-root-cause-audit`: accepted Worker 208's proof
+  boundary, reconfirmed the full feasible matrix and local platform blockers,
+  and selected finite-number validation for native style scalars.
 
 Current active worker:
 
-- Worker 209 post-208 root-cause audit.
-- Agent path: `/root/worker_209_post_208_root_cause_audit_recovery`.
-- Worktree: `../worker-209-post-208-root-cause-audit`.
-- Branch: `worker/209-post-208-root-cause-audit`.
-- Scope: audit the post-worker-208 state, verify the accepted proof boundary,
-  rerun focused feasible checks as needed, reconfirm platform-native blockers,
-  and select the next strongest locally unblocked root-cause target.
-- State: initial agent `/root/worker_209_post_208_root_cause_audit` stalled
-  with no report or tracked edits after a status follow-up and was closed.
-  Recovery agent spawned with `agent_type: "worker"`, `goal: true`,
-  `fork_turns: "none"`, `model: "gpt-5.5"`, and
-  `reasoning_effort: "xhigh"`; awaiting report.
+- None.
 
 Next queued worker:
 
-- None until Worker 209 reports.
+- Worker 210 numeric style finite validation.
+- Agent path: not spawned yet.
+- Worktree: create `../worker-210-numeric-style-finite-validation` before
+  spawning.
+- Branch: create `worker/210-numeric-style-finite-validation` before spawning.
+- Scope: add narrow pre-mutation finite-number validation in
+  `YogaNode::setStyle(...)` for selected numeric style fields with direct
+  Yoga/paint side effects, starting with paint-associated scalars such as
+  `style.opacity`, `borderWidth`, and `strokeMiter`; extend generated
+  materialized negative coverage to prove non-finite rejection preserves prior
+  native state.
 
 Follow-up queue:
 
-- None until Worker 209 reports.
+- None until Worker 210 reports.
 
 Acceptance criteria:
 
