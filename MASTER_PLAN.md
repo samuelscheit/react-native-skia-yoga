@@ -133,7 +133,8 @@ Latest accepted audit: worker 207 accepted Worker 206's deterministic layout
 unit validation boundary and selected deterministic `style.backgroundColor`
 string validation as the next strongest locally unblocked target.
 
-Current active worker: none.
+Current active worker: worker 208 deterministic `style.backgroundColor` string
+validation.
 
 Goals:
 
@@ -354,16 +355,12 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - Worker 208 deterministic `style.backgroundColor` string validation.
-- Agent path: not spawned yet.
-- Worktree: create `../worker-208-backgroundcolor-string-validation` before
-  spawning.
-- Branch: create `worker/208-backgroundcolor-string-validation` before
-  spawning.
+- Agent path: `/root/worker_208_backgroundcolor_string_validation`.
+- Worktree: `../worker-208-backgroundcolor-string-validation`.
+- Branch: `worker/208-backgroundcolor-string-validation`.
+- State: spawned via `spawn_agent` with `goal: true`; implementation in
+  progress.
 - Scope: reject invalid string `style.backgroundColor` before native
   `_style`/`_paint` mutation while preserving valid CSS strings and `SkPaint`
   host-object behavior; add generated materialized positive/negative proof and
