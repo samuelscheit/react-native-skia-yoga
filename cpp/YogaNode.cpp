@@ -636,6 +636,39 @@ static void validateFiniteNumericStyleFields(const NodeStyle& style)
     validateFiniteStyleNumber("insetVertical", style.insetVertical);
 }
 
+static void validateFiniteCornerRadius(
+    const char* propertyName,
+    const std::optional<std::variant<double, SkPoint>>& value)
+{
+    if (!value.has_value()) {
+        return;
+    }
+
+    if (std::holds_alternative<double>(*value)) {
+        if (!std::isfinite(std::get<double>(*value))) {
+            throwInvalidNumericStyleValue(propertyName);
+        }
+        return;
+    }
+
+    const auto& point = std::get<SkPoint>(*value);
+    if (!std::isfinite(point.x)) {
+        throwInvalidNumericStyleValue(std::string(propertyName) + ".x");
+    }
+    if (!std::isfinite(point.y)) {
+        throwInvalidNumericStyleValue(std::string(propertyName) + ".y");
+    }
+}
+
+static void validateFiniteRadiusStyleFields(const NodeStyle& style)
+{
+    validateFiniteStyleNumber("borderRadius", style.borderRadius);
+    validateFiniteCornerRadius("borderTopLeftRadius", style.borderTopLeftRadius);
+    validateFiniteCornerRadius("borderTopRightRadius", style.borderTopRightRadius);
+    validateFiniteCornerRadius("borderBottomRightRadius", style.borderBottomRightRadius);
+    validateFiniteCornerRadius("borderBottomLeftRadius", style.borderBottomLeftRadius);
+}
+
 static void validateFiniteMatrixElement(size_t index, double value)
 {
     if (!std::isfinite(value)) {
@@ -813,6 +846,7 @@ void YogaNode::setStyle(const NodeStyle& style)
     validateYogaLayoutUnitStrings(style);
     validateBackgroundColorString(style);
     validateFiniteNumericStyleFields(style);
+    validateFiniteRadiusStyleFields(style);
     validateFiniteMatrixAndTransformStyleFields(style);
     invalidateLayout();
     _style = style;
