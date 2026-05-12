@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import assert from "node:assert/strict"
 import { spawnSync } from "node:child_process"
 import {
 	lstatSync,
@@ -15,11 +16,30 @@ import {
 	createVerifierTempDir,
 	formatVerifierTempDiagnostics,
 } from "./verifier-temp-utils.mjs"
+import ts from "typescript"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
 const rootPackageJson = readPackageJson(path.join(rootDir, "package.json"))
 const examplePackageJson = readPackageJson(
 	path.join(rootDir, "example", "package.json"),
+)
+const publicTransformOperationInventory =
+	extractPublicTransformOperationInventory()
+const packageTransformOperationCases = [
+	{ key: "rotateX", staticValue: 0.125, typeName: "TransformRotateX" },
+	{ key: "rotateY", staticValue: 0.25, typeName: "TransformRotateY" },
+	{ key: "rotateZ", staticValue: 0.375, typeName: "TransformRotateZ" },
+	{ key: "scale", staticValue: 1.25, typeName: "TransformScale" },
+	{ key: "scaleX", staticValue: 1.5, typeName: "TransformScaleX" },
+	{ key: "scaleY", staticValue: 0.75, typeName: "TransformScaleY" },
+	{ key: "translateX", staticValue: 4, typeName: "TransformTranslateX" },
+	{ key: "translateY", staticValue: 6, typeName: "TransformTranslateY" },
+	{ key: "skewX", staticValue: 0.05, typeName: "TransformSkewX" },
+	{ key: "skewY", staticValue: 0.075, typeName: "TransformSkewY" },
+]
+assertTransformOperationCaseTableMatchesInventory(
+	"package TypeScript consumer transform cases",
+	packageTransformOperationCases,
 )
 
 const tempRoot = createVerifierTempDir("rnskia-package-typescript-consumer-")
@@ -98,7 +118,12 @@ try {
 		"- Public package entrypoints and lowercase intrinsic JSX compiled from the installed package.",
 	)
 	console.log(
-		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, static style.transform arrays, whole style.transform SharedValue<Transform>, selected nested style.transform SharedValue<number> leaves, and whole SharedValue<YogaNodeStyle> authoring.",
+		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, inventory-backed static style.transform arrays, whole style.transform SharedValue<Transform>, inventory-backed nested style.transform SharedValue<number> leaves for every public transform operation, and whole SharedValue<YogaNodeStyle> authoring.",
+	)
+	console.log(
+		`- Source public transform operation inventory from src/specs/style.ts matched packed consumer cases: ${formatTransformOperationKeys(
+			publicTransformOperationInventory,
+		)}.`,
 	)
 	console.log(
 		"- Packed consumer TypeScript accepted legacy style.antiaAlias while canonical style.antiAlias remains the preferred public authoring key.",
@@ -334,11 +359,7 @@ const legacyAntiAliasStyle: YogaNodeStyle = {
 const staticTransformStyle: YogaNodeStyle = {
 \theight: 28,
 \ttransform: [
-\t\t{ translateX: 4 },
-\t\t{ translateY: 6 },
-\t\t{ scale: 1.25 },
-\t\t{ rotateZ: 0.125 },
-\t\t{ skewX: 0.05 },
+${formatStaticTransformEntries()}
 \t],
 \twidth: 72,
 }
@@ -368,10 +389,7 @@ const sharedSamplingFilter = null as unknown as SharedValue<FilterMode>
 const sharedLayerPaint = null as unknown as SharedValue<SkPaint>
 const sharedLayerOpacity = null as unknown as SharedValue<number>
 const sharedPublicTransform = null as unknown as SharedValue<PublicTransform>
-const sharedTransformTranslateX = null as unknown as SharedValue<number>
-const sharedTransformScale = null as unknown as SharedValue<number>
-const sharedTransformRotateZ = null as unknown as SharedValue<number>
-const sharedTransformSkewY = null as unknown as SharedValue<number>
+${formatSharedTransformDeclarations()}
 const sharedWholeStyle = null as unknown as SharedValue<YogaNodeStyle>
 const compileOnlyPath = null as unknown as SkPath
 
@@ -439,10 +457,7 @@ const dynamicNestedTransformRectProps: YogaIntrinsicElements["rect"] = {
 \tstyle: {
 \t\theight: 36,
 \t\ttransform: [
-\t\t\t{ translateX: sharedTransformTranslateX },
-\t\t\t{ scale: sharedTransformScale },
-\t\t\t{ rotateZ: sharedTransformRotateZ },
-\t\t\t{ skewY: sharedTransformSkewY },
+${formatDynamicTransformEntries()}
 \t\t],
 \t\twidth: 36,
 \t},
@@ -570,6 +585,40 @@ void unsupportedParagraphFlattenedFontVariationsElement
 void unsupportedParagraphNestedFontVariationsElement
 void legacyAntiAliasStyle
 `
+}
+
+function formatStaticTransformEntries() {
+	return packageTransformOperationCases
+		.map(
+			({ key, staticValue }) =>
+				`\t\t{ ${key}: ${formatNumberLiteral(staticValue)} },`,
+		)
+		.join("\n")
+}
+
+function formatSharedTransformDeclarations() {
+	return packageTransformOperationCases
+		.map(
+			({ key }) =>
+				`const ${sharedTransformValueName(
+					key,
+				)} = null as unknown as SharedValue<number>`,
+		)
+		.join("\n")
+}
+
+function formatDynamicTransformEntries() {
+	return packageTransformOperationCases
+		.map(({ key }) => `\t\t\t{ ${key}: ${sharedTransformValueName(key)} },`)
+		.join("\n")
+}
+
+function sharedTransformValueName(key) {
+	return `sharedTransform${key[0].toUpperCase()}${key.slice(1)}`
+}
+
+function formatNumberLiteral(value) {
+	return String(value)
 }
 
 function consumerBoundarySource() {
@@ -783,4 +832,162 @@ function isPathInside(candidatePath, parentPath) {
 			!relativePath.startsWith("..") &&
 			!path.isAbsolute(relativePath))
 	)
+}
+
+function extractPublicTransformOperationInventory() {
+	const stylePath = projectPath("src", "specs", "style.ts")
+	const sourceFile = ts.createSourceFile(
+		stylePath,
+		readFileSync(stylePath, "utf8"),
+		ts.ScriptTarget.Latest,
+		true,
+		ts.ScriptKind.TS,
+	)
+	const operationAliases = new Map()
+	let transformDeclaration
+
+	walkTs(sourceFile, (node) => {
+		if (!ts.isTypeAliasDeclaration(node) || !hasExportModifier(node)) {
+			return
+		}
+
+		if (node.name.text === "Transform") {
+			transformDeclaration = node
+			return
+		}
+
+		if (!node.name.text.startsWith("Transform")) {
+			return
+		}
+
+		operationAliases.set(node.name.text, {
+			key: extractTransformOperationKey(node),
+			typeName: node.name.text,
+		})
+	})
+
+	assert.ok(
+		transformDeclaration,
+		"src/specs/style.ts should export a Transform type alias.",
+	)
+
+	return extractTransformUnionTypeNames(transformDeclaration).map(
+		(typeName) => {
+			const operation = operationAliases.get(typeName)
+			assert.ok(
+				operation,
+				`Transform union references ${typeName}, but no exported single-key numeric transform operation alias was found.`,
+			)
+			return operation
+		},
+	)
+}
+
+function extractTransformOperationKey(declaration) {
+	const type = skipTypeParentheses(declaration.type)
+	assert.equal(
+		ts.isTypeLiteralNode(type),
+		true,
+		`${declaration.name.text} should be a single-property type literal.`,
+	)
+	assert.equal(
+		type.members.length,
+		1,
+		`${declaration.name.text} should expose exactly one public transform operation key.`,
+	)
+
+	const [member] = type.members
+	assert.equal(
+		ts.isPropertySignature(member),
+		true,
+		`${declaration.name.text} should use a property signature.`,
+	)
+	const key = propertyNameText(member.name)
+	assert.ok(
+		key,
+		`${declaration.name.text} should use an identifier or literal property key.`,
+	)
+	assert.equal(
+		member.type?.kind,
+		ts.SyntaxKind.NumberKeyword,
+		`${declaration.name.text}.${key} should be a number leaf.`,
+	)
+	return key
+}
+
+function extractTransformUnionTypeNames(declaration) {
+	const transformType = skipTypeParentheses(declaration.type)
+	assert.equal(
+		ts.isArrayTypeNode(transformType),
+		true,
+		"Transform should be an array type whose element is the public transform operation union.",
+	)
+
+	const elementType = skipTypeParentheses(transformType.elementType)
+	assert.equal(
+		ts.isUnionTypeNode(elementType),
+		true,
+		"Transform should expose a union of public transform operation aliases.",
+	)
+
+	return elementType.types.map((typeNode) => {
+		const member = skipTypeParentheses(typeNode)
+		assert.equal(
+			ts.isTypeReferenceNode(member) && ts.isIdentifier(member.typeName),
+			true,
+			"Transform union members should be named transform operation aliases.",
+		)
+		return member.typeName.text
+	})
+}
+
+function assertTransformOperationCaseTableMatchesInventory(label, cases) {
+	assert.deepEqual(
+		cases.map(({ key, typeName }) => ({ key, typeName })),
+		publicTransformOperationInventory.map(({ key, typeName }) => ({
+			key,
+			typeName,
+		})),
+		`${label} must match the public Transform operation inventory in src/specs/style.ts.`,
+	)
+}
+
+function formatTransformOperationKeys(inventory) {
+	return inventory.map(({ key }) => key).join(", ")
+}
+
+function hasExportModifier(node) {
+	return Boolean(
+		node.modifiers?.some(
+			(modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,
+		),
+	)
+}
+
+function skipTypeParentheses(node) {
+	let current = node
+	while (ts.isParenthesizedTypeNode(current)) {
+		current = current.type
+	}
+	return current
+}
+
+function propertyNameText(name) {
+	if (
+		ts.isIdentifier(name) ||
+		ts.isStringLiteral(name) ||
+		ts.isNumericLiteral(name)
+	) {
+		return name.text
+	}
+	return undefined
+}
+
+function walkTs(node, visitor) {
+	visitor(node)
+	ts.forEachChild(node, (child) => walkTs(child, visitor))
+}
+
+function projectPath(...segments) {
+	return path.resolve(rootDir, ...segments)
 }

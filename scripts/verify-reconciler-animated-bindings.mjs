@@ -7,6 +7,84 @@ import vm from "node:vm"
 import ts from "typescript"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
+const publicTransformOperationInventory =
+	extractPublicTransformOperationInventory()
+const nestedTransformBindingCases = [
+	{
+		initialValue: 0.1,
+		key: "rotateX",
+		lateValue: 0.9,
+		nextValue: 0.2,
+		typeName: "TransformRotateX",
+	},
+	{
+		initialValue: 0.15,
+		key: "rotateY",
+		lateValue: 0.95,
+		nextValue: 0.25,
+		typeName: "TransformRotateY",
+	},
+	{
+		initialValue: 0.2,
+		key: "rotateZ",
+		lateValue: 1,
+		nextValue: 0.3,
+		typeName: "TransformRotateZ",
+	},
+	{
+		initialValue: 1.1,
+		key: "scale",
+		lateValue: 1.9,
+		nextValue: 1.4,
+		typeName: "TransformScale",
+	},
+	{
+		initialValue: 1.2,
+		key: "scaleX",
+		lateValue: 2,
+		nextValue: 1.5,
+		typeName: "TransformScaleX",
+	},
+	{
+		initialValue: 1.3,
+		key: "scaleY",
+		lateValue: 2.1,
+		nextValue: 1.6,
+		typeName: "TransformScaleY",
+	},
+	{
+		initialValue: 4,
+		key: "translateX",
+		lateValue: 14,
+		nextValue: 8,
+		typeName: "TransformTranslateX",
+	},
+	{
+		initialValue: 5,
+		key: "translateY",
+		lateValue: 15,
+		nextValue: 9,
+		typeName: "TransformTranslateY",
+	},
+	{
+		initialValue: 0.05,
+		key: "skewX",
+		lateValue: 0.75,
+		nextValue: 0.15,
+		typeName: "TransformSkewX",
+	},
+	{
+		initialValue: 0.075,
+		key: "skewY",
+		lateValue: 0.8,
+		nextValue: 0.175,
+		typeName: "TransformSkewY",
+	},
+]
+assertTransformOperationCaseTableMatchesInventory(
+	"Reconciler nested style.transform cases",
+	nestedTransformBindingCases,
+)
 
 const nativeCommandBindingCases = [
 	{
@@ -280,7 +358,9 @@ console.log(
 	"- Animated style listeners update host styles, invalidate, and toggle continuous redraw state.",
 )
 console.log(
-	"- Dynamic style.transform SharedValue leaves and whole SharedValue<Transform> use JS style listeners, resolve initial snapshots, rebuild host styles on update, invalidate, clean up, and avoid native command mirrors.",
+	`- Dynamic style.transform SharedValue leaves for every public transform operation (${formatTransformOperationKeys(
+		publicTransformOperationInventory,
+	)}) and whole SharedValue<Transform> use JS style listeners, resolve initial snapshots, rebuild host styles on update, invalidate, clean up, and avoid native command mirrors.`,
 )
 console.log(
 	"- Top-level style.layer SharedValue listeners resolve initial SkPaint snapshots, rebuild full styles on updates, invalidate, clean up, and avoid native command mirrors.",
@@ -601,7 +681,10 @@ function makeNativeBindingProps(testCase, value) {
 }
 
 function setValueAtPath(target, valuePath, value) {
-	assert.ok(valuePath.length > 0, "native binding case path should not be empty")
+	assert.ok(
+		valuePath.length > 0,
+		"native binding case path should not be empty",
+	)
 	let current = target
 	for (const segment of valuePath.slice(0, -1)) {
 		if (!isPlainVerifierObject(current[segment])) {
@@ -1154,21 +1237,25 @@ function verifyTransformStyleSharedValuesUseJsStyleDelivery() {
 function verifyNestedTransformLeavesUseJsStyleDelivery() {
 	const harness = createReconcilerHarness()
 	const config = harness.loadReconcilerHostConfig()
-	const translateX = harness.makeSharedValue(4, "style.transform.translateX")
-	const scale = harness.makeSharedValue(1.25, "style.transform.scale")
-	const rotateZ = harness.makeSharedValue(0.1, "style.transform.rotateZ")
+	const sharedValues = Object.fromEntries(
+		nestedTransformBindingCases.map((testCase) => [
+			testCase.key,
+			harness.makeSharedValue(
+				testCase.initialValue,
+				`style.transform.${testCase.key}`,
+			),
+		]),
+	)
 	const style = harness.makeVmValue(
 		`({
 			height: 20,
 			transform: [
-				{ translateX: bindings.translateX },
-				{ translateY: 3 },
-				{ scale: bindings.scale },
-				{ rotateZ: bindings.rotateZ },
+${formatNestedTransformVmEntries()}
+				{ translateX: 11 },
 			],
 			width: 40,
 		})`,
-		{ rotateZ, scale, translateX },
+		sharedValues,
 	)
 	const { calls, container } = harness.makeRootContainer({
 		nativeCommandBindingsEnabled: true,
@@ -1188,28 +1275,18 @@ function verifyNestedTransformLeavesUseJsStyleDelivery() {
 		0,
 		"nested style.transform SharedValue leaves should use JS style listeners rather than native command mirrors",
 	)
-	assert.equal(
-		translateX.listenerCount(),
-		1,
-		"nested style.transform translateX should register a SharedValue listener",
-	)
-	assert.equal(
-		scale.listenerCount(),
-		1,
-		"nested style.transform scale should register a SharedValue listener",
-	)
-	assert.equal(
-		rotateZ.listenerCount(),
-		1,
-		"nested style.transform rotateZ should register a SharedValue listener",
-	)
+	for (const testCase of nestedTransformBindingCases) {
+		assert.equal(
+			sharedValues[testCase.key].listenerCount(),
+			1,
+			`nested style.transform ${testCase.key} should register a SharedValue listener`,
+		)
+	}
 	assert.deepEqual(
 		harness.calls.uiRuntimeCalls.map((call) => call.args[1]),
-		[
-			"transform.0.translateX",
-			"transform.2.scale",
-			"transform.3.rotateZ",
-		],
+		nestedTransformBindingCases.map(
+			(testCase, index) => `transform.${index}.${testCase.key}`,
+		),
 		"nested style.transform SharedValue listeners should be keyed by transform entry paths",
 	)
 	assert.equal(
@@ -1217,25 +1294,18 @@ function verifyNestedTransformLeavesUseJsStyleDelivery() {
 		true,
 		"group command props should still be applied while style.transform bindings are active",
 	)
+	for (const [index, testCase] of nestedTransformBindingCases.entries()) {
+		assert.equal(
+			last(node.styles).transform[index][testCase.key],
+			testCase.initialValue,
+			`nested style.transform ${testCase.key} should resolve the initial SharedValue snapshot`,
+		)
+	}
 	assert.equal(
-		last(node.styles).transform[0].translateX,
-		4,
-		"nested style.transform translateX should resolve the initial SharedValue snapshot",
-	)
-	assert.equal(
-		last(node.styles).transform[1].translateY,
-		3,
+		last(node.styles).transform[nestedTransformBindingCases.length]
+			.translateX,
+		11,
 		"nested style.transform static entries should remain in the style payload",
-	)
-	assert.equal(
-		last(node.styles).transform[2].scale,
-		1.25,
-		"nested style.transform scale should resolve the initial SharedValue snapshot",
-	)
-	assert.equal(
-		last(node.styles).transform[3].rotateZ,
-		0.1,
-		"nested style.transform rotateZ should resolve the initial SharedValue snapshot",
 	)
 	assert.equal(
 		last(node.styles).height,
@@ -1248,66 +1318,53 @@ function verifyNestedTransformLeavesUseJsStyleDelivery() {
 		"initial nested style.transform listener setup should not invalidate",
 	)
 
-	scale.emit(2)
+	const expectedValues = new Map(
+		nestedTransformBindingCases.map((testCase) => [
+			testCase.key,
+			testCase.initialValue,
+		]),
+	)
+	for (const [index, testCase] of nestedTransformBindingCases.entries()) {
+		sharedValues[testCase.key].emit(testCase.nextValue)
+		expectedValues.set(testCase.key, testCase.nextValue)
 
-	assert.deepEqual(
-		only(harness.calls.runOnJSCalls).args,
-		["transform.2.scale", 2],
-		"nested style.transform scale updates should bridge the transform entry key through runOnJS",
-	)
-	assert.equal(
-		last(node.styles).transform[2].scale,
-		2,
-		"nested style.transform scale updates should rebuild the host style with the latest value",
-	)
-	assert.equal(
-		last(node.styles).transform[0].translateX,
-		4,
-		"nested style.transform scale updates should preserve sibling animated snapshots",
-	)
-	assert.equal(
-		last(node.styles).transform[1].translateY,
-		3,
-		"nested style.transform scale updates should preserve static transform entries",
-	)
-	assert.equal(
-		last(node.styles).width,
-		40,
-		"nested style.transform scale updates should preserve static sibling style fields",
-	)
-	assert.equal(
-		calls.invalidations.length,
-		1,
-		"nested style.transform scale updates should invalidate the container",
-	)
-	assert.equal(
-		harness.calls.setBlocking.length,
-		0,
-		"nested style.transform updates should not use native mirror setBlocking updates",
-	)
-
-	translateX.emit(8)
-
-	assert.deepEqual(
-		last(harness.calls.runOnJSCalls).args,
-		["transform.0.translateX", 8],
-		"nested style.transform translateX updates should bridge their own transform entry key",
-	)
-	assert.equal(
-		last(node.styles).transform[0].translateX,
-		8,
-		"nested style.transform translateX updates should rebuild the host style with the latest value",
-	)
-	assert.equal(
-		last(node.styles).transform[2].scale,
-		2,
-		"nested style.transform translateX updates should preserve the last scale snapshot",
-	)
-	assert.equal(
-		calls.invalidations.length,
-		2,
-		"nested style.transform translateX updates should invalidate through the same style listener path",
-	)
+		assert.deepEqual(
+			last(harness.calls.runOnJSCalls).args,
+			[`transform.${index}.${testCase.key}`, testCase.nextValue],
+			`nested style.transform ${testCase.key} updates should bridge their own transform entry key through runOnJS`,
+		)
+		for (const [
+			expectedIndex,
+			expectedCase,
+		] of nestedTransformBindingCases.entries()) {
+			assert.equal(
+				last(node.styles).transform[expectedIndex][expectedCase.key],
+				expectedValues.get(expectedCase.key),
+				`nested style.transform ${testCase.key} updates should preserve ${expectedCase.key} snapshots`,
+			)
+		}
+		assert.equal(
+			last(node.styles).transform[nestedTransformBindingCases.length]
+				.translateX,
+			11,
+			`nested style.transform ${testCase.key} updates should preserve static transform entries`,
+		)
+		assert.equal(
+			last(node.styles).width,
+			40,
+			`nested style.transform ${testCase.key} updates should preserve static sibling style fields`,
+		)
+		assert.equal(
+			calls.invalidations.length,
+			index + 1,
+			`nested style.transform ${testCase.key} updates should invalidate the container`,
+		)
+		assert.equal(
+			harness.calls.setBlocking.length,
+			0,
+			"nested style.transform updates should not use native mirror setBlocking updates",
+		)
+	}
 
 	const styleCallsAfterEmit = node.styles.length
 	const runOnJsCallsAfterEmit = harness.calls.runOnJSCalls.length
@@ -1325,24 +1382,16 @@ function verifyNestedTransformLeavesUseJsStyleDelivery() {
 		null,
 	)
 
-	assert.equal(
-		translateX.listenerCount(),
-		0,
-		"commitUpdate should remove the nested style.transform translateX listener",
-	)
-	assert.equal(
-		scale.listenerCount(),
-		0,
-		"commitUpdate should remove the nested style.transform scale listener",
-	)
-	assert.equal(
-		rotateZ.listenerCount(),
-		0,
-		"commitUpdate should remove the nested style.transform rotateZ listener",
-	)
+	for (const testCase of nestedTransformBindingCases) {
+		assert.equal(
+			sharedValues[testCase.key].listenerCount(),
+			0,
+			`commitUpdate should remove the nested style.transform ${testCase.key} listener`,
+		)
+	}
 	assert.deepEqual(
 		harness.calls.sharedRemoveListener.map((call) => call.had),
-		[true, true, true],
+		nestedTransformBindingCases.map(() => true),
 		"nested style.transform cleanup should remove existing SharedValue listener ids",
 	)
 	assert.equal(
@@ -1359,9 +1408,9 @@ function verifyNestedTransformLeavesUseJsStyleDelivery() {
 		"commitUpdate should apply the cleaned transform style after removing nested style.transform listeners",
 	)
 
-	translateX.emit(10)
-	scale.emit(3)
-	rotateZ.emit(0.5)
+	for (const testCase of nestedTransformBindingCases) {
+		sharedValues[testCase.key].emit(testCase.lateValue)
+	}
 
 	assert.equal(
 		node.styles.length,
@@ -1370,7 +1419,7 @@ function verifyNestedTransformLeavesUseJsStyleDelivery() {
 	)
 	assert.equal(
 		calls.invalidations.length,
-		2,
+		nestedTransformBindingCases.length,
 		"removed nested style.transform listeners should not invalidate after cleanup",
 	)
 	assert.equal(
@@ -1388,11 +1437,7 @@ function verifyWholeTransformSharedValueUsesJsStyleDelivery() {
 		{ translateY: 3 },
 		{ scale: 1.1 },
 	]
-	const nextTransform = [
-		{ translateX: 6 },
-		{ rotateZ: 0.25 },
-		{ scale: 1.5 },
-	]
+	const nextTransform = [{ translateX: 6 }, { rotateZ: 0.25 }, { scale: 1.5 }]
 	const lateTransform = [{ translateX: 12 }, { scale: 2 }]
 	const transform = harness.makeSharedValue(
 		initialTransform,
@@ -2507,8 +2552,154 @@ function formatJsCommandBindingCaseList(cases) {
 
 function sortNativeBindingCases(cases) {
 	return [...cases].sort((left, right) =>
-		formatNativeBindingCase(left).localeCompare(formatNativeBindingCase(right)),
+		formatNativeBindingCase(left).localeCompare(
+			formatNativeBindingCase(right),
+		),
 	)
+}
+
+function formatNestedTransformVmEntries() {
+	return nestedTransformBindingCases
+		.map(({ key }) => `				{ ${key}: bindings.${key} },`)
+		.join("\n")
+}
+
+function extractPublicTransformOperationInventory() {
+	const stylePath = projectPath("src", "specs", "style.ts")
+	const sourceFile = ts.createSourceFile(
+		stylePath,
+		readFileSync(stylePath, "utf8"),
+		ts.ScriptTarget.Latest,
+		true,
+		ts.ScriptKind.TS,
+	)
+	const operationAliases = new Map()
+	let transformDeclaration
+
+	walkTs(sourceFile, (node) => {
+		if (!ts.isTypeAliasDeclaration(node) || !hasExportModifier(node)) {
+			return
+		}
+
+		if (node.name.text === "Transform") {
+			transformDeclaration = node
+			return
+		}
+
+		if (!node.name.text.startsWith("Transform")) {
+			return
+		}
+
+		operationAliases.set(node.name.text, {
+			key: extractTransformOperationKey(node),
+			typeName: node.name.text,
+		})
+	})
+
+	assert.ok(
+		transformDeclaration,
+		"src/specs/style.ts should export a Transform type alias.",
+	)
+
+	return extractTransformUnionTypeNames(transformDeclaration).map(
+		(typeName) => {
+			const operation = operationAliases.get(typeName)
+			assert.ok(
+				operation,
+				`Transform union references ${typeName}, but no exported single-key numeric transform operation alias was found.`,
+			)
+			return operation
+		},
+	)
+}
+
+function extractTransformOperationKey(declaration) {
+	const type = skipTypeParentheses(declaration.type)
+	assert.equal(
+		ts.isTypeLiteralNode(type),
+		true,
+		`${declaration.name.text} should be a single-property type literal.`,
+	)
+	assert.equal(
+		type.members.length,
+		1,
+		`${declaration.name.text} should expose exactly one public transform operation key.`,
+	)
+
+	const [member] = type.members
+	assert.equal(
+		ts.isPropertySignature(member),
+		true,
+		`${declaration.name.text} should use a property signature.`,
+	)
+	const key = propertyNameText(member.name)
+	assert.ok(
+		key,
+		`${declaration.name.text} should use an identifier or literal property key.`,
+	)
+	assert.equal(
+		member.type?.kind,
+		ts.SyntaxKind.NumberKeyword,
+		`${declaration.name.text}.${key} should be a number leaf.`,
+	)
+	return key
+}
+
+function extractTransformUnionTypeNames(declaration) {
+	const transformType = skipTypeParentheses(declaration.type)
+	assert.equal(
+		ts.isArrayTypeNode(transformType),
+		true,
+		"Transform should be an array type whose element is the public transform operation union.",
+	)
+
+	const elementType = skipTypeParentheses(transformType.elementType)
+	assert.equal(
+		ts.isUnionTypeNode(elementType),
+		true,
+		"Transform should expose a union of public transform operation aliases.",
+	)
+
+	return elementType.types.map((typeNode) => {
+		const member = skipTypeParentheses(typeNode)
+		assert.equal(
+			ts.isTypeReferenceNode(member) && ts.isIdentifier(member.typeName),
+			true,
+			"Transform union members should be named transform operation aliases.",
+		)
+		return member.typeName.text
+	})
+}
+
+function assertTransformOperationCaseTableMatchesInventory(label, cases) {
+	assert.deepEqual(
+		cases.map(({ key, typeName }) => ({ key, typeName })),
+		publicTransformOperationInventory.map(({ key, typeName }) => ({
+			key,
+			typeName,
+		})),
+		`${label} must match the public Transform operation inventory in src/specs/style.ts.`,
+	)
+}
+
+function formatTransformOperationKeys(inventory) {
+	return inventory.map(({ key }) => key).join(", ")
+}
+
+function hasExportModifier(node) {
+	return Boolean(
+		node.modifiers?.some(
+			(modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,
+		),
+	)
+}
+
+function skipTypeParentheses(node) {
+	let current = node
+	while (ts.isParenthesizedTypeNode(current)) {
+		current = current.type
+	}
+	return current
 }
 
 function walkTs(node, visitor) {
