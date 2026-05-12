@@ -173,11 +173,12 @@ try {
 	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height/antiAlias/layer), setStyle(SkPaint-backed backgroundColor plus paint fields), setStyle(global borderRadius), setStyle(style corner radii, clip path/rect/rrect, 9- and 16-value matrix arrays, single-operation transform variants, non-empty transform precedence, empty transform matrix fallback, empty transform no-matrix reset, invertClip), computeLayout(width, height), and the layout getter.")
 	console.log("- The executable materialized parent/child YogaNodes, inserted the child through the generated parent.insertChild(...) wrapper, called materialized parent.getChildren(), and asserted the returned child is the cached materialized child object with generated and raw YogaNode prototype methods.")
 	console.log("- The executable called generated setStyle/computeLayout/insertChild and raw setInteractionConfig/hitTest/getChildren through the returned child object, then asserted recursive returned-grandchild identity through returnedChild.getChildren().")
+	console.log("- The executable built a compact materialized flexbox/layout tree through YogaNode::toObject(runtime), generated setStyle(...), insertChild(...), computeLayout(...), and layout getter access; it covered flexDirection with justifyContent/alignItems, gap/rowGap/columnGap, padding aliases, margin aliases, flexGrow/flexShrink/flexBasis, absolute position with inset aliases, and one stable width special value.")
 	console.log("- The executable materialized parent/child YogaNodes, called generated setCommand(group/rect) and setStyle(clip rect/rrect/path plus invertClip rect/rrect/path) wrappers, inserted the child through the generated parent.insertChild(...) wrapper, rendered the native parent through YogaNode::renderToContext(), and asserted bounded in-clip/out-of-clip raster pixels.")
 	console.log("- The executable used fresh materialized YogaNode objects to invoke generated JS-facing setCommand(line), setCommand(points), setCommand(path), setCommand(text), setCommand(paragraph), setCommand(circle), setCommand(rrect), setCommand(blurMaskFilter), setCommand(rect), setCommand(oval), and setCommand(image) wrappers, preserving the native no-command-kind-change invariant.")
-	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized global borderRadius delivery into _style.borderRadius, _clipsToBounds, and all four _clipToBoundsRadii slots without per-corner or explicit clip state, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect plus bounded renderToContext raster pixels, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate plus bounded rect/rrect/path renderToContext raster pixels, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
+	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized global borderRadius delivery into _style.borderRadius, _clipsToBounds, and all four _clipToBoundsRadii slots without per-corner or explicit clip state, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect plus bounded renderToContext raster pixels, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate plus bounded rect/rrect/path renderToContext raster pixels, generated materialized layout style delivery into native _style optionals and selected Yoga style getters for flex, gap, padding, margin, position/inset, and width stretch state, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
 	console.log("- For CircleCmd, RRectCmd, and BlurMaskFilterCmd, selected no-pixel draw calls are used only to expose render-time native state/mask-filter side effects after generated wrapper delivery; no command-rendering or render-fidelity claim is made.")
-	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect/rrect/path clips, and selected generated/raw YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact clip render fidelity beyond asserted pixels, exact hit-test behavior, or every command rendering path.")
+	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized setStyle flexbox/layout delivery into selected native _style optionals, selected stable Yoga style getters, and selected computed native/generated layout getter values, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect/rrect/path clips, and selected generated/raw YogaNode method/getter execution only; this does not prove exact Yoga conformance beyond asserted values, actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact clip render fidelity beyond asserted pixels, exact hit-test behavior, or every command rendering path.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -622,14 +623,18 @@ function nativeProbeSource() {
 using margelo::nitro::RNSkiaYoga::BlurMaskFilterCmd;
 using margelo::nitro::RNSkiaYoga::BlendMode;
 using margelo::nitro::RNSkiaYoga::CircleCmd;
+using margelo::nitro::RNSkiaYoga::Align;
+using margelo::nitro::RNSkiaYoga::FlexDirection;
 using margelo::nitro::RNSkiaYoga::GroupCmd;
 using margelo::nitro::RNSkiaYoga::HybridYogaNodeSpec;
 using margelo::nitro::RNSkiaYoga::ImageCmd;
+using margelo::nitro::RNSkiaYoga::JustifyContent;
 using margelo::nitro::RNSkiaYoga::LineCmd;
 using margelo::nitro::RNSkiaYoga::NodeStyle;
 using margelo::nitro::RNSkiaYoga::OvalCmd;
 using margelo::nitro::RNSkiaYoga::ParagraphCmd;
 using margelo::nitro::RNSkiaYoga::PathCmd;
+using margelo::nitro::RNSkiaYoga::Position;
 using margelo::nitro::RNSkiaYoga::PointsCmd;
 using margelo::nitro::RNSkiaYoga::RectCmd;
 using margelo::nitro::RNSkiaYoga::RRectCmd;
@@ -684,6 +689,32 @@ void expectOptionalDoubleNear(const std::optional<double>& actual, double expect
 {
     expect(actual.has_value(), message);
     expectNear(*actual, expected, message);
+}
+
+void expectOptionalStyleNumber(
+    const std::optional<std::variant<std::string, double>>& actual,
+    double expected,
+    const char* message)
+{
+    expect(actual.has_value(), message);
+    expect(std::holds_alternative<double>(*actual), message);
+    expectNear(std::get<double>(*actual), expected, message);
+}
+
+void expectOptionalStyleString(
+    const std::optional<std::variant<std::string, double>>& actual,
+    const char* expected,
+    const char* message)
+{
+    expect(actual.has_value(), message);
+    expect(std::holds_alternative<std::string>(*actual), message);
+    expect(std::get<std::string>(*actual) == expected, message);
+}
+
+void expectYGValuePoint(const YGValue& actual, double expected, const char* message)
+{
+    expect(actual.unit == YGUnitPoint, message);
+    expectNear(actual.value, expected, message);
 }
 
 void expectStyleCornerPointRadius(
@@ -1702,6 +1733,61 @@ jsi::Object makeEmptyTransformStyle(jsi::Runtime& runtime)
     return style;
 }
 
+jsi::Object makeFlexLayoutParentStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "width", 200.0);
+    style.setProperty(runtime, "height", 100.0);
+    style.setProperty(runtime, "flexDirection", "row");
+    style.setProperty(runtime, "justifyContent", "center");
+    style.setProperty(runtime, "alignItems", "center");
+    style.setProperty(runtime, "gap", 2.0);
+    style.setProperty(runtime, "rowGap", 4.0);
+    style.setProperty(runtime, "columnGap", 6.0);
+    style.setProperty(runtime, "paddingHorizontal", 10.0);
+    style.setProperty(runtime, "paddingVertical", 5.0);
+    return style;
+}
+
+jsi::Object makeFlexLayoutGrowingChildStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "flexBasis", 40.0);
+    style.setProperty(runtime, "flexGrow", 1.0);
+    style.setProperty(runtime, "flexShrink", 1.0);
+    style.setProperty(runtime, "height", 20.0);
+    style.setProperty(runtime, "marginHorizontal", 5.0);
+    style.setProperty(runtime, "marginVertical", 3.0);
+    return style;
+}
+
+jsi::Object makeFlexLayoutFixedChildStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "width", 30.0);
+    style.setProperty(runtime, "height", 10.0);
+    return style;
+}
+
+jsi::Object makeFlexLayoutAbsoluteChildStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "position", "absolute");
+    style.setProperty(runtime, "width", 12.0);
+    style.setProperty(runtime, "height", 14.0);
+    style.setProperty(runtime, "insetHorizontal", 17.0);
+    style.setProperty(runtime, "insetVertical", 19.0);
+    return style;
+}
+
+jsi::Object makeWidthStretchStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "width", "stretch");
+    style.setProperty(runtime, "height", 8.0);
+    return style;
+}
+
 void expectObjectFunction(jsi::Runtime& runtime, const jsi::Object& object, const char* name)
 {
     expect(object.hasProperty(runtime, name), "materialized YogaNode object must expose expected function");
@@ -2050,6 +2136,218 @@ void assertMaterializedGetChildren(jsi::Runtime& runtime)
     disposeMaterializedObject(runtime, grandchild.object);
     disposeMaterializedObject(runtime, child.object);
     disposeMaterializedObject(runtime, parent.object);
+}
+
+void assertGeneratedMaterializedFlexLayoutBreadth(jsi::Runtime& runtime)
+{
+    auto parent = materializeYogaNode(runtime);
+    auto growingChild = materializeYogaNode(runtime);
+    auto fixedChild = materializeYogaNode(runtime);
+    auto absoluteChild = materializeYogaNode(runtime);
+
+    callGeneratedSetStyle(
+        runtime,
+        parent,
+        makeFlexLayoutParentStyle(runtime),
+        "generated materialized flex parent setStyle must return undefined");
+    callGeneratedSetStyle(
+        runtime,
+        growingChild,
+        makeFlexLayoutGrowingChildStyle(runtime),
+        "generated materialized flex growing child setStyle must return undefined");
+    callGeneratedSetStyle(
+        runtime,
+        fixedChild,
+        makeFlexLayoutFixedChildStyle(runtime),
+        "generated materialized flex fixed child setStyle must return undefined");
+    callGeneratedSetStyle(
+        runtime,
+        absoluteChild,
+        makeFlexLayoutAbsoluteChildStyle(runtime),
+        "generated materialized flex absolute child setStyle must return undefined");
+
+    callGeneratedInsertChild(
+        runtime,
+        parent.object,
+        growingChild.object,
+        "generated materialized flex parent.insertChild(growingChild) must return undefined");
+    callGeneratedInsertChild(
+        runtime,
+        parent.object,
+        fixedChild.object,
+        "generated materialized flex parent.insertChild(fixedChild) must return undefined");
+    callGeneratedInsertChild(
+        runtime,
+        parent.object,
+        absoluteChild.object,
+        "generated materialized flex parent.insertChild(absoluteChild) must return undefined");
+    expect(parent.node->_children.size() == 3, "generated materialized flex tree must attach three native children");
+
+    expect(parent.node->_style.flexDirection.has_value(), "generated flex parent style must populate flexDirection optional");
+    expect(*parent.node->_style.flexDirection == FlexDirection::ROW, "generated flex parent style must store row flexDirection");
+    expect(parent.node->_style.justifyContent.has_value(), "generated flex parent style must populate justifyContent optional");
+    expect(*parent.node->_style.justifyContent == JustifyContent::CENTER, "generated flex parent style must store center justifyContent");
+    expect(parent.node->_style.alignItems.has_value(), "generated flex parent style must populate alignItems optional");
+    expect(*parent.node->_style.alignItems == Align::CENTER, "generated flex parent style must store center alignItems");
+    expectOptionalDoubleNear(parent.node->_style.gap, 2.0, "generated flex parent style must store gap optional");
+    expectOptionalDoubleNear(parent.node->_style.rowGap, 4.0, "generated flex parent style must store rowGap optional");
+    expectOptionalDoubleNear(parent.node->_style.columnGap, 6.0, "generated flex parent style must store columnGap optional");
+    expectOptionalStyleNumber(parent.node->_style.paddingHorizontal, 10.0, "generated flex parent style must store paddingHorizontal optional");
+    expectOptionalStyleNumber(parent.node->_style.paddingVertical, 5.0, "generated flex parent style must store paddingVertical optional");
+
+    expectOptionalDoubleNear(growingChild.node->_style.flexGrow, 1.0, "generated flex child style must store flexGrow optional");
+    expectOptionalDoubleNear(growingChild.node->_style.flexShrink, 1.0, "generated flex child style must store flexShrink optional");
+    expectOptionalStyleNumber(growingChild.node->_style.flexBasis, 40.0, "generated flex child style must store flexBasis optional");
+    expectOptionalStyleNumber(growingChild.node->_style.marginHorizontal, 5.0, "generated flex child style must store marginHorizontal optional");
+    expectOptionalStyleNumber(growingChild.node->_style.marginVertical, 3.0, "generated flex child style must store marginVertical optional");
+
+    expect(absoluteChild.node->_style.position.has_value(), "generated absolute child style must populate position optional");
+    expect(*absoluteChild.node->_style.position == Position::ABSOLUTE, "generated absolute child style must store absolute position");
+    expectOptionalStyleNumber(absoluteChild.node->_style.insetHorizontal, 17.0, "generated absolute child style must store insetHorizontal optional");
+    expectOptionalStyleNumber(absoluteChild.node->_style.insetVertical, 19.0, "generated absolute child style must store insetVertical optional");
+
+    expect(
+        YGNodeStyleGetFlexDirection(parent.node->_node) == YGFlexDirectionRow,
+        "generated flex parent must update Yoga flexDirection getter");
+    expect(
+        YGNodeStyleGetJustifyContent(parent.node->_node) == YGJustifyCenter,
+        "generated flex parent must update Yoga justifyContent getter");
+    expect(
+        YGNodeStyleGetAlignItems(parent.node->_node) == YGAlignCenter,
+        "generated flex parent must update Yoga alignItems getter");
+    expectYGValuePoint(
+        YGNodeStyleGetGap(parent.node->_node, YGGutterAll),
+        2.0,
+        "generated flex parent Yoga gap getter");
+    expectYGValuePoint(
+        YGNodeStyleGetGap(parent.node->_node, YGGutterRow),
+        4.0,
+        "generated flex parent Yoga rowGap getter");
+    expectYGValuePoint(
+        YGNodeStyleGetGap(parent.node->_node, YGGutterColumn),
+        6.0,
+        "generated flex parent Yoga columnGap getter");
+    expectYGValuePoint(
+        YGNodeStyleGetPadding(parent.node->_node, YGEdgeHorizontal),
+        10.0,
+        "generated flex parent Yoga paddingHorizontal getter");
+    expectYGValuePoint(
+        YGNodeStyleGetPadding(parent.node->_node, YGEdgeVertical),
+        5.0,
+        "generated flex parent Yoga paddingVertical getter");
+    expectNear(
+        YGNodeStyleGetFlexGrow(growingChild.node->_node),
+        1.0,
+        "generated flex child Yoga flexGrow getter");
+    expectNear(
+        YGNodeStyleGetFlexShrink(growingChild.node->_node),
+        1.0,
+        "generated flex child Yoga flexShrink getter");
+    expectYGValuePoint(
+        YGNodeStyleGetFlexBasis(growingChild.node->_node),
+        40.0,
+        "generated flex child Yoga flexBasis getter");
+    expectYGValuePoint(
+        YGNodeStyleGetMargin(growingChild.node->_node, YGEdgeHorizontal),
+        5.0,
+        "generated flex child Yoga marginHorizontal getter");
+    expectYGValuePoint(
+        YGNodeStyleGetMargin(growingChild.node->_node, YGEdgeVertical),
+        3.0,
+        "generated flex child Yoga marginVertical getter");
+    expect(
+        YGNodeStyleGetPositionType(absoluteChild.node->_node) == YGPositionTypeAbsolute,
+        "generated absolute child must update Yoga position getter");
+    expectYGValuePoint(
+        YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeHorizontal),
+        17.0,
+        "generated absolute child Yoga insetHorizontal getter");
+    expectYGValuePoint(
+        YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeVertical),
+        19.0,
+        "generated absolute child Yoga insetVertical getter");
+
+    auto computeLayout = parent.object.getPropertyAsFunction(runtime, "computeLayout");
+    callComputeLayout(runtime, parent.object, computeLayout);
+    expect(parent.node->_hasLayoutBeenComputed, "generated materialized flex parent computeLayout must compute native layout");
+    expect(growingChild.node->_hasLayoutBeenComputed, "generated materialized flex growing child computeLayout must compute native layout");
+    expect(fixedChild.node->_hasLayoutBeenComputed, "generated materialized flex fixed child computeLayout must compute native layout");
+    expect(absoluteChild.node->_hasLayoutBeenComputed, "generated materialized flex absolute child computeLayout must compute native layout");
+
+    expectNear(parent.node->_layout.left, 0.0, "generated materialized flex parent native layout left");
+    expectNear(parent.node->_layout.top, 0.0, "generated materialized flex parent native layout top");
+    expectNear(parent.node->_layout.width, 200.0, "generated materialized flex parent native layout width");
+    expectNear(parent.node->_layout.height, 100.0, "generated materialized flex parent native layout height");
+    expectNear(growingChild.node->_layout.left, 15.0, "generated materialized growing child native layout left");
+    expectNear(growingChild.node->_layout.top, 40.0, "generated materialized growing child native layout top");
+    expectNear(growingChild.node->_layout.width, 134.0, "generated materialized growing child native layout width");
+    expectNear(growingChild.node->_layout.height, 20.0, "generated materialized growing child native layout height");
+    expectNear(fixedChild.node->_layout.left, 160.0, "generated materialized fixed child native layout left");
+    expectNear(fixedChild.node->_layout.top, 45.0, "generated materialized fixed child native layout top");
+    expectNear(fixedChild.node->_layout.width, 30.0, "generated materialized fixed child native layout width");
+    expectNear(fixedChild.node->_layout.height, 10.0, "generated materialized fixed child native layout height");
+    expectNear(absoluteChild.node->_layout.left, 17.0, "generated materialized absolute child native layout left");
+    expectNear(absoluteChild.node->_layout.top, 19.0, "generated materialized absolute child native layout top");
+    expectNear(absoluteChild.node->_layout.width, 12.0, "generated materialized absolute child native layout width");
+    expectNear(absoluteChild.node->_layout.height, 14.0, "generated materialized absolute child native layout height");
+
+    auto parentLayout = parent.object.getProperty(runtime, "layout");
+    expect(parentLayout.isObject(), "generated flex parent layout getter must return an object");
+    auto parentLayoutObject = parentLayout.asObject(runtime);
+    expectNear(getNumberProperty(runtime, parentLayoutObject, "width"), 200.0, "generated flex parent layout getter width");
+    expectNear(getNumberProperty(runtime, parentLayoutObject, "height"), 100.0, "generated flex parent layout getter height");
+
+    auto growingChildLayout = growingChild.object.getProperty(runtime, "layout");
+    expect(growingChildLayout.isObject(), "generated flex growing child layout getter must return an object");
+    auto growingChildLayoutObject = growingChildLayout.asObject(runtime);
+    expectNear(getNumberProperty(runtime, growingChildLayoutObject, "left"), 15.0, "generated flex growing child layout getter left");
+    expectNear(getNumberProperty(runtime, growingChildLayoutObject, "top"), 40.0, "generated flex growing child layout getter top");
+    expectNear(getNumberProperty(runtime, growingChildLayoutObject, "width"), 134.0, "generated flex growing child layout getter width");
+    expectNear(getNumberProperty(runtime, growingChildLayoutObject, "height"), 20.0, "generated flex growing child layout getter height");
+
+    auto fixedChildLayout = fixedChild.object.getProperty(runtime, "layout");
+    expect(fixedChildLayout.isObject(), "generated flex fixed child layout getter must return an object");
+    auto fixedChildLayoutObject = fixedChildLayout.asObject(runtime);
+    expectNear(getNumberProperty(runtime, fixedChildLayoutObject, "left"), 160.0, "generated flex fixed child layout getter left");
+    expectNear(getNumberProperty(runtime, fixedChildLayoutObject, "top"), 45.0, "generated flex fixed child layout getter top");
+    expectNear(getNumberProperty(runtime, fixedChildLayoutObject, "width"), 30.0, "generated flex fixed child layout getter width");
+    expectNear(getNumberProperty(runtime, fixedChildLayoutObject, "height"), 10.0, "generated flex fixed child layout getter height");
+
+    auto absoluteChildLayout = absoluteChild.object.getProperty(runtime, "layout");
+    expect(absoluteChildLayout.isObject(), "generated flex absolute child layout getter must return an object");
+    auto absoluteChildLayoutObject = absoluteChildLayout.asObject(runtime);
+    expectNear(getNumberProperty(runtime, absoluteChildLayoutObject, "left"), 17.0, "generated flex absolute child layout getter left");
+    expectNear(getNumberProperty(runtime, absoluteChildLayoutObject, "top"), 19.0, "generated flex absolute child layout getter top");
+    expectNear(getNumberProperty(runtime, absoluteChildLayoutObject, "width"), 12.0, "generated flex absolute child layout getter width");
+    expectNear(getNumberProperty(runtime, absoluteChildLayoutObject, "height"), 14.0, "generated flex absolute child layout getter height");
+
+    disposeMaterializedObject(runtime, absoluteChild.object);
+    disposeMaterializedObject(runtime, fixedChild.object);
+    disposeMaterializedObject(runtime, growingChild.object);
+    disposeMaterializedObject(runtime, parent.object);
+}
+
+void assertGeneratedWidthStretchStyle(jsi::Runtime& runtime)
+{
+    auto materialized = materializeYogaNode(runtime);
+    callGeneratedSetStyle(
+        runtime,
+        materialized,
+        makeWidthStretchStyle(runtime),
+        "generated materialized width stretch setStyle must return undefined");
+
+    expectOptionalStyleString(
+        materialized.node->_style.width,
+        "stretch",
+        "generated width stretch style must store width string optional");
+    expectOptionalStyleNumber(
+        materialized.node->_style.height,
+        8.0,
+        "generated width stretch style must still store ordinary height optional");
+    const auto width = YGNodeStyleGetWidth(materialized.node->_node);
+    expect(width.unit == YGUnitStretch, "generated width stretch style must update stable Yoga width getter");
+
+    disposeMaterializedObject(runtime, materialized.object);
 }
 
 void assertGeneratedLineSetCommand(jsi::Runtime& runtime)
@@ -3129,6 +3427,10 @@ int main()
     expectNear(getNumberProperty(*runtime, layoutObject, "top"), 0.0, "generated layout getter top");
     expectNear(getNumberProperty(*runtime, layoutObject, "width"), 64.0, "generated layout getter width");
     expectNear(getNumberProperty(*runtime, layoutObject, "height"), 32.0, "generated layout getter height");
+
+    std::cerr << "probe: call generated materialized flex layout breadth" << std::endl;
+    assertGeneratedMaterializedFlexLayoutBreadth(*runtime);
+    assertGeneratedWidthStretchStyle(*runtime);
 
     std::cerr << "probe: exercise stable generated negatives" << std::endl;
     expectThrows(
