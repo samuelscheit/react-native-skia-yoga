@@ -296,14 +296,19 @@ Accepted package-hygiene implementation:
 - `worker-165-transform-public-reconciler-proof`: added packed-consumer static and dynamic `style.transform` authoring proof plus Reconciler source-level listener/update/cleanup proof for nested and whole-transform SharedValues.
 - `worker-166-post-165-root-cause-audit`: accepted Worker 165's proof boundary, reconfirmed the focused/post-merge evidence and local platform blockers, and selected transform variant breadth/drift guarding as Worker 167's target.
 
-Current next step:
+Current active worker:
 
-- Launch Worker 167 for transform variant breadth and drift guard from an
-  isolated worktree and branch.
-- Expected Worker 167 scope: add a public transform operation inventory, extend
-  packed-consumer and Reconciler nested transform `SharedValue<number>` cases
-  to every current public transform operation key, and fail if public transform
-  operation inventory and verifier tables drift.
+- Worker 167 transform variant breadth and drift guard.
+  - Agent path: `/root/worker_167_transform_variant_drift_guard`.
+  - Worktree: `../worker-167-transform-variant-drift-guard`.
+  - Branch: `worker/167-transform-variant-drift-guard`.
+  - Scope: add a public transform operation inventory, extend packed-consumer
+    and Reconciler nested transform `SharedValue<number>` cases to every
+    current public transform operation key, and fail if public transform
+    operation inventory and verifier tables drift.
+  - Required verification: focused package-consumer and Reconciler checks,
+    `check:yoganode-nitro-materialization`, `check:feasible-matrix`, and
+    `git diff --check`.
 
 Acceptance criteria:
 
