@@ -9,6 +9,10 @@ import ts from "typescript"
 const rootDir = path.resolve(import.meta.dirname, "..")
 const unsupportedNestedMatrixSharedValueError =
 	"style.matrix does not support SharedValue entries inside matrix arrays. Use a SharedValue for the whole matrix instead."
+const unsupportedCornerRadiusValueError = (key) =>
+	`style.${key} only supports number, SkPoint, SharedValue<number>, SharedValue<SkPoint>, or { x, y } with numeric animated leaves.`
+const unsupportedCornerRadiusPointLeafError = (key) =>
+	`style.${key} point values must use numeric x/y values or SharedValue<number> x/y leaves.`
 const publicTransformOperationInventory =
 	extractPublicTransformOperationInventory()
 const nestedTransformBindingCases = [
@@ -339,6 +343,7 @@ verifyJsCommandBindingModeRunsCommandUpdateCallbacks()
 verifyStyleAnimatedListenerUpdatesStyleAndContinuousRedraw()
 verifyTransformStyleSharedValuesUseJsStyleDelivery()
 verifyMatrixStyleSharedValuesUseJsStyleDelivery()
+verifyCornerRadiusStyleSharedValuesUseJsStyleDelivery()
 verifyStyleLayerSharedValueUsesJsStyleDelivery()
 verifyWholeStyleSharedValueUsesJsStyleDelivery()
 verifyNativeBindingRefCountsAndDetachCleanup()
@@ -367,6 +372,9 @@ console.log(
 )
 console.log(
 	"- Whole style.matrix SharedValue listeners resolve 9-value snapshots, deliver 16-value updates through the top-level matrix key, rebuild full styles, invalidate, clean up, reject nested SharedValue matrix entries with the explicit boundary error, and avoid native command mirrors.",
+)
+console.log(
+	"- Dynamic SkPoint-capable style.borderTopLeftRadius listeners cover nested { x, y } SharedValue<number> leaves and whole SharedValue<SkPoint> snapshots/updates with stable keys, full style rebuilds, invalidation, cleanup, ignored late emits, explicit invalid-shape errors, and no native command mirrors.",
 )
 console.log(
 	"- Top-level style.layer SharedValue listeners resolve initial SkPaint snapshots, rebuild full styles on updates, invalidate, clean up, and avoid native command mirrors.",
@@ -1245,6 +1253,12 @@ function verifyMatrixStyleSharedValuesUseJsStyleDelivery() {
 	verifyNestedMatrixSharedValueEntriesFailWithExplicitError()
 }
 
+function verifyCornerRadiusStyleSharedValuesUseJsStyleDelivery() {
+	verifyNestedCornerRadiusLeavesUseJsStyleDelivery()
+	verifyWholeCornerRadiusPointSharedValueUsesJsStyleDelivery()
+	verifyInvalidCornerRadiusShapesFailWithExplicitErrors()
+}
+
 function verifyNestedTransformLeavesUseJsStyleDelivery() {
 	const harness = createReconcilerHarness()
 	const config = harness.loadReconcilerHostConfig()
@@ -1831,6 +1845,431 @@ function verifyNestedMatrixSharedValueEntriesFailWithExplicitError() {
 		harness.calls.createSynchronizable.length,
 		0,
 		"unsupported nested style.matrix entries should not create native command mirrors",
+	)
+}
+
+function verifyNestedCornerRadiusLeavesUseJsStyleDelivery() {
+	const harness = createReconcilerHarness()
+	const config = harness.loadReconcilerHostConfig()
+	const radiusX = harness.makeSharedValue(4, "style.borderTopLeftRadius.x")
+	const radiusY = harness.makeSharedValue(6, "style.borderTopLeftRadius.y")
+	const style = harness.makeVmValue(
+		`({
+			borderTopLeftRadius: {
+				x: bindings.radiusX,
+				y: bindings.radiusY,
+			},
+			height: 20,
+			opacity: 0.45,
+			width: 40,
+		})`,
+		{ radiusX, radiusY },
+	)
+	const { calls, container } = harness.makeRootContainer({
+		nativeCommandBindingsEnabled: true,
+	})
+
+	const node = config.createInstance(
+		"rect",
+		{
+			style,
+		},
+		container,
+	)
+
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		"nested style.borderTopLeftRadius leaves should use JS style listeners rather than native command mirrors",
+	)
+	assert.equal(
+		radiusX.listenerCount(),
+		1,
+		"nested style.borderTopLeftRadius.x should register a SharedValue listener",
+	)
+	assert.equal(
+		radiusY.listenerCount(),
+		1,
+		"nested style.borderTopLeftRadius.y should register a SharedValue listener",
+	)
+	assert.deepEqual(
+		harness.calls.uiRuntimeCalls.map((call) => call.args[1]),
+		["borderTopLeftRadius.x", "borderTopLeftRadius.y"],
+		"nested corner-radius SharedValue listeners should use stable point-leaf keys",
+	)
+	assert.equal(
+		last(node.styles).borderTopLeftRadius.x,
+		4,
+		"nested style.borderTopLeftRadius.x should resolve the initial SharedValue snapshot",
+	)
+	assert.equal(
+		last(node.styles).borderTopLeftRadius.y,
+		6,
+		"nested style.borderTopLeftRadius.y should resolve the initial SharedValue snapshot",
+	)
+	assert.deepEqual(
+		Object.keys(last(node.styles)).sort(),
+		["borderTopLeftRadius", "height", "opacity", "width"],
+		"nested style.borderTopLeftRadius should preserve the full initial style payload keys",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		0,
+		"initial nested corner-radius listener setup should not invalidate",
+	)
+
+	radiusX.emit(8)
+
+	assert.deepEqual(
+		only(harness.calls.runOnJSCalls).args,
+		["borderTopLeftRadius.x", 8],
+		"nested style.borderTopLeftRadius.x updates should bridge their stable listener key through runOnJS",
+	)
+	assert.equal(
+		node.styles.length,
+		2,
+		"nested style.borderTopLeftRadius.x updates should call setStyle once after the initial style",
+	)
+	assert.equal(
+		last(node.styles).borderTopLeftRadius.x,
+		8,
+		"nested style.borderTopLeftRadius.x updates should rebuild the host style with the latest x snapshot",
+	)
+	assert.equal(
+		last(node.styles).borderTopLeftRadius.y,
+		6,
+		"nested style.borderTopLeftRadius.x updates should preserve the latest y snapshot",
+	)
+	assert.equal(
+		last(node.styles).width,
+		40,
+		"nested style.borderTopLeftRadius.x updates should preserve static sibling style fields",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		1,
+		"nested style.borderTopLeftRadius.x updates should invalidate the container",
+	)
+
+	radiusY.emit(10)
+
+	assert.deepEqual(
+		last(harness.calls.runOnJSCalls).args,
+		["borderTopLeftRadius.y", 10],
+		"nested style.borderTopLeftRadius.y updates should bridge their stable listener key through runOnJS",
+	)
+	assert.equal(
+		last(node.styles).borderTopLeftRadius.x,
+		8,
+		"nested style.borderTopLeftRadius.y updates should preserve the latest x snapshot",
+	)
+	assert.equal(
+		last(node.styles).borderTopLeftRadius.y,
+		10,
+		"nested style.borderTopLeftRadius.y updates should rebuild the host style with the latest y snapshot",
+	)
+	assert.equal(
+		last(node.styles).height,
+		20,
+		"nested style.borderTopLeftRadius.y updates should preserve static sibling style fields",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		2,
+		"nested style.borderTopLeftRadius.y updates should invalidate the container",
+	)
+	assert.equal(
+		harness.calls.setBlocking.length,
+		0,
+		"nested style.borderTopLeftRadius updates should not use native mirror setBlocking updates",
+	)
+
+	const styleCallsAfterEmit = node.styles.length
+	const runOnJsCallsAfterEmit = harness.calls.runOnJSCalls.length
+	config.commitUpdate(
+		node,
+		"rect",
+		{ style },
+		{
+			style: {
+				borderTopLeftRadius: { x: 2, y: 3 },
+				opacity: 0.2,
+			},
+		},
+		null,
+	)
+
+	assert.equal(
+		radiusX.listenerCount(),
+		0,
+		"commitUpdate should remove the nested style.borderTopLeftRadius.x listener",
+	)
+	assert.equal(
+		radiusY.listenerCount(),
+		0,
+		"commitUpdate should remove the nested style.borderTopLeftRadius.y listener",
+	)
+	assert.deepEqual(
+		harness.calls.sharedRemoveListener.map((call) => call.had),
+		[true, true],
+		"nested corner-radius cleanup should remove existing SharedValue listener ids",
+	)
+	assert.deepEqual(
+		Object.keys(last(node.styles)).sort(),
+		["borderTopLeftRadius", "opacity"],
+		"commitUpdate should apply the cleaned corner-radius style keys after removing nested listeners",
+	)
+	assert.equal(
+		last(node.styles).borderTopLeftRadius.x,
+		2,
+		"commitUpdate should apply the cleaned corner-radius x value after removing nested listeners",
+	)
+	assert.equal(
+		last(node.styles).borderTopLeftRadius.y,
+		3,
+		"commitUpdate should apply the cleaned corner-radius y value after removing nested listeners",
+	)
+	assert.equal(
+		last(node.styles).opacity,
+		0.2,
+		"commitUpdate should apply sibling style fields after removing nested corner-radius listeners",
+	)
+
+	radiusX.emit(12)
+	radiusY.emit(14)
+
+	assert.equal(
+		node.styles.length,
+		styleCallsAfterEmit + 1,
+		"removed nested corner-radius listeners should not rebuild styles after cleanup",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		2,
+		"removed nested corner-radius listeners should not invalidate after cleanup",
+	)
+	assert.equal(
+		harness.calls.runOnJSCalls.length,
+		runOnJsCallsAfterEmit,
+		"removed nested corner-radius listeners should not bridge through runOnJS after cleanup",
+	)
+}
+
+function verifyWholeCornerRadiusPointSharedValueUsesJsStyleDelivery() {
+	const harness = createReconcilerHarness()
+	const config = harness.loadReconcilerHostConfig()
+	const initialPoint = { x: 3, y: 5 }
+	const nextPoint = { x: 7, y: 11 }
+	const latePoint = { x: 13, y: 17 }
+	const cornerRadius = harness.makeSharedValue(
+		initialPoint,
+		"style.borderTopLeftRadius",
+	)
+	const style = harness.makeVmValue(
+		`({
+			borderTopLeftRadius: bindings.cornerRadius,
+			height: 30,
+			opacity: 0.65,
+			width: 50,
+		})`,
+		{ cornerRadius },
+	)
+	const { calls, container } = harness.makeRootContainer({
+		nativeCommandBindingsEnabled: true,
+	})
+
+	const node = config.createInstance(
+		"rect",
+		{
+			style,
+		},
+		container,
+	)
+
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		"whole style.borderTopLeftRadius SharedValue<SkPoint> should use JS style listeners rather than native command mirrors",
+	)
+	assert.equal(
+		cornerRadius.listenerCount(),
+		1,
+		"whole style.borderTopLeftRadius SharedValue<SkPoint> should register one listener",
+	)
+	assert.equal(
+		only(harness.calls.uiRuntimeCalls).args[1],
+		"borderTopLeftRadius",
+		"whole style.borderTopLeftRadius SharedValue<SkPoint> should use the top-level corner listener key",
+	)
+	assert.deepEqual(
+		last(node.styles).borderTopLeftRadius,
+		initialPoint,
+		"whole style.borderTopLeftRadius SharedValue<SkPoint> should resolve the initial SkPoint snapshot",
+	)
+	assert.deepEqual(
+		Object.keys(last(node.styles)).sort(),
+		["borderTopLeftRadius", "height", "opacity", "width"],
+		"whole style.borderTopLeftRadius SharedValue<SkPoint> should preserve the full initial style payload keys",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		0,
+		"initial whole corner-radius listener setup should not invalidate",
+	)
+
+	cornerRadius.emit(nextPoint)
+
+	assert.deepEqual(
+		only(harness.calls.runOnJSCalls).args,
+		["borderTopLeftRadius", nextPoint],
+		"whole style.borderTopLeftRadius updates should bridge the top-level listener key and SkPoint value through runOnJS",
+	)
+	assert.equal(
+		node.styles.length,
+		2,
+		"whole style.borderTopLeftRadius updates should call setStyle once after the initial style",
+	)
+	assert.deepEqual(
+		Object.keys(last(node.styles)).sort(),
+		["borderTopLeftRadius", "height", "opacity", "width"],
+		"whole style.borderTopLeftRadius updates should rebuild the full host style keys",
+	)
+	assert.deepEqual(
+		last(node.styles).borderTopLeftRadius,
+		nextPoint,
+		"whole style.borderTopLeftRadius updates should rebuild the host style with the latest SkPoint snapshot",
+	)
+	assert.equal(
+		last(node.styles).height,
+		30,
+		"whole style.borderTopLeftRadius updates should preserve static sibling style fields",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		1,
+		"whole style.borderTopLeftRadius updates should invalidate the container",
+	)
+	assert.equal(
+		harness.calls.setBlocking.length,
+		0,
+		"whole style.borderTopLeftRadius updates should not use native mirror setBlocking updates",
+	)
+
+	const styleCallsAfterEmit = node.styles.length
+	const runOnJsCallsAfterEmit = harness.calls.runOnJSCalls.length
+	config.commitUpdate(
+		node,
+		"rect",
+		{ style },
+		{
+			style: {
+				borderTopLeftRadius: { x: 1, y: 2 },
+				opacity: 0.3,
+			},
+		},
+		null,
+	)
+
+	assert.equal(
+		cornerRadius.listenerCount(),
+		0,
+		"commitUpdate should remove the whole style.borderTopLeftRadius listener",
+	)
+	assert.equal(
+		only(harness.calls.sharedRemoveListener).had,
+		true,
+		"whole corner-radius cleanup should remove an existing SharedValue listener id",
+	)
+	assert.deepEqual(
+		last(node.styles),
+		{
+			borderTopLeftRadius: { x: 1, y: 2 },
+			opacity: 0.3,
+		},
+		"commitUpdate should apply the cleaned corner-radius style after whole-corner cleanup",
+	)
+
+	cornerRadius.emit(latePoint)
+
+	assert.equal(
+		node.styles.length,
+		styleCallsAfterEmit + 1,
+		"removed whole corner-radius listener should not rebuild styles after cleanup",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		1,
+		"removed whole corner-radius listener should not invalidate after cleanup",
+	)
+	assert.equal(
+		harness.calls.runOnJSCalls.length,
+		runOnJsCallsAfterEmit,
+		"removed whole corner-radius listener should not bridge through runOnJS after cleanup",
+	)
+}
+
+function verifyInvalidCornerRadiusShapesFailWithExplicitErrors() {
+	const harness = createReconcilerHarness()
+	const config = harness.loadReconcilerHostConfig()
+	const invalidLeaf = harness.makeSharedValue(
+		"wide",
+		"style.borderTopLeftRadius.x.invalid",
+	)
+	const invalidNestedStyle = harness.makeVmValue(
+		`({
+			borderTopLeftRadius: {
+				x: bindings.invalidLeaf,
+				y: 2,
+			},
+		})`,
+		{ invalidLeaf },
+	)
+	const invalidWholePoint = harness.makeSharedValue(
+		{ x: 4, y: "wide" },
+		"style.borderTopLeftRadius.invalid-whole-point",
+	)
+	const invalidWholeStyle = harness.makeVmValue(
+		`({ borderTopLeftRadius: bindings.invalidWholePoint })`,
+		{ invalidWholePoint },
+	)
+	const { container } = harness.makeRootContainer({
+		nativeCommandBindingsEnabled: true,
+	})
+
+	assert.throws(
+		() => {
+			config.createInstance("rect", { style: invalidNestedStyle }, container)
+		},
+		{
+			message: unsupportedCornerRadiusPointLeafError(
+				"borderTopLeftRadius",
+			),
+		},
+		"invalid nested corner-radius point leaves should fail with the explicit point-leaf error",
+	)
+	assert.throws(
+		() => {
+			config.createInstance("rect", { style: invalidWholeStyle }, container)
+		},
+		{
+			message: unsupportedCornerRadiusValueError("borderTopLeftRadius"),
+		},
+		"invalid whole corner-radius SharedValue snapshots should fail with the explicit value-shape error",
+	)
+	assert.equal(
+		invalidLeaf.listenerCount(),
+		0,
+		"invalid nested corner-radius leaves should fail before registering nested listeners",
+	)
+	assert.equal(
+		invalidWholePoint.listenerCount(),
+		0,
+		"invalid whole corner-radius snapshots should fail before registering the top-level listener",
+	)
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		"invalid corner-radius shapes should not create native command mirrors",
 	)
 }
 
