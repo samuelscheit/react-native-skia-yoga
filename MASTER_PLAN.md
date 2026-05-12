@@ -451,18 +451,22 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - Worker 220 command `AnimatedDouble` finite validation.
-- Planned worktree: `../worker-220-command-animated-double-finite-validation`.
-- Planned branch: `worker/220-command-animated-double-finite-validation`.
+- Agent path: `/root/worker_220_command_animated_double_finite_validation`.
+- Worktree: `../worker-220-command-animated-double-finite-validation`.
+- Branch: `worker/220-command-animated-double-finite-validation`.
 - Scope: implement deterministic finite validation for static numeric
   command `AnimatedDouble` payloads: `rrect.cornerRadius`,
   `blurMaskFilter.blur`, `path.trimStart`, `path.trimEnd`, and
   `circle.radius`, with native and generated materialized state-preservation
   coverage.
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`; implementation in progress.
+
+Next queued worker:
+
+- None until Worker 220 reports.
 
 Follow-up queue:
 
