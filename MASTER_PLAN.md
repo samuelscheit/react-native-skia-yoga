@@ -311,16 +311,19 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- Worker 176 post-Worker 175 root-cause audit.
+  - Agent path: `/root/worker_176_post_175_root_cause_audit`.
+  - Worktree: `../worker-176-post-175-root-cause-audit`.
+  - Branch: `worker/176-post-175-root-cause-audit`.
+  - Scope: accept or reject Worker 175's bounded style corner-radius raster
+    proof boundary, reconfirm focused/post-merge evidence and local platform
+    blockers, and select the next strongest locally unblocked root-cause target.
+  - Required verification: focused evidence needed for the audit,
+    `check:feasible-matrix`, platform blocker reprobes, and `git diff --check`.
 
 Next queued worker:
 
-- Worker 176 post-Worker 175 root-cause audit.
-  - Accept or reject Worker 175's bounded style corner-radius raster proof.
-  - Reconfirm focused/post-merge evidence and local platform blockers.
-  - Select the next strongest locally unblocked root-cause target, considering
-    a compact JS/Reconciler all-four-corner-key and whole scalar
-    `SharedValue<number>` completion pass.
+- None until Worker 176 reports.
 
 Acceptance criteria:
 
