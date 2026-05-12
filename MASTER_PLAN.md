@@ -349,9 +349,11 @@ Accepted package-hygiene implementation:
 Current active worker:
 
 - Worker 206 deterministic layout unit validation.
-- Agent path: `/root/worker_206_layout_unit_validation`.
+- Agent path: `/root/worker_206_layout_unit_validation_recovery`.
 - Worktree: `../worker-206-layout-unit-validation`.
 - Branch: `worker/206-layout-unit-validation`.
+- State: recovery subagent is continuing the cleanly isolated branch after the
+  first Worker 206 subagent was closed with partial unreported edits.
 - Scope: validate Yoga layout unit strings deterministically in native
   `YogaNode::setStyle(...)`, preserving accepted numeric, percent, auto, and
   width-special behavior, and add generated materialized negative/positive
