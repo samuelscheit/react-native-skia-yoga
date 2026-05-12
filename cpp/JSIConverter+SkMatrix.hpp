@@ -7,7 +7,9 @@
 #endif
 
 #include <jsi/jsi.h>
+#include <cmath>
 #include <memory>
+#include <string>
 
 #include "SkiaGlue.hpp"
 // Keep include consistent with generated headers
@@ -19,10 +21,45 @@ namespace margelo::nitro {
 
 using namespace facebook;
 
+namespace {
+
+inline void validateFiniteMatrixArray(jsi::Runtime& runtime, const jsi::Object& object) {
+  if (!object.isArray(runtime)) {
+    return;
+  }
+
+  const auto array = object.asArray(runtime);
+  const auto length = array.size(runtime);
+  if (length != 9 && length != 16) {
+    return;
+  }
+
+  for (size_t i = 0; i < length; ++i) {
+    const auto value = array.getValueAtIndex(runtime, i).asNumber();
+    if (!std::isfinite(value)) {
+      throw jsi::JSError(
+          runtime,
+          "Invalid numeric style value for matrix[" + std::to_string(i) +
+              "]: expected a finite number.");
+    }
+  }
+}
+
+inline void validateFiniteMatrixArray(jsi::Runtime& runtime, const jsi::Value& value) {
+  if (!value.isObject()) {
+    return;
+  }
+
+  validateFiniteMatrixArray(runtime, value.asObject(runtime));
+}
+
+} // namespace
+
 // C++ SkMatrix <> JS Array<number> (length 9 or 16)
 template <>
 struct JSIConverter<SkMatrix> final {
   static inline SkMatrix fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+    validateFiniteMatrixArray(runtime, arg);
     std::shared_ptr<SkMatrix> matrix = RNSkia::JsiSkMatrix::fromValue(runtime, arg);
 
     if (!matrix) {
@@ -55,6 +92,7 @@ struct JSIConverter<SkMatrix> final {
 template <>
 struct JSIConverter<std::shared_ptr<SkMatrix>> final {
   static inline std::shared_ptr<SkMatrix> fromJSI(jsi::Runtime& runtime, const jsi::Value& value) {
+    validateFiniteMatrixArray(runtime, value);
     return RNSkia::JsiSkMatrix::fromValue(runtime, value);
   }
 

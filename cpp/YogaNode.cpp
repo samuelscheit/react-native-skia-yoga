@@ -63,6 +63,9 @@ jsi::Value withJsiError(jsi::Runtime& runtime, const char* name, Fn&& fn)
     }
 }
 
+template <typename>
+inline constexpr bool alwaysFalse = false;
+
 template <typename Tuple, std::size_t... Indices>
 std::array<SkScalar, sizeof...(Indices)> tupleToScalarArrayImpl(const Tuple& tuple, std::index_sequence<Indices...>)
 {
@@ -382,11 +385,16 @@ static std::string yogaLayoutValueExpectation(bool acceptsPercent, bool acceptsA
         "Invalid CSS color string for backgroundColor: \"" + value + "\".");
 }
 
-[[noreturn]] static void throwInvalidNumericStyleValue(const char* propertyName)
+[[noreturn]] static void throwInvalidNumericStyleValue(const std::string& propertyName)
 {
     throw std::invalid_argument(
-        std::string("Invalid numeric style value for ") + propertyName +
+        "Invalid numeric style value for " + propertyName +
         ": expected a finite number.");
+}
+
+[[noreturn]] static void throwInvalidNumericStyleValue(const char* propertyName)
+{
+    throwInvalidNumericStyleValue(std::string(propertyName));
 }
 
 static float parseYogaPercent(
@@ -628,6 +636,112 @@ static void validateFiniteNumericStyleFields(const NodeStyle& style)
     validateFiniteStyleNumber("insetVertical", style.insetVertical);
 }
 
+static void validateFiniteMatrixElement(size_t index, double value)
+{
+    if (!std::isfinite(value)) {
+        throwInvalidNumericStyleValue("matrix[" + std::to_string(index) + "]");
+    }
+}
+
+static void validateFiniteSkMatrix(const std::shared_ptr<SkMatrix>& matrix)
+{
+    if (!matrix) {
+        return;
+    }
+
+    for (int i = 0; i < 9; ++i) {
+        validateFiniteMatrixElement(static_cast<size_t>(i), static_cast<double>(matrix->get(i)));
+    }
+}
+
+template <typename Tuple, std::size_t... Indices>
+static void validateFiniteMatrixTupleImpl(const Tuple& tuple, std::index_sequence<Indices...>)
+{
+    (validateFiniteMatrixElement(Indices, std::get<Indices>(tuple)), ...);
+}
+
+template <typename Tuple>
+static void validateFiniteMatrixTuple(const Tuple& tuple)
+{
+    validateFiniteMatrixTupleImpl(
+        tuple,
+        std::make_index_sequence<std::tuple_size_v<std::decay_t<Tuple>>> {});
+}
+
+template <typename MatrixStyleValue>
+static void validateFiniteMatrixStyleValue(const MatrixStyleValue& matrixValue)
+{
+    std::visit(
+        [](const auto& value) {
+            using T = std::decay_t<decltype(value)>;
+
+            if constexpr (std::is_same_v<T, std::shared_ptr<SkMatrix>>) {
+                validateFiniteSkMatrix(value);
+            } else if constexpr (std::tuple_size_v<T> == 9 || std::tuple_size_v<T> == 16) {
+                validateFiniteMatrixTuple(value);
+            } else {
+                static_assert(alwaysFalse<T>, "Unsupported matrix style value");
+            }
+        },
+        matrixValue);
+}
+
+static void validateFiniteTransformLeaf(const char* propertyName, double value)
+{
+    if (!std::isfinite(value)) {
+        throwInvalidNumericStyleValue(propertyName);
+    }
+}
+
+template <typename TransformStyleValue>
+static void validateFiniteTransformOperation(const TransformStyleValue& transform)
+{
+    std::visit(
+        [](const auto& op) {
+            using T = std::decay_t<decltype(op)>;
+
+            if constexpr (std::is_same_v<T, TransformRotateX>) {
+                validateFiniteTransformLeaf("transform.rotateX", op.rotateX);
+            } else if constexpr (std::is_same_v<T, TransformRotateY>) {
+                validateFiniteTransformLeaf("transform.rotateY", op.rotateY);
+            } else if constexpr (std::is_same_v<T, TransformRotateZ>) {
+                validateFiniteTransformLeaf("transform.rotateZ", op.rotateZ);
+            } else if constexpr (std::is_same_v<T, TransformScale>) {
+                validateFiniteTransformLeaf("transform.scale", op.scale);
+            } else if constexpr (std::is_same_v<T, TransformScaleX>) {
+                validateFiniteTransformLeaf("transform.scaleX", op.scaleX);
+            } else if constexpr (std::is_same_v<T, TransformScaleY>) {
+                validateFiniteTransformLeaf("transform.scaleY", op.scaleY);
+            } else if constexpr (std::is_same_v<T, TransformTranslateX>) {
+                validateFiniteTransformLeaf("transform.translateX", op.translateX);
+            } else if constexpr (std::is_same_v<T, TransformTranslateY>) {
+                validateFiniteTransformLeaf("transform.translateY", op.translateY);
+            } else if constexpr (std::is_same_v<T, TransformSkewX>) {
+                validateFiniteTransformLeaf("transform.skewX", op.skewX);
+            } else if constexpr (std::is_same_v<T, TransformSkewY>) {
+                validateFiniteTransformLeaf("transform.skewY", op.skewY);
+            } else {
+                static_assert(alwaysFalse<T>, "Unsupported transform operation");
+            }
+        },
+        transform);
+}
+
+static void validateFiniteMatrixAndTransformStyleFields(const NodeStyle& style)
+{
+    if (style.matrix.has_value()) {
+        validateFiniteMatrixStyleValue(*style.matrix);
+    }
+
+    if (!style.transform.has_value()) {
+        return;
+    }
+
+    for (const auto& transform : *style.transform) {
+        validateFiniteTransformOperation(transform);
+    }
+}
+
 // Helper function to handle variant<string, double> values for setting yoga values
 static void setYGValueOrPercent(void (*setter)(YGNodeRef, float),
     void (*percentSetter)(YGNodeRef, float),
@@ -699,6 +813,7 @@ void YogaNode::setStyle(const NodeStyle& style)
     validateYogaLayoutUnitStrings(style);
     validateBackgroundColorString(style);
     validateFiniteNumericStyleFields(style);
+    validateFiniteMatrixAndTransformStyleFields(style);
     invalidateLayout();
     _style = style;
     resetYogaStyle(_node);
@@ -1183,6 +1298,8 @@ void YogaNode::setStyle(const NodeStyle& style)
                             0.0f, 0.0f, 0.0f, 1.0f);
                         matrix.preConcat(skew);
                         hasTransform = true;
+                    } else {
+                        static_assert(alwaysFalse<T>, "Unsupported transform operation");
                     }
                 },
                 transform);
