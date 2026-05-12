@@ -18,6 +18,7 @@
 #include "NodeCommand.hpp"
 #include <NitroModules/JSIConverter+Optional.hpp>
 #include <NitroModules/NitroHash.hpp>
+#include <cmath>
 #include <jsi/jsi.h>
 
 namespace margelo::nitro {
@@ -265,7 +266,27 @@ inline std::optional<margelo::nitro::RNSkiaYoga::PathCommandData::StrokeOptsData
     };
 }
 
-inline ::SkPoint parsePoint(jsi::Runtime& runtime, const jsi::Value& value)
+[[noreturn]] inline void throwInvalidCommandPointValue(jsi::Runtime& runtime, const std::string& propertyPath)
+{
+    throw jsi::JSError(
+        runtime,
+        "Invalid numeric command point value for " + propertyPath + ": expected a finite number.");
+}
+
+inline double parseFinitePointNumber(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* key,
+    const std::string& pointPath)
+{
+    const auto value = object.getProperty(runtime, key).asNumber();
+    if (!std::isfinite(value)) {
+        throwInvalidCommandPointValue(runtime, pointPath + "." + key);
+    }
+    return value;
+}
+
+inline ::SkPoint parsePoint(jsi::Runtime& runtime, const jsi::Value& value, const std::string& pointPath)
 {
     if (!value.isObject()) {
         throw jsi::JSError(runtime, "Expected point object.");
@@ -273,8 +294,8 @@ inline ::SkPoint parsePoint(jsi::Runtime& runtime, const jsi::Value& value)
 
     auto object = value.asObject(runtime);
     return ::SkPoint::Make(
-        static_cast<float>(object.getProperty(runtime, "x").asNumber()),
-        static_cast<float>(object.getProperty(runtime, "y").asNumber()));
+        static_cast<float>(parseFinitePointNumber(runtime, object, "x", pointPath)),
+        static_cast<float>(parseFinitePointNumber(runtime, object, "y", pointPath)));
 }
 
 inline std::vector<::SkPoint> parsePoints(jsi::Runtime& runtime, const jsi::Value& value)
@@ -288,7 +309,10 @@ inline std::vector<::SkPoint> parsePoints(jsi::Runtime& runtime, const jsi::Valu
     const auto size = array.size(runtime);
     points.reserve(size);
     for (size_t index = 0; index < size; ++index) {
-        points.push_back(parsePoint(runtime, array.getValueAtIndex(runtime, index)));
+        points.push_back(parsePoint(
+            runtime,
+            array.getValueAtIndex(runtime, index),
+            "points.points[" + std::to_string(index) + "]"));
     }
     return points;
 }
@@ -465,8 +489,8 @@ struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeCommand> final {
                                            } };
             case NodeCommandKind::LINE:
                 return NodeCommand { type, LineCommandData {
-                                               .from = parsePoint(runtime, data.getProperty(runtime, "from")),
-                                               .to = parsePoint(runtime, data.getProperty(runtime, "to")),
+                                               .from = parsePoint(runtime, data.getProperty(runtime, "from"), "line.from"),
+                                               .to = parsePoint(runtime, data.getProperty(runtime, "to"), "line.to"),
                                            } };
             case NodeCommandKind::OVAL:
                 return NodeCommand { type, EmptyNodeCommandData {} };

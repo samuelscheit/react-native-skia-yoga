@@ -161,6 +161,7 @@ const samplingOptionsUnionInventory = {
 
 try {
 	assertInstalledStyleSerializerFieldInventory()
+	assertCommandPointFiniteValidationInventory()
 	createNitroModulesShim(tmpDir)
 
 	const probePath = path.join(tmpDir, "yoganode-native-commands-render.cpp")
@@ -272,6 +273,7 @@ try {
 	console.log("- The executable created a JSC runtime, converted numeric, CSS color-string, and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), serialized representative payloads through JSIConverter<NodeCommand>::toJSI(...), and executed real YogaNode::setCommand().")
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
 	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, simple text.textStyle fontSize/color fields, inventory-backed paragraphStyle fields including nested textStyle output, distinct paragraph/text-style heightMultiplier preservation, fontFeatures and strutStyle, line from/to points, and points arrays.")
+	console.log("- The executable asserted non-finite command point rejection for line.from.x/y, line.to.x/y, and indexed points.points[] x/y payloads with NaN, Infinity, and -Infinity, preserving the previously installed native LineCmd/PointsCmd state.")
 	console.log(`- The verifier checked the installed RN Skia public style field inventory before native compilation: ${formatStyleInventorySummary()}`)
 	console.log("- The executable asserted inventory-backed value-bearing toJSI/fromJSI serialization for installed public SkSamplingOptions filter/mipmap and cubic B/C, installed public SkTextStyle supported fields including fontSize/fontFamilies/fontFeatures/decoration/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, normalized text color fields color/backgroundColor/foregroundColor/decorationColor, installed public SkParagraphStyle scalar/textStyle/strutStyle fields, installed public SkStrutStyle fields, dual flattened/nested default text style fields including nested textStyle heightMultiplier output, flattened fontSize/color precedence over nested values, and explicit unsupported fontVariations rejection.")
 	console.log("- The executable asserted generated NodeStyle transport and host-native SkPaint/Yoga state for canonical style.antiAlias, legacy style.antiaAlias fallback, canonical precedence when both keys are present, overflow hidden/scroll public strings, generated style.layer JsiSkPaint host-object transport, YogaNode::_layerPaint storage/reset behavior, ordinary _paint separation, and explicit style paint fields overriding SkPaint-backed backgroundColor base paint values.")
@@ -280,7 +282,7 @@ try {
 	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) plus flattened and nested ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection including nested paragraphStyle.textStyle.color, unsupported paragraph fontVariations rejection, and text.textStyle rich-key rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, overflow hidden/scroll, and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias/Yoga overflow/_clipsToBounds state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded plain overflow hidden/scroll rectangular raster clipping through YogaNode::renderToContext() using a GroupCmd parent and oversized RectCmd child, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, bounded explicit style.clip rect/rrect/path and invertClip rect/rrect/path raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact plain overflow clipping beyond the asserted host-raster pixels, exact style corner-radius, global style.borderRadius, or explicit style.clip render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, overflow hidden/scroll, and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias/Yoga overflow/_clipsToBounds state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded plain overflow hidden/scroll rectangular raster clipping through YogaNode::renderToContext() using a GroupCmd parent and oversized RectCmd child, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, bounded explicit style.clip rect/rrect/path and invertClip rect/rrect/path raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, command point finite rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate LineCmd/PointsCmd state, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact plain overflow clipping beyond the asserted host-raster pixels, exact style corner-radius, global style.borderRadius, or explicit style.clip render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -380,6 +382,124 @@ function assertInstalledStyleSerializerFieldInventory() {
 	}
 }
 
+function assertCommandPointFiniteValidationInventory() {
+	const commandSpecPath = "src/specs/commands.ts"
+	const commandSpec = readProjectFile(commandSpecPath)
+	const reconciler = readProjectFile("src/Reconciler.ts")
+	const nodeCommandConverter = readProjectFile("cpp/JSIConverter+NodeCommand.hpp")
+	const nativeVerifier = readProjectFile(
+		"scripts/verify-yoganode-native-commands-render.mjs",
+	)
+	const materializationVerifier = readProjectFile(
+		"scripts/verify-yoganode-nitro-materialization.mjs",
+	)
+
+	const lineFields = extractExportedInterfaceFields(
+		commandSpecPath,
+		"LineCommandPayload",
+	)
+	const pointsFields = extractExportedInterfaceFields(
+		commandSpecPath,
+		"PointsCommandPayload",
+	)
+	assertSource(
+		JSON.stringify(lineFields) === JSON.stringify(["from", "to"]) &&
+			commandSpec.includes("from: SkPoint") &&
+			commandSpec.includes("to: SkPoint"),
+		"Public LineCommandPayload must keep the from/to SkPoint inventory and order.",
+	)
+	assertSource(
+		JSON.stringify(pointsFields) === JSON.stringify(["pointMode", "points"]) &&
+			commandSpec.includes("points: SkPoint[]"),
+		"Public PointsCommandPayload must keep pointMode then points: SkPoint[] inventory and order.",
+	)
+
+	assertSource(
+		reconciler.includes('line: ["from", "to"],') &&
+			reconciler.includes('points: ["pointMode", "points"],') &&
+			reconciler.includes('"from"') &&
+			reconciler.includes('"to"') &&
+			reconciler.includes('"points"'),
+		"Reconciler command prop/nested inventories must retain public line and points point payload keys.",
+	)
+	const buildLineIndex = reconciler.indexOf('case "line":')
+	const buildLineFromIndex = reconciler.indexOf(
+		'from: requireProp<any>(type, props, "from")',
+		buildLineIndex,
+	)
+	const buildLineToIndex = reconciler.indexOf(
+		'to: requireProp<any>(type, props, "to")',
+		buildLineIndex,
+	)
+	assertSource(
+		buildLineIndex >= 0 &&
+			buildLineFromIndex > buildLineIndex &&
+			buildLineToIndex > buildLineFromIndex,
+		"Reconciler line command builder must require from before to.",
+	)
+	const buildPointsIndex = reconciler.indexOf('case "points":')
+	const buildPointModeIndex = reconciler.indexOf(
+		"pointMode: normalizePointMode(props.pointMode)",
+		buildPointsIndex,
+	)
+	const buildPointsPayloadIndex = reconciler.indexOf(
+		'points: requireProp<any>(type, props, "points")',
+		buildPointsIndex,
+	)
+	assertSource(
+		buildPointsIndex >= 0 &&
+			buildPointModeIndex > buildPointsIndex &&
+			buildPointsPayloadIndex > buildPointModeIndex,
+		"Reconciler points command builder must keep pointMode normalization before required points payload.",
+	)
+
+	const converterLineIndex = nodeCommandConverter.indexOf(
+		"case NodeCommandKind::LINE:",
+	)
+	const converterLineFromIndex = nodeCommandConverter.indexOf(
+		'parsePoint(runtime, data.getProperty(runtime, "from"), "line.from")',
+		converterLineIndex,
+	)
+	const converterLineToIndex = nodeCommandConverter.indexOf(
+		'parsePoint(runtime, data.getProperty(runtime, "to"), "line.to")',
+		converterLineIndex,
+	)
+	const converterPointsIndex = nodeCommandConverter.indexOf(
+		"case NodeCommandKind::POINTS:",
+	)
+	const converterParsePointsIndex = nodeCommandConverter.indexOf(
+		'auto points = parsePoints(runtime, data.getProperty(runtime, "points"));',
+		converterPointsIndex,
+	)
+	assertSource(
+		nodeCommandConverter.includes("parseFinitePointNumber") &&
+			nodeCommandConverter.includes("std::isfinite(value)") &&
+			nodeCommandConverter.includes("Invalid numeric command point value for ") &&
+			nodeCommandConverter.includes('"points.points[" + std::to_string(index) + "]"') &&
+			converterLineFromIndex > converterLineIndex &&
+			converterLineToIndex > converterLineFromIndex &&
+			converterParsePointsIndex > converterPointsIndex,
+		"Native NodeCommand converter must finite-check line and indexed points SkPoint payloads with stable path labels.",
+	)
+
+	assertSource(
+		nativeVerifier.includes("assertCommandPointFiniteRejections(*runtime);") &&
+			nativeVerifier.includes("line.from.x NaN") &&
+			nativeVerifier.includes("line.from.y Infinity") &&
+			nativeVerifier.includes("line.to.x -Infinity") &&
+			nativeVerifier.includes("points.points[1].y NaN"),
+		"Native command/render verifier must retain non-finite line and indexed points rejection coverage.",
+	)
+	assertSource(
+		materializationVerifier.includes(
+			"assertGeneratedCommandPointFiniteRejections(*runtime);",
+		) &&
+			materializationVerifier.includes("generated line.from.x NaN") &&
+			materializationVerifier.includes("generated points.points[1].y NaN"),
+		"Generated materialized setCommand verifier must retain non-finite command point rejection coverage.",
+	)
+}
+
 function formatStyleInventorySummary() {
 	return [
 		`${samplingOptionsUnionInventory.typeName} union=${samplingOptionsUnionInventory.members.join("|")}`,
@@ -409,6 +529,12 @@ function duplicateValues(values) {
 		seen.add(value)
 	}
 	return [...duplicates]
+}
+
+function assertSource(condition, message) {
+	if (!condition) {
+		throw new Error(message)
+	}
 }
 
 function extractExportedInterfaceFields(sourcePath, interfaceName) {
@@ -680,12 +806,14 @@ function includeFlags(shimDir) {
 function nativeProbeSource() {
 	return String.raw`
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <exception>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -732,11 +860,13 @@ using margelo::nitro::RNSkiaYoga::NodeCommand;
 using margelo::nitro::RNSkiaYoga::NodeStyle;
 using margelo::nitro::RNSkiaYoga::CircleCommandData;
 using margelo::nitro::RNSkiaYoga::ImageCommandData;
+using margelo::nitro::RNSkiaYoga::LineCmd;
 using margelo::nitro::RNSkiaYoga::LineCommandData;
 using margelo::nitro::RNSkiaYoga::NodeCommandKind;
 using margelo::nitro::RNSkiaYoga::Overflow;
 using margelo::nitro::RNSkiaYoga::ParagraphCommandData;
 using margelo::nitro::RNSkiaYoga::PathCommandData;
+using margelo::nitro::RNSkiaYoga::PointsCmd;
 using margelo::nitro::RNSkiaYoga::PointsCommandData;
 using margelo::nitro::RNSkiaYoga::Position;
 using margelo::nitro::RNSkiaYoga::RoundedRectCommandData;
@@ -1237,6 +1367,29 @@ NodeCommand convertCommand(jsi::Runtime& runtime, jsi::Object command)
         margelo::nitro::JSIConverter<NodeCommand>::canConvert(runtime, commandValue),
         "NodeCommand converter must accept the probe payload");
     return margelo::nitro::JSIConverter<NodeCommand>::fromJSI(runtime, commandValue);
+}
+
+void expectConvertedSetCommandRejects(
+    jsi::Runtime& runtime,
+    YogaNode& node,
+    jsi::Object command,
+    const std::string& expectedMessage,
+    const char* message)
+{
+    try {
+        auto converted = convertCommand(runtime, std::move(command));
+        node.setCommand(std::move(converted));
+    } catch (const jsi::JSError& error) {
+        const auto actual = error.getMessage();
+        if (actual.find(expectedMessage) != std::string::npos) {
+            return;
+        }
+        std::cerr << "FAIL: " << message << " wrong error message: " << actual << "\n";
+        std::abort();
+    }
+
+    std::cerr << "FAIL: " << message << " did not throw\n";
+    std::abort();
 }
 
 jsi::Value serializedCommandValue(jsi::Runtime& runtime, const NodeCommand& command, const std::string& label)
@@ -1744,15 +1897,47 @@ NodeCommand pointsSerializationCommand(jsi::Runtime& runtime)
     return convertCommand(runtime, std::move(command));
 }
 
-NodeCommand lineCommand(jsi::Runtime& runtime)
+jsi::Object pointsCommandObject(
+    jsi::Runtime& runtime,
+    double firstX,
+    double firstY,
+    double secondX,
+    double secondY)
+{
+    jsi::Array points(runtime, 2);
+    points.setValueAtIndex(runtime, 0, jsi::Value(runtime, makePointObject(runtime, firstX, firstY)));
+    points.setValueAtIndex(runtime, 1, jsi::Value(runtime, makePointObject(runtime, secondX, secondY)));
+
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "pointMode", "lines");
+    data.setProperty(runtime, "points", std::move(points));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "points");
+    command.setProperty(runtime, "data", std::move(data));
+    return command;
+}
+
+jsi::Object lineCommandObject(
+    jsi::Runtime& runtime,
+    double fromX,
+    double fromY,
+    double toX,
+    double toY)
 {
     jsi::Object data(runtime);
-    data.setProperty(runtime, "from", makePointObject(runtime, 0.0, 3.0));
-    data.setProperty(runtime, "to", makePointObject(runtime, 20.0, 3.0));
+    data.setProperty(runtime, "from", makePointObject(runtime, fromX, fromY));
+    data.setProperty(runtime, "to", makePointObject(runtime, toX, toY));
 
     jsi::Object command(runtime);
     command.setProperty(runtime, "type", "line");
     command.setProperty(runtime, "data", std::move(data));
+    return command;
+}
+
+NodeCommand lineCommand(jsi::Runtime& runtime)
+{
+    auto command = lineCommandObject(runtime, 0.0, 3.0, 20.0, 3.0);
     return convertCommand(runtime, std::move(command));
 }
 
@@ -3903,6 +4088,24 @@ void assertAdditionalPointsCommandRender(jsi::Runtime& runtime)
     expectColorNear(pixelAt(surface, 2, 2), SK_ColorTRANSPARENT, 0, "uncovered points surface stays transparent");
 }
 
+void expectLineCommandState(
+    const std::shared_ptr<YogaNode>& root,
+    double fromX,
+    double fromY,
+    double toX,
+    double toY,
+    const char* label)
+{
+    expect(root->_commandKind == YogaNodeCommandKind::LINE, std::string(label) + " preserves LineCmd kind");
+    expect(root->_command != nullptr, std::string(label) + " preserves native command");
+    auto* lineCmd = dynamic_cast<LineCmd*>(root->_command.get());
+    expect(lineCmd != nullptr, std::string(label) + " preserves LineCmd type");
+    expectNear(lineCmd->basePoint1().x(), fromX, std::string(label) + " from.x");
+    expectNear(lineCmd->basePoint1().y(), fromY, std::string(label) + " from.y");
+    expectNear(lineCmd->basePoint2().x(), toX, std::string(label) + " to.x");
+    expectNear(lineCmd->basePoint2().y(), toY, std::string(label) + " to.y");
+}
+
 void assertLineCommandRender(jsi::Runtime& runtime)
 {
     auto root = makeYogaNode(
@@ -3916,6 +4119,112 @@ void assertLineCommandRender(jsi::Runtime& runtime)
     renderNode(root, surface);
     expectColorNear(pixelAt(surface, 10, 3), SK_ColorBLUE, 0, "real line command stroke renders at the converted coordinates");
     expectColorNear(pixelAt(surface, 10, 7), SK_ColorTRANSPARENT, 0, "line stroke does not fill unrelated pixels");
+}
+
+void expectPointsCommandState(
+    const std::shared_ptr<YogaNode>& root,
+    const std::vector<::SkPoint>& expectedPoints,
+    SkCanvas::PointMode expectedMode,
+    const char* label)
+{
+    expect(root->_commandKind == YogaNodeCommandKind::POINTS, std::string(label) + " preserves PointsCmd kind");
+    expect(root->_command != nullptr, std::string(label) + " preserves native command");
+    auto* pointsCmd = dynamic_cast<PointsCmd*>(root->_command.get());
+    expect(pointsCmd != nullptr, std::string(label) + " preserves PointsCmd type");
+    expect(pointsCmd->props.mode == expectedMode, std::string(label) + " pointMode");
+    const auto& basePoints = pointsCmd->basePoints();
+    expect(basePoints.size() == expectedPoints.size(), std::string(label) + " points size");
+    for (size_t index = 0; index < expectedPoints.size(); ++index) {
+        expectNear(basePoints[index].x(), expectedPoints[index].x(), std::string(label) + " points[" + std::to_string(index) + "].x");
+        expectNear(basePoints[index].y(), expectedPoints[index].y(), std::string(label) + " points[" + std::to_string(index) + "].y");
+    }
+}
+
+void assertCommandPointFiniteRejections(jsi::Runtime& runtime)
+{
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    const double positiveInfValue = std::numeric_limits<double>::infinity();
+    const double negativeInfValue = -std::numeric_limits<double>::infinity();
+
+    auto lineRoot = makeYogaNode(
+        strokeStyle(24.0, 10.0, SK_ColorBLUE, 3.0f),
+        lineCommand(runtime));
+    const auto* initialLineCommand = lineRoot->_command.get();
+    expectLineCommandState(lineRoot, 0.0, 3.0, 20.0, 3.0, "line finite rejection baseline");
+
+    struct LineInvalidCase {
+        const char* label;
+        double fromX;
+        double fromY;
+        double toX;
+        double toY;
+        const char* propertyPath;
+    };
+
+    const std::array<LineInvalidCase, 4> lineInvalidCases {{
+        { "line.from.x NaN", nan, 5.0, 21.0, 6.0, "line.from.x" },
+        { "line.from.y Infinity", 2.0, positiveInfValue, 21.0, 6.0, "line.from.y" },
+        { "line.to.x -Infinity", 2.0, 5.0, negativeInfValue, 6.0, "line.to.x" },
+        { "line.to.y NaN", 2.0, 5.0, 21.0, nan, "line.to.y" },
+    }};
+
+    for (const auto& invalidCase : lineInvalidCases) {
+        expectConvertedSetCommandRejects(
+            runtime,
+            *lineRoot,
+            lineCommandObject(
+                runtime,
+                invalidCase.fromX,
+                invalidCase.fromY,
+                invalidCase.toX,
+                invalidCase.toY),
+            std::string("Invalid numeric command point value for ") + invalidCase.propertyPath + ": expected a finite number.",
+            invalidCase.label);
+        expect(lineRoot->_command.get() == initialLineCommand, std::string(invalidCase.label) + " preserves command pointer");
+        expectLineCommandState(lineRoot, 0.0, 3.0, 20.0, 3.0, invalidCase.label);
+    }
+
+    auto pointsRoot = makeYogaNode(
+        pointsStyle(24.0, 24.0, SK_ColorBLUE),
+        convertCommand(runtime, pointsCommandObject(runtime, 3.0, 4.0, 13.0, 14.0)));
+    const auto* initialPointsCommand = pointsRoot->_command.get();
+    const std::vector<::SkPoint> baselinePoints {
+        ::SkPoint::Make(3.0f, 4.0f),
+        ::SkPoint::Make(13.0f, 14.0f),
+    };
+    expectPointsCommandState(pointsRoot, baselinePoints, SkCanvas::PointMode::kLines_PointMode, "points finite rejection baseline");
+
+    struct PointsInvalidCase {
+        const char* label;
+        double firstX;
+        double firstY;
+        double secondX;
+        double secondY;
+        const char* propertyPath;
+    };
+
+    const std::array<PointsInvalidCase, 4> pointsInvalidCases {{
+        { "points.points[0].x NaN", nan, 4.0, 13.0, 14.0, "points.points[0].x" },
+        { "points.points[0].y Infinity", 3.0, positiveInfValue, 13.0, 14.0, "points.points[0].y" },
+        { "points.points[1].x -Infinity", 3.0, 4.0, negativeInfValue, 14.0, "points.points[1].x" },
+        { "points.points[1].y NaN", 3.0, 4.0, 13.0, nan, "points.points[1].y" },
+    }};
+
+    for (const auto& invalidCase : pointsInvalidCases) {
+        expectConvertedSetCommandRejects(
+            runtime,
+            *pointsRoot,
+            pointsCommandObject(
+                runtime,
+                invalidCase.firstX,
+                invalidCase.firstY,
+                invalidCase.secondX,
+                invalidCase.secondY),
+            std::string("Invalid numeric command point value for ") + invalidCase.propertyPath + ": expected a finite number.",
+            invalidCase.label);
+        expect(pointsRoot->_command.get() == initialPointsCommand, std::string(invalidCase.label) + " preserves command pointer");
+        expectPointsCommandState(pointsRoot, baselinePoints, SkCanvas::PointMode::kLines_PointMode, invalidCase.label);
+    }
 }
 
 void assertOvalCommandRender(jsi::Runtime& runtime)
@@ -5222,6 +5531,7 @@ int main()
     assertDynamicPathTrimRasterizedGroupBypassesCache(*runtime);
     assertAdditionalPointsCommandRender(*runtime);
     assertLineCommandRender(*runtime);
+    assertCommandPointFiniteRejections(*runtime);
     assertOvalCommandRender(*runtime);
     assertCircleCommandRender(*runtime);
     assertDynamicCircleCommandRender(*runtime);

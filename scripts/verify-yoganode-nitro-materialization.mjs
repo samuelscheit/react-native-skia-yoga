@@ -182,9 +182,10 @@ try {
 	console.log("- The executable aligns that same-node sequential materialized proof with Worker 199's exact public/Reconciler dynamic layout field table by separately exercising start/end, marginLeft/marginRight, and inset replacement, cleanup, selected Yoga edge getters, invalidation, computeLayout(...), and generated layout getter values.")
 	console.log("- The executable materialized parent/child YogaNodes, called generated setCommand(group/rect) and setStyle(overflow hidden/scroll, clip rect/rrect/path, plus invertClip rect/rrect/path) wrappers, inserted the child through the generated parent.insertChild(...) wrapper, rendered the native parent through YogaNode::renderToContext(), and asserted bounded in-clip/out-of-clip raster pixels.")
 	console.log("- The executable used fresh materialized YogaNode objects to invoke generated JS-facing setCommand(line), setCommand(points), setCommand(path), setCommand(text), setCommand(paragraph), setCommand(circle), setCommand(rrect), setCommand(blurMaskFilter), setCommand(rect), setCommand(oval), and setCommand(image) wrappers, preserving the native no-command-kind-change invariant.")
+	console.log("- The executable asserted generated materialized setCommand(...) rejects non-finite line.from.x/y, line.to.x/y, and indexed points.points[] x/y payloads with NaN, Infinity, and -Infinity before mutating the existing native LineCmd/PointsCmd state.")
 	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized CSS-string backgroundColor delivery plus invalid-string rejection without previous _style.backgroundColor/_paint mutation, generated materialized selected finite numeric paint/border/layout rejection without previous _style/_paint/Yoga/clip/layer/matrix/computed-layout mutation, generated materialized radius finite rejection without previous _style radius/_clipToBoundsRadii/_paint/Yoga/clip/layer/matrix/computed-layout mutation, generated materialized matrix-array/SkMatrix/transform-leaf finite rejection without previous _style/_matrix/_paint/Yoga/clip/radius/layer/computed-layout mutation, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized global borderRadius delivery into _style.borderRadius, _clipsToBounds, and all four _clipToBoundsRadii slots without per-corner or explicit clip state, generated materialized overflow hidden/scroll delivery into _style.overflow, Yoga overflow state, and rectangular _clipsToBounds without radius or explicit clip state plus bounded renderToContext raster pixels, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect plus bounded renderToContext raster pixels, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate plus bounded rect/rrect/path renderToContext raster pixels, generated materialized layout style delivery into native _style optionals and selected Yoga style getters for flex, gap, padding, margin, position/inset, width stretch, alignContent, alignSelf, flexWrap, direction, display, boxSizing, min/max constraints, aspectRatio, edge-specific start/end/top/bottom, percentage values, and auto values, sequential generated materialized setStyle initial/update/cleanup delivery into the same parent/child Yoga nodes with stale optionals and Yoga setters reset, exact Worker 199 sequential edge-alias alignment for start/end, marginLeft/marginRight, and inset, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
 	console.log("- For CircleCmd, RRectCmd, and BlurMaskFilterCmd, selected no-pixel draw calls are used only to expose render-time native state/mask-filter side effects after generated wrapper delivery; no command-rendering or render-fidelity claim is made.")
-	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(CSS-string backgroundColor) delivery and invalid CSS-string rejection preserving previous _style.backgroundColor/_paint state, generated materialized selected finite numeric paint/border rejection for border-width family, strokeMiter, and opacity preserving previous _style/_paint/Yoga/clip/layer/matrix state, generated materialized selected finite numeric layout rejection for the Worker 212 scalar and variant numeric inventory preserving previous selected _style/Yoga/computed-layout state, generated materialized borderRadius/per-corner scalar/per-corner SkPoint x/y finite rejection preserving previous selected _style radius fields, _clipToBoundsRadii, _paint, Yoga, clip, layer, matrix, and computed-layout state, generated materialized matrix-array/SkMatrix/transform-leaf finite rejection preserving previous selected _style/_matrix/_paint/Yoga/clip/radius/layer/computed-layout state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/overflow hidden/scroll/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized setStyle flexbox/layout/edge/constraint delivery into selected native _style optionals, selected stable Yoga style getters, selected sequential same-node layout setter replacement/reset behavior including exact Worker 199 edge aliases, and selected computed native/generated layout getter values, generated materialized overflow hidden/scroll delivery followed by bounded host-raster renderToContext pixel assertions for rectangular parent bounds clipping, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect/rrect/path clips, and selected generated/raw YogaNode method/getter execution only; this does not prove exact Yoga conformance beyond asserted values, actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact overflow or clip render fidelity beyond asserted pixels, exact hit-test behavior beyond asserted clipping predicates, exhaustive numeric style validation beyond covered inventories, or every command rendering path.")
+	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setCommand command-point finite rejection through generated JS-facing wrapper conversion before same-type LineCmd/PointsCmd state mutation, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(CSS-string backgroundColor) delivery and invalid CSS-string rejection preserving previous _style.backgroundColor/_paint state, generated materialized selected finite numeric paint/border rejection for border-width family, strokeMiter, and opacity preserving previous _style/_paint/Yoga/clip/layer/matrix state, generated materialized selected finite numeric layout rejection for the Worker 212 scalar and variant numeric inventory preserving previous selected _style/Yoga/computed-layout state, generated materialized borderRadius/per-corner scalar/per-corner SkPoint x/y finite rejection preserving previous selected _style radius fields, _clipToBoundsRadii, _paint, Yoga, clip, layer, matrix, and computed-layout state, generated materialized matrix-array/SkMatrix/transform-leaf finite rejection preserving previous selected _style/_matrix/_paint/Yoga/clip/radius/layer/computed-layout state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/overflow hidden/scroll/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized setStyle flexbox/layout/edge/constraint delivery into selected native _style optionals, selected stable Yoga style getters, selected sequential same-node layout setter replacement/reset behavior including exact Worker 199 edge aliases, and selected computed native/generated layout getter values, generated materialized overflow hidden/scroll delivery followed by bounded host-raster renderToContext pixel assertions for rectangular parent bounds clipping, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect/rrect/path clips, and selected generated/raw YogaNode method/getter execution only; this does not prove exact Yoga conformance beyond asserted values, actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact overflow or clip render fidelity beyond asserted pixels, exact hit-test behavior beyond asserted clipping predicates, exhaustive numeric style validation beyond covered inventories, or every command rendering path.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -204,12 +205,17 @@ function assertCurrentGapAndRisk() {
 		"worker-progress/worker-099-post-098-root-cause-audit.md",
 	)
 	const styleSpec = readProjectFile("src/specs/style.ts")
+	const commandSpec = readProjectFile("src/specs/commands.ts")
 	const reconciler = readProjectFile("src/Reconciler.ts")
 	const reconcilerAnimatedVerifier = readProjectFile(
 		"scripts/verify-reconciler-animated-bindings.mjs",
 	)
 	const yogaNodeCpp = readProjectFile("cpp/YogaNode.cpp")
 	const yogaNodeConverter = readProjectFile("cpp/JSIConverter+YogaNode.hpp")
+	const nodeCommandConverter = readProjectFile("cpp/JSIConverter+NodeCommand.hpp")
+	const materializationVerifier = readProjectFile(
+		"scripts/verify-yoganode-nitro-materialization.mjs",
+	)
 	const skMatrixConverter = readProjectFile("cpp/JSIConverter+SkMatrix.hpp")
 	const jsiSkMatrix = readProjectFile(
 		"node_modules/@shopify/react-native-skia/cpp/api/JsiSkMatrix.h",
@@ -266,6 +272,101 @@ function assertCurrentGapAndRisk() {
 		reconciler.includes("for (const child of node.getChildren())") &&
 			reconciler.includes("for (const child of container.node.getChildren())"),
 		"Reconciler cleanup must still recursively depend on materialized YogaNode.getChildren().",
+	)
+	const lineCommandFields = extractInterfaceFields(commandSpec, "LineCommandPayload")
+	const pointsCommandFields = extractInterfaceFields(commandSpec, "PointsCommandPayload")
+	assert(
+		JSON.stringify(lineCommandFields) === JSON.stringify(["from", "to"]) &&
+			commandSpec.includes("from: SkPoint") &&
+			commandSpec.includes("to: SkPoint"),
+		"Public LineCommandPayload must keep from/to SkPoint inventory and order.",
+	)
+	assert(
+		JSON.stringify(pointsCommandFields) === JSON.stringify(["pointMode", "points"]) &&
+			commandSpec.includes("points: SkPoint[]"),
+		"Public PointsCommandPayload must keep pointMode then points: SkPoint[] inventory and order.",
+	)
+	assert(
+		reconciler.includes('line: ["from", "to"],') &&
+			reconciler.includes('points: ["pointMode", "points"],') &&
+			reconciler.includes('"from"') &&
+			reconciler.includes('"to"') &&
+			reconciler.includes('"points"'),
+		"Reconciler command key inventories must retain public line and points point payload keys.",
+	)
+	const buildLineIndex = reconciler.indexOf('case "line":')
+	const buildLineFromIndex = reconciler.indexOf(
+		'from: requireProp<any>(type, props, "from")',
+		buildLineIndex,
+	)
+	const buildLineToIndex = reconciler.indexOf(
+		'to: requireProp<any>(type, props, "to")',
+		buildLineIndex,
+	)
+	assert(
+		buildLineIndex >= 0 &&
+			buildLineFromIndex > buildLineIndex &&
+			buildLineToIndex > buildLineFromIndex,
+		"Reconciler line command builder must require from before to.",
+	)
+	const buildPointsIndex = reconciler.indexOf('case "points":')
+	const buildPointModeIndex = reconciler.indexOf(
+		"pointMode: normalizePointMode(props.pointMode)",
+		buildPointsIndex,
+	)
+	const buildPointsPayloadIndex = reconciler.indexOf(
+		'points: requireProp<any>(type, props, "points")',
+		buildPointsIndex,
+	)
+	assert(
+		buildPointsIndex >= 0 &&
+			buildPointModeIndex > buildPointsIndex &&
+			buildPointsPayloadIndex > buildPointModeIndex,
+		"Reconciler points command builder must keep pointMode normalization before required points payload.",
+	)
+	const converterLineIndex = nodeCommandConverter.indexOf(
+		"case NodeCommandKind::LINE:",
+	)
+	const converterLineFromIndex = nodeCommandConverter.indexOf(
+		'parsePoint(runtime, data.getProperty(runtime, "from"), "line.from")',
+		converterLineIndex,
+	)
+	const converterLineToIndex = nodeCommandConverter.indexOf(
+		'parsePoint(runtime, data.getProperty(runtime, "to"), "line.to")',
+		converterLineIndex,
+	)
+	const converterPointsIndex = nodeCommandConverter.indexOf(
+		"case NodeCommandKind::POINTS:",
+	)
+	const converterParsePointsIndex = nodeCommandConverter.indexOf(
+		'auto points = parsePoints(runtime, data.getProperty(runtime, "points"));',
+		converterPointsIndex,
+	)
+	assert(
+		nodeCommandConverter.includes("parseFinitePointNumber") &&
+			nodeCommandConverter.includes("std::isfinite(value)") &&
+			nodeCommandConverter.includes("Invalid numeric command point value for ") &&
+			nodeCommandConverter.includes('"points.points[" + std::to_string(index) + "]"') &&
+			converterLineFromIndex > converterLineIndex &&
+			converterLineToIndex > converterLineFromIndex &&
+			converterParsePointsIndex > converterPointsIndex,
+		"Native NodeCommand converter must finite-check line and indexed points SkPoint payloads with stable path labels.",
+	)
+	assert(
+		commandVerifier.includes("assertCommandPointFiniteRejections(*runtime);") &&
+			commandVerifier.includes("line.from.x NaN") &&
+			commandVerifier.includes("line.from.y Infinity") &&
+			commandVerifier.includes("line.to.x -Infinity") &&
+			commandVerifier.includes("points.points[1].y NaN"),
+		"Command/render verifier must retain non-finite line and indexed points rejection coverage.",
+	)
+	assert(
+		materializationVerifier.includes(
+			"assertGeneratedCommandPointFiniteRejections(*runtime);",
+		) &&
+			materializationVerifier.includes("generated line.from.x NaN") &&
+			materializationVerifier.includes("generated points.points[1].y NaN"),
+		"Generated materialized setCommand verifier must retain non-finite command point rejection coverage.",
 	)
 	assert(
 		yogaNodeCpp.includes("_children[i]->toObject(runtime)") &&
@@ -914,6 +1015,7 @@ function nativeProbeSource() {
 #include <string>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #include <ReactCommon/CallInvoker.h>
 #include <include/core/SkCanvas.h>
@@ -1758,22 +1860,37 @@ jsi::Object makeSingleTransformStyle(jsi::Runtime& runtime, const char* key, dou
     return style;
 }
 
-jsi::Object makeLineCommand(jsi::Runtime& runtime)
+jsi::Object makeLineCommand(
+    jsi::Runtime& runtime,
+    double fromX,
+    double fromY,
+    double toX,
+    double toY)
 {
     jsi::Object command(runtime);
     jsi::Object data(runtime);
-    data.setProperty(runtime, "from", makePointObject(runtime, 1.0, 2.0));
-    data.setProperty(runtime, "to", makePointObject(runtime, 11.0, 22.0));
+    data.setProperty(runtime, "from", makePointObject(runtime, fromX, fromY));
+    data.setProperty(runtime, "to", makePointObject(runtime, toX, toY));
     command.setProperty(runtime, "type", "line");
     command.setProperty(runtime, "data", data);
     return command;
 }
 
-jsi::Object makePointsCommand(jsi::Runtime& runtime)
+jsi::Object makeLineCommand(jsi::Runtime& runtime)
+{
+    return makeLineCommand(runtime, 1.0, 2.0, 11.0, 22.0);
+}
+
+jsi::Object makePointsCommand(
+    jsi::Runtime& runtime,
+    double firstX,
+    double firstY,
+    double secondX,
+    double secondY)
 {
     jsi::Array points(runtime, 2);
-    points.setValueAtIndex(runtime, 0, jsi::Value(runtime, makePointObject(runtime, 3.0, 4.0)));
-    points.setValueAtIndex(runtime, 1, jsi::Value(runtime, makePointObject(runtime, 13.0, 14.0)));
+    points.setValueAtIndex(runtime, 0, jsi::Value(runtime, makePointObject(runtime, firstX, firstY)));
+    points.setValueAtIndex(runtime, 1, jsi::Value(runtime, makePointObject(runtime, secondX, secondY)));
 
     jsi::Object command(runtime);
     jsi::Object data(runtime);
@@ -1782,6 +1899,11 @@ jsi::Object makePointsCommand(jsi::Runtime& runtime)
     command.setProperty(runtime, "type", "points");
     command.setProperty(runtime, "data", data);
     return command;
+}
+
+jsi::Object makePointsCommand(jsi::Runtime& runtime)
+{
+    return makePointsCommand(runtime, 3.0, 4.0, 13.0, 14.0);
 }
 
 jsi::Object makePublicPathStrokeCommand(jsi::Runtime& runtime)
@@ -3980,6 +4102,160 @@ void assertGeneratedPointsSetCommand(jsi::Runtime& runtime)
     disposeMaterializedObject(runtime, materialized.object);
 }
 
+void expectGeneratedSetCommandRejects(
+    jsi::Runtime& runtime,
+    const MaterializedYogaNode& materialized,
+    jsi::Object command,
+    const std::string& expectedMessage,
+    const char* message)
+{
+    expectObjectFunction(runtime, materialized.object, "setCommand");
+    auto setCommand = materialized.object.getPropertyAsFunction(runtime, "setCommand");
+    expectThrows(
+        [&]() {
+            jsi::Value args[] = {jsi::Value(runtime, command)};
+            setCommand.callWithThis(
+                runtime,
+                materialized.object,
+                static_cast<const jsi::Value*>(args),
+                static_cast<size_t>(1));
+        },
+        expectedMessage,
+        message);
+}
+
+void expectGeneratedLineCommandState(
+    const MaterializedYogaNode& materialized,
+    double fromX,
+    double fromY,
+    double toX,
+    double toY,
+    const char* label)
+{
+    expect(materialized.node->_commandKind == YogaNodeCommandKind::LINE, std::string(label) + " preserves LineCmd kind");
+    expect(materialized.node->_command != nullptr, std::string(label) + " preserves native command");
+    auto* lineCmd = dynamic_cast<LineCmd*>(materialized.node->_command.get());
+    expect(lineCmd != nullptr, std::string(label) + " preserves LineCmd type");
+    expectNear(lineCmd->basePoint1().x(), fromX, std::string(label) + " from.x");
+    expectNear(lineCmd->basePoint1().y(), fromY, std::string(label) + " from.y");
+    expectNear(lineCmd->basePoint2().x(), toX, std::string(label) + " to.x");
+    expectNear(lineCmd->basePoint2().y(), toY, std::string(label) + " to.y");
+}
+
+void expectGeneratedPointsCommandState(
+    const MaterializedYogaNode& materialized,
+    const std::vector<::SkPoint>& expectedPoints,
+    SkCanvas::PointMode expectedMode,
+    const char* label)
+{
+    expect(materialized.node->_commandKind == YogaNodeCommandKind::POINTS, std::string(label) + " preserves PointsCmd kind");
+    expect(materialized.node->_command != nullptr, std::string(label) + " preserves native command");
+    auto* pointsCmd = dynamic_cast<PointsCmd*>(materialized.node->_command.get());
+    expect(pointsCmd != nullptr, std::string(label) + " preserves PointsCmd type");
+    expect(pointsCmd->props.mode == expectedMode, std::string(label) + " pointMode");
+    const auto& basePoints = pointsCmd->basePoints();
+    expect(basePoints.size() == expectedPoints.size(), std::string(label) + " points size");
+    for (size_t index = 0; index < expectedPoints.size(); ++index) {
+        expectNear(basePoints[index].x(), expectedPoints[index].x(), std::string(label) + " points[" + std::to_string(index) + "].x");
+        expectNear(basePoints[index].y(), expectedPoints[index].y(), std::string(label) + " points[" + std::to_string(index) + "].y");
+    }
+}
+
+void assertGeneratedCommandPointFiniteRejections(jsi::Runtime& runtime)
+{
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    const double positiveInfValue = std::numeric_limits<double>::infinity();
+    const double negativeInfValue = -std::numeric_limits<double>::infinity();
+
+    auto lineMaterialized = materializeYogaNode(runtime);
+    callGeneratedSetCommand(
+        runtime,
+        lineMaterialized,
+        makeLineCommand(runtime),
+        "generated command point finite baseline line setCommand must return undefined");
+    const auto* initialLineCommand = lineMaterialized.node->_command.get();
+    expectGeneratedLineCommandState(lineMaterialized, 1.0, 2.0, 11.0, 22.0, "generated line finite rejection baseline");
+
+    struct LineInvalidCase {
+        const char* label;
+        double fromX;
+        double fromY;
+        double toX;
+        double toY;
+        const char* propertyPath;
+    };
+
+    const std::array<LineInvalidCase, 4> lineInvalidCases {{
+        { "generated line.from.x NaN", nan, 5.0, 21.0, 6.0, "line.from.x" },
+        { "generated line.from.y Infinity", 2.0, positiveInfValue, 21.0, 6.0, "line.from.y" },
+        { "generated line.to.x -Infinity", 2.0, 5.0, negativeInfValue, 6.0, "line.to.x" },
+        { "generated line.to.y NaN", 2.0, 5.0, 21.0, nan, "line.to.y" },
+    }};
+
+    for (const auto& invalidCase : lineInvalidCases) {
+        expectGeneratedSetCommandRejects(
+            runtime,
+            lineMaterialized,
+            makeLineCommand(
+                runtime,
+                invalidCase.fromX,
+                invalidCase.fromY,
+                invalidCase.toX,
+                invalidCase.toY),
+            std::string("Invalid numeric command point value for ") + invalidCase.propertyPath + ": expected a finite number.",
+            invalidCase.label);
+        expect(lineMaterialized.node->_command.get() == initialLineCommand, std::string(invalidCase.label) + " preserves command pointer");
+        expectGeneratedLineCommandState(lineMaterialized, 1.0, 2.0, 11.0, 22.0, invalidCase.label);
+    }
+    disposeMaterializedObject(runtime, lineMaterialized.object);
+
+    auto pointsMaterialized = materializeYogaNode(runtime);
+    callGeneratedSetCommand(
+        runtime,
+        pointsMaterialized,
+        makePointsCommand(runtime),
+        "generated command point finite baseline points setCommand must return undefined");
+    const auto* initialPointsCommand = pointsMaterialized.node->_command.get();
+    const std::vector<::SkPoint> baselinePoints {
+        ::SkPoint::Make(3.0f, 4.0f),
+        ::SkPoint::Make(13.0f, 14.0f),
+    };
+    expectGeneratedPointsCommandState(pointsMaterialized, baselinePoints, SkCanvas::PointMode::kLines_PointMode, "generated points finite rejection baseline");
+
+    struct PointsInvalidCase {
+        const char* label;
+        double firstX;
+        double firstY;
+        double secondX;
+        double secondY;
+        const char* propertyPath;
+    };
+
+    const std::array<PointsInvalidCase, 4> pointsInvalidCases {{
+        { "generated points.points[0].x NaN", nan, 4.0, 13.0, 14.0, "points.points[0].x" },
+        { "generated points.points[0].y Infinity", 3.0, positiveInfValue, 13.0, 14.0, "points.points[0].y" },
+        { "generated points.points[1].x -Infinity", 3.0, 4.0, negativeInfValue, 14.0, "points.points[1].x" },
+        { "generated points.points[1].y NaN", 3.0, 4.0, 13.0, nan, "points.points[1].y" },
+    }};
+
+    for (const auto& invalidCase : pointsInvalidCases) {
+        expectGeneratedSetCommandRejects(
+            runtime,
+            pointsMaterialized,
+            makePointsCommand(
+                runtime,
+                invalidCase.firstX,
+                invalidCase.firstY,
+                invalidCase.secondX,
+                invalidCase.secondY),
+            std::string("Invalid numeric command point value for ") + invalidCase.propertyPath + ": expected a finite number.",
+            invalidCase.label);
+        expect(pointsMaterialized.node->_command.get() == initialPointsCommand, std::string(invalidCase.label) + " preserves command pointer");
+        expectGeneratedPointsCommandState(pointsMaterialized, baselinePoints, SkCanvas::PointMode::kLines_PointMode, invalidCase.label);
+    }
+    disposeMaterializedObject(runtime, pointsMaterialized.object);
+}
+
 void assertGeneratedPublicPathStrokeSetCommand(jsi::Runtime& runtime)
 {
     auto materialized = materializeYogaNode(runtime);
@@ -5737,6 +6013,7 @@ int main()
     std::cerr << "probe: call generated setCommand breadth cases" << std::endl;
     assertGeneratedLineSetCommand(*runtime);
     assertGeneratedPointsSetCommand(*runtime);
+    assertGeneratedCommandPointFiniteRejections(*runtime);
     assertGeneratedPublicPathStrokeSetCommand(*runtime);
     assertGeneratedTextSetCommand(*runtime);
     assertGeneratedParagraphSetCommand(*runtime);
@@ -5774,6 +6051,24 @@ function projectPathChecked(relativePath) {
 		throw new Error(`Missing required path: ${relativePath}`)
 	}
 	return resolved
+}
+
+function extractInterfaceFields(source, interfaceName) {
+	const interfaceMatch = source.match(
+		new RegExp(
+			`export\\s+interface\\s+${interfaceName}\\s*\\{([\\s\\S]*?)\\n\\}`,
+		),
+	)
+	if (!interfaceMatch) {
+		throw new Error(`Unable to find public interface ${interfaceName}.`)
+	}
+
+	const body = interfaceMatch[1]
+		.replace(/\/\*[\s\S]*?\*\//g, "")
+		.replace(/\/\/.*$/gm, "")
+	return [...body.matchAll(/^\s*([A-Za-z_$][\w$]*)\??\s*:/gm)].map(
+		(match) => match[1],
+	)
 }
 
 function assert(condition, message) {
