@@ -15,9 +15,9 @@ Last updated: 2026-05-12
   `reasoning_effort: "xhigh"`, with the full worker prompt in `message`.
 - Current worker completion handling: launch workers with `goal: true`; require
   only the final `Goal finished.` line as the completion signal.
-- Current worker prompts must not require manual `create_goal`,
-  `update_goal`, visible goal-gate messages, or goal-lifecycle evidence unless
-  a newer project policy explicitly restores them.
+- Current worker prompts must not require manual goal-tool steps, visible
+  goal-gate messages, or goal-lifecycle evidence unless a newer project policy
+  explicitly restores them.
 - Product code changes authored by orchestrator: none; product changes are accepted worker patches only.
 - Main worktree status at startup: clean on `main` tracking `origin/main`.
 - Historical timeline entries before the current scheduling decision may mention
@@ -4421,6 +4421,12 @@ Last updated: 2026-05-12
     `ccfe1f9 Add fresh unblocked gap audit`.
   - Merged worker 205 into `main` as
     `168050f Merge worker 205 fresh gap audit`.
+  - Report correction commit:
+    `ffee650 Correct worker 205 final status summary`.
+  - Merged worker 205 report correction into `main` as
+    `cf132a5 Merge worker 205 report correction`.
+  - The correction updated durable final-status wording only; it did not change
+    the audit target or product code.
   - Reconfirmed the current feasible matrix, platform blockers, and accepted
     proof chain, then identified deterministic Yoga layout unit string
     validation as the strongest locally unblocked target.

@@ -24,8 +24,8 @@ Breaking changes are acceptable when they remove root causes instead of preservi
 - Worker prompts must include the full task prompt, absolute worktree path,
   write scope, verification expectations, and overlap boundaries.
 - Worker goal state is created by the `goal: true` launch option. Do not ask
-  workers to call `create_goal` / `update_goal`, and do not add separate goal
-  lifecycle evidence gates; the final response/report must end with
+  workers for manual goal-tool steps or separate goal-lifecycle evidence gates;
+  the final response/report must end with
   `Goal finished.`
 - Workers must keep their own progress files under `worker-progress/`.
 - Workers must review quality, maintainability, performance, and security before reporting completion.
@@ -133,7 +133,8 @@ Latest accepted audit: worker 205 identified deterministic Yoga layout unit
 string validation as the strongest locally unblocked target, after reconfirming
 the current feasible matrix and local platform blockers.
 
-Current active worker: worker 206 deterministic layout unit validation.
+Next queued worker: worker 206 deterministic layout unit validation. It has
+not been spawned yet.
 
 Goals:
 
@@ -346,18 +347,18 @@ Accepted package-hygiene implementation:
 - `worker-204-post-203-root-cause-audit`: accepted Worker 203's bounded proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and found no concrete unblocked implementation target stronger than platform-runtime proof once tooling is available or a fresh audit-only gap search.
 - `worker-205-fresh-unblocked-gap-audit`: identified deterministic Yoga layout unit string validation as a concrete locally unblocked target across public broad `Percentage = string`, generated `NodeStyle`, and native Yoga setter behavior.
 
-Current active worker:
+Next queued worker:
 
 - Worker 206 deterministic layout unit validation.
-- Agent path: `/root/worker_206_layout_unit_validation`.
-- Worktree: `../worker-206-layout-unit-validation`.
-- Branch: `worker/206-layout-unit-validation`.
+- Agent path: not spawned yet.
+- Worktree: create `../worker-206-layout-unit-validation` before spawning.
+- Branch: create `worker/206-layout-unit-validation` before spawning.
 - Scope: validate Yoga layout unit strings deterministically in native
   `YogaNode::setStyle(...)`, preserving accepted numeric, percent, auto, and
   width-special behavior, and add generated materialized negative/positive
   proof.
 
-Next queued worker:
+Follow-up queue:
 
 - None until Worker 206 reports.
 
