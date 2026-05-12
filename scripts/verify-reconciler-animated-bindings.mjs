@@ -19,6 +19,7 @@ const unsupportedCornerRadiusValueError = (key) =>
 	`style.${key} only supports number, SkPoint, SharedValue<number>, SharedValue<SkPoint>, or { x, y } with numeric animated leaves.`
 const unsupportedCornerRadiusPointLeafError = (key) =>
 	`style.${key} point values must use numeric x/y values or SharedValue<number> x/y leaves.`
+const publicNodeStyleKeyInventory = extractPublicNodeStyleKeyInventory()
 const publicTransformOperationInventory =
 	extractPublicTransformOperationInventory()
 const nestedTransformBindingCases = [
@@ -172,6 +173,223 @@ const styleClipBindingCases = [
 		nextClip: { id: "next-path-clip" },
 	},
 ]
+
+const layoutStyleBindingCases = [
+	{
+		cleanupValue: "auto",
+		initialValue: 72,
+		key: "width",
+		lateValue: 88,
+		nextValue: "66%",
+	},
+	{
+		cleanupValue: 18,
+		initialValue: "auto",
+		key: "height",
+		lateValue: "60%",
+		nextValue: 44,
+	},
+	{
+		cleanupValue: 10,
+		initialValue: 20,
+		key: "minWidth",
+		lateValue: 30,
+		nextValue: "25%",
+	},
+	{
+		cleanupValue: 140,
+		initialValue: "90%",
+		key: "maxWidth",
+		lateValue: "95%",
+		nextValue: 120,
+	},
+	{
+		cleanupValue: 8,
+		initialValue: 12,
+		key: "minHeight",
+		lateValue: 18,
+		nextValue: "20%",
+	},
+	{
+		cleanupValue: 100,
+		initialValue: "80%",
+		key: "maxHeight",
+		lateValue: "85%",
+		nextValue: 96,
+	},
+	{
+		cleanupValue: 16,
+		initialValue: "auto",
+		key: "flexBasis",
+		lateValue: 24,
+		nextValue: "40%",
+	},
+	{
+		cleanupValue: 2,
+		initialValue: 4,
+		key: "gap",
+		lateValue: 12,
+		nextValue: 8,
+	},
+	{
+		cleanupValue: 1,
+		initialValue: 3,
+		key: "rowGap",
+		lateValue: 9,
+		nextValue: 5,
+	},
+	{
+		cleanupValue: 1,
+		initialValue: 2,
+		key: "columnGap",
+		lateValue: 8,
+		nextValue: 6,
+	},
+	{
+		cleanupValue: 0,
+		initialValue: 1,
+		key: "flexGrow",
+		lateValue: 3,
+		nextValue: 2,
+	},
+	{
+		cleanupValue: 1,
+		initialValue: 0,
+		key: "flexShrink",
+		lateValue: 2,
+		nextValue: 1,
+	},
+	{
+		cleanupValue: "stretch",
+		initialValue: "flex-start",
+		key: "alignContent",
+		lateValue: "center",
+		nextValue: "space-between",
+	},
+	{
+		cleanupValue: "stretch",
+		initialValue: "auto",
+		key: "alignSelf",
+		lateValue: "flex-end",
+		nextValue: "center",
+	},
+	{
+		cleanupValue: "nowrap",
+		initialValue: "nowrap",
+		key: "flexWrap",
+		lateValue: "wrap-reverse",
+		nextValue: "wrap",
+	},
+	{
+		cleanupValue: "ltr",
+		initialValue: "inherit",
+		key: "direction",
+		lateValue: "rtl",
+		nextValue: "ltr",
+	},
+	{
+		cleanupValue: "flex",
+		initialValue: "flex",
+		key: "display",
+		lateValue: "contents",
+		nextValue: "none",
+	},
+	{
+		cleanupValue: "border-box",
+		initialValue: "border-box",
+		key: "boxSizing",
+		lateValue: "border-box",
+		nextValue: "content-box",
+	},
+	{
+		cleanupValue: "relative",
+		initialValue: "relative",
+		key: "position",
+		lateValue: "static",
+		nextValue: "absolute",
+	},
+	{
+		cleanupValue: 0,
+		initialValue: "10%",
+		key: "top",
+		lateValue: "14%",
+		nextValue: 12,
+	},
+	{
+		cleanupValue: "0%",
+		initialValue: 2,
+		key: "right",
+		lateValue: 6,
+		nextValue: "8%",
+	},
+	{
+		cleanupValue: 0,
+		initialValue: "6%",
+		key: "bottom",
+		lateValue: "12%",
+		nextValue: 10,
+	},
+	{
+		cleanupValue: "0%",
+		initialValue: 1,
+		key: "left",
+		lateValue: 8,
+		nextValue: "4%",
+	},
+	{
+		cleanupValue: 0,
+		initialValue: "3%",
+		key: "start",
+		lateValue: "4%",
+		nextValue: 5,
+	},
+	{
+		cleanupValue: "0%",
+		initialValue: 7,
+		key: "end",
+		lateValue: 11,
+		nextValue: "9%",
+	},
+	{
+		cleanupValue: 0,
+		initialValue: "auto",
+		key: "marginLeft",
+		lateValue: 8,
+		nextValue: "12%",
+	},
+	{
+		cleanupValue: "0%",
+		initialValue: "5%",
+		key: "marginRight",
+		lateValue: 6,
+		nextValue: "auto",
+	},
+	{
+		cleanupValue: 0,
+		initialValue: "2%",
+		key: "inset",
+		lateValue: "4%",
+		nextValue: 3,
+	},
+	{
+		cleanupValue: 0,
+		initialValue: 4,
+		key: "insetHorizontal",
+		lateValue: 6,
+		nextValue: "5%",
+	},
+	{
+		cleanupValue: 0,
+		initialValue: "7%",
+		key: "insetVertical",
+		lateValue: "9%",
+		nextValue: 8,
+	},
+]
+assertStyleBindingCasesExistInNodeStyle(
+	"Reconciler dynamic layout style cases",
+	layoutStyleBindingCases,
+)
 
 const nativeCommandBindingCases = [
 	{
@@ -424,6 +642,7 @@ verifyJsCommandBindingModeRunsCommandUpdateCallbacks()
 verifyStyleAnimatedListenerUpdatesStyleAndContinuousRedraw()
 verifyTransformStyleSharedValuesUseJsStyleDelivery()
 verifyMatrixStyleSharedValuesUseJsStyleDelivery()
+verifyLayoutStyleSharedValuesUseJsStyleDelivery()
 verifyClipAndInvertClipStyleSharedValuesUseJsStyleDelivery()
 verifyGlobalBorderRadiusStyleSharedValueUsesJsStyleDelivery()
 verifyCornerRadiusStyleSharedValuesUseJsStyleDelivery()
@@ -460,6 +679,11 @@ console.log(
 )
 console.log(
 	"- Whole style.matrix SharedValue listeners resolve 9-value snapshots, deliver 16-value updates through the top-level matrix key, rebuild full styles, invalidate, clean up, reject nested SharedValue matrix entries with the explicit boundary error, and avoid native command mirrors.",
+)
+console.log(
+	`- Dynamic top-level layout style SharedValue listeners cover representative NodeStyle fields (${formatLayoutStyleCaseList(
+		layoutStyleBindingCases,
+	)}), resolve initial snapshots, rebuild full styles on updates, preserve static sibling style fields, invalidate, clean up on commitUpdate, ignore late emits, and avoid native command mirrors.`,
 )
 console.log(
 	`- Dynamic style.clip SharedValue listeners cover top-level rect/rrect/path payloads (${formatStyleClipCaseList(
@@ -854,6 +1078,41 @@ function assertParagraphTextStyleCommandData(commandData, expected, message) {
 			commandData.paragraphStyle.textStyle[key],
 			value,
 			`${message}: nested textStyle.${key}`,
+		)
+	}
+}
+
+function assertLayoutStyleSnapshot(
+	style,
+	expectedValues,
+	staticStyleFields,
+	label,
+) {
+	assert.equal(
+		isPlainVerifierObject(style),
+		true,
+		`${label} should produce a plain host style object`,
+	)
+	assert.deepEqual(
+		Object.keys(style).sort(),
+		[
+			...layoutStyleBindingCases.map((testCase) => testCase.key),
+			...Object.keys(staticStyleFields),
+		].sort(),
+		`${label} should rebuild the full host style keys`,
+	)
+	for (const testCase of layoutStyleBindingCases) {
+		assert.equal(
+			style[testCase.key],
+			expectedValues.get(testCase.key),
+			`${label} should resolve style.${testCase.key}`,
+		)
+	}
+	for (const [key, value] of Object.entries(staticStyleFields)) {
+		assert.equal(
+			style[key],
+			value,
+			`${label} should preserve static sibling style.${key}`,
 		)
 	}
 }
@@ -1347,6 +1606,215 @@ function verifyTransformStyleSharedValuesUseJsStyleDelivery() {
 function verifyMatrixStyleSharedValuesUseJsStyleDelivery() {
 	verifyWholeMatrixSharedValueUsesJsStyleDelivery()
 	verifyNestedMatrixSharedValueEntriesFailWithExplicitError()
+}
+
+function verifyLayoutStyleSharedValuesUseJsStyleDelivery() {
+	const harness = createReconcilerHarness()
+	const config = harness.loadReconcilerHostConfig()
+	const sharedValues = Object.fromEntries(
+		layoutStyleBindingCases.map((testCase) => [
+			testCase.key,
+			harness.makeSharedValue(
+				testCase.initialValue,
+				`style.layout.${testCase.key}`,
+			),
+		]),
+	)
+	const staticStyleFields = {
+		backgroundColor: "#0f172a",
+		justifyContent: "center",
+		opacity: 0.72,
+	}
+	const style = harness.makeVmValue(
+		`({
+${formatLayoutStyleVmEntries()}
+			backgroundColor: "#0f172a",
+			justifyContent: "center",
+			opacity: 0.72,
+		})`,
+		sharedValues,
+	)
+	const { calls, container } = harness.makeRootContainer({
+		nativeCommandBindingsEnabled: true,
+	})
+
+	const node = config.createInstance(
+		"group",
+		{
+			rasterize: true,
+			style,
+		},
+		container,
+	)
+
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		"top-level layout style SharedValues should use JS style listeners rather than native command mirrors",
+	)
+	for (const testCase of layoutStyleBindingCases) {
+		assert.equal(
+			sharedValues[testCase.key].listenerCount(),
+			1,
+			`style.${testCase.key} should register one SharedValue listener`,
+		)
+	}
+	assert.deepEqual(
+		harness.calls.uiRuntimeCalls.map((call) => call.args[1]),
+		layoutStyleBindingCases.map((testCase) => testCase.key),
+		"top-level layout style SharedValues should be keyed by their style property names",
+	)
+	assert.equal(
+		last(node.commands).data.rasterize,
+		true,
+		"group command props should still be applied while layout style bindings are active",
+	)
+	assertLayoutStyleSnapshot(
+		last(node.styles),
+		new Map(
+			layoutStyleBindingCases.map((testCase) => [
+				testCase.key,
+				testCase.initialValue,
+			]),
+		),
+		staticStyleFields,
+		"initial top-level layout style SharedValue snapshot",
+	)
+	assert.equal(
+		calls.nativeAnimationActive.length,
+		0,
+		"top-level layout style SharedValues should not mark the node as natively animated",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		0,
+		"initial top-level layout style listener setup should not invalidate",
+	)
+
+	const expectedValues = new Map(
+		layoutStyleBindingCases.map((testCase) => [
+			testCase.key,
+			testCase.initialValue,
+		]),
+	)
+	for (const [index, testCase] of layoutStyleBindingCases.entries()) {
+		sharedValues[testCase.key].emit(testCase.nextValue)
+		expectedValues.set(testCase.key, testCase.nextValue)
+
+		assert.deepEqual(
+			last(harness.calls.runOnJSCalls).args,
+			[testCase.key, testCase.nextValue],
+			`style.${testCase.key} updates should bridge the top-level style key through runOnJS`,
+		)
+		assert.equal(
+			node.styles.length,
+			index + 2,
+			`style.${testCase.key} updates should call setStyle once after the prior style snapshot`,
+		)
+		assertLayoutStyleSnapshot(
+			last(node.styles),
+			expectedValues,
+			staticStyleFields,
+			`style.${testCase.key} update`,
+		)
+		assert.equal(
+			calls.invalidations.length,
+			index + 1,
+			`style.${testCase.key} updates should invalidate the container`,
+		)
+		assert.equal(
+			harness.calls.createSynchronizable.length,
+			0,
+			`style.${testCase.key} updates should not create native command mirrors`,
+		)
+		assert.equal(
+			harness.calls.setBlocking.length,
+			0,
+			`style.${testCase.key} updates should not use native mirror setBlocking updates`,
+		)
+	}
+
+	const cleanupStyle = {
+		...Object.fromEntries(
+			layoutStyleBindingCases.map((testCase) => [
+				testCase.key,
+				testCase.cleanupValue,
+			]),
+		),
+		backgroundColor: "#334155",
+		opacity: 0.33,
+	}
+	const styleCallsAfterEmit = node.styles.length
+	const invalidationsAfterEmit = calls.invalidations.length
+	const runOnJsCallsAfterEmit = harness.calls.runOnJSCalls.length
+	config.commitUpdate(
+		node,
+		"group",
+		{ rasterize: true, style },
+		{
+			rasterize: false,
+			style: cleanupStyle,
+		},
+		null,
+	)
+
+	for (const testCase of layoutStyleBindingCases) {
+		assert.equal(
+			sharedValues[testCase.key].listenerCount(),
+			0,
+			`commitUpdate should remove the style.${testCase.key} listener`,
+		)
+	}
+	assert.deepEqual(
+		harness.calls.sharedRemoveListener.map((call) => call.had),
+		layoutStyleBindingCases.map(() => true),
+		"top-level layout style cleanup should remove existing SharedValue listener ids",
+	)
+	assert.equal(
+		last(node.commands).data.rasterize,
+		false,
+		"commitUpdate should still update command props while layout style cleanup runs",
+	)
+	assert.deepEqual(
+		last(node.styles),
+		cleanupStyle,
+		"commitUpdate should apply the cleaned layout style after removing top-level layout listeners",
+	)
+	assert.equal(
+		node.styles.length,
+		styleCallsAfterEmit + 1,
+		"commitUpdate should apply exactly one cleaned layout style snapshot",
+	)
+
+	for (const testCase of layoutStyleBindingCases) {
+		sharedValues[testCase.key].emit(testCase.lateValue)
+	}
+
+	assert.equal(
+		node.styles.length,
+		styleCallsAfterEmit + 1,
+		"removed top-level layout style listeners should not rebuild styles after cleanup",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		invalidationsAfterEmit,
+		"removed top-level layout style listeners should not invalidate after cleanup",
+	)
+	assert.equal(
+		harness.calls.runOnJSCalls.length,
+		runOnJsCallsAfterEmit,
+		"removed top-level layout style listeners should not bridge through runOnJS after cleanup",
+	)
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		"removed top-level layout style listeners should never create native command mirrors",
+	)
+	assert.equal(
+		harness.calls.setBlocking.length,
+		0,
+		"removed top-level layout style listeners should never update native mirrors",
+	)
 }
 
 function verifyGlobalBorderRadiusStyleSharedValueUsesJsStyleDelivery() {
@@ -4142,6 +4610,10 @@ function formatStyleClipCaseList(cases) {
 	return cases.map((testCase) => testCase.description).join(", ")
 }
 
+function formatLayoutStyleCaseList(cases) {
+	return cases.map((testCase) => testCase.key).join(", ")
+}
+
 function sortNativeBindingCases(cases) {
 	return [...cases].sort((left, right) =>
 		formatNativeBindingCase(left).localeCompare(
@@ -4154,6 +4626,74 @@ function formatNestedTransformVmEntries() {
 	return nestedTransformBindingCases
 		.map(({ key }) => `				{ ${key}: bindings.${key} },`)
 		.join("\n")
+}
+
+function formatLayoutStyleVmEntries() {
+	return layoutStyleBindingCases
+		.map(({ key }) => `			${key}: bindings.${key},`)
+		.join("\n")
+}
+
+function extractPublicNodeStyleKeyInventory() {
+	const stylePath = projectPath("src", "specs", "style.ts")
+	const sourceFile = ts.createSourceFile(
+		stylePath,
+		readFileSync(stylePath, "utf8"),
+		ts.ScriptTarget.Latest,
+		true,
+		ts.ScriptKind.TS,
+	)
+	let nodeStyleDeclaration
+
+	walkTs(sourceFile, (node) => {
+		if (
+			ts.isTypeAliasDeclaration(node) &&
+			hasExportModifier(node) &&
+			node.name.text === "NodeStyle"
+		) {
+			nodeStyleDeclaration = node
+		}
+	})
+
+	assert.ok(
+		nodeStyleDeclaration,
+		"src/specs/style.ts should export a NodeStyle type alias.",
+	)
+	const nodeStyleType = skipTypeParentheses(nodeStyleDeclaration.type)
+	assert.equal(
+		ts.isTypeLiteralNode(nodeStyleType),
+		true,
+		"NodeStyle should be a type literal whose public keys can be inventoried.",
+	)
+
+	return nodeStyleType.members
+		.filter((member) => ts.isPropertySignature(member))
+		.map((member) => {
+			const key = propertyNameText(member.name)
+			assert.ok(
+				key,
+				"NodeStyle property signatures should use identifier or literal keys.",
+			)
+			return key
+		})
+}
+
+function assertStyleBindingCasesExistInNodeStyle(label, cases) {
+	const publicKeys = new Set(publicNodeStyleKeyInventory)
+	const seenKeys = new Set()
+	for (const testCase of cases) {
+		assert.equal(
+			seenKeys.has(testCase.key),
+			false,
+			`${label} should not duplicate style.${testCase.key}.`,
+		)
+		seenKeys.add(testCase.key)
+		assert.equal(
+			publicKeys.has(testCase.key),
+			true,
+			`${label} includes style.${testCase.key}, but src/specs/style.ts NodeStyle does not expose that key.`,
+		)
+	}
 }
 
 function extractPublicTransformOperationInventory() {
