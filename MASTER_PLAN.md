@@ -363,13 +363,15 @@ Accepted package-hygiene implementation:
 Current active worker:
 
 - Worker 209 post-208 root-cause audit.
-- Agent path: `/root/worker_209_post_208_root_cause_audit`.
+- Agent path: `/root/worker_209_post_208_root_cause_audit_recovery`.
 - Worktree: `../worker-209-post-208-root-cause-audit`.
 - Branch: `worker/209-post-208-root-cause-audit`.
 - Scope: audit the post-worker-208 state, verify the accepted proof boundary,
   rerun focused feasible checks as needed, reconfirm platform-native blockers,
   and select the next strongest locally unblocked root-cause target.
-- State: spawned with `agent_type: "worker"`, `goal: true`,
+- State: initial agent `/root/worker_209_post_208_root_cause_audit` stalled
+  with no report or tracked edits after a status follow-up and was closed.
+  Recovery agent spawned with `agent_type: "worker"`, `goal: true`,
   `fork_turns: "none"`, `model: "gpt-5.5"`, and
   `reasoning_effort: "xhigh"`; awaiting report.
 
