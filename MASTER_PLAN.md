@@ -125,12 +125,18 @@ materialized Nitro verifier with compact Yoga layout breadth proof across
 generated `setStyle(...)`, `insertChild(...)`, `computeLayout(...)`, native
 Yoga state, and generated `layout` getter output.
 
-Latest accepted audit: worker 192 accepted Worker 191's paired inverted
+Previous accepted audit: worker 192 accepted Worker 191's paired inverted
 rrect/path raster proof, reconfirmed focused and full-matrix evidence plus
 platform blockers, and selected generated materialized Yoga layout breadth
 proof as the next strongest locally unblocked target.
 
-Next queued audit: worker 194 post-Worker 193 root-cause audit.
+Latest accepted audit: worker 194 accepted Worker 193's generated
+materialized Yoga layout proof boundary, reconfirmed focused and full-matrix
+evidence plus platform blockers, and selected overflow render/materialized
+bridge proof as the next strongest locally unblocked target.
+
+Next queued implementation: worker 195 overflow render/materialized bridge
+proof.
 
 Goals:
 
@@ -330,22 +336,23 @@ Accepted package-hygiene implementation:
 - `worker-191-inverted-rrect-path-raster-proof`: added direct and generated materialized inverted rrect/path raster proof, completing bounded inverted rect/rrect/path clip coverage.
 - `worker-192-post-191-root-cause-audit`: accepted Worker 191's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected generated materialized Yoga layout breadth proof as Worker 193's target.
 - `worker-193-materialized-layout-breadth`: expanded the generated materialized Nitro verifier with a compact flexbox/layout tree proof covering representative layout style delivery, selected native Yoga state, native computed layout, and generated `layout` getter output.
+- `worker-194-post-193-root-cause-audit`: accepted Worker 193's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected overflow render/materialized bridge proof as Worker 195's target.
 
 Current active worker:
 
-Worker 194 post-Worker 193 root-cause audit.
-
-- Agent path: `/root/worker_194_post_193_root_cause_audit`.
-- Worktree: `../worker-194-post-193-root-cause-audit`.
-- Branch: `worker/194-post-193-root-cause-audit`.
-- Scope: independently audit Worker 193's generated materialized layout
-  breadth proof, rerun focused and full feasible checks as appropriate,
-  reprobe local platform blockers, and select the next strongest locally
-  unblocked root-cause target.
+None. Worker 194 is merged and post-merge checked.
 
 Next queued worker:
 
-- None until Worker 194 reports.
+Worker 195 overflow render/materialized bridge proof.
+
+- Planned agent path: `/root/worker_195_overflow_render_materialized_bridge`.
+- Planned worktree: `../worker-195-overflow-render-materialized-bridge`.
+- Planned branch: `worker/195-overflow-render-materialized-bridge`.
+- Scope: add bounded host-native overflow raster proof and generated
+  materialized `setStyle({ overflow })` delivery proof without claiming
+  platform app runtime, GPU/platform clipping fidelity, or complete overflow
+  behavior.
 
 Acceptance criteria:
 

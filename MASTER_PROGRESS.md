@@ -4157,12 +4157,31 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 194 post-Worker 193 root-cause audit accepted:
+  - Worker branch commit:
+    `edba409 Add post-worker-193 root-cause audit`.
+  - Merged worker 194 into `main` as
+    `e4bb2b3 Merge worker 194 post-193 audit`.
+  - Accepted Worker 193's generated materialized Yoga layout breadth proof
+    within its bounded host-JSC/generated-wrapper proof boundary.
+  - Focused verification passed `git diff --check`,
+    `node --check scripts/verify-yoganode-nitro-materialization.mjs`, and
+    `npm run check:yoganode-nitro-materialization`.
+  - Full feasible matrix passed all 28 commands in `5m 14s`.
+  - Reprobed platform blockers: Command Line Tools-only Xcode selection,
+    missing iPhone simulator SDK, CocoaPods, Gradle, ADB, CMake, Ninja,
+    usable Java runtime, and Android SDK environment variables all remain
+    unavailable.
+  - The Worker 194 parent spawn-agent became stuck after nested checks
+    completed and before report writing; it was closed, and the report was
+    manually recovered in the isolated Worker 194 worktree from rerun local
+    verification and completed nested audit evidence.
+  - Selected bounded overflow render/materialized bridge proof as the next
+    locally unblocked root-cause target.
 
 ## Active Workers
 
-- `/root/worker_194_post_193_root_cause_audit`: post-Worker 193 root-cause
-  audit from isolated worktree `../worker-194-post-193-root-cause-audit` on
-  branch `worker/194-post-193-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4376,10 +4395,11 @@ Accepted worker reports:
 - `worker-progress/worker-191-inverted-rrect-path-raster-proof.md`
 - `worker-progress/worker-192-post-191-root-cause-audit.md`
 - `worker-progress/worker-193-materialized-layout-breadth.md`
+- `worker-progress/worker-194-post-193-root-cause-audit.md`
 
 ## Pending Workers
 
-- None until Worker 194 reports.
+- Worker 195 overflow render/materialized bridge proof.
 
 ## Decisions
 
@@ -4412,6 +4432,9 @@ Accepted worker reports:
   fresh post-Worker 193 root-cause audit to accept that boundary independently,
   rerun focused/full-matrix evidence as appropriate, reprobe platform blockers,
   and select the next locally unblocked target.
+- Worker 194 accepted Worker 193's generated materialized layout proof
+  boundary and selected bounded overflow render/materialized bridge proof as
+  the next locally unblocked target.
 - Post-worker-102 target selection: worker 103 accepted worker 102's synthetic ImageCmd fit proof boundary, reconfirmed the 28-command feasible matrix, and selected bounded text/paragraph CSS color-string command conversion/render coverage as the strongest locally unblocked target because public JSX accepts string color values and native text-style conversion parses CSS strings while current text/paragraph command-render coverage uses numeric colors.
 - Post-worker-106 target selection: worker 107 accepted worker 106's expanded generated `setCommand(...)` breadth, reconfirmed the 28-command feasible matrix, and selected direct `StrokeOpts` converter consistency as the strongest locally unblocked product-source target because `fromJSI(...)` rejects non-objects while `canConvert(...)` still advertises objects, `null`, and `undefined` as convertible.
 - Post-worker-108 follow-up: direct `StrokeOpts` converter consistency is integrated; the next step is a fresh audit because worker 107's next-ranked TypeScript dynamic payload caveat needs API-boundary reassessment after the converter fix.
@@ -4520,16 +4543,18 @@ Accepted worker reports:
 
 ## Next Worker Candidates
 
-- Worker 194: post-Worker 193 root-cause audit.
-  - Independently inspect Worker 193's generated materialized layout breadth
-    proof and report boundary.
-  - Rerun `npm run check:yoganode-nitro-materialization` and the full feasible
-    matrix unless fresh evidence shows a narrower check is sufficient.
-  - Reprobe local platform-native blockers.
-  - Select the next strongest locally unblocked root-cause target.
-  - Keep exact Yoga algorithm conformance, platform app runtime, React Native
-    bridge delivery, native app launch, and rendering fidelity outside Worker
-    193's accepted proof boundary unless new local evidence changes that.
+- Worker 195: overflow render/materialized bridge proof.
+  - Add bounded `overflow: "hidden"` and/or `overflow: "scroll"` raster proof
+    in `scripts/verify-yoganode-native-commands-render.mjs`.
+  - Mirror generated materialized `setStyle({ overflow })` delivery plus
+    selected native state and bounded raster pixels in
+    `scripts/verify-yoganode-nitro-materialization.mjs`.
+  - Keep the proof focused on rectangular overflow clipping, not radius
+    clipping or explicit `style.clip`, which are already covered by adjacent
+    verifiers.
+  - Do not claim exact GPU/platform clipping, platform app runtime, React
+    Native bridge delivery, or complete overflow behavior across all Yoga
+    modes.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
