@@ -175,11 +175,12 @@ try {
 	console.log("- The executable called generated setStyle/computeLayout/insertChild and raw setInteractionConfig/hitTest/getChildren through the returned child object, then asserted recursive returned-grandchild identity through returnedChild.getChildren().")
 	console.log("- The executable built materialized layout trees through YogaNode::toObject(runtime), generated setStyle(...), insertChild(...), computeLayout(...), and layout getter access; it covered compact flexDirection with justifyContent/alignItems, gap/rowGap/columnGap, padding aliases, margin aliases, flexGrow/flexShrink/flexBasis, absolute position with inset aliases, one stable width special value, and residual alignContent/alignSelf/flexWrap/direction/display/boxSizing/min-max/aspect/edge/percent/auto cases.")
 	console.log("- The executable reused the same materialized parent/child YogaNodes for generated setStyle initial, update, and cleanup passes; it asserted replacement of native NodeStyle optionals, selected Yoga getter updates/resets for width/height, constraints, flexBasis, gaps, flexGrow/flexShrink, alignContent/alignSelf/flexWrap/direction/display/boxSizing, position/edge/inset percent/auto values, layout invalidation, computeLayout(...), and generated layout getter values.")
+	console.log("- The executable aligns that same-node sequential materialized proof with Worker 199's exact public/Reconciler dynamic layout field table by separately exercising start/end, marginLeft/marginRight, and inset replacement, cleanup, selected Yoga edge getters, invalidation, computeLayout(...), and generated layout getter values.")
 	console.log("- The executable materialized parent/child YogaNodes, called generated setCommand(group/rect) and setStyle(overflow hidden/scroll, clip rect/rrect/path, plus invertClip rect/rrect/path) wrappers, inserted the child through the generated parent.insertChild(...) wrapper, rendered the native parent through YogaNode::renderToContext(), and asserted bounded in-clip/out-of-clip raster pixels.")
 	console.log("- The executable used fresh materialized YogaNode objects to invoke generated JS-facing setCommand(line), setCommand(points), setCommand(path), setCommand(text), setCommand(paragraph), setCommand(circle), setCommand(rrect), setCommand(blurMaskFilter), setCommand(rect), setCommand(oval), and setCommand(image) wrappers, preserving the native no-command-kind-change invariant.")
-	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized global borderRadius delivery into _style.borderRadius, _clipsToBounds, and all four _clipToBoundsRadii slots without per-corner or explicit clip state, generated materialized overflow hidden/scroll delivery into _style.overflow, Yoga overflow state, and rectangular _clipsToBounds without radius or explicit clip state plus bounded renderToContext raster pixels, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect plus bounded renderToContext raster pixels, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate plus bounded rect/rrect/path renderToContext raster pixels, generated materialized layout style delivery into native _style optionals and selected Yoga style getters for flex, gap, padding, margin, position/inset, width stretch, alignContent, alignSelf, flexWrap, direction, display, boxSizing, min/max constraints, aspectRatio, edge-specific start/end/top/bottom, percentage values, and auto values, sequential generated materialized setStyle initial/update/cleanup delivery into the same parent/child Yoga nodes with stale optionals and Yoga setters reset, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
+	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized global borderRadius delivery into _style.borderRadius, _clipsToBounds, and all four _clipToBoundsRadii slots without per-corner or explicit clip state, generated materialized overflow hidden/scroll delivery into _style.overflow, Yoga overflow state, and rectangular _clipsToBounds without radius or explicit clip state plus bounded renderToContext raster pixels, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect plus bounded renderToContext raster pixels, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate plus bounded rect/rrect/path renderToContext raster pixels, generated materialized layout style delivery into native _style optionals and selected Yoga style getters for flex, gap, padding, margin, position/inset, width stretch, alignContent, alignSelf, flexWrap, direction, display, boxSizing, min/max constraints, aspectRatio, edge-specific start/end/top/bottom, percentage values, and auto values, sequential generated materialized setStyle initial/update/cleanup delivery into the same parent/child Yoga nodes with stale optionals and Yoga setters reset, exact Worker 199 sequential edge-alias alignment for start/end, marginLeft/marginRight, and inset, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
 	console.log("- For CircleCmd, RRectCmd, and BlurMaskFilterCmd, selected no-pixel draw calls are used only to expose render-time native state/mask-filter side effects after generated wrapper delivery; no command-rendering or render-fidelity claim is made.")
-	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/overflow hidden/scroll/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized setStyle flexbox/layout/edge/constraint delivery into selected native _style optionals, selected stable Yoga style getters, selected sequential same-node layout setter replacement/reset behavior, and selected computed native/generated layout getter values, generated materialized overflow hidden/scroll delivery followed by bounded host-raster renderToContext pixel assertions for rectangular parent bounds clipping, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect/rrect/path clips, and selected generated/raw YogaNode method/getter execution only; this does not prove exact Yoga conformance beyond asserted values, actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact overflow or clip render fidelity beyond asserted pixels, exact hit-test behavior, exhaustive layout field coverage, or every command rendering path.")
+	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/overflow hidden/scroll/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized setStyle flexbox/layout/edge/constraint delivery into selected native _style optionals, selected stable Yoga style getters, selected sequential same-node layout setter replacement/reset behavior including exact Worker 199 edge aliases, and selected computed native/generated layout getter values, generated materialized overflow hidden/scroll delivery followed by bounded host-raster renderToContext pixel assertions for rectangular parent bounds clipping, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect/rrect/path clips, and selected generated/raw YogaNode method/getter execution only; this does not prove exact Yoga conformance beyond asserted values, actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact overflow or clip render fidelity beyond asserted pixels, exact hit-test behavior, exhaustive layout field coverage, or every command rendering path.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -200,6 +201,9 @@ function assertCurrentGapAndRisk() {
 	)
 	const styleSpec = readProjectFile("src/specs/style.ts")
 	const reconciler = readProjectFile("src/Reconciler.ts")
+	const reconcilerAnimatedVerifier = readProjectFile(
+		"scripts/verify-reconciler-animated-bindings.mjs",
+	)
 	const yogaNodeCpp = readProjectFile("cpp/YogaNode.cpp")
 	const yogaNodeConverter = readProjectFile("cpp/JSIConverter+YogaNode.hpp")
 	const skMatrixConverter = readProjectFile("cpp/JSIConverter+SkMatrix.hpp")
@@ -326,6 +330,45 @@ function assertCurrentGapAndRisk() {
 			`Public/generated NodeStyle must retain residual layout field ${field}.`,
 		)
 	}
+	for (const field of [
+		"width",
+		"height",
+		"minWidth",
+		"maxWidth",
+		"minHeight",
+		"maxHeight",
+		"flexBasis",
+		"gap",
+		"rowGap",
+		"columnGap",
+		"flexGrow",
+		"flexShrink",
+		"alignContent",
+		"alignSelf",
+		"flexWrap",
+		"direction",
+		"display",
+		"boxSizing",
+		"position",
+		"top",
+		"right",
+		"bottom",
+		"left",
+		"start",
+		"end",
+		"marginLeft",
+		"marginRight",
+		"inset",
+		"insetHorizontal",
+		"insetVertical",
+	]) {
+		assert(
+			reconcilerAnimatedVerifier.includes(`key: "${field}"`) &&
+				styleSpec.includes(`${field}?:`) &&
+				generatedNodeStyle.includes(`obj.getProperty(runtime, "${field}")`),
+			`Worker 199 dynamic layout field inventory must retain public/generated ${field}.`,
+		)
+	}
 	for (const nativeNeedle of [
 		"YGNodeStyleSetAlignContent",
 		"YGNodeStyleSetAlignSelf",
@@ -342,6 +385,18 @@ function assertCurrentGapAndRisk() {
 		assert(
 			yogaNodeCpp.includes(nativeNeedle),
 			`YogaNode.cpp must retain native residual layout setter ${nativeNeedle}.`,
+		)
+	}
+	for (const nativeNeedle of [
+		"style.start",
+		"style.end",
+		"style.marginLeft",
+		"style.marginRight",
+		"style.inset",
+	]) {
+		assert(
+			yogaNodeCpp.includes(nativeNeedle),
+			`YogaNode.cpp must retain native exact dynamic layout alias setter path ${nativeNeedle}.`,
 		)
 	}
 	assert(
@@ -2059,6 +2114,86 @@ jsi::Object makeSequentialCleanupFormerAbsoluteChildStyle(jsi::Runtime& runtime)
     return style;
 }
 
+jsi::Object makeSequentialFieldAlignmentParentStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "width", 100.0);
+    style.setProperty(runtime, "height", 50.0);
+    style.setProperty(runtime, "flexDirection", "row");
+    style.setProperty(runtime, "direction", "ltr");
+    return style;
+}
+
+jsi::Object makeSequentialFieldAlignmentInitialFlowChildStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "width", 20.0);
+    style.setProperty(runtime, "height", 10.0);
+    style.setProperty(runtime, "marginLeft", "auto");
+    style.setProperty(runtime, "marginRight", "5%");
+    return style;
+}
+
+jsi::Object makeSequentialFieldAlignmentUpdatedFlowChildStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "width", 20.0);
+    style.setProperty(runtime, "height", 10.0);
+    style.setProperty(runtime, "marginLeft", "12%");
+    style.setProperty(runtime, "marginRight", "auto");
+    return style;
+}
+
+jsi::Object makeSequentialFieldAlignmentCleanupFlowChildStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "width", 20.0);
+    style.setProperty(runtime, "height", 10.0);
+    return style;
+}
+
+jsi::Object makeSequentialFieldAlignmentInitialAbsoluteChildStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "position", "absolute");
+    style.setProperty(runtime, "width", 10.0);
+    style.setProperty(runtime, "height", 8.0);
+    style.setProperty(runtime, "start", "3%");
+    style.setProperty(runtime, "end", 7.0);
+    style.setProperty(runtime, "top", 4.0);
+    return style;
+}
+
+jsi::Object makeSequentialFieldAlignmentUpdatedAbsoluteChildStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "position", "absolute");
+    style.setProperty(runtime, "width", 10.0);
+    style.setProperty(runtime, "height", 8.0);
+    style.setProperty(runtime, "start", 5.0);
+    style.setProperty(runtime, "end", "9%");
+    style.setProperty(runtime, "top", 4.0);
+    return style;
+}
+
+jsi::Object makeSequentialFieldAlignmentInsetAbsoluteChildStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "position", "absolute");
+    style.setProperty(runtime, "width", 10.0);
+    style.setProperty(runtime, "height", 8.0);
+    style.setProperty(runtime, "inset", 3.0);
+    return style;
+}
+
+jsi::Object makeSequentialFieldAlignmentCleanupAbsoluteChildStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "width", 10.0);
+    style.setProperty(runtime, "height", 8.0);
+    return style;
+}
+
 void expectObjectFunction(jsi::Runtime& runtime, const jsi::Object& object, const char* name)
 {
     expect(object.hasProperty(runtime, name), "materialized YogaNode object must expose expected function");
@@ -3138,6 +3273,126 @@ void assertGeneratedMaterializedSequentialLayoutUpdates(jsi::Runtime& runtime)
     expectGeneratedLayoutGetterNear(runtime, parent, 0.0, 0.0, 120.0, 60.0, "generated sequential cleanup parent");
     expectGeneratedLayoutGetterNear(runtime, flowChild, 0.0, 0.0, 30.0, 10.0, "generated sequential cleanup flow child");
     expectGeneratedLayoutGetterNear(runtime, absoluteChild, 0.0, 10.0, 20.0, 8.0, "generated sequential cleanup former absolute child");
+
+    disposeMaterializedObject(runtime, absoluteChild.object);
+    disposeMaterializedObject(runtime, flowChild.object);
+    disposeMaterializedObject(runtime, parent.object);
+}
+
+void assertGeneratedMaterializedSequentialLayoutFieldAlignment(jsi::Runtime& runtime)
+{
+    auto parent = materializeYogaNode(runtime);
+    auto flowChild = materializeYogaNode(runtime);
+    auto absoluteChild = materializeYogaNode(runtime);
+
+    callGeneratedInsertChild(
+        runtime,
+        parent.object,
+        flowChild.object,
+        "generated field-alignment parent.insertChild(flowChild) must return undefined");
+    callGeneratedInsertChild(
+        runtime,
+        parent.object,
+        absoluteChild.object,
+        "generated field-alignment parent.insertChild(absoluteChild) must return undefined");
+    expect(parent.node->_children.size() == 2, "generated field-alignment layout tree must attach two native children");
+
+    callGeneratedSetStyle(
+        runtime,
+        parent,
+        makeSequentialFieldAlignmentParentStyle(runtime),
+        "generated field-alignment parent setStyle must return undefined");
+    callGeneratedSetStyle(
+        runtime,
+        flowChild,
+        makeSequentialFieldAlignmentInitialFlowChildStyle(runtime),
+        "generated field-alignment initial flow child setStyle must return undefined");
+    callGeneratedSetStyle(
+        runtime,
+        absoluteChild,
+        makeSequentialFieldAlignmentInitialAbsoluteChildStyle(runtime),
+        "generated field-alignment initial absolute child setStyle must return undefined");
+
+    expectOptionalStyleString(flowChild.node->_style.marginLeft, "auto", "generated field-alignment initial flow child marginLeft auto optional");
+    expectOptionalStyleString(flowChild.node->_style.marginRight, "5%", "generated field-alignment initial flow child marginRight percent optional");
+    expectOptionalStyleString(absoluteChild.node->_style.start, "3%", "generated field-alignment initial absolute child start percent optional");
+    expectOptionalStyleNumber(absoluteChild.node->_style.end, 7.0, "generated field-alignment initial absolute child end optional");
+    expectOptionalStyleNumber(absoluteChild.node->_style.top, 4.0, "generated field-alignment initial absolute child top optional");
+    expect(!absoluteChild.node->_style.inset.has_value(), "generated field-alignment initial absolute child starts without inset optional");
+
+    expectYGValueAuto(YGNodeStyleGetMargin(flowChild.node->_node, YGEdgeLeft), "generated field-alignment initial flow child Yoga marginLeft auto getter");
+    expectYGValuePercent(YGNodeStyleGetMargin(flowChild.node->_node, YGEdgeRight), 5.0, "generated field-alignment initial flow child Yoga marginRight percent getter");
+    expectYGValuePercent(YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeStart), 3.0, "generated field-alignment initial absolute child Yoga start percent getter");
+    expectYGValuePoint(YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeEnd), 7.0, "generated field-alignment initial absolute child Yoga end getter");
+
+    auto computeLayout = parent.object.getPropertyAsFunction(runtime, "computeLayout");
+    callComputeLayout(runtime, parent.object, computeLayout);
+    expectGeneratedLayoutGetterNear(runtime, parent, 0.0, 0.0, 100.0, 50.0, "generated field-alignment initial parent");
+
+    callGeneratedSetStyle(
+        runtime,
+        flowChild,
+        makeSequentialFieldAlignmentUpdatedFlowChildStyle(runtime),
+        "generated field-alignment updated flow child setStyle must return undefined");
+    callGeneratedSetStyle(
+        runtime,
+        absoluteChild,
+        makeSequentialFieldAlignmentUpdatedAbsoluteChildStyle(runtime),
+        "generated field-alignment updated absolute child setStyle must return undefined");
+    expect(!parent.node->_hasLayoutBeenComputed, "generated field-alignment update must invalidate previously computed parent layout");
+
+    expectOptionalStyleString(flowChild.node->_style.marginLeft, "12%", "generated field-alignment updated flow child marginLeft percent optional");
+    expectOptionalStyleString(flowChild.node->_style.marginRight, "auto", "generated field-alignment updated flow child marginRight auto optional");
+    expectOptionalStyleNumber(absoluteChild.node->_style.start, 5.0, "generated field-alignment updated absolute child start optional");
+    expectOptionalStyleString(absoluteChild.node->_style.end, "9%", "generated field-alignment updated absolute child end percent optional");
+    expect(!absoluteChild.node->_style.inset.has_value(), "generated field-alignment updated absolute child still has no inset optional");
+
+    expectYGValuePercent(YGNodeStyleGetMargin(flowChild.node->_node, YGEdgeLeft), 12.0, "generated field-alignment updated flow child Yoga marginLeft percent getter");
+    expectYGValueAuto(YGNodeStyleGetMargin(flowChild.node->_node, YGEdgeRight), "generated field-alignment updated flow child Yoga marginRight auto getter");
+    expectYGValuePoint(YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeStart), 5.0, "generated field-alignment updated absolute child Yoga start getter");
+    expectYGValuePercent(YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeEnd), 9.0, "generated field-alignment updated absolute child Yoga end percent getter");
+
+    callComputeLayout(runtime, parent.object, computeLayout);
+    expectGeneratedLayoutGetterNear(runtime, parent, 0.0, 0.0, 100.0, 50.0, "generated field-alignment updated parent");
+
+    callGeneratedSetStyle(
+        runtime,
+        flowChild,
+        makeSequentialFieldAlignmentCleanupFlowChildStyle(runtime),
+        "generated field-alignment cleanup flow child setStyle must return undefined");
+    callGeneratedSetStyle(
+        runtime,
+        absoluteChild,
+        makeSequentialFieldAlignmentInsetAbsoluteChildStyle(runtime),
+        "generated field-alignment inset absolute child setStyle must return undefined");
+    expect(!parent.node->_hasLayoutBeenComputed, "generated field-alignment inset update must invalidate previously computed parent layout");
+
+    expect(!flowChild.node->_style.marginLeft.has_value(), "generated field-alignment cleanup flow child clears marginLeft optional");
+    expect(!flowChild.node->_style.marginRight.has_value(), "generated field-alignment cleanup flow child clears marginRight optional");
+    expect(!absoluteChild.node->_style.start.has_value(), "generated field-alignment inset absolute child clears start optional");
+    expect(!absoluteChild.node->_style.end.has_value(), "generated field-alignment inset absolute child clears end optional");
+    expectOptionalStyleNumber(absoluteChild.node->_style.inset, 3.0, "generated field-alignment inset absolute child inset optional");
+
+    auto defaultNode = YGNodeNew();
+    expectYGValueSame(YGNodeStyleGetMargin(flowChild.node->_node, YGEdgeLeft), YGNodeStyleGetMargin(defaultNode, YGEdgeLeft), "generated field-alignment cleanup flow child Yoga marginLeft resets to default");
+    expectYGValueSame(YGNodeStyleGetMargin(flowChild.node->_node, YGEdgeRight), YGNodeStyleGetMargin(defaultNode, YGEdgeRight), "generated field-alignment cleanup flow child Yoga marginRight resets to default");
+    expectYGValuePoint(YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeAll), 3.0, "generated field-alignment inset absolute child Yoga inset getter");
+
+    callComputeLayout(runtime, parent.object, computeLayout);
+    expectGeneratedLayoutGetterNear(runtime, absoluteChild, 3.0, 3.0, 10.0, 8.0, "generated field-alignment inset absolute child");
+
+    callGeneratedSetStyle(
+        runtime,
+        absoluteChild,
+        makeSequentialFieldAlignmentCleanupAbsoluteChildStyle(runtime),
+        "generated field-alignment cleanup absolute child setStyle must return undefined");
+    expect(!absoluteChild.node->_style.position.has_value(), "generated field-alignment cleanup absolute child clears position optional");
+    expect(!absoluteChild.node->_style.inset.has_value(), "generated field-alignment cleanup absolute child clears inset optional");
+    expectYGValueSame(YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeAll), YGNodeStyleGetPosition(defaultNode, YGEdgeAll), "generated field-alignment cleanup absolute child Yoga inset resets to default");
+    YGNodeFree(defaultNode);
+
+    callComputeLayout(runtime, parent.object, computeLayout);
+    expectGeneratedLayoutGetterNear(runtime, parent, 0.0, 0.0, 100.0, 50.0, "generated field-alignment cleanup parent");
 
     disposeMaterializedObject(runtime, absoluteChild.object);
     disposeMaterializedObject(runtime, flowChild.object);
@@ -4351,6 +4606,8 @@ int main()
     assertGeneratedMaterializedResidualLayoutBreadth(*runtime);
     assertGeneratedMaterializedDisplayNoneLayout(*runtime);
     assertGeneratedMaterializedSequentialLayoutUpdates(*runtime);
+    std::cerr << "probe: call generated materialized sequential field alignment" << std::endl;
+    assertGeneratedMaterializedSequentialLayoutFieldAlignment(*runtime);
 
     std::cerr << "probe: exercise stable generated negatives" << std::endl;
     expectThrows(
