@@ -313,16 +313,21 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- Worker 177 JS/Reconciler corner-radius completion pass.
+  - Agent path: `/root/worker_177_corner_radius_js_reconciler_completion`.
+  - Worktree: `../worker-177-corner-radius-js-reconciler-completion`.
+  - Branch: `worker/177-corner-radius-js-reconciler-completion`.
+  - Scope: add inventory/drift protection and packed TypeScript/Reconciler
+    verifier coverage for all four SkPoint-capable corner keys, including whole
+    scalar `SharedValue<number>` behavior.
+  - Required verification: edited verifier syntax checks,
+    `check:package-typescript-consumer`,
+    `check:reconciler-animated-bindings`, `check:feasible-matrix`, and
+    `git diff --check`.
 
 Next queued worker:
 
-- Worker 177 JS/Reconciler corner-radius completion pass.
-  - Add inventory/drift protection for all four SkPoint-capable corner keys.
-  - Extend packed TypeScript and Reconciler source-level verifier coverage so
-    all four corner keys explicitly cover whole scalar `SharedValue<number>`.
-  - Keep proof bounded to packed TypeScript and Node VM Reconciler behavior; do
-    not claim real UI-runtime/Reanimated delivery or platform presentation.
+- None until Worker 177 reports.
 
 Acceptance criteria:
 
