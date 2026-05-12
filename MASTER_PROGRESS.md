@@ -3534,10 +3534,22 @@ Last updated: 2026-05-12
   - Merged worker 170 into `main` as
     `abcdc48 Merge worker 170 post-169 audit`.
   - Post-merge `git diff --check HEAD~1 HEAD`: passed.
+- Prepared Worker 171 dynamic style corner-radius public/Reconciler proof:
+  - Worktree: `../worker-171-corner-radius-dynamic-proof`.
+  - Branch: `worker/171-corner-radius-dynamic-proof`.
+  - Planned agent path: `/root/worker_171_corner_radius_dynamic_proof`.
+  - Symlinked root `node_modules` and `example/node_modules` from the main
+    worktree.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
 
 ## Active Workers
 
-- None.
+- `/root/worker_171_corner_radius_dynamic_proof`: dynamic style corner-radius
+  public/Reconciler proof from isolated worktree
+  `../worker-171-corner-radius-dynamic-proof` on branch
+  `worker/171-corner-radius-dynamic-proof`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3854,12 +3866,12 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Launch Worker 171: dynamic style corner-radius public/Reconciler proof.
-  - Extend packed TypeScript consumer fixtures for representative
+- Monitor Worker 171: dynamic style corner-radius public/Reconciler proof.
+  - Expected packed TypeScript consumer coverage: representative
     SkPoint-capable corner-radius authoring, including whole
     `SharedValue<number>`, whole `SharedValue<SkPoint>`, animated `{ x, y }`
     leaves, and a negative invalid leaf case.
-  - Extend Reconciler animated-binding proof for nested corner-radius leaves and
+  - Expected Reconciler animated-binding proof: nested corner-radius leaves and
     whole `SharedValue<SkPoint>` snapshots/updates, including listener keys,
     initial snapshot, `runOnJS` update, full style rebuild, invalidation,
     cleanup, ignored late emits, no native mirror, and explicit invalid-shape

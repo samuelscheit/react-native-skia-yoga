@@ -301,11 +301,10 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - Worker 171 dynamic style corner-radius public/Reconciler proof.
+  - Agent path: `/root/worker_171_corner_radius_dynamic_proof`.
+  - Worktree: `../worker-171-corner-radius-dynamic-proof`.
+  - Branch: `worker/171-corner-radius-dynamic-proof`.
   - Scope: prove representative SkPoint-capable corner-radius public authoring
     and Reconciler source-level delivery for dynamic style values.
   - Target keys: `borderTopLeftRadius` as the representative key, with the
@@ -313,6 +312,10 @@ Next queued worker:
   - Required verification: focused package TypeScript consumer and Reconciler
     animated-binding checks, adjacent syntax checks, `git diff --check`, and
     the feasible matrix before acceptance.
+
+Next queued worker:
+
+- None until Worker 171 reports.
 
 Acceptance criteria:
 
