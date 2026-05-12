@@ -174,11 +174,12 @@ try {
 	console.log("- The executable materialized parent/child YogaNodes, inserted the child through the generated parent.insertChild(...) wrapper, called materialized parent.getChildren(), and asserted the returned child is the cached materialized child object with generated and raw YogaNode prototype methods.")
 	console.log("- The executable called generated setStyle/computeLayout/insertChild and raw setInteractionConfig/hitTest/getChildren through the returned child object, then asserted recursive returned-grandchild identity through returnedChild.getChildren().")
 	console.log("- The executable built materialized layout trees through YogaNode::toObject(runtime), generated setStyle(...), insertChild(...), computeLayout(...), and layout getter access; it covered compact flexDirection with justifyContent/alignItems, gap/rowGap/columnGap, padding aliases, margin aliases, flexGrow/flexShrink/flexBasis, absolute position with inset aliases, one stable width special value, and residual alignContent/alignSelf/flexWrap/direction/display/boxSizing/min-max/aspect/edge/percent/auto cases.")
+	console.log("- The executable reused the same materialized parent/child YogaNodes for generated setStyle initial, update, and cleanup passes; it asserted replacement of native NodeStyle optionals, selected Yoga getter updates/resets for width/height, constraints, flexBasis, gaps, flexGrow/flexShrink, alignContent/alignSelf/flexWrap/direction/display/boxSizing, position/edge/inset percent/auto values, layout invalidation, computeLayout(...), and generated layout getter values.")
 	console.log("- The executable materialized parent/child YogaNodes, called generated setCommand(group/rect) and setStyle(overflow hidden/scroll, clip rect/rrect/path, plus invertClip rect/rrect/path) wrappers, inserted the child through the generated parent.insertChild(...) wrapper, rendered the native parent through YogaNode::renderToContext(), and asserted bounded in-clip/out-of-clip raster pixels.")
 	console.log("- The executable used fresh materialized YogaNode objects to invoke generated JS-facing setCommand(line), setCommand(points), setCommand(path), setCommand(text), setCommand(paragraph), setCommand(circle), setCommand(rrect), setCommand(blurMaskFilter), setCommand(rect), setCommand(oval), and setCommand(image) wrappers, preserving the native no-command-kind-change invariant.")
-	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized global borderRadius delivery into _style.borderRadius, _clipsToBounds, and all four _clipToBoundsRadii slots without per-corner or explicit clip state, generated materialized overflow hidden/scroll delivery into _style.overflow, Yoga overflow state, and rectangular _clipsToBounds without radius or explicit clip state plus bounded renderToContext raster pixels, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect plus bounded renderToContext raster pixels, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate plus bounded rect/rrect/path renderToContext raster pixels, generated materialized layout style delivery into native _style optionals and selected Yoga style getters for flex, gap, padding, margin, position/inset, width stretch, alignContent, alignSelf, flexWrap, direction, display, boxSizing, min/max constraints, aspectRatio, edge-specific start/end/top/bottom, percentage values, and auto values, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
+	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized global borderRadius delivery into _style.borderRadius, _clipsToBounds, and all four _clipToBoundsRadii slots without per-corner or explicit clip state, generated materialized overflow hidden/scroll delivery into _style.overflow, Yoga overflow state, and rectangular _clipsToBounds without radius or explicit clip state plus bounded renderToContext raster pixels, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect plus bounded renderToContext raster pixels, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate plus bounded rect/rrect/path renderToContext raster pixels, generated materialized layout style delivery into native _style optionals and selected Yoga style getters for flex, gap, padding, margin, position/inset, width stretch, alignContent, alignSelf, flexWrap, direction, display, boxSizing, min/max constraints, aspectRatio, edge-specific start/end/top/bottom, percentage values, and auto values, sequential generated materialized setStyle initial/update/cleanup delivery into the same parent/child Yoga nodes with stale optionals and Yoga setters reset, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
 	console.log("- For CircleCmd, RRectCmd, and BlurMaskFilterCmd, selected no-pixel draw calls are used only to expose render-time native state/mask-filter side effects after generated wrapper delivery; no command-rendering or render-fidelity claim is made.")
-	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/overflow hidden/scroll/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized setStyle flexbox/layout/edge/constraint delivery into selected native _style optionals, selected stable Yoga style getters, and selected computed native/generated layout getter values, generated materialized overflow hidden/scroll delivery followed by bounded host-raster renderToContext pixel assertions for rectangular parent bounds clipping, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect/rrect/path clips, and selected generated/raw YogaNode method/getter execution only; this does not prove exact Yoga conformance beyond asserted values, actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact overflow or clip render fidelity beyond asserted pixels, exact hit-test behavior, exhaustive layout field coverage, or every command rendering path.")
+	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/overflow hidden/scroll/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized setStyle flexbox/layout/edge/constraint delivery into selected native _style optionals, selected stable Yoga style getters, selected sequential same-node layout setter replacement/reset behavior, and selected computed native/generated layout getter values, generated materialized overflow hidden/scroll delivery followed by bounded host-raster renderToContext pixel assertions for rectangular parent bounds clipping, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect/rrect/path clips, and selected generated/raw YogaNode method/getter execution only; this does not prove exact Yoga conformance beyond asserted values, actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact overflow or clip render fidelity beyond asserted pixels, exact hit-test behavior, exhaustive layout field coverage, or every command rendering path.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -725,6 +726,11 @@ void expectNear(double actual, double expected, const char* message)
     }
 }
 
+void expectNear(double actual, double expected, const std::string& message)
+{
+    expectNear(actual, expected, message.c_str());
+}
+
 void expectOptionalFloatNear(const std::optional<float>& actual, double expected, const char* message)
 {
     expect(actual.has_value(), message);
@@ -772,6 +778,19 @@ void expectYGValuePercent(const YGValue& actual, double expected, const char* me
 void expectYGValueAuto(const YGValue& actual, const char* message)
 {
     expect(actual.unit == YGUnitAuto, message);
+}
+
+void expectYGValueUndefined(const YGValue& actual, const char* message)
+{
+    expect(actual.unit == YGUnitUndefined, message);
+}
+
+void expectYGValueSame(const YGValue& actual, const YGValue& expected, const char* message)
+{
+    expect(actual.unit == expected.unit, message);
+    if (actual.unit == YGUnitPoint || actual.unit == YGUnitPercent) {
+        expectNear(actual.value, expected.value, message);
+    }
 }
 
 void expectStyleCornerPointRadius(
@@ -1918,6 +1937,128 @@ jsi::Object makeDisplayNoneChildStyle(jsi::Runtime& runtime)
     return style;
 }
 
+jsi::Object makeSequentialInitialParentStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "width", 160.0);
+    style.setProperty(runtime, "height", 80.0);
+    style.setProperty(runtime, "flexDirection", "row");
+    style.setProperty(runtime, "flexWrap", "nowrap");
+    style.setProperty(runtime, "alignItems", "flex-start");
+    style.setProperty(runtime, "alignContent", "flex-start");
+    style.setProperty(runtime, "direction", "ltr");
+    style.setProperty(runtime, "display", "flex");
+    style.setProperty(runtime, "boxSizing", "border-box");
+    style.setProperty(runtime, "gap", 2.0);
+    style.setProperty(runtime, "rowGap", 4.0);
+    style.setProperty(runtime, "columnGap", 6.0);
+    style.setProperty(runtime, "paddingHorizontal", 10.0);
+    style.setProperty(runtime, "paddingVertical", 5.0);
+    return style;
+}
+
+jsi::Object makeSequentialInitialFlowChildStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "height", 20.0);
+    style.setProperty(runtime, "minWidth", 30.0);
+    style.setProperty(runtime, "maxWidth", 60.0);
+    style.setProperty(runtime, "flexBasis", 40.0);
+    style.setProperty(runtime, "flexGrow", 0.0);
+    style.setProperty(runtime, "flexShrink", 1.0);
+    style.setProperty(runtime, "alignSelf", "flex-start");
+    style.setProperty(runtime, "marginHorizontal", 5.0);
+    style.setProperty(runtime, "marginVertical", 3.0);
+    return style;
+}
+
+jsi::Object makeSequentialInitialAbsoluteChildStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "position", "absolute");
+    style.setProperty(runtime, "width", 12.0);
+    style.setProperty(runtime, "height", 14.0);
+    style.setProperty(runtime, "insetHorizontal", 17.0);
+    style.setProperty(runtime, "insetVertical", 19.0);
+    return style;
+}
+
+jsi::Object makeSequentialUpdatedParentStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "width", 150.0);
+    style.setProperty(runtime, "height", 90.0);
+    style.setProperty(runtime, "flexDirection", "column");
+    style.setProperty(runtime, "flexWrap", "wrap");
+    style.setProperty(runtime, "alignItems", "stretch");
+    style.setProperty(runtime, "alignContent", "space-around");
+    style.setProperty(runtime, "direction", "rtl");
+    style.setProperty(runtime, "display", "flex");
+    style.setProperty(runtime, "boxSizing", "content-box");
+    style.setProperty(runtime, "gap", 9.0);
+    style.setProperty(runtime, "rowGap", 11.0);
+    style.setProperty(runtime, "columnGap", 13.0);
+    style.setProperty(runtime, "paddingLeft", "5%");
+    style.setProperty(runtime, "paddingRight", 3.0);
+    style.setProperty(runtime, "paddingTop", 4.0);
+    return style;
+}
+
+jsi::Object makeSequentialUpdatedFlowChildStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "width", "50%");
+    style.setProperty(runtime, "height", "auto");
+    style.setProperty(runtime, "minWidth", 80.0);
+    style.setProperty(runtime, "minHeight", "10%");
+    style.setProperty(runtime, "maxWidth", "90%");
+    style.setProperty(runtime, "maxHeight", 30.0);
+    style.setProperty(runtime, "flexBasis", "auto");
+    style.setProperty(runtime, "flexGrow", 0.0);
+    style.setProperty(runtime, "flexShrink", 0.0);
+    style.setProperty(runtime, "alignSelf", "flex-end");
+    style.setProperty(runtime, "marginHorizontal", "5%");
+    style.setProperty(runtime, "marginVertical", 2.0);
+    return style;
+}
+
+jsi::Object makeSequentialUpdatedAbsoluteChildStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "position", "absolute");
+    style.setProperty(runtime, "width", "25%");
+    style.setProperty(runtime, "height", 12.0);
+    style.setProperty(runtime, "left", "10%");
+    style.setProperty(runtime, "right", "auto");
+    style.setProperty(runtime, "top", "25%");
+    style.setProperty(runtime, "bottom", 4.0);
+    return style;
+}
+
+jsi::Object makeSequentialCleanupParentStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "width", 120.0);
+    style.setProperty(runtime, "height", 60.0);
+    return style;
+}
+
+jsi::Object makeSequentialCleanupFlowChildStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "width", 30.0);
+    style.setProperty(runtime, "height", 10.0);
+    return style;
+}
+
+jsi::Object makeSequentialCleanupFormerAbsoluteChildStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "width", 20.0);
+    style.setProperty(runtime, "height", 8.0);
+    return style;
+}
+
 void expectObjectFunction(jsi::Runtime& runtime, const jsi::Object& object, const char* name)
 {
     expect(object.hasProperty(runtime, name), "materialized YogaNode object must expose expected function");
@@ -2074,6 +2215,24 @@ double getNumberProperty(jsi::Runtime& runtime, const jsi::Object& object, const
     const auto value = object.getProperty(runtime, name);
     expect(value.isNumber(), "layout property must be numeric");
     return value.asNumber();
+}
+
+void expectGeneratedLayoutGetterNear(
+    jsi::Runtime& runtime,
+    const MaterializedYogaNode& materialized,
+    double expectedLeft,
+    double expectedTop,
+    double expectedWidth,
+    double expectedHeight,
+    const char* message)
+{
+    auto layout = materialized.object.getProperty(runtime, "layout");
+    expect(layout.isObject(), std::string(message) + " layout getter must return an object");
+    auto layoutObject = layout.asObject(runtime);
+    expectNear(getNumberProperty(runtime, layoutObject, "left"), expectedLeft, std::string(message) + " layout getter left");
+    expectNear(getNumberProperty(runtime, layoutObject, "top"), expectedTop, std::string(message) + " layout getter top");
+    expectNear(getNumberProperty(runtime, layoutObject, "width"), expectedWidth, std::string(message) + " layout getter width");
+    expectNear(getNumberProperty(runtime, layoutObject, "height"), expectedHeight, std::string(message) + " layout getter height");
 }
 
 jsi::Array callGetChildren(
@@ -2704,6 +2863,284 @@ void assertGeneratedMaterializedDisplayNoneLayout(jsi::Runtime& runtime)
     expectNear(getNumberProperty(runtime, hiddenLayoutObject, "height"), 0.0, "generated display-none child layout getter height");
 
     disposeMaterializedObject(runtime, hiddenChild.object);
+    disposeMaterializedObject(runtime, parent.object);
+}
+
+void assertGeneratedMaterializedSequentialLayoutUpdates(jsi::Runtime& runtime)
+{
+    auto parent = materializeYogaNode(runtime);
+    auto flowChild = materializeYogaNode(runtime);
+    auto absoluteChild = materializeYogaNode(runtime);
+
+    callGeneratedInsertChild(
+        runtime,
+        parent.object,
+        flowChild.object,
+        "generated sequential parent.insertChild(flowChild) must return undefined");
+    callGeneratedInsertChild(
+        runtime,
+        parent.object,
+        absoluteChild.object,
+        "generated sequential parent.insertChild(absoluteChild) must return undefined");
+    expect(parent.node->_children.size() == 2, "generated sequential layout tree must attach two native children");
+
+    callGeneratedSetStyle(
+        runtime,
+        parent,
+        makeSequentialInitialParentStyle(runtime),
+        "generated sequential initial parent setStyle must return undefined");
+    callGeneratedSetStyle(
+        runtime,
+        flowChild,
+        makeSequentialInitialFlowChildStyle(runtime),
+        "generated sequential initial flow child setStyle must return undefined");
+    callGeneratedSetStyle(
+        runtime,
+        absoluteChild,
+        makeSequentialInitialAbsoluteChildStyle(runtime),
+        "generated sequential initial absolute child setStyle must return undefined");
+
+    expectOptionalStyleNumber(parent.node->_style.width, 160.0, "generated sequential initial parent width optional");
+    expectOptionalStyleNumber(parent.node->_style.height, 80.0, "generated sequential initial parent height optional");
+    expect(*parent.node->_style.flexDirection == FlexDirection::ROW, "generated sequential initial parent stores row flexDirection");
+    expect(*parent.node->_style.flexWrap == FlexWrap::NOWRAP, "generated sequential initial parent stores nowrap flexWrap");
+    expect(*parent.node->_style.alignContent == Align::FLEX_START, "generated sequential initial parent stores flex-start alignContent");
+    expect(*parent.node->_style.direction == Direction::LTR, "generated sequential initial parent stores ltr direction");
+    expect(*parent.node->_style.display == Display::FLEX, "generated sequential initial parent stores flex display");
+    expect(*parent.node->_style.boxSizing == BoxSizing::BORDER_BOX, "generated sequential initial parent stores border-box boxSizing");
+    expectOptionalDoubleNear(parent.node->_style.gap, 2.0, "generated sequential initial parent gap optional");
+    expectOptionalDoubleNear(parent.node->_style.rowGap, 4.0, "generated sequential initial parent rowGap optional");
+    expectOptionalDoubleNear(parent.node->_style.columnGap, 6.0, "generated sequential initial parent columnGap optional");
+    expectOptionalStyleNumber(parent.node->_style.paddingHorizontal, 10.0, "generated sequential initial parent paddingHorizontal optional");
+    expectOptionalStyleNumber(parent.node->_style.paddingVertical, 5.0, "generated sequential initial parent paddingVertical optional");
+
+    expectOptionalStyleNumber(flowChild.node->_style.flexBasis, 40.0, "generated sequential initial child flexBasis optional");
+    expectOptionalDoubleNear(flowChild.node->_style.flexGrow, 0.0, "generated sequential initial child flexGrow optional");
+    expectOptionalDoubleNear(flowChild.node->_style.flexShrink, 1.0, "generated sequential initial child flexShrink optional");
+    expectOptionalStyleNumber(flowChild.node->_style.minWidth, 30.0, "generated sequential initial child minWidth optional");
+    expectOptionalStyleNumber(flowChild.node->_style.maxWidth, 60.0, "generated sequential initial child maxWidth optional");
+    expect(*flowChild.node->_style.alignSelf == Align::FLEX_START, "generated sequential initial child stores flex-start alignSelf");
+    expectOptionalStyleNumber(flowChild.node->_style.marginHorizontal, 5.0, "generated sequential initial child marginHorizontal optional");
+    expectOptionalStyleNumber(flowChild.node->_style.marginVertical, 3.0, "generated sequential initial child marginVertical optional");
+
+    expect(*absoluteChild.node->_style.position == Position::ABSOLUTE, "generated sequential initial absolute child stores absolute position");
+    expectOptionalStyleNumber(absoluteChild.node->_style.width, 12.0, "generated sequential initial absolute child width optional");
+    expectOptionalStyleNumber(absoluteChild.node->_style.height, 14.0, "generated sequential initial absolute child height optional");
+    expectOptionalStyleNumber(absoluteChild.node->_style.insetHorizontal, 17.0, "generated sequential initial absolute child insetHorizontal optional");
+    expectOptionalStyleNumber(absoluteChild.node->_style.insetVertical, 19.0, "generated sequential initial absolute child insetVertical optional");
+
+    expect(YGNodeStyleGetFlexDirection(parent.node->_node) == YGFlexDirectionRow, "generated sequential initial parent Yoga flexDirection getter");
+    expect(YGNodeStyleGetFlexWrap(parent.node->_node) == YGWrapNoWrap, "generated sequential initial parent Yoga flexWrap getter");
+    expect(YGNodeStyleGetAlignContent(parent.node->_node) == YGAlignFlexStart, "generated sequential initial parent Yoga alignContent getter");
+    expect(YGNodeStyleGetDirection(parent.node->_node) == YGDirectionLTR, "generated sequential initial parent Yoga direction getter");
+    expect(YGNodeStyleGetDisplay(parent.node->_node) == YGDisplayFlex, "generated sequential initial parent Yoga display getter");
+    expect(YGNodeStyleGetBoxSizing(parent.node->_node) == YGBoxSizingBorderBox, "generated sequential initial parent Yoga boxSizing getter");
+    expectYGValuePoint(YGNodeStyleGetGap(parent.node->_node, YGGutterAll), 2.0, "generated sequential initial parent Yoga gap getter");
+    expectYGValuePoint(YGNodeStyleGetGap(parent.node->_node, YGGutterRow), 4.0, "generated sequential initial parent Yoga rowGap getter");
+    expectYGValuePoint(YGNodeStyleGetGap(parent.node->_node, YGGutterColumn), 6.0, "generated sequential initial parent Yoga columnGap getter");
+    expectYGValuePoint(YGNodeStyleGetPadding(parent.node->_node, YGEdgeHorizontal), 10.0, "generated sequential initial parent Yoga paddingHorizontal getter");
+    expectYGValuePoint(YGNodeStyleGetPadding(parent.node->_node, YGEdgeVertical), 5.0, "generated sequential initial parent Yoga paddingVertical getter");
+    expectYGValuePoint(YGNodeStyleGetFlexBasis(flowChild.node->_node), 40.0, "generated sequential initial child Yoga flexBasis getter");
+    expectNear(YGNodeStyleGetFlexGrow(flowChild.node->_node), 0.0, "generated sequential initial child Yoga flexGrow getter");
+    expectNear(YGNodeStyleGetFlexShrink(flowChild.node->_node), 1.0, "generated sequential initial child Yoga flexShrink getter");
+    expectYGValuePoint(YGNodeStyleGetMinWidth(flowChild.node->_node), 30.0, "generated sequential initial child Yoga minWidth getter");
+    expectYGValuePoint(YGNodeStyleGetMaxWidth(flowChild.node->_node), 60.0, "generated sequential initial child Yoga maxWidth getter");
+    expect(YGNodeStyleGetAlignSelf(flowChild.node->_node) == YGAlignFlexStart, "generated sequential initial child Yoga alignSelf getter");
+    expectYGValuePoint(YGNodeStyleGetMargin(flowChild.node->_node, YGEdgeHorizontal), 5.0, "generated sequential initial child Yoga marginHorizontal getter");
+    expectYGValuePoint(YGNodeStyleGetMargin(flowChild.node->_node, YGEdgeVertical), 3.0, "generated sequential initial child Yoga marginVertical getter");
+    expect(YGNodeStyleGetPositionType(absoluteChild.node->_node) == YGPositionTypeAbsolute, "generated sequential initial absolute child Yoga position getter");
+    expectYGValuePoint(YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeHorizontal), 17.0, "generated sequential initial absolute child Yoga insetHorizontal getter");
+    expectYGValuePoint(YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeVertical), 19.0, "generated sequential initial absolute child Yoga insetVertical getter");
+
+    auto computeLayout = parent.object.getPropertyAsFunction(runtime, "computeLayout");
+    callComputeLayout(runtime, parent.object, computeLayout);
+    expectGeneratedLayoutGetterNear(runtime, parent, 0.0, 0.0, 160.0, 80.0, "generated sequential initial parent");
+    expectGeneratedLayoutGetterNear(runtime, flowChild, 15.0, 8.0, 40.0, 20.0, "generated sequential initial flow child");
+    expectGeneratedLayoutGetterNear(runtime, absoluteChild, 17.0, 19.0, 12.0, 14.0, "generated sequential initial absolute child");
+
+    callGeneratedSetStyle(
+        runtime,
+        parent,
+        makeSequentialUpdatedParentStyle(runtime),
+        "generated sequential updated parent setStyle must return undefined");
+    callGeneratedSetStyle(
+        runtime,
+        flowChild,
+        makeSequentialUpdatedFlowChildStyle(runtime),
+        "generated sequential updated flow child setStyle must return undefined");
+    callGeneratedSetStyle(
+        runtime,
+        absoluteChild,
+        makeSequentialUpdatedAbsoluteChildStyle(runtime),
+        "generated sequential updated absolute child setStyle must return undefined");
+    expect(!parent.node->_hasLayoutBeenComputed, "generated sequential update must invalidate previously computed parent layout");
+
+    expectOptionalStyleNumber(parent.node->_style.width, 150.0, "generated sequential updated parent width optional");
+    expectOptionalStyleNumber(parent.node->_style.height, 90.0, "generated sequential updated parent height optional");
+    expect(*parent.node->_style.flexDirection == FlexDirection::COLUMN, "generated sequential updated parent stores column flexDirection");
+    expect(*parent.node->_style.flexWrap == FlexWrap::WRAP, "generated sequential updated parent stores wrap flexWrap");
+    expect(*parent.node->_style.alignContent == Align::SPACE_AROUND, "generated sequential updated parent stores space-around alignContent");
+    expect(*parent.node->_style.direction == Direction::RTL, "generated sequential updated parent stores rtl direction");
+    expect(*parent.node->_style.display == Display::FLEX, "generated sequential updated parent stores flex display");
+    expect(*parent.node->_style.boxSizing == BoxSizing::CONTENT_BOX, "generated sequential updated parent stores content-box boxSizing");
+    expectOptionalDoubleNear(parent.node->_style.gap, 9.0, "generated sequential updated parent gap optional");
+    expectOptionalDoubleNear(parent.node->_style.rowGap, 11.0, "generated sequential updated parent rowGap optional");
+    expectOptionalDoubleNear(parent.node->_style.columnGap, 13.0, "generated sequential updated parent columnGap optional");
+    expect(!parent.node->_style.paddingHorizontal.has_value(), "generated sequential updated parent clears old paddingHorizontal optional");
+    expect(!parent.node->_style.paddingVertical.has_value(), "generated sequential updated parent clears old paddingVertical optional");
+    expectOptionalStyleString(parent.node->_style.paddingLeft, "5%", "generated sequential updated parent paddingLeft percent optional");
+    expectOptionalStyleNumber(parent.node->_style.paddingRight, 3.0, "generated sequential updated parent paddingRight optional");
+    expectOptionalStyleNumber(parent.node->_style.paddingTop, 4.0, "generated sequential updated parent paddingTop optional");
+
+    expectOptionalStyleString(flowChild.node->_style.width, "50%", "generated sequential updated child width percent optional");
+    expectOptionalStyleString(flowChild.node->_style.height, "auto", "generated sequential updated child height auto optional");
+    expectOptionalStyleNumber(flowChild.node->_style.minWidth, 80.0, "generated sequential updated child minWidth optional");
+    expectOptionalStyleString(flowChild.node->_style.minHeight, "10%", "generated sequential updated child minHeight percent optional");
+    expectOptionalStyleString(flowChild.node->_style.maxWidth, "90%", "generated sequential updated child maxWidth percent optional");
+    expectOptionalStyleNumber(flowChild.node->_style.maxHeight, 30.0, "generated sequential updated child maxHeight optional");
+    expectOptionalStyleString(flowChild.node->_style.flexBasis, "auto", "generated sequential updated child flexBasis auto optional");
+    expectOptionalDoubleNear(flowChild.node->_style.flexGrow, 0.0, "generated sequential updated child flexGrow optional");
+    expectOptionalDoubleNear(flowChild.node->_style.flexShrink, 0.0, "generated sequential updated child flexShrink optional");
+    expect(*flowChild.node->_style.alignSelf == Align::FLEX_END, "generated sequential updated child stores flex-end alignSelf");
+    expectOptionalStyleString(flowChild.node->_style.marginHorizontal, "5%", "generated sequential updated child marginHorizontal percent optional");
+    expectOptionalStyleNumber(flowChild.node->_style.marginVertical, 2.0, "generated sequential updated child marginVertical optional");
+
+    expect(*absoluteChild.node->_style.position == Position::ABSOLUTE, "generated sequential updated absolute child stores absolute position");
+    expectOptionalStyleString(absoluteChild.node->_style.width, "25%", "generated sequential updated absolute child width percent optional");
+    expectOptionalStyleNumber(absoluteChild.node->_style.height, 12.0, "generated sequential updated absolute child height optional");
+    expectOptionalStyleString(absoluteChild.node->_style.left, "10%", "generated sequential updated absolute child left percent optional");
+    expectOptionalStyleString(absoluteChild.node->_style.right, "auto", "generated sequential updated absolute child right auto optional");
+    expectOptionalStyleString(absoluteChild.node->_style.top, "25%", "generated sequential updated absolute child top percent optional");
+    expectOptionalStyleNumber(absoluteChild.node->_style.bottom, 4.0, "generated sequential updated absolute child bottom optional");
+    expect(!absoluteChild.node->_style.insetHorizontal.has_value(), "generated sequential updated absolute child clears old insetHorizontal optional");
+    expect(!absoluteChild.node->_style.insetVertical.has_value(), "generated sequential updated absolute child clears old insetVertical optional");
+
+    expect(YGNodeStyleGetFlexDirection(parent.node->_node) == YGFlexDirectionColumn, "generated sequential updated parent Yoga flexDirection getter");
+    expect(YGNodeStyleGetFlexWrap(parent.node->_node) == YGWrapWrap, "generated sequential updated parent Yoga flexWrap getter");
+    expect(YGNodeStyleGetAlignContent(parent.node->_node) == YGAlignSpaceAround, "generated sequential updated parent Yoga alignContent getter");
+    expect(YGNodeStyleGetDirection(parent.node->_node) == YGDirectionRTL, "generated sequential updated parent Yoga direction getter");
+    expect(YGNodeStyleGetDisplay(parent.node->_node) == YGDisplayFlex, "generated sequential updated parent Yoga display getter");
+    expect(YGNodeStyleGetBoxSizing(parent.node->_node) == YGBoxSizingContentBox, "generated sequential updated parent Yoga boxSizing getter");
+    expectYGValuePoint(YGNodeStyleGetGap(parent.node->_node, YGGutterAll), 9.0, "generated sequential updated parent Yoga gap getter");
+    expectYGValuePoint(YGNodeStyleGetGap(parent.node->_node, YGGutterRow), 11.0, "generated sequential updated parent Yoga rowGap getter");
+    expectYGValuePoint(YGNodeStyleGetGap(parent.node->_node, YGGutterColumn), 13.0, "generated sequential updated parent Yoga columnGap getter");
+    expectYGValueUndefined(YGNodeStyleGetPadding(parent.node->_node, YGEdgeHorizontal), "generated sequential updated parent Yoga clears paddingHorizontal getter");
+    expectYGValueUndefined(YGNodeStyleGetPadding(parent.node->_node, YGEdgeVertical), "generated sequential updated parent Yoga clears paddingVertical getter");
+    expectYGValuePercent(YGNodeStyleGetPadding(parent.node->_node, YGEdgeLeft), 5.0, "generated sequential updated parent Yoga paddingLeft percent getter");
+    expectYGValuePoint(YGNodeStyleGetPadding(parent.node->_node, YGEdgeRight), 3.0, "generated sequential updated parent Yoga paddingRight getter");
+    expectYGValuePoint(YGNodeStyleGetPadding(parent.node->_node, YGEdgeTop), 4.0, "generated sequential updated parent Yoga paddingTop getter");
+    expectYGValuePercent(YGNodeStyleGetWidth(flowChild.node->_node), 50.0, "generated sequential updated child Yoga width percent getter");
+    expectYGValueAuto(YGNodeStyleGetHeight(flowChild.node->_node), "generated sequential updated child Yoga height auto getter");
+    expectYGValuePoint(YGNodeStyleGetMinWidth(flowChild.node->_node), 80.0, "generated sequential updated child Yoga minWidth getter");
+    expectYGValuePercent(YGNodeStyleGetMinHeight(flowChild.node->_node), 10.0, "generated sequential updated child Yoga minHeight percent getter");
+    expectYGValuePercent(YGNodeStyleGetMaxWidth(flowChild.node->_node), 90.0, "generated sequential updated child Yoga maxWidth percent getter");
+    expectYGValuePoint(YGNodeStyleGetMaxHeight(flowChild.node->_node), 30.0, "generated sequential updated child Yoga maxHeight getter");
+    expectYGValueAuto(YGNodeStyleGetFlexBasis(flowChild.node->_node), "generated sequential updated child Yoga flexBasis auto getter");
+    expectNear(YGNodeStyleGetFlexGrow(flowChild.node->_node), 0.0, "generated sequential updated child Yoga flexGrow getter");
+    expectNear(YGNodeStyleGetFlexShrink(flowChild.node->_node), 0.0, "generated sequential updated child Yoga flexShrink getter");
+    expect(YGNodeStyleGetAlignSelf(flowChild.node->_node) == YGAlignFlexEnd, "generated sequential updated child Yoga alignSelf getter");
+    expectYGValuePercent(YGNodeStyleGetMargin(flowChild.node->_node, YGEdgeHorizontal), 5.0, "generated sequential updated child Yoga marginHorizontal getter");
+    expectYGValuePoint(YGNodeStyleGetMargin(flowChild.node->_node, YGEdgeVertical), 2.0, "generated sequential updated child Yoga marginVertical getter");
+    expect(YGNodeStyleGetPositionType(absoluteChild.node->_node) == YGPositionTypeAbsolute, "generated sequential updated absolute child Yoga position getter");
+    expectYGValuePercent(YGNodeStyleGetWidth(absoluteChild.node->_node), 25.0, "generated sequential updated absolute child Yoga width percent getter");
+    expectYGValuePercent(YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeLeft), 10.0, "generated sequential updated absolute child Yoga left percent getter");
+    expectYGValueAuto(YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeRight), "generated sequential updated absolute child Yoga right auto getter");
+    expectYGValuePercent(YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeTop), 25.0, "generated sequential updated absolute child Yoga top percent getter");
+    expectYGValuePoint(YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeBottom), 4.0, "generated sequential updated absolute child Yoga bottom getter");
+
+    callComputeLayout(runtime, parent.object, computeLayout);
+    expectGeneratedLayoutGetterNear(runtime, parent, 0.0, 0.0, 163.0, 94.0, "generated sequential updated parent");
+    expectGeneratedLayoutGetterNear(runtime, absoluteChild, 16.0, 24.0, 41.0, 12.0, "generated sequential updated absolute child");
+
+    callGeneratedSetStyle(
+        runtime,
+        parent,
+        makeSequentialCleanupParentStyle(runtime),
+        "generated sequential cleanup parent setStyle must return undefined");
+    callGeneratedSetStyle(
+        runtime,
+        flowChild,
+        makeSequentialCleanupFlowChildStyle(runtime),
+        "generated sequential cleanup flow child setStyle must return undefined");
+    callGeneratedSetStyle(
+        runtime,
+        absoluteChild,
+        makeSequentialCleanupFormerAbsoluteChildStyle(runtime),
+        "generated sequential cleanup former absolute child setStyle must return undefined");
+
+    expectOptionalStyleNumber(parent.node->_style.width, 120.0, "generated sequential cleanup parent width optional");
+    expectOptionalStyleNumber(parent.node->_style.height, 60.0, "generated sequential cleanup parent height optional");
+    expect(!parent.node->_style.flexDirection.has_value(), "generated sequential cleanup parent clears flexDirection optional");
+    expect(!parent.node->_style.flexWrap.has_value(), "generated sequential cleanup parent clears flexWrap optional");
+    expect(!parent.node->_style.alignContent.has_value(), "generated sequential cleanup parent clears alignContent optional");
+    expect(!parent.node->_style.direction.has_value(), "generated sequential cleanup parent clears direction optional");
+    expect(!parent.node->_style.display.has_value(), "generated sequential cleanup parent clears display optional");
+    expect(!parent.node->_style.boxSizing.has_value(), "generated sequential cleanup parent clears boxSizing optional");
+    expect(!parent.node->_style.gap.has_value(), "generated sequential cleanup parent clears gap optional");
+    expect(!parent.node->_style.rowGap.has_value(), "generated sequential cleanup parent clears rowGap optional");
+    expect(!parent.node->_style.columnGap.has_value(), "generated sequential cleanup parent clears columnGap optional");
+    expect(!parent.node->_style.paddingLeft.has_value(), "generated sequential cleanup parent clears paddingLeft optional");
+    expect(!parent.node->_style.paddingRight.has_value(), "generated sequential cleanup parent clears paddingRight optional");
+    expect(!parent.node->_style.paddingTop.has_value(), "generated sequential cleanup parent clears paddingTop optional");
+
+    expectOptionalStyleNumber(flowChild.node->_style.width, 30.0, "generated sequential cleanup child width optional");
+    expectOptionalStyleNumber(flowChild.node->_style.height, 10.0, "generated sequential cleanup child height optional");
+    expect(!flowChild.node->_style.minWidth.has_value(), "generated sequential cleanup child clears minWidth optional");
+    expect(!flowChild.node->_style.minHeight.has_value(), "generated sequential cleanup child clears minHeight optional");
+    expect(!flowChild.node->_style.maxWidth.has_value(), "generated sequential cleanup child clears maxWidth optional");
+    expect(!flowChild.node->_style.maxHeight.has_value(), "generated sequential cleanup child clears maxHeight optional");
+    expect(!flowChild.node->_style.flexBasis.has_value(), "generated sequential cleanup child clears flexBasis optional");
+    expect(!flowChild.node->_style.flexGrow.has_value(), "generated sequential cleanup child clears flexGrow optional");
+    expect(!flowChild.node->_style.flexShrink.has_value(), "generated sequential cleanup child clears flexShrink optional");
+    expect(!flowChild.node->_style.alignSelf.has_value(), "generated sequential cleanup child clears alignSelf optional");
+    expect(!flowChild.node->_style.marginHorizontal.has_value(), "generated sequential cleanup child clears marginHorizontal optional");
+    expect(!flowChild.node->_style.marginVertical.has_value(), "generated sequential cleanup child clears marginVertical optional");
+
+    expectOptionalStyleNumber(absoluteChild.node->_style.width, 20.0, "generated sequential cleanup former absolute child width optional");
+    expectOptionalStyleNumber(absoluteChild.node->_style.height, 8.0, "generated sequential cleanup former absolute child height optional");
+    expect(!absoluteChild.node->_style.position.has_value(), "generated sequential cleanup former absolute child clears position optional");
+    expect(!absoluteChild.node->_style.left.has_value(), "generated sequential cleanup former absolute child clears left optional");
+    expect(!absoluteChild.node->_style.right.has_value(), "generated sequential cleanup former absolute child clears right optional");
+    expect(!absoluteChild.node->_style.top.has_value(), "generated sequential cleanup former absolute child clears top optional");
+    expect(!absoluteChild.node->_style.bottom.has_value(), "generated sequential cleanup former absolute child clears bottom optional");
+
+    auto defaultNode = YGNodeNew();
+    expect(YGNodeStyleGetFlexDirection(parent.node->_node) == YGNodeStyleGetFlexDirection(defaultNode), "generated sequential cleanup parent Yoga flexDirection resets to default");
+    expect(YGNodeStyleGetFlexWrap(parent.node->_node) == YGNodeStyleGetFlexWrap(defaultNode), "generated sequential cleanup parent Yoga flexWrap resets to default");
+    expect(YGNodeStyleGetAlignContent(parent.node->_node) == YGNodeStyleGetAlignContent(defaultNode), "generated sequential cleanup parent Yoga alignContent resets to default");
+    expect(YGNodeStyleGetDirection(parent.node->_node) == YGNodeStyleGetDirection(defaultNode), "generated sequential cleanup parent Yoga direction resets to default");
+    expect(YGNodeStyleGetDisplay(parent.node->_node) == YGNodeStyleGetDisplay(defaultNode), "generated sequential cleanup parent Yoga display resets to default");
+    expect(YGNodeStyleGetBoxSizing(parent.node->_node) == YGNodeStyleGetBoxSizing(defaultNode), "generated sequential cleanup parent Yoga boxSizing resets to default");
+    expectYGValueSame(YGNodeStyleGetGap(parent.node->_node, YGGutterAll), YGNodeStyleGetGap(defaultNode, YGGutterAll), "generated sequential cleanup parent Yoga gap resets to default");
+    expectYGValueSame(YGNodeStyleGetGap(parent.node->_node, YGGutterRow), YGNodeStyleGetGap(defaultNode, YGGutterRow), "generated sequential cleanup parent Yoga rowGap resets to default");
+    expectYGValueSame(YGNodeStyleGetGap(parent.node->_node, YGGutterColumn), YGNodeStyleGetGap(defaultNode, YGGutterColumn), "generated sequential cleanup parent Yoga columnGap resets to default");
+    expectYGValueSame(YGNodeStyleGetPadding(parent.node->_node, YGEdgeLeft), YGNodeStyleGetPadding(defaultNode, YGEdgeLeft), "generated sequential cleanup parent Yoga paddingLeft resets to default");
+    expectYGValueSame(YGNodeStyleGetPadding(parent.node->_node, YGEdgeRight), YGNodeStyleGetPadding(defaultNode, YGEdgeRight), "generated sequential cleanup parent Yoga paddingRight resets to default");
+    expectYGValueSame(YGNodeStyleGetPadding(parent.node->_node, YGEdgeTop), YGNodeStyleGetPadding(defaultNode, YGEdgeTop), "generated sequential cleanup parent Yoga paddingTop resets to default");
+    expectYGValueSame(YGNodeStyleGetFlexBasis(flowChild.node->_node), YGNodeStyleGetFlexBasis(defaultNode), "generated sequential cleanup child Yoga flexBasis resets to default");
+    expectNear(YGNodeStyleGetFlexGrow(flowChild.node->_node), YGNodeStyleGetFlexGrow(defaultNode), "generated sequential cleanup child Yoga flexGrow resets to default");
+    expectNear(YGNodeStyleGetFlexShrink(flowChild.node->_node), YGNodeStyleGetFlexShrink(defaultNode), "generated sequential cleanup child Yoga flexShrink resets to default");
+    expectYGValueSame(YGNodeStyleGetMinWidth(flowChild.node->_node), YGNodeStyleGetMinWidth(defaultNode), "generated sequential cleanup child Yoga minWidth resets to default");
+    expectYGValueSame(YGNodeStyleGetMinHeight(flowChild.node->_node), YGNodeStyleGetMinHeight(defaultNode), "generated sequential cleanup child Yoga minHeight resets to default");
+    expectYGValueSame(YGNodeStyleGetMaxWidth(flowChild.node->_node), YGNodeStyleGetMaxWidth(defaultNode), "generated sequential cleanup child Yoga maxWidth resets to default");
+    expectYGValueSame(YGNodeStyleGetMaxHeight(flowChild.node->_node), YGNodeStyleGetMaxHeight(defaultNode), "generated sequential cleanup child Yoga maxHeight resets to default");
+    expect(YGNodeStyleGetAlignSelf(flowChild.node->_node) == YGNodeStyleGetAlignSelf(defaultNode), "generated sequential cleanup child Yoga alignSelf resets to default");
+    expectYGValueSame(YGNodeStyleGetMargin(flowChild.node->_node, YGEdgeHorizontal), YGNodeStyleGetMargin(defaultNode, YGEdgeHorizontal), "generated sequential cleanup child Yoga marginHorizontal resets to default");
+    expectYGValueSame(YGNodeStyleGetMargin(flowChild.node->_node, YGEdgeVertical), YGNodeStyleGetMargin(defaultNode, YGEdgeVertical), "generated sequential cleanup child Yoga marginVertical resets to default");
+    expect(YGNodeStyleGetPositionType(absoluteChild.node->_node) == YGNodeStyleGetPositionType(defaultNode), "generated sequential cleanup former absolute child Yoga position resets to default");
+    expectYGValueSame(YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeLeft), YGNodeStyleGetPosition(defaultNode, YGEdgeLeft), "generated sequential cleanup former absolute child Yoga left resets to default");
+    expectYGValueSame(YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeRight), YGNodeStyleGetPosition(defaultNode, YGEdgeRight), "generated sequential cleanup former absolute child Yoga right resets to default");
+    expectYGValueSame(YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeTop), YGNodeStyleGetPosition(defaultNode, YGEdgeTop), "generated sequential cleanup former absolute child Yoga top resets to default");
+    expectYGValueSame(YGNodeStyleGetPosition(absoluteChild.node->_node, YGEdgeBottom), YGNodeStyleGetPosition(defaultNode, YGEdgeBottom), "generated sequential cleanup former absolute child Yoga bottom resets to default");
+    YGNodeFree(defaultNode);
+
+    callComputeLayout(runtime, parent.object, computeLayout);
+    expectGeneratedLayoutGetterNear(runtime, parent, 0.0, 0.0, 120.0, 60.0, "generated sequential cleanup parent");
+    expectGeneratedLayoutGetterNear(runtime, flowChild, 0.0, 0.0, 30.0, 10.0, "generated sequential cleanup flow child");
+    expectGeneratedLayoutGetterNear(runtime, absoluteChild, 0.0, 10.0, 20.0, 8.0, "generated sequential cleanup former absolute child");
+
+    disposeMaterializedObject(runtime, absoluteChild.object);
+    disposeMaterializedObject(runtime, flowChild.object);
     disposeMaterializedObject(runtime, parent.object);
 }
 
@@ -3913,6 +4350,7 @@ int main()
     assertGeneratedWidthStretchStyle(*runtime);
     assertGeneratedMaterializedResidualLayoutBreadth(*runtime);
     assertGeneratedMaterializedDisplayNoneLayout(*runtime);
+    assertGeneratedMaterializedSequentialLayoutUpdates(*runtime);
 
     std::cerr << "probe: exercise stable generated negatives" << std::endl;
     expectThrows(
