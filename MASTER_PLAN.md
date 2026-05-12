@@ -344,11 +344,17 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- Worker 199 public/Reconciler dynamic layout-style proof.
+- Agent path: `/root/worker_199_dynamic_layout_style_proof`.
+- Worktree: `../worker-199-dynamic-layout-style-proof`.
+- Branch: `worker/199-dynamic-layout-style-proof`.
+- Scope: add packed public TypeScript and Reconciler source-level proof for
+  dynamic layout-specific style fields, bounded to public JSX authoring and
+  JS-style listener/update/cleanup behavior.
 
 Next queued worker:
 
-- Worker 199 public/Reconciler dynamic layout-style proof.
+- None until Worker 199 reports.
 
 Acceptance criteria:
 
