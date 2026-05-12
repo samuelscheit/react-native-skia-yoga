@@ -3515,12 +3515,29 @@ Last updated: 2026-05-12
   - Planned agent path: `/root/worker_170_post_169_root_cause_audit`.
   - Symlinked root `node_modules` and `example/node_modules` from the main
     worktree.
+- Updated current coordination docs to clarify that top-level workers are
+  `spawn_agent` subagents and that `goal: true` plus a final `Goal finished.`
+  line is the current worker completion signal.
+- Worker 170 post-Worker 169 audit accepted:
+  - Accepted Worker 169's proof boundary as public packed TypeScript and Node
+    VM Reconciler source-level whole `style.matrix` SharedValue proof only.
+  - Reconfirmed focused syntax, package-consumer, Reconciler, Nitro
+    materialization, native hit-testing, and full feasible-matrix evidence.
+    `npm run check:feasible-matrix` passed 28/28 in `4m 12s`.
+  - Reprobed unchanged local platform blockers: CommandLineTools-only Xcode
+    selection, missing iPhone simulator SDK, missing CocoaPods, Gradle, ADB,
+    CMake, Ninja, Java runtime, and unset Android SDK environment variables.
+  - Selected dynamic style corner-radius public/Reconciler proof as the next
+    strongest locally unblocked target.
+  - Worker branch commit:
+    `5c64de7 Add worker 170 post-169 audit`.
+  - Merged worker 170 into `main` as
+    `abcdc48 Merge worker 170 post-169 audit`.
+  - Post-merge `git diff --check HEAD~1 HEAD`: passed.
 
 ## Active Workers
 
-- `/root/worker_170_post_169_root_cause_audit`: post-Worker 169 root-cause
-  audit from isolated worktree `../worker-170-post-169-root-cause-audit` on
-  branch `worker/170-post-169-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3710,6 +3727,7 @@ Accepted worker reports:
 - `worker-progress/worker-167-transform-variant-drift-guard.md`
 - `worker-progress/worker-168-post-167-root-cause-audit.md`
 - `worker-progress/worker-169-matrix-sharedvalue-proof.md`
+- `worker-progress/worker-170-post-169-root-cause-audit.md`
 
 ## Pending Workers
 
@@ -3836,11 +3854,16 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor Worker 170: post-Worker 169 root-cause audit.
-  - Accept or reject Worker 169's public packed TypeScript and Node VM
-    Reconciler source-level whole-matrix SharedValue proof boundary.
-  - Reconfirm focused/post-merge evidence and local platform-native blockers.
-  - Select the next strongest locally unblocked root-cause target.
+- Launch Worker 171: dynamic style corner-radius public/Reconciler proof.
+  - Extend packed TypeScript consumer fixtures for representative
+    SkPoint-capable corner-radius authoring, including whole
+    `SharedValue<number>`, whole `SharedValue<SkPoint>`, animated `{ x, y }`
+    leaves, and a negative invalid leaf case.
+  - Extend Reconciler animated-binding proof for nested corner-radius leaves and
+    whole `SharedValue<SkPoint>` snapshots/updates, including listener keys,
+    initial snapshot, `runOnJS` update, full style rebuild, invalidation,
+    cleanup, ignored late emits, no native mirror, and explicit invalid-shape
+    errors.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
