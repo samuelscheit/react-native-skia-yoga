@@ -17,6 +17,8 @@ preserving weak contracts.
 - You are running as a managed Codex subagent launched by the orchestrator with
   `goal: true`. Do not perform or report separate goal lifecycle steps. Your
   final response and progress report must end with `Goal finished.`
+- Do not call `create_goal` or `update_goal` unless your explicit worker prompt
+  says otherwise. The orchestrator creates the worker goal during `spawn_agent`.
 - The orchestrator did not start a tmux/Codex subprocess for you. Treat tmux,
   `.codex.log`, `.exitcode`, and process-status references in older reports or
   prompts as archival history, not current worker lifecycle requirements.
@@ -60,3 +62,7 @@ Your final report must include:
 - Proof boundary and overclaim risks
 - Cleanup status
 - Recommended next tasks
+
+The last line of the report must be exactly:
+
+`Goal finished.`

@@ -23,9 +23,10 @@ Breaking changes are acceptable when they remove root causes instead of preservi
   `reasoning_effort: "xhigh"`.
 - Worker prompts must include the full task prompt, absolute worktree path,
   write scope, verification expectations, and overlap boundaries.
-- Worker goal state is created by the `goal: true` launch option. Do not add a
-  separate goal lifecycle evidence gate; the final response/report must end
-  with `Goal finished.`
+- Worker goal state is created by the `goal: true` launch option. Do not ask
+  workers to call `create_goal` / `update_goal`, and do not add separate goal
+  lifecycle evidence gates; the final response/report must end with
+  `Goal finished.`
 - Workers must keep their own progress files under `worker-progress/`.
 - Workers must review quality, maintainability, performance, and security before reporting completion.
 - Workers must use nested subagents/explorers when testing uncertain root-cause hypotheses, and must document those subagent results in their progress files.
@@ -119,14 +120,17 @@ Acceptance criteria:
 
 Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, example bundle feedback-loop hygiene fixed, post-worker-035 root-cause audit accepted, RN Skia private import cleanup integrated, post-worker-037 root-cause audit accepted, packed-package TypeScript consumer smoke coverage integrated, post-worker-039 root-cause audit accepted, `react-reconciler` package-surface dependency hygiene integrated, post-worker-041 root-cause audit accepted, public declaration/export boundary cleanup integrated, post-worker-043 root-cause audit accepted, `SkiaYogaObject` lazy initialization integrated, post-worker-045 root-cause audit accepted, `src/util.ts` Nitro boxing lazy-init integrated, post-worker-047 root-cause audit accepted, Worklets transform/closure verification integrated, post-worker-049 root-cause audit accepted, example/Expo Worklets transform verification integrated, public-import graph verifier hardening integrated, direct `NativeSkiaYoga` deep-import hardening integrated, post-worker-056 codegen-schema audit accepted, RN codegen schema verifier integrated, post-worker-058 root-cause audit accepted, Reconciler/gesture Worklets transform verification integrated, post-worker-060 root-cause audit accepted, Reconciler animated binding runtime verifier integrated, YogaCanvas gesture/interaction runtime verifier integrated, post-worker-062 root-cause audit accepted, YogaCanvas lifecycle runtime verifier integrated, post-worker-065 root-cause audit accepted, packed-package RN codegen/autolinking verification integrated, post-worker-067 root-cause audit accepted, example native-generation verifier integrated, local-artifact preservation hardening integrated, post-worker-069 root-cause audit accepted, aggregate feasible-matrix verifier integrated, post-worker-071 root-cause audit accepted, host-native YogaNode hit-testing verifier integrated, post-worker-073 root-cause audit accepted, host-native `SkiaYoga` / `RNSkYogaView` runtime verifier integrated, post-worker-075 root-cause audit accepted, feasible-matrix temp isolation hardening integrated, YogaNode hybrid/JSI raw-method boundary verification integrated, post-worker-078 root-cause audit accepted, YogaNode command/render verification integrated, post-worker-080 audit accepted, deterministic command/render expansion integrated, post-worker-082 audit accepted, ImageCmd command/render verification integrated, post-worker-084 audit accepted, TextCmd/ParagraphCmd command/render verification integrated, post-worker-086 root-cause audit accepted, Nitro YogaNode materialization verification integrated, dynamic AnimatedDouble Synchronizable verification integrated, selected dynamic AnimatedDouble NodeCommand verification integrated, dynamic PathCmd trim verification integrated, Reconciler native command-binding coverage integrated, post-worker-095 root-cause audit accepted, public `path.stroke` payload contract integration accepted, post-worker-097 root-cause audit accepted, Reconciler JS-mode command listener coverage integrated, post-worker-099 root-cause audit accepted, generated Nitro `setCommand(...)` breadth coverage integrated, post-worker-101 root-cause audit accepted, ImageCmd fit-mode coverage integrated, post-worker-103 root-cause audit accepted, TextCmd/ParagraphCmd CSS color-string coverage integrated, post-worker-105 root-cause audit accepted, expanded generated Nitro `setCommand(...)` breadth integrated, post-worker-107 root-cause audit accepted, direct `StrokeOpts` converter consistency integrated, post-worker-109 root-cause audit accepted, packed dynamic JSX type-boundary coverage integrated, post-worker-111 root-cause audit accepted, package export-boundary hardening integrated, NodeCommand `toJSI(...)` serialization symmetry integrated, post-worker-114 root-cause audit accepted, materialized `YogaNode.getChildren()` identity/prototype hardening integrated, post-worker-115 root-cause audit accepted, post-worker-116 root-cause audit accepted, whole `image.sampling` `SharedValue<SamplingOptions>` type support integrated, post-worker-118 root-cause audit accepted, value-bearing style/sampling `toJSI(...)` serialization integrated, post-worker-120 root-cause audit accepted, canonical `style.antiAlias` support integrated, post-worker-122 root-cause audit accepted, expanded `TextStyle` `toJSI(...)` serialization integrated, post-worker-124 root-cause audit accepted, bounded `TextStyle.fontFeatures` serialization integrated, post-worker-126 root-cause audit accepted, bounded `ParagraphStyle` scalar serialization integrated, post-worker-128 root-cause audit accepted, bounded `ParagraphStyle.strutStyle` parser/serializer coverage integrated, post-worker-130 root-cause audit accepted, unsupported public `fontVariations` contract closure integrated, post-worker-132 root-cause audit accepted, simple `<text textStyle>` contract closure integrated, post-worker-134 root-cause audit accepted, nested `paragraphStyle.textStyle` CSS color parsing integrated, post-worker-136 root-cause audit accepted, dynamic nested `paragraphStyle.textStyle` Reconciler proof integrated, post-worker-138 root-cause audit accepted, nested `ParagraphStyle::toJSI(...)` shape preservation integrated, SkPaint-backed `backgroundColor` paint ordering integrated, post-worker-147 root-cause audit accepted, `style.layer` / `_layerPaint` proof integrated, post-worker-149 root-cause audit accepted, dynamic `style.layer` / opaque style `SharedValue` proof integrated, post-worker-152 root-cause audit accepted, materialized `YogaNode.setStyle(...)` paint-field breadth proof integrated, generated materialized transform-operation breadth integrated, post-worker-162 root-cause audit accepted, bounded transform composition runtime proof integrated, post-worker-164 root-cause audit accepted, public/Reconciler transform authoring proof integrated, and post-worker-166 root-cause audit accepted
 
-Latest accepted implementation: worker 191 added paired inverted rrect/path
-raster proof across the direct host-native command/render verifier and the
-generated materialized Nitro verifier.
+Latest accepted implementation: worker 193 expanded the generated
+materialized Nitro verifier with compact Yoga layout breadth proof across
+generated `setStyle(...)`, `insertChild(...)`, `computeLayout(...)`, native
+Yoga state, and generated `layout` getter output.
 
 Latest accepted audit: worker 192 accepted Worker 191's paired inverted
 rrect/path raster proof, reconfirmed focused and full-matrix evidence plus
 platform blockers, and selected generated materialized Yoga layout breadth
 proof as the next strongest locally unblocked target.
+
+Next queued audit: worker 194 post-Worker 193 root-cause audit.
 
 Goals:
 
@@ -325,23 +329,23 @@ Accepted package-hygiene implementation:
 - `worker-190-post-189-root-cause-audit`: accepted Worker 189's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected paired inverted rrect/path raster proof across direct native and generated materialized harnesses.
 - `worker-191-inverted-rrect-path-raster-proof`: added direct and generated materialized inverted rrect/path raster proof, completing bounded inverted rect/rrect/path clip coverage.
 - `worker-192-post-191-root-cause-audit`: accepted Worker 191's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected generated materialized Yoga layout breadth proof as Worker 193's target.
+- `worker-193-materialized-layout-breadth`: expanded the generated materialized Nitro verifier with a compact flexbox/layout tree proof covering representative layout style delivery, selected native Yoga state, native computed layout, and generated `layout` getter output.
 
 Current active worker:
 
-Worker 193 generated materialized Yoga layout breadth proof.
-
-- Planned agent path: `/root/worker_193_materialized_layout_breadth`.
-- Worktree: `../worker-193-materialized-layout-breadth`.
-- Branch: `worker/193-materialized-layout-breadth`.
-- Scope: extend `scripts/verify-yoganode-nitro-materialization.mjs` with a
-  compact generated materialized Yoga layout breadth proof, covering
-  representative public layout categories through generated `setStyle(...)`,
-  generated `computeLayout(...)`, selected native Yoga state, and generated
-  `layout` getter output.
+None. Worker 193 is merged and post-merge verified.
 
 Next queued worker:
 
-- None until Worker 193 reports.
+Worker 194 post-Worker 193 root-cause audit.
+
+- Planned agent path: `/root/worker_194_post_193_root_cause_audit`.
+- Planned worktree: `../worker-194-post-193-root-cause-audit`.
+- Planned branch: `worker/194-post-193-root-cause-audit`.
+- Scope: independently audit Worker 193's generated materialized layout
+  breadth proof, rerun focused and full feasible checks as appropriate,
+  reprobe local platform blockers, and select the next strongest locally
+  unblocked root-cause target.
 
 Acceptance criteria:
 

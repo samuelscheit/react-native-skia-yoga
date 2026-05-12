@@ -15,6 +15,9 @@ Last updated: 2026-05-12
   `reasoning_effort: "xhigh"`, with the full worker prompt in `message`.
 - Current worker completion handling: launch workers with `goal: true`; require
   only the final `Goal finished.` line as the completion signal.
+- Current worker prompts must not require manual `create_goal`,
+  `update_goal`, visible goal-gate messages, or goal-lifecycle evidence unless
+  a newer project policy explicitly restores them.
 - Product code changes authored by orchestrator: none; product changes are accepted worker patches only.
 - Main worktree status at startup: clean on `main` tracking `origin/main`.
 - Historical timeline entries before the current scheduling decision may mention
@@ -4123,13 +4126,34 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 193 generated materialized Yoga layout breadth proof accepted:
+  - Worker branch commit:
+    `63fba2b Add materialized layout breadth proof`.
+  - Merged worker 193 into `main` as
+    `c2b7430 Merge worker 193 materialized layout breadth`.
+  - Expanded `scripts/verify-yoganode-nitro-materialization.mjs` with compact
+    generated materialized Yoga layout breadth proof covering representative
+    layout style delivery, materialized parent/children, generated
+    `insertChild(...)`, `computeLayout(...)`, native Yoga state, native
+    computed layout, and generated `layout` getter output.
+  - Worker worktree verification passed `git diff --check`,
+    `node --check scripts/verify-yoganode-nitro-materialization.mjs`,
+    `npm run check:yoganode-nitro-materialization`, and the full feasible
+    matrix in `3m 57s`.
+  - Main post-merge verification passed `git diff --check HEAD~1 HEAD`,
+    `node --check scripts/verify-yoganode-nitro-materialization.mjs`,
+    `npm run check:yoganode-nitro-materialization`, and the full feasible
+    matrix in `4m 04s`.
+  - The original Worker 193 spawn-agent became unresponsive after producing
+    the verifier patch and before report/commit. The patch was preserved in
+    the isolated worktree, reviewed, verified, reported, and committed
+    manually.
+  - Next target: fresh post-Worker 193 root-cause audit to accept the proof
+    boundary independently and rerank remaining local targets.
 
 ## Active Workers
 
-- `/root/worker_193_materialized_layout_breadth`: generated materialized Yoga
-  layout breadth proof from isolated worktree
-  `../worker-193-materialized-layout-breadth` on branch
-  `worker/193-materialized-layout-breadth`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4342,10 +4366,11 @@ Accepted worker reports:
 - `worker-progress/worker-190-post-189-root-cause-audit.md`
 - `worker-progress/worker-191-inverted-rrect-path-raster-proof.md`
 - `worker-progress/worker-192-post-191-root-cause-audit.md`
+- `worker-progress/worker-193-materialized-layout-breadth.md`
 
 ## Pending Workers
 
-- Worker 193 generated materialized Yoga layout breadth proof.
+- Worker 194 post-Worker 193 root-cause audit.
 
 ## Decisions
 
@@ -4373,6 +4398,11 @@ Accepted worker reports:
   remaining local root-cause targets.
 - Worker 192 accepted Worker 191's proof boundary and selected generated
   materialized Yoga layout breadth proof as the next locally unblocked target.
+- Worker 193 closed the generated materialized Yoga layout breadth proof within
+  a bounded host-JSC/generated-wrapper proof boundary. The next step is a
+  fresh post-Worker 193 root-cause audit to accept that boundary independently,
+  rerun focused/full-matrix evidence as appropriate, reprobe platform blockers,
+  and select the next locally unblocked target.
 - Post-worker-102 target selection: worker 103 accepted worker 102's synthetic ImageCmd fit proof boundary, reconfirmed the 28-command feasible matrix, and selected bounded text/paragraph CSS color-string command conversion/render coverage as the strongest locally unblocked target because public JSX accepts string color values and native text-style conversion parses CSS strings while current text/paragraph command-render coverage uses numeric colors.
 - Post-worker-106 target selection: worker 107 accepted worker 106's expanded generated `setCommand(...)` breadth, reconfirmed the 28-command feasible matrix, and selected direct `StrokeOpts` converter consistency as the strongest locally unblocked product-source target because `fromJSI(...)` rejects non-objects while `canConvert(...)` still advertises objects, `null`, and `undefined` as convertible.
 - Post-worker-108 follow-up: direct `StrokeOpts` converter consistency is integrated; the next step is a fresh audit because worker 107's next-ranked TypeScript dynamic payload caveat needs API-boundary reassessment after the converter fix.
@@ -4479,22 +4509,18 @@ Accepted worker reports:
 - Example Worklets transform: worker 051 added the example/Expo Babel-config path to `check:skia-yoga-object-lazy-init`, proving package source `src/util.ts` keeps the same lazy Nitro closure/body contract when transformed through `example/babel.config.js` and the example dependency context.
 - Platform/example readiness: worker 014 found that full app verification starts with Expo native project generation because the example has no committed `example/ios` or `example/android`. Worker 015 removed the immediate prebuild-safe blockers by adding the missing React Native CLI dependency, aligning the example dependency set with Expo SDK 55, preserving install isolation, and pinning example type resolution so the linked package uses `example/node_modules`. Worker 016 verified Expo CNG native generation through Node, confirmed generated project parsing and iOS/Android autolinking for `react-native-skia-yoga`, and found remaining build/run verification is blocked by local toolchain gaps rather than repo state. Worker 017 proved the missing `app.plugin.js` entry was stale package metadata rather than an Expo config-plugin contract, then removed it from the package publish surface while keeping React Native autolinking intact. Worker 018 found the package lifecycle root-cause task, worker 019 removed the consumer-facing root `postinstall`, kept local/example sync explicit and guarded, moved codegen-only `nitrogen` out of runtime dependencies, and added tarball lifecycle verification with Bun hidden from `PATH`. Worker 020 found the runtime-smoke archive discovery target, worker 021 completed it, worker 022 found the Android CMake archive-layout analogue, worker 023 completed it, worker 024 selected lint-ci root configuration/formatter repair as the next repo-owned feedback-loop fix, worker 025 completed that repair, worker 026 selected the remaining product-source React Native deep imports as the next implementation target, worker 027 completed that target, worker 028 selected example lint-contract cleanup, worker 029 completed it, worker 030 selected public README/API documentation drift, worker 031 completed that contract fix, worker 032 selected native publish-surface completeness, worker 033 completed that package-surface fix, worker 034 selected the unguarded Expo export path plus Metro config dump as the next example feedback-loop target, worker 035 completed that feedback-loop target, worker 036 confirmed platform-native build/run remains blocked by local toolchain gaps rather than a stronger repo-owned target, and worker 037 removed the strongest known unblocked RN Skia private-import target.
 
-## Next Implementation Candidates
+## Next Worker Candidates
 
-- Worker 193: generated materialized Yoga layout breadth proof.
-  - Extend `scripts/verify-yoganode-nitro-materialization.mjs` with a compact
-    generated materialized flexbox/layout tree.
-  - Cover representative public layout categories such as `flexDirection`,
-    `justifyContent` or `alignItems`, `gap`/`rowGap`/`columnGap`, `padding`,
-    `margin`, `flexGrow`/`flexShrink`/`flexBasis`, `position` plus edge/inset
-    aliases, and one stable width special-value case if the Yoga state/layout
-    output supports it.
-  - Assert generated `setStyle(...)` wrapper delivery, native `_style`
-    optionals, selected Yoga style state, generated `computeLayout(...)`, and
-    generated `layout` getter output.
+- Worker 194: post-Worker 193 root-cause audit.
+  - Independently inspect Worker 193's generated materialized layout breadth
+    proof and report boundary.
+  - Rerun `npm run check:yoganode-nitro-materialization` and the full feasible
+    matrix unless fresh evidence shows a narrower check is sufficient.
+  - Reprobe local platform-native blockers.
+  - Select the next strongest locally unblocked root-cause target.
   - Keep exact Yoga algorithm conformance, platform app runtime, React Native
-    bridge delivery, native app launch, and rendering fidelity outside the
-    proof boundary.
+    bridge delivery, native app launch, and rendering fidelity outside Worker
+    193's accepted proof boundary unless new local evidence changes that.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
