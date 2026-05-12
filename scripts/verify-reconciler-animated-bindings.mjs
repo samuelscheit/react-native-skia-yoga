@@ -257,6 +257,7 @@ verifyNativeCommandBindingWhitelistMatchesCases()
 verifyNativeCommandBindingMirrorsSharedValue()
 verifyJsCommandBindingModeRunsCommandUpdateCallbacks()
 verifyStyleAnimatedListenerUpdatesStyleAndContinuousRedraw()
+verifyTransformStyleSharedValuesUseJsStyleDelivery()
 verifyStyleLayerSharedValueUsesJsStyleDelivery()
 verifyWholeStyleSharedValueUsesJsStyleDelivery()
 verifyNativeBindingRefCountsAndDetachCleanup()
@@ -277,6 +278,9 @@ console.log(
 )
 console.log(
 	"- Animated style listeners update host styles, invalidate, and toggle continuous redraw state.",
+)
+console.log(
+	"- Dynamic style.transform SharedValue leaves and whole SharedValue<Transform> use JS style listeners, resolve initial snapshots, rebuild host styles on update, invalidate, clean up, and avoid native command mirrors.",
 )
 console.log(
 	"- Top-level style.layer SharedValue listeners resolve initial SkPaint snapshots, rebuild full styles on updates, invalidate, clean up, and avoid native command mirrors.",
@@ -1139,6 +1143,390 @@ function verifyStyleAnimatedListenerUpdatesStyleAndContinuousRedraw() {
 		calls.invalidations.length,
 		1,
 		"removed style listeners should not invalidate after cleanup",
+	)
+}
+
+function verifyTransformStyleSharedValuesUseJsStyleDelivery() {
+	verifyNestedTransformLeavesUseJsStyleDelivery()
+	verifyWholeTransformSharedValueUsesJsStyleDelivery()
+}
+
+function verifyNestedTransformLeavesUseJsStyleDelivery() {
+	const harness = createReconcilerHarness()
+	const config = harness.loadReconcilerHostConfig()
+	const translateX = harness.makeSharedValue(4, "style.transform.translateX")
+	const scale = harness.makeSharedValue(1.25, "style.transform.scale")
+	const rotateZ = harness.makeSharedValue(0.1, "style.transform.rotateZ")
+	const style = harness.makeVmValue(
+		`({
+			height: 20,
+			transform: [
+				{ translateX: bindings.translateX },
+				{ translateY: 3 },
+				{ scale: bindings.scale },
+				{ rotateZ: bindings.rotateZ },
+			],
+			width: 40,
+		})`,
+		{ rotateZ, scale, translateX },
+	)
+	const { calls, container } = harness.makeRootContainer({
+		nativeCommandBindingsEnabled: true,
+	})
+
+	const node = config.createInstance(
+		"group",
+		{
+			rasterize: true,
+			style,
+		},
+		container,
+	)
+
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		"nested style.transform SharedValue leaves should use JS style listeners rather than native command mirrors",
+	)
+	assert.equal(
+		translateX.listenerCount(),
+		1,
+		"nested style.transform translateX should register a SharedValue listener",
+	)
+	assert.equal(
+		scale.listenerCount(),
+		1,
+		"nested style.transform scale should register a SharedValue listener",
+	)
+	assert.equal(
+		rotateZ.listenerCount(),
+		1,
+		"nested style.transform rotateZ should register a SharedValue listener",
+	)
+	assert.deepEqual(
+		harness.calls.uiRuntimeCalls.map((call) => call.args[1]),
+		[
+			"transform.0.translateX",
+			"transform.2.scale",
+			"transform.3.rotateZ",
+		],
+		"nested style.transform SharedValue listeners should be keyed by transform entry paths",
+	)
+	assert.equal(
+		last(node.commands).data.rasterize,
+		true,
+		"group command props should still be applied while style.transform bindings are active",
+	)
+	assert.equal(
+		last(node.styles).transform[0].translateX,
+		4,
+		"nested style.transform translateX should resolve the initial SharedValue snapshot",
+	)
+	assert.equal(
+		last(node.styles).transform[1].translateY,
+		3,
+		"nested style.transform static entries should remain in the style payload",
+	)
+	assert.equal(
+		last(node.styles).transform[2].scale,
+		1.25,
+		"nested style.transform scale should resolve the initial SharedValue snapshot",
+	)
+	assert.equal(
+		last(node.styles).transform[3].rotateZ,
+		0.1,
+		"nested style.transform rotateZ should resolve the initial SharedValue snapshot",
+	)
+	assert.equal(
+		last(node.styles).height,
+		20,
+		"nested style.transform should preserve static sibling style fields initially",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		0,
+		"initial nested style.transform listener setup should not invalidate",
+	)
+
+	scale.emit(2)
+
+	assert.deepEqual(
+		only(harness.calls.runOnJSCalls).args,
+		["transform.2.scale", 2],
+		"nested style.transform scale updates should bridge the transform entry key through runOnJS",
+	)
+	assert.equal(
+		last(node.styles).transform[2].scale,
+		2,
+		"nested style.transform scale updates should rebuild the host style with the latest value",
+	)
+	assert.equal(
+		last(node.styles).transform[0].translateX,
+		4,
+		"nested style.transform scale updates should preserve sibling animated snapshots",
+	)
+	assert.equal(
+		last(node.styles).transform[1].translateY,
+		3,
+		"nested style.transform scale updates should preserve static transform entries",
+	)
+	assert.equal(
+		last(node.styles).width,
+		40,
+		"nested style.transform scale updates should preserve static sibling style fields",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		1,
+		"nested style.transform scale updates should invalidate the container",
+	)
+	assert.equal(
+		harness.calls.setBlocking.length,
+		0,
+		"nested style.transform updates should not use native mirror setBlocking updates",
+	)
+
+	translateX.emit(8)
+
+	assert.deepEqual(
+		last(harness.calls.runOnJSCalls).args,
+		["transform.0.translateX", 8],
+		"nested style.transform translateX updates should bridge their own transform entry key",
+	)
+	assert.equal(
+		last(node.styles).transform[0].translateX,
+		8,
+		"nested style.transform translateX updates should rebuild the host style with the latest value",
+	)
+	assert.equal(
+		last(node.styles).transform[2].scale,
+		2,
+		"nested style.transform translateX updates should preserve the last scale snapshot",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		2,
+		"nested style.transform translateX updates should invalidate through the same style listener path",
+	)
+
+	const styleCallsAfterEmit = node.styles.length
+	const runOnJsCallsAfterEmit = harness.calls.runOnJSCalls.length
+	config.commitUpdate(
+		node,
+		"group",
+		{ rasterize: true, style },
+		{
+			rasterize: false,
+			style: {
+				transform: [{ translateX: 1 }, { scale: 1 }],
+				width: 24,
+			},
+		},
+		null,
+	)
+
+	assert.equal(
+		translateX.listenerCount(),
+		0,
+		"commitUpdate should remove the nested style.transform translateX listener",
+	)
+	assert.equal(
+		scale.listenerCount(),
+		0,
+		"commitUpdate should remove the nested style.transform scale listener",
+	)
+	assert.equal(
+		rotateZ.listenerCount(),
+		0,
+		"commitUpdate should remove the nested style.transform rotateZ listener",
+	)
+	assert.deepEqual(
+		harness.calls.sharedRemoveListener.map((call) => call.had),
+		[true, true, true],
+		"nested style.transform cleanup should remove existing SharedValue listener ids",
+	)
+	assert.equal(
+		last(node.commands).data.rasterize,
+		false,
+		"commitUpdate should still update command props while nested style.transform cleanup runs",
+	)
+	assert.deepEqual(
+		last(node.styles),
+		{
+			transform: [{ translateX: 1 }, { scale: 1 }],
+			width: 24,
+		},
+		"commitUpdate should apply the cleaned transform style after removing nested style.transform listeners",
+	)
+
+	translateX.emit(10)
+	scale.emit(3)
+	rotateZ.emit(0.5)
+
+	assert.equal(
+		node.styles.length,
+		styleCallsAfterEmit + 1,
+		"removed nested style.transform listeners should not rebuild styles after cleanup",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		2,
+		"removed nested style.transform listeners should not invalidate after cleanup",
+	)
+	assert.equal(
+		harness.calls.runOnJSCalls.length,
+		runOnJsCallsAfterEmit,
+		"removed nested style.transform listeners should not bridge through runOnJS after cleanup",
+	)
+}
+
+function verifyWholeTransformSharedValueUsesJsStyleDelivery() {
+	const harness = createReconcilerHarness()
+	const config = harness.loadReconcilerHostConfig()
+	const initialTransform = [
+		{ translateX: 2 },
+		{ translateY: 3 },
+		{ scale: 1.1 },
+	]
+	const nextTransform = [
+		{ translateX: 6 },
+		{ rotateZ: 0.25 },
+		{ scale: 1.5 },
+	]
+	const lateTransform = [{ translateX: 12 }, { scale: 2 }]
+	const transform = harness.makeSharedValue(
+		initialTransform,
+		"style.transform",
+	)
+	const style = harness.makeVmValue(
+		`({
+			opacity: 0.8,
+			transform: bindings.transform,
+			width: 60,
+		})`,
+		{ transform },
+	)
+	const { calls, container } = harness.makeRootContainer({
+		nativeCommandBindingsEnabled: true,
+	})
+
+	const node = config.createInstance(
+		"rect",
+		{
+			style,
+		},
+		container,
+	)
+
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		"whole style.transform SharedValue should use JS style listeners rather than native command mirrors",
+	)
+	assert.equal(
+		transform.listenerCount(),
+		1,
+		"whole style.transform SharedValue should register one listener",
+	)
+	assert.equal(
+		only(harness.calls.uiRuntimeCalls).args[1],
+		"transform",
+		"whole style.transform SharedValue should use the top-level transform listener key",
+	)
+	assert.deepEqual(
+		last(node.styles).transform,
+		initialTransform,
+		"whole style.transform SharedValue should resolve the initial transform snapshot",
+	)
+	assert.equal(
+		last(node.styles).opacity,
+		0.8,
+		"whole style.transform SharedValue should preserve static sibling style fields initially",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		0,
+		"initial whole style.transform listener setup should not invalidate",
+	)
+
+	transform.emit(nextTransform)
+
+	assert.deepEqual(
+		only(harness.calls.runOnJSCalls).args,
+		["transform", nextTransform],
+		"whole style.transform updates should bridge the top-level transform key and full transform array",
+	)
+	assert.deepEqual(
+		last(node.styles).transform,
+		nextTransform,
+		"whole style.transform updates should rebuild the host style with the latest transform array",
+	)
+	assert.equal(
+		last(node.styles).width,
+		60,
+		"whole style.transform updates should preserve static sibling style fields",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		1,
+		"whole style.transform updates should invalidate the container",
+	)
+	assert.equal(
+		harness.calls.setBlocking.length,
+		0,
+		"whole style.transform updates should not use native mirror setBlocking updates",
+	)
+
+	const styleCallsAfterEmit = node.styles.length
+	const runOnJsCallsAfterEmit = harness.calls.runOnJSCalls.length
+	config.commitUpdate(
+		node,
+		"rect",
+		{ style },
+		{
+			style: {
+				opacity: 0.4,
+				transform: [{ translateY: 5 }],
+			},
+		},
+		null,
+	)
+
+	assert.equal(
+		transform.listenerCount(),
+		0,
+		"commitUpdate should remove the whole style.transform listener",
+	)
+	assert.equal(
+		only(harness.calls.sharedRemoveListener).had,
+		true,
+		"whole style.transform cleanup should remove an existing SharedValue listener id",
+	)
+	assert.deepEqual(
+		last(node.styles),
+		{
+			opacity: 0.4,
+			transform: [{ translateY: 5 }],
+		},
+		"commitUpdate should apply the replacement static transform style after whole-transform cleanup",
+	)
+
+	transform.emit(lateTransform)
+
+	assert.equal(
+		node.styles.length,
+		styleCallsAfterEmit + 1,
+		"removed whole style.transform listener should not rebuild styles after cleanup",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		1,
+		"removed whole style.transform listener should not invalidate after cleanup",
+	)
+	assert.equal(
+		harness.calls.runOnJSCalls.length,
+		runOnJsCallsAfterEmit,
+		"removed whole style.transform listener should not bridge through runOnJS after cleanup",
 	)
 }
 
