@@ -118,7 +118,7 @@ try {
 		"- Public package entrypoints and lowercase intrinsic JSX compiled from the installed package.",
 	)
 	console.log(
-		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, whole style.matrix SharedValue 9-/16-value arrays, inventory-backed static style.transform arrays, whole style.transform SharedValue<Transform>, inventory-backed nested style.transform SharedValue<number> leaves for every public transform operation, and whole SharedValue<YogaNodeStyle> authoring.",
+		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, dynamic SkPoint-capable style.borderTopLeftRadius forms, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, whole style.matrix SharedValue 9-/16-value arrays, inventory-backed static style.transform arrays, whole style.transform SharedValue<Transform>, inventory-backed nested style.transform SharedValue<number> leaves for every public transform operation, and whole SharedValue<YogaNodeStyle> authoring.",
 	)
 	console.log(
 		`- Source public transform operation inventory from src/specs/style.ts matched packed consumer cases: ${formatTransformOperationKeys(
@@ -133,6 +133,9 @@ try {
 	)
 	console.log(
 		"- Packed consumer TypeScript rejected unsupported nested style.matrix SharedValue<number> array entries while accepting SharedValue for the whole matrix.",
+	)
+	console.log(
+		"- Packed consumer TypeScript accepted style.borderTopLeftRadius as SharedValue<number>, SharedValue<SkPoint>, and { x, y } SharedValue<number> leaves while rejecting invalid point leaves.",
 	)
 	console.log(
 		"- Packed consumer TypeScript accepted simple text.textStyle color/fontSize authoring and rejected rich text.textStyle fontFamilies, fontFeatures, fontStyle, letterSpacing, and fontVariations authoring while preserving rich paragraphStyle text styling.",
@@ -323,7 +326,7 @@ function writeConsumerProject(consumerDir, packedTarball) {
 
 function consumerSource() {
 	return `import * as React from "react"
-import { Skia, type FilterMode, type SamplingOptions, type SkPaint, type SkPath } from "@shopify/react-native-skia"
+import { Skia, type FilterMode, type SamplingOptions, type SkPaint, type SkPath, type SkPoint } from "@shopify/react-native-skia"
 import type { SharedValue } from "react-native-reanimated"
 import {
 \tYogaCanvas,
@@ -420,6 +423,11 @@ const sharedLayerOpacity = null as unknown as SharedValue<number>
 const sharedMatrixEntry = null as unknown as SharedValue<number>
 const sharedPublicTransform = null as unknown as SharedValue<PublicTransform>
 ${formatSharedTransformDeclarations()}
+const sharedStyleCornerRadiusNumber = null as unknown as SharedValue<number>
+const sharedStyleCornerRadiusPoint = null as unknown as SharedValue<SkPoint>
+const sharedStyleCornerRadiusX = null as unknown as SharedValue<number>
+const sharedStyleCornerRadiusY = null as unknown as SharedValue<number>
+const invalidStyleCornerRadiusLeaf = null as unknown as SharedValue<string>
 const sharedWholeStyle = null as unknown as SharedValue<YogaNodeStyle>
 const compileOnlyPath = null as unknown as SkPath
 const sharedPublicMatrix9 = asSharedValue<PublicMatrix>(publicMatrix9)
@@ -511,6 +519,33 @@ ${formatDynamicTransformEntries()}
 \t},
 }
 
+const dynamicScalarCornerRadiusRectProps: YogaIntrinsicElements["rect"] = {
+\tstyle: {
+\t\tborderTopLeftRadius: sharedStyleCornerRadiusNumber,
+\t\theight: 24,
+\t\twidth: 24,
+\t},
+}
+
+const dynamicPointCornerRadiusRectProps: YogaIntrinsicElements["rect"] = {
+\tstyle: {
+\t\tborderTopLeftRadius: sharedStyleCornerRadiusPoint,
+\t\theight: 24,
+\t\twidth: 24,
+\t},
+}
+
+const dynamicNestedCornerRadiusRectProps: YogaIntrinsicElements["rect"] = {
+\tstyle: {
+\t\tborderTopLeftRadius: {
+\t\t\tx: sharedStyleCornerRadiusX,
+\t\t\ty: sharedStyleCornerRadiusY,
+\t\t},
+\t\theight: 24,
+\t\twidth: 24,
+\t},
+}
+
 const unsupportedNestedSamplingProps: YogaIntrinsicElements["image"] = {
 \t// @ts-expect-error nested image.sampling SharedValue leaves are not part of the opaque SamplingOptions contract.
 \tsampling: { filter: sharedSamplingFilter },
@@ -530,6 +565,13 @@ const unsupportedNestedMatrixProps: YogaIntrinsicElements["rect"] = {
 \t\t\t0,
 \t\t\t1,
 \t\t],
+\t},
+}
+
+const unsupportedNestedCornerRadiusProps: YogaIntrinsicElements["rect"] = {
+\tstyle: {
+\t\t// @ts-expect-error style.borderTopLeftRadius point leaves must be numbers or SharedValue<number>.
+\t\tborderTopLeftRadius: { x: invalidStyleCornerRadiusLeaf, y: 4 },
 \t},
 }
 
@@ -606,6 +648,9 @@ export function PackedPackageSmoke() {
 \t\t\t\t\t\t\t\t<rect style={{ height: 12, width: 12 }} />
 \t\t\t\t\t\t\t</group>
 \t\t\t\t\t\t\t<rect {...dynamicNestedTransformRectProps} />
+\t\t\t\t\t\t\t<rect {...dynamicScalarCornerRadiusRectProps} />
+\t\t\t\t\t\t\t<rect {...dynamicPointCornerRadiusRectProps} />
+\t\t\t\t\t\t\t<rect {...dynamicNestedCornerRadiusRectProps} />
 \t\t\t\t\t\t\t<circle
 \t\t\t\t\t\t\t\tradius={sharedCircleRadius}
 \t\t\t\t\t\t\t\tstyle={{
@@ -654,6 +699,7 @@ void devRuntimeFragment
 void runtimeFragment
 void unsupportedNestedSamplingProps
 void unsupportedNestedMatrixProps
+void unsupportedNestedCornerRadiusProps
 void unsupportedTextFontVariationsElement
 void unsupportedTextFontFamiliesElement
 void unsupportedTextFontFeaturesElement
