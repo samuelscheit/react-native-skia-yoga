@@ -299,22 +299,20 @@ Accepted package-hygiene implementation:
 - `worker-169-matrix-sharedvalue-proof`: added packed-consumer whole `style.matrix` `SharedValue` 9-/16-value authoring proof, packed/Reconciler nested matrix `SharedValue<number>` rejection proof, and Reconciler whole-matrix listener/update/cleanup proof.
 - `worker-170-post-169-root-cause-audit`: accepted Worker 169's proof boundary, reconfirmed the focused/full-matrix evidence and local platform blockers, and selected dynamic style corner-radius public/Reconciler proof as Worker 171's target.
 - `worker-171-corner-radius-dynamic-proof`: added packed-consumer and Reconciler source-level proof for dynamic `style.borderTopLeftRadius` corner-radius values, including whole `SharedValue<number>`, whole `SharedValue<SkPoint>`, nested `{ x, y }` SharedValue leaves, cleanup/late-emit behavior, no native mirror, and invalid-shape errors.
+- `worker-172-post-171-root-cause-audit`: accepted Worker 171's proof boundary, reconfirmed the focused/full-matrix evidence and local platform blockers, and selected generated/native style corner-radius proof as Worker 173's target.
 
 Current active worker:
 
-- Worker 172 post-Worker 171 root-cause audit.
-  - Agent path: `/root/worker_172_post_171_root_cause_audit`.
-  - Worktree: `../worker-172-post-171-root-cause-audit`.
-  - Branch: `worker/172-post-171-root-cause-audit`.
-  - Scope: accept or reject Worker 171's dynamic corner-radius proof boundary,
-    reconfirm focused/post-merge evidence and local platform blockers, and
-    select the next strongest locally unblocked root-cause target.
-  - Required verification: focused evidence needed for the audit,
-    `check:feasible-matrix`, platform blocker reprobes, and `git diff --check`.
+- None.
 
 Next queued worker:
 
-- None until Worker 172 reports.
+- Worker 173 generated/native style corner-radius proof.
+  - Scope: prove generated/materialized `setStyle(...)` delivery for
+    SkPoint-capable style corner radii into native `NodeStyle`,
+    `_clipToBoundsRadii`, render clipping, and hit-test clipping.
+  - Required verification: focused native/materialization checks,
+    `git diff --check`, and `check:feasible-matrix`.
 
 Acceptance criteria:
 

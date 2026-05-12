@@ -3575,12 +3575,29 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 172 post-Worker 171 audit accepted:
+  - Accepted Worker 171's proof boundary as public packed TypeScript plus Node
+    VM Reconciler source-level proof for representative dynamic
+    `style.borderTopLeftRadius` authoring and delivery.
+  - Reconfirmed focused syntax, package-consumer, Reconciler, Nitro
+    materialization, native hit-testing, and full feasible-matrix evidence.
+    `npm run check:feasible-matrix` passed 28/28 in `4m 12s`.
+  - Reprobed unchanged local platform blockers: CommandLineTools-only Xcode
+    selection, missing iPhone simulator SDK, missing CocoaPods, Gradle, ADB,
+    CMake, Ninja, Java runtime, and unset Android SDK environment variables.
+  - Selected generated/native style corner-radius proof as the next strongest
+    locally unblocked target, ahead of a pure per-key Reconciler sweep.
+  - Worker branch commit:
+    `76b9ec9 Add worker 172 post-171 audit`.
+  - Merged worker 172 into `main` as
+    `14e9a70 Merge worker 172 post-171 audit`.
+  - Post-merge `git diff --check HEAD~1 HEAD`: passed.
+- Next step selected by orchestration: launch Worker 173 for generated/native
+  style corner-radius proof.
 
 ## Active Workers
 
-- `/root/worker_172_post_171_root_cause_audit`: post-Worker 171 root-cause
-  audit from isolated worktree `../worker-172-post-171-root-cause-audit` on
-  branch `worker/172-post-171-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3772,6 +3789,7 @@ Accepted worker reports:
 - `worker-progress/worker-169-matrix-sharedvalue-proof.md`
 - `worker-progress/worker-170-post-169-root-cause-audit.md`
 - `worker-progress/worker-171-corner-radius-dynamic-proof.md`
+- `worker-progress/worker-172-post-171-root-cause-audit.md`
 
 ## Pending Workers
 
@@ -3898,11 +3916,12 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor Worker 172: post-Worker 171 root-cause audit.
-  - Accept or reject Worker 171's public packed TypeScript and Node VM
-    Reconciler source-level dynamic corner-radius proof boundary.
-  - Reconfirm focused/post-merge evidence and local platform-native blockers.
-  - Select the next strongest locally unblocked root-cause target.
+- Launch Worker 173: generated/native style corner-radius proof.
+  - Extend native/materialized proof for SkPoint-capable style corner radii:
+    generated `setStyle(...)` delivery, native `NodeStyle` state,
+    `_clipToBoundsRadii`, render clipping, and hit-test clipping.
+  - Keep any all-four-key JS/Reconciler sweep secondary unless source evidence
+    shows it is required for the native proof.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
