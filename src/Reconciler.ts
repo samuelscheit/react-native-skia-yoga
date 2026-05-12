@@ -169,6 +169,18 @@ function isAnimatedNumber(value: unknown) {
 	)
 }
 
+function assertSupportedBorderRadiusValue(value: unknown) {
+	if (
+		value == null ||
+		typeof value === "number" ||
+		(isSharedValue(value) && typeof value.value === "number")
+	) {
+		return
+	}
+
+	throw new Error("style.borderRadius only supports number or SharedValue<number>.")
+}
+
 function assertSupportedCornerRadiusValue(
 	key: (typeof scalarCornerRadiusKeys)[number],
 	value: unknown,
@@ -224,6 +236,7 @@ function assertSupportedStyleShape(style: Record<string, unknown>) {
 	}
 
 	assertSupportedMatrixValue(style.matrix)
+	assertSupportedBorderRadiusValue(style.borderRadius)
 
 	for (const key of scalarCornerRadiusKeys) {
 		assertSupportedCornerRadiusValue(key, style[key])

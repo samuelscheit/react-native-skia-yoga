@@ -133,7 +133,7 @@ try {
 		"- Public package entrypoints and lowercase intrinsic JSX compiled from the installed package.",
 	)
 	console.log(
-		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, inventory-backed dynamic SkPoint-capable corner-radius forms, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, whole style.matrix SharedValue 9-/16-value arrays, inventory-backed static style.transform arrays, whole style.transform SharedValue<Transform>, inventory-backed nested style.transform SharedValue<number> leaves for every public transform operation, and whole SharedValue<YogaNodeStyle> authoring.",
+		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, dynamic scalar global style.borderRadius, inventory-backed dynamic SkPoint-capable corner-radius forms, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, whole style.matrix SharedValue 9-/16-value arrays, inventory-backed static style.transform arrays, whole style.transform SharedValue<Transform>, inventory-backed nested style.transform SharedValue<number> leaves for every public transform operation, and whole SharedValue<YogaNodeStyle> authoring.",
 	)
 	console.log(
 		`- Source public transform operation inventory from src/specs/style.ts matched packed consumer cases: ${formatTransformOperationKeys(
@@ -153,6 +153,9 @@ try {
 	)
 	console.log(
 		"- Packed consumer TypeScript rejected unsupported nested style.matrix SharedValue<number> array entries while accepting SharedValue for the whole matrix.",
+	)
+	console.log(
+		"- Packed consumer TypeScript accepted scalar global style.borderRadius as SharedValue<number> while rejecting SharedValue<SkPoint> and point-object forms.",
 	)
 	console.log(
 		"- Packed consumer TypeScript accepted all four per-corner style radius keys as SharedValue<number>, SharedValue<SkPoint>, and { x, y } SharedValue<number> leaves while rejecting invalid point leaves.",
@@ -443,6 +446,8 @@ const sharedLayerOpacity = null as unknown as SharedValue<number>
 const sharedMatrixEntry = null as unknown as SharedValue<number>
 const sharedPublicTransform = null as unknown as SharedValue<PublicTransform>
 ${formatSharedTransformDeclarations()}
+const sharedStyleBorderRadiusNumber = null as unknown as SharedValue<number>
+const invalidStyleBorderRadiusPoint = null as unknown as SharedValue<SkPoint>
 const sharedStyleCornerRadiusNumber = null as unknown as SharedValue<number>
 const sharedStyleCornerRadiusPoint = null as unknown as SharedValue<SkPoint>
 const sharedStyleCornerRadiusX = null as unknown as SharedValue<number>
@@ -529,6 +534,14 @@ const dynamicWholeMatrix16GroupProps: YogaIntrinsicElements["group"] = {
 \t},
 }
 
+const dynamicGlobalBorderRadiusRectProps: YogaIntrinsicElements["rect"] = {
+\tstyle: {
+\t\tborderRadius: sharedStyleBorderRadiusNumber,
+\t\theight: 24,
+\t\twidth: 24,
+\t},
+}
+
 const dynamicNestedTransformRectProps: YogaIntrinsicElements["rect"] = {
 \tstyle: {
 \t\theight: 36,
@@ -582,6 +595,20 @@ const unsupportedNestedMatrixProps: YogaIntrinsicElements["rect"] = {
 \t\t\t0,
 \t\t\t1,
 \t\t],
+\t},
+}
+
+const unsupportedGlobalBorderRadiusSharedPointProps: YogaIntrinsicElements["rect"] = {
+\tstyle: {
+\t\t// @ts-expect-error style.borderRadius is a scalar number and does not accept SharedValue<SkPoint>.
+\t\tborderRadius: invalidStyleBorderRadiusPoint,
+\t},
+}
+
+const unsupportedGlobalBorderRadiusPointObjectProps: YogaIntrinsicElements["rect"] = {
+\tstyle: {
+\t\t// @ts-expect-error style.borderRadius is a scalar number and does not accept point-object forms.
+\t\tborderRadius: { x: sharedStyleCornerRadiusX, y: sharedStyleCornerRadiusY },
 \t},
 }
 
@@ -664,6 +691,7 @@ export function PackedPackageSmoke() {
 \t\t\t\t\t\t\t<group {...dynamicWholeMatrix16GroupProps}>
 \t\t\t\t\t\t\t\t<rect style={{ height: 12, width: 12 }} />
 \t\t\t\t\t\t\t</group>
+\t\t\t\t\t\t\t<rect {...dynamicGlobalBorderRadiusRectProps} />
 \t\t\t\t\t\t\t<rect {...dynamicNestedTransformRectProps} />
 \t\t\t\t\t\t\t<rect {...dynamicScalarCornerRadiusRectProps} />
 \t\t\t\t\t\t\t<rect {...dynamicPointCornerRadiusRectProps} />
@@ -716,6 +744,8 @@ void devRuntimeFragment
 void runtimeFragment
 void unsupportedNestedSamplingProps
 void unsupportedNestedMatrixProps
+void unsupportedGlobalBorderRadiusSharedPointProps
+void unsupportedGlobalBorderRadiusPointObjectProps
 void unsupportedNestedCornerRadiusProps
 void unsupportedTextFontVariationsElement
 void unsupportedTextFontFamiliesElement
