@@ -14,9 +14,9 @@ Last updated: 2026-05-12
   `reasoning_effort: "xhigh"`, with the full worker prompt in `message`.
 - Current worker completion handling: launch workers with `goal: true`; require
   only the final `Goal finished.` line as the completion signal.
-- Current worker prompts must not require workers to call goal tools, emit
-  visible goal-gate messages, or provide goal-lifecycle evidence; `goal: true`
-  plus the final `Goal finished.` line is enough.
+- Current worker prompts must not require workers to call goal tools, check
+  goal status, emit visible goal-gate messages, or provide goal-lifecycle
+  evidence; `goal: true` plus the final `Goal finished.` line is enough.
 - Product code changes authored by orchestrator: none; product changes are accepted worker patches only.
 - Main worktree status at startup: clean on `main` tracking `origin/main`.
 - Historical timeline entries before the current scheduling decision may mention
@@ -39,8 +39,8 @@ Last updated: 2026-05-12
 - Initial tmux launch failed because `--yolo` already implies approval/sandbox bypass; relaunched with `--yolo` only.
 - Launched three tmux-backed Codex workers with `gpt-5.5` and `xhigh` reasoning.
 - The first tmux worker wave produced useful logs, but the captured logs do not prove initial `create_goal` calls before the workers hit Codex CLI usage-limit exits.
-- A non-tmux replacement attempt with tool-managed agents was started and then shut down. This is now recorded as invalid for top-level project work.
-- Updated `ORCHESTRATOR.md` and `MASTER_PLAN.md` to make the hard gates explicit: top-level workers must be tmux subprocesses, must call `create_goal` before any work, and must document nested subagent/explorer hypothesis checks.
+- A non-tmux replacement attempt with tool-managed agents was started and then shut down under the then-current tmux-only policy. This is archival history, not current launch policy.
+- Updated `ORCHESTRATOR.md` and `MASTER_PLAN.md` under the then-current policy to make the hard gates explicit: top-level workers had to be tmux subprocesses, had to call `create_goal` before any work, and had to document nested subagent/explorer hypothesis checks.
 - Killed invalid `rnskia-worker-001/002/003` tmux sessions.
 - Removed worker-owned generated install artifacts from `worker-003-verification-baseline/node_modules` and `worker-003-verification-baseline/example/node_modules`.
 - Updated worker prompts to require `create_goal` as the first action and to add a required `Goal lifecycle` report section.

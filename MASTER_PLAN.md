@@ -24,10 +24,9 @@ Breaking changes are acceptable when they remove root causes instead of preservi
 - Worker prompts must include the full task prompt, absolute worktree path,
   write scope, verification expectations, and overlap boundaries.
 - Worker goal handling is owned by the `goal: true` launch option. Do not ask
-  workers to call `create_goal` or `update_goal`, emit visible goal gates, or
+  workers to call goal tools, check goal status, emit visible goal gates, or
   provide separate goal-lifecycle evidence; the final response/report must end
-  with
-  `Goal finished.`
+  with the exact line `Goal finished.`
 - Workers must keep their own progress files under `worker-progress/`.
 - Workers must review quality, maintainability, performance, and security before reporting completion.
 - Workers may use nested subagents/explorers when testing uncertain root-cause
