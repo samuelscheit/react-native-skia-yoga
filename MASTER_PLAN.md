@@ -320,15 +320,21 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- Worker 184 post-Worker 183 root-cause audit.
+  - Agent path: `/root/worker_184_post_183_root_cause_audit`.
+  - Worktree: `../worker-184-post-183-root-cause-audit`.
+  - Branch: `worker/184-post-183-root-cause-audit`.
+  - Scope: accept or reject Worker 183's public/Reconciler dynamic-contract
+    proof boundary for scalar global `style.borderRadius`, reconfirm
+    focused/post-merge evidence and local platform blockers, and select the
+    next strongest locally unblocked root-cause target.
+  - Required verification: Worker 183 report/code review, focused syntax and
+    verifier checks, `check:feasible-matrix`, platform blocker reprobes, and
+    `git diff --check`.
 
 Next queued worker:
 
-- Worker 184 post-Worker 183 root-cause audit.
-  - Accept or reject Worker 183's public/Reconciler dynamic-contract proof
-    boundary for scalar global `style.borderRadius`.
-  - Reconfirm focused/post-merge evidence and local platform-native blockers.
-  - Select the next strongest locally unblocked root-cause target.
+- None until Worker 184 reports.
 
 Acceptance criteria:
 
