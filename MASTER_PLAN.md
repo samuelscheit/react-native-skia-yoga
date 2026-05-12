@@ -444,28 +444,31 @@ Accepted package-hygiene implementation:
   `line.from.x/y`, `line.to.x/y`, and indexed `points.points[].x/y`, with
   native command/render and generated materialized `setCommand(...)` negative
   coverage proving previous `LineCmd` / `PointsCmd` state is preserved.
+- `worker-219-post-218-audit`: accepted Worker 218's command point finite
+  validation boundary, reconfirmed focused/full feasible verification, and
+  selected command `AnimatedDouble` finite validation as the next
+  implementation target.
 
 Current active worker:
 
-- Worker 219 post-Worker 218 audit.
-- Agent path: `/root/worker_219_post_218_audit`.
-- Worktree: `../worker-219-post-218-audit`.
-- Branch: `worker/219-post-218-audit`.
-- Scope: audit Worker 218's command point finite validation boundary, focused
-  verifier evidence, post-merge matrix result, and any remaining numeric
-  command payload gaps.
-- State: spawned with `agent_type: "worker"`, `goal: true`,
-  `fork_turns: "none"`, `model: "gpt-5.5"`, and
-  `reasoning_effort: "xhigh"`; audit in progress.
+- None.
 
 Next queued worker:
 
-- None until Worker 219 reports.
+- Worker 220 command `AnimatedDouble` finite validation.
+- Planned worktree: `../worker-220-command-animated-double-finite-validation`.
+- Planned branch: `worker/220-command-animated-double-finite-validation`.
+- Scope: implement deterministic finite validation for static numeric
+  command `AnimatedDouble` payloads: `rrect.cornerRadius`,
+  `blurMaskFilter.blur`, `path.trimStart`, `path.trimEnd`, and
+  `circle.radius`, with native and generated materialized state-preservation
+  coverage.
 
 Follow-up queue:
 
-- Consider whether non-`SkPoint` command numeric payloads need the same
-  deterministic finite validation policy.
+- Audit or implement finite validation for path stroke numeric payloads:
+  `stroke.width`, `stroke.miter_limit` / `stroke.miterLimit`, and
+  `stroke.precision`.
 
 Acceptance criteria:
 
