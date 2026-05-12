@@ -5,7 +5,6 @@ Last updated: 2026-05-12
 ## Orchestrator State
 
 - Active role: orchestrator.
-- Goal state: active; do not mark complete.
 - Current top-level worker scheduling: managed Codex subagents launched with
   `spawn_agent`, from isolated git worktrees for any writable/reporting worker.
 - Current workers are not scheduled by starting `codex` in tmux; tmux/process
@@ -15,9 +14,9 @@ Last updated: 2026-05-12
   `reasoning_effort: "xhigh"`, with the full worker prompt in `message`.
 - Current worker completion handling: launch workers with `goal: true`; require
   only the final `Goal finished.` line as the completion signal.
-- Current worker prompts must not require manual goal-tool steps, visible
-  goal-gate messages, or goal-lifecycle evidence unless a newer project policy
-  explicitly restores them.
+- Current worker prompts must not require workers to call goal tools, emit
+  visible goal-gate messages, or provide goal-lifecycle evidence; `goal: true`
+  plus the final `Goal finished.` line is enough.
 - Product code changes authored by orchestrator: none; product changes are accepted worker patches only.
 - Main worktree status at startup: clean on `main` tracking `origin/main`.
 - Historical timeline entries before the current scheduling decision may mention
@@ -2579,7 +2578,9 @@ Last updated: 2026-05-12
 - Coordination policy changed after worker 117 was already running:
   - Committed `36ca500 Switch orchestration docs to spawn_agent workers`.
   - Added `WORKER_BRIEF.md` and updated `ORCHESTRATOR.md`, `MASTER_PLAN.md`, and this file so future top-level workers use `spawn_agent` with `agent_type: "worker"`, `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and `reasoning_effort: "xhigh"`.
-  - Removed manual `create_goal` / `GOAL_CREATED` evidence as an acceptance gate for future workers; `goal: true` owns worker startup goal lifecycle.
+  - Removed manual `create_goal` / `GOAL_CREATED` evidence as an acceptance
+    gate for future workers; `goal: true` owns setup, and the final
+    `Goal finished.` line is enough.
 - Worker 117 completed and reported `Goal finished.` It wrote `worker-progress/worker-117-sampling-sharedvalue-type-boundary.md`.
 - Worker 117 implemented whole `SharedValue<SamplingOptions>` public type support for `image.sampling`, preserved existing `SharedValue<FilterOptions>` / `SharedValue<CubicResampler>` support, kept nested sampling leaves rejected, removed redundant global JSX augmentation in favor of the documented `jsxImportSource` runtime, and added packed-consumer plus Reconciler JS listener coverage.
 - Worker 117 branch commit: `efe5d95 Add worker 117 sampling SharedValue support`.
@@ -4760,7 +4761,8 @@ Accepted worker reports:
 - Top-level workers now run as managed Codex subagents launched with `spawn_agent`, not tmux subprocesses.
 - Implementation workers use isolated git worktrees and branches. Launch them with `agent_type: "worker"`, `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and `reasoning_effort: "xhigh"`.
 - Worker prompts include the full task prompt, absolute worktree path, write scope, verification expectations, and overlap boundaries.
-- `goal: true` creates worker goal state. Worker reports only need to end with `Goal finished.`
+- `goal: true` owns worker setup. Worker reports only need to end with
+  `Goal finished.`
 - Workers may spawn nested managed subagents for hypothesis testing and must document delegated checks that affect their conclusions.
 - Historical entries describing older launch and goal-evidence policies are
   archival. New top-level workers use `spawn_agent` with `goal: true`, and
