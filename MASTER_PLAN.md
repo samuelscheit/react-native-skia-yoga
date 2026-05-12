@@ -366,21 +366,23 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - Worker 210 numeric style finite validation.
-- Agent path: not spawned yet.
-- Worktree: create `../worker-210-numeric-style-finite-validation` before
-  spawning.
-- Branch: create `worker/210-numeric-style-finite-validation` before spawning.
+- Agent path: `/root/worker_210_numeric_style_finite_validation`.
+- Worktree: `../worker-210-numeric-style-finite-validation`.
+- Branch: `worker/210-numeric-style-finite-validation`.
 - Scope: add narrow pre-mutation finite-number validation in
   `YogaNode::setStyle(...)` for selected numeric style fields with direct
   Yoga/paint side effects, starting with paint-associated scalars such as
   `style.opacity`, `borderWidth`, and `strokeMiter`; extend generated
   materialized negative coverage to prove non-finite rejection preserves prior
   native state.
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`; awaiting report.
+
+Next queued worker:
+
+- None until Worker 210 reports.
 
 Follow-up queue:
 
