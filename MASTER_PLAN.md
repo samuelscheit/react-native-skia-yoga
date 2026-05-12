@@ -123,6 +123,10 @@ Latest accepted implementation: worker 173 added generated/materialized and
 host-native hit-test proof for SkPoint-capable style corner radii flowing into
 native `NodeStyle`, `_clipToBoundsRadii`, and rounded hit-test clipping.
 
+Latest accepted audit: worker 174 accepted Worker 173's proof boundary and
+selected bounded raster evidence for style corner-radius clipping in
+`YogaNode::renderToContext()` as the next strongest locally unblocked target.
+
 Goals:
 
 - Keep example app compiling and representative.
@@ -301,22 +305,27 @@ Accepted package-hygiene implementation:
 - `worker-171-corner-radius-dynamic-proof`: added packed-consumer and Reconciler source-level proof for dynamic `style.borderTopLeftRadius` corner-radius values, including whole `SharedValue<number>`, whole `SharedValue<SkPoint>`, nested `{ x, y }` SharedValue leaves, cleanup/late-emit behavior, no native mirror, and invalid-shape errors.
 - `worker-172-post-171-root-cause-audit`: accepted Worker 171's proof boundary, reconfirmed the focused/full-matrix evidence and local platform blockers, and selected generated/native style corner-radius proof as Worker 173's target.
 - `worker-173-native-corner-radius-proof`: added materialized generated `setStyle(...)` proof for all four SkPoint-capable style corner keys, native `_clipToBoundsRadii` mapping, explicit clip separation, and bounded hit-test clipping proof.
+- `worker-174-post-173-root-cause-audit`: accepted Worker 173's generated/native style corner-radius proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected bounded raster evidence for style corner-radius clipping as Worker 175's target.
 
 Current active worker:
 
-- Worker 174 post-Worker 173 root-cause audit.
-  - Agent path: `/root/worker_174_post_173_root_cause_audit`.
-  - Worktree: `../worker-174-post-173-root-cause-audit`.
-  - Branch: `worker/174-post-173-root-cause-audit`.
-  - Scope: accept or reject Worker 173's generated/native style corner-radius
-    proof boundary, reconfirm focused/post-merge evidence and local platform
-    blockers, and select the next strongest locally unblocked root-cause target.
-  - Required verification: focused evidence needed for the audit,
-    `check:feasible-matrix`, platform blocker reprobes, and `git diff --check`.
+- None.
 
 Next queued worker:
 
-- None until Worker 174 reports.
+- Worker 175 bounded style corner-radius raster clipping proof.
+  - Target `scripts/verify-yoganode-native-commands-render.mjs`.
+  - Add host-native raster evidence that style corner radii in
+    `YogaNode::renderToContext()` clip a full-size child, with transparent
+    rounded-corner pixels and colored in-bounds pixels.
+  - Keep the proof boundary bounded to host-native raster output; do not claim
+    platform-native presentation, exact render fidelity, RN bridge delivery, or
+    UI-runtime/Reanimated delivery.
+  - Required verification should include syntax check for the edited verifier,
+    `npm run check:yoganode-native-commands-render`,
+    `npm run check:yoganode-nitro-materialization`,
+    `npm run check:yoganode-native-hit-testing`, `npm run check:feasible-matrix`,
+    and `git diff --check`.
 
 Acceptance criteria:
 
