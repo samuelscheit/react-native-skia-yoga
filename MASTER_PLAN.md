@@ -135,7 +135,7 @@ dynamic layout-style proof boundary, reconfirmed focused and full-matrix
 evidence plus platform blockers, and selected dynamic layout-to-native Yoga
 setter update proof as the next strongest locally unblocked target.
 
-Next queued worker: worker 202 post-Worker 201 root-cause audit.
+Current active worker: worker 202 post-Worker 201 root-cause audit.
 
 Goals:
 
@@ -346,11 +346,18 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- Worker 202 post-Worker 201 root-cause audit.
+- Agent path: `/root/worker_202_post_201_root_cause_audit`.
+- Worktree: `../worker-202-post-201-root-cause-audit`.
+- Branch: `worker/202-post-201-root-cause-audit`.
+- Scope: independently audit Worker 201's generated materialized layout setter
+  update proof boundary, rerun focused/full feasible evidence as needed,
+  reprobe local platform blockers, and select the next locally unblocked
+  root-cause target.
 
 Next queued worker:
 
-- Worker 202 post-Worker 201 root-cause audit.
+- None until Worker 202 reports.
 
 Acceptance criteria:
 
