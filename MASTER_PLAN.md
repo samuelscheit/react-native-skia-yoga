@@ -442,17 +442,21 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - Worker 218 command point finite validation.
-- Planned worktree: `../worker-218-command-point-finite-validation`.
-- Planned branch: `worker/218-command-point-finite-validation`.
+- Agent path: `/root/worker_218_command_point_finite_validation`.
+- Worktree: `../worker-218-command-point-finite-validation`.
+- Branch: `worker/218-command-point-finite-validation`.
 - Scope: implement deterministic finite-number rejection for `line.from`,
   `line.to`, and `points.points[]` `SkPoint.x/y` command payloads before
   `YogaNode::setCommand(...)` installs or mutates native command state, with
   native command/render and generated materialized negative coverage.
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`; implementation in progress.
+
+Next queued worker:
+
+- None until Worker 218 reports.
 
 Follow-up queue:
 
