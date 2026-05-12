@@ -421,7 +421,7 @@ console.log(
 	"- Whole style.matrix SharedValue listeners resolve 9-value snapshots, deliver 16-value updates through the top-level matrix key, rebuild full styles, invalidate, clean up, reject nested SharedValue matrix entries with the explicit boundary error, and avoid native command mirrors.",
 )
 console.log(
-	"- Scalar global style.borderRadius SharedValue<number> listeners resolve the initial snapshot, update through the top-level borderRadius key, rebuild full styles, invalidate, clean up, reject non-number dynamic payloads with the explicit boundary error, and avoid native command mirrors.",
+	"- Scalar global style.borderRadius SharedValue<number> listeners resolve the initial snapshot, update through the top-level borderRadius key, rebuild full styles, invalidate, clean up, reject initial and late non-number dynamic payloads with the explicit boundary error before native-bound style updates, and avoid native command mirrors.",
 )
 console.log(
 	"- Dynamic SkPoint-capable corner-radius listeners cover all four whole scalar SharedValue<number> keys plus representative nested { x, y } SharedValue<number> leaves and whole SharedValue<SkPoint> snapshots/updates with stable keys, full style rebuilds, invalidation, cleanup, ignored late emits, explicit invalid-shape errors, and no native command mirrors.",
@@ -1305,6 +1305,7 @@ function verifyMatrixStyleSharedValuesUseJsStyleDelivery() {
 
 function verifyGlobalBorderRadiusStyleSharedValueUsesJsStyleDelivery() {
 	verifyScalarGlobalBorderRadiusSharedValueUsesJsStyleDelivery()
+	verifyLateInvalidGlobalBorderRadiusEmitFailsBeforeStyleUpdate()
 	verifyInvalidGlobalBorderRadiusShapesFailWithExplicitError()
 }
 
@@ -2058,6 +2059,102 @@ function verifyScalarGlobalBorderRadiusSharedValueUsesJsStyleDelivery() {
 		harness.calls.runOnJSCalls.length,
 		runOnJsCallsAfterEmit,
 		"removed style.borderRadius listener should not bridge through runOnJS after cleanup",
+	)
+}
+
+function verifyLateInvalidGlobalBorderRadiusEmitFailsBeforeStyleUpdate() {
+	const harness = createReconcilerHarness()
+	const config = harness.loadReconcilerHostConfig()
+	const borderRadius = harness.makeSharedValue(6, "style.borderRadius.late-invalid")
+	const style = harness.makeVmValue(
+		`({
+			borderRadius: bindings.borderRadius,
+			height: 30,
+			opacity: 0.65,
+			width: 50,
+		})`,
+		{ borderRadius },
+	)
+	const { calls, container } = harness.makeRootContainer({
+		nativeCommandBindingsEnabled: true,
+	})
+
+	const node = config.createInstance(
+		"rect",
+		{
+			style,
+		},
+		container,
+	)
+
+	assert.equal(
+		borderRadius.listenerCount(),
+		1,
+		"late-invalid style.borderRadius setup should start with one valid SharedValue<number> listener",
+	)
+	assert.equal(
+		last(node.styles).borderRadius,
+		6,
+		"late-invalid style.borderRadius setup should resolve the valid initial scalar snapshot",
+	)
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		"late-invalid style.borderRadius setup should not create native command mirrors",
+	)
+
+	const styleCallsBeforeInvalidEmit = node.styles.length
+	const setStyleCallsBeforeInvalidEmit = harness.calls.setStyle.length
+	const invalidationsBeforeInvalidEmit = calls.invalidations.length
+	const runOnJsCallsBeforeInvalidEmit = harness.calls.runOnJSCalls.length
+	const setBlockingBeforeInvalidEmit = harness.calls.setBlocking.length
+
+	assert.throws(
+		() => {
+			borderRadius.emit({ x: 4, y: 6 })
+		},
+		{ message: unsupportedBorderRadiusValueError },
+		"late invalid style.borderRadius SharedValue emissions should fail with the explicit scalar boundary error",
+	)
+	assert.deepEqual(
+		last(harness.calls.runOnJSCalls).args,
+		["borderRadius", { x: 4, y: 6 }],
+		"late invalid style.borderRadius emissions should still bridge the top-level key before the guard rejects the payload",
+	)
+	assert.equal(
+		harness.calls.runOnJSCalls.length,
+		runOnJsCallsBeforeInvalidEmit + 1,
+		"late invalid style.borderRadius emissions should run only the failing JS update callback",
+	)
+	assert.equal(
+		node.styles.length,
+		styleCallsBeforeInvalidEmit,
+		"late invalid style.borderRadius emissions should not append a native-bound style snapshot",
+	)
+	assert.equal(
+		harness.calls.setStyle.length,
+		setStyleCallsBeforeInvalidEmit,
+		"late invalid style.borderRadius emissions should fail before node.setStyle is called",
+	)
+	assert.equal(
+		last(node.styles).borderRadius,
+		6,
+		"late invalid style.borderRadius emissions should leave the last applied native-bound style unchanged",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		invalidationsBeforeInvalidEmit,
+		"late invalid style.borderRadius emissions should fail before invalidating the container",
+	)
+	assert.equal(
+		harness.calls.setBlocking.length,
+		setBlockingBeforeInvalidEmit,
+		"late invalid style.borderRadius emissions should not update native mirrors",
+	)
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		"late invalid style.borderRadius emissions should not create native mirrors",
 	)
 }
 
