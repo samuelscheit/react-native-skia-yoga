@@ -3651,10 +3651,22 @@ Last updated: 2026-05-12
   - Merged worker 174 into `main` as
     `4eb135e Merge worker 174 post-173 audit`.
   - Post-merge `git diff --check HEAD~1 HEAD`: passed.
+- Prepared Worker 175 bounded style corner-radius raster clipping proof:
+  - Worktree: `../worker-175-style-corner-radius-raster-proof`.
+  - Branch: `worker/175-style-corner-radius-raster-proof`.
+  - Planned agent path: `/root/worker_175_style_corner_radius_raster_proof`.
+  - Symlinked root `node_modules` and `example/node_modules` from the main
+    worktree.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
 
 ## Active Workers
 
-- None.
+- `/root/worker_175_style_corner_radius_raster_proof`: bounded style
+  corner-radius raster clipping proof from isolated worktree
+  `../worker-175-style-corner-radius-raster-proof` on branch
+  `worker/175-style-corner-radius-raster-proof`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3975,7 +3987,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Worker 175: bounded style corner-radius raster clipping proof.
+- Monitor Worker 175: bounded style corner-radius raster clipping proof.
   - Add host-native raster evidence in
     `scripts/verify-yoganode-native-commands-render.mjs` proving style corner
     radii in `YogaNode::renderToContext()` clip a full-size child.

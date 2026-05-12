@@ -309,23 +309,22 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- Worker 175 bounded style corner-radius raster clipping proof.
+  - Agent path: `/root/worker_175_style_corner_radius_raster_proof`.
+  - Worktree: `../worker-175-style-corner-radius-raster-proof`.
+  - Branch: `worker/175-style-corner-radius-raster-proof`.
+  - Scope: add host-native raster evidence that style corner radii in
+    `YogaNode::renderToContext()` clip a full-size child, while preserving the
+    bounded proof boundary.
+  - Required verification: edited verifier syntax check,
+    `check:yoganode-native-commands-render`,
+    `check:yoganode-nitro-materialization`,
+    `check:yoganode-native-hit-testing`, `check:feasible-matrix`, and
+    `git diff --check`.
 
 Next queued worker:
 
-- Worker 175 bounded style corner-radius raster clipping proof.
-  - Target `scripts/verify-yoganode-native-commands-render.mjs`.
-  - Add host-native raster evidence that style corner radii in
-    `YogaNode::renderToContext()` clip a full-size child, with transparent
-    rounded-corner pixels and colored in-bounds pixels.
-  - Keep the proof boundary bounded to host-native raster output; do not claim
-    platform-native presentation, exact render fidelity, RN bridge delivery, or
-    UI-runtime/Reanimated delivery.
-  - Required verification should include syntax check for the edited verifier,
-    `npm run check:yoganode-native-commands-render`,
-    `npm run check:yoganode-nitro-materialization`,
-    `npm run check:yoganode-native-hit-testing`, `npm run check:feasible-matrix`,
-    and `git diff --check`.
+- None until Worker 175 reports.
 
 Acceptance criteria:
 
