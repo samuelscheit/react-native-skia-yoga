@@ -7,6 +7,8 @@ import vm from "node:vm"
 import ts from "typescript"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
+const unsupportedNestedMatrixSharedValueError =
+	"style.matrix does not support SharedValue entries inside matrix arrays. Use a SharedValue for the whole matrix instead."
 const publicTransformOperationInventory =
 	extractPublicTransformOperationInventory()
 const nestedTransformBindingCases = [
@@ -336,6 +338,7 @@ verifyNativeCommandBindingMirrorsSharedValue()
 verifyJsCommandBindingModeRunsCommandUpdateCallbacks()
 verifyStyleAnimatedListenerUpdatesStyleAndContinuousRedraw()
 verifyTransformStyleSharedValuesUseJsStyleDelivery()
+verifyMatrixStyleSharedValuesUseJsStyleDelivery()
 verifyStyleLayerSharedValueUsesJsStyleDelivery()
 verifyWholeStyleSharedValueUsesJsStyleDelivery()
 verifyNativeBindingRefCountsAndDetachCleanup()
@@ -361,6 +364,9 @@ console.log(
 	`- Dynamic style.transform SharedValue leaves for every public transform operation (${formatTransformOperationKeys(
 		publicTransformOperationInventory,
 	)}) and whole SharedValue<Transform> use JS style listeners, resolve initial snapshots, rebuild host styles on update, invalidate, clean up, and avoid native command mirrors.`,
+)
+console.log(
+	"- Whole style.matrix SharedValue listeners resolve 9-value snapshots, deliver 16-value updates through the top-level matrix key, rebuild full styles, invalidate, clean up, reject nested SharedValue matrix entries with the explicit boundary error, and avoid native command mirrors.",
 )
 console.log(
 	"- Top-level style.layer SharedValue listeners resolve initial SkPaint snapshots, rebuild full styles on updates, invalidate, clean up, and avoid native command mirrors.",
@@ -1234,6 +1240,11 @@ function verifyTransformStyleSharedValuesUseJsStyleDelivery() {
 	verifyWholeTransformSharedValueUsesJsStyleDelivery()
 }
 
+function verifyMatrixStyleSharedValuesUseJsStyleDelivery() {
+	verifyWholeMatrixSharedValueUsesJsStyleDelivery()
+	verifyNestedMatrixSharedValueEntriesFailWithExplicitError()
+}
+
 function verifyNestedTransformLeavesUseJsStyleDelivery() {
 	const harness = createReconcilerHarness()
 	const config = harness.loadReconcilerHostConfig()
@@ -1572,6 +1583,254 @@ function verifyWholeTransformSharedValueUsesJsStyleDelivery() {
 		harness.calls.runOnJSCalls.length,
 		runOnJsCallsAfterEmit,
 		"removed whole style.transform listener should not bridge through runOnJS after cleanup",
+	)
+}
+
+function verifyWholeMatrixSharedValueUsesJsStyleDelivery() {
+	const harness = createReconcilerHarness()
+	const config = harness.loadReconcilerHostConfig()
+	const initialMatrix9 = [1, 0, 0, 0, 1, 0, 4, 6, 1]
+	const nextMatrix16 = [
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		8, 10, 0, 1,
+	]
+	const lateMatrix9 = [1, 0, 0, 0, 1, 0, 12, 14, 1]
+	const matrix = harness.makeSharedValue(initialMatrix9, "style.matrix")
+	const style = harness.makeVmValue(
+		`({
+			height: 30,
+			matrix: bindings.matrix,
+			opacity: 0.7,
+			width: 50,
+		})`,
+		{ matrix },
+	)
+	const { calls, container } = harness.makeRootContainer({
+		nativeCommandBindingsEnabled: true,
+	})
+
+	const node = config.createInstance(
+		"rect",
+		{
+			style,
+		},
+		container,
+	)
+
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		"whole style.matrix SharedValue should use JS style listeners rather than native command mirrors",
+	)
+	assert.equal(
+		matrix.listenerCount(),
+		1,
+		"whole style.matrix SharedValue should register one listener",
+	)
+	assert.equal(
+		only(harness.calls.uiRuntimeCalls).args[1],
+		"matrix",
+		"whole style.matrix SharedValue should use the top-level matrix listener key",
+	)
+	assert.deepEqual(
+		last(node.styles).matrix,
+		initialMatrix9,
+		"whole style.matrix SharedValue should resolve the initial 9-value matrix snapshot",
+	)
+	assert.deepEqual(
+		Object.keys(last(node.styles)).sort(),
+		["height", "matrix", "opacity", "width"],
+		"whole style.matrix SharedValue should preserve the full initial style payload keys",
+	)
+	assert.equal(
+		last(node.styles).height,
+		30,
+		"whole style.matrix SharedValue should preserve initial height",
+	)
+	assert.equal(
+		last(node.styles).opacity,
+		0.7,
+		"whole style.matrix SharedValue should preserve initial opacity",
+	)
+	assert.equal(
+		last(node.styles).width,
+		50,
+		"whole style.matrix SharedValue should preserve initial width",
+	)
+	assert.equal(
+		calls.continuousRedraw.length,
+		0,
+		"whole style.matrix SharedValue should not enable object-matrix continuous redraw",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		0,
+		"initial whole style.matrix listener setup should not invalidate",
+	)
+
+	matrix.emit(nextMatrix16)
+
+	assert.deepEqual(
+		only(harness.calls.runOnJSCalls).args,
+		["matrix", nextMatrix16],
+		"whole style.matrix updates should bridge the top-level matrix key and full matrix array",
+	)
+	assert.equal(
+		node.styles.length,
+		2,
+		"whole style.matrix updates should call setStyle once after the initial style",
+	)
+	assert.deepEqual(
+		Object.keys(last(node.styles)).sort(),
+		["height", "matrix", "opacity", "width"],
+		"whole style.matrix updates should rebuild the full host style keys",
+	)
+	assert.deepEqual(
+		last(node.styles).matrix,
+		nextMatrix16,
+		"whole style.matrix updates should rebuild the host style with the latest 16-value matrix array",
+	)
+	assert.equal(
+		last(node.styles).height,
+		30,
+		"whole style.matrix updates should preserve height during full style rebuild",
+	)
+	assert.equal(
+		last(node.styles).opacity,
+		0.7,
+		"whole style.matrix updates should preserve opacity during full style rebuild",
+	)
+	assert.equal(
+		last(node.styles).width,
+		50,
+		"whole style.matrix updates should preserve width during full style rebuild",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		1,
+		"whole style.matrix updates should invalidate the container",
+	)
+	assert.equal(
+		harness.calls.setBlocking.length,
+		0,
+		"whole style.matrix updates should not use native mirror setBlocking updates",
+	)
+
+	const styleCallsAfterEmit = node.styles.length
+	const runOnJsCallsAfterEmit = harness.calls.runOnJSCalls.length
+	config.commitUpdate(
+		node,
+		"rect",
+		{ style },
+		{
+			style: {
+				matrix: initialMatrix9,
+				opacity: 0.4,
+			},
+		},
+		null,
+	)
+
+	assert.equal(
+		matrix.listenerCount(),
+		0,
+		"commitUpdate should remove the whole style.matrix listener",
+	)
+	assert.equal(
+		only(harness.calls.sharedRemoveListener).had,
+		true,
+		"whole style.matrix cleanup should remove an existing SharedValue listener id",
+	)
+	assert.deepEqual(
+		last(node.styles),
+		{
+			matrix: initialMatrix9,
+			opacity: 0.4,
+		},
+		"commitUpdate should apply the replacement static matrix style after whole-matrix cleanup",
+	)
+
+	matrix.emit(lateMatrix9)
+
+	assert.equal(
+		node.styles.length,
+		styleCallsAfterEmit + 1,
+		"removed whole style.matrix listener should not rebuild styles after cleanup",
+	)
+	assert.equal(
+		calls.invalidations.length,
+		1,
+		"removed whole style.matrix listener should not invalidate after cleanup",
+	)
+	assert.equal(
+		harness.calls.runOnJSCalls.length,
+		runOnJsCallsAfterEmit,
+		"removed whole style.matrix listener should not bridge through runOnJS after cleanup",
+	)
+}
+
+function verifyNestedMatrixSharedValueEntriesFailWithExplicitError() {
+	const harness = createReconcilerHarness()
+	const config = harness.loadReconcilerHostConfig()
+	const entry = harness.makeSharedValue(2, "style.matrix.0")
+	const directNestedStyle = harness.makeVmValue(
+		`({
+			matrix: [
+				bindings.entry,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				1,
+			],
+		})`,
+		{ entry },
+	)
+	const wholeMatrixWithNestedEntry = harness.makeSharedValue(
+		[entry, 0, 0, 0, 1, 0, 0, 0, 1],
+		"style.matrix.invalid-whole",
+	)
+	const wholeNestedStyle = harness.makeVmValue(
+		`({ matrix: bindings.matrix })`,
+		{ matrix: wholeMatrixWithNestedEntry },
+	)
+	const { container } = harness.makeRootContainer({
+		nativeCommandBindingsEnabled: true,
+	})
+
+	assert.throws(
+		() => {
+			config.createInstance("rect", { style: directNestedStyle }, container)
+		},
+		{ message: unsupportedNestedMatrixSharedValueError },
+		"nested style.matrix SharedValue entries should fail with the explicit matrix boundary error",
+	)
+	assert.throws(
+		() => {
+			config.createInstance("rect", { style: wholeNestedStyle }, container)
+		},
+		{ message: unsupportedNestedMatrixSharedValueError },
+		"whole style.matrix SharedValue snapshots should still reject nested SharedValue matrix entries",
+	)
+	assert.equal(
+		entry.listenerCount(),
+		0,
+		"unsupported nested style.matrix entries should fail before registering nested listeners",
+	)
+	assert.equal(
+		wholeMatrixWithNestedEntry.listenerCount(),
+		0,
+		"unsupported whole style.matrix snapshots should fail before registering the top-level listener",
+	)
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		"unsupported nested style.matrix entries should not create native command mirrors",
 	)
 }
 
