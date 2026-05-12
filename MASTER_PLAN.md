@@ -420,17 +420,21 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - Worker 216 radius finite validation.
-- Planned worktree: `../worker-216-radius-finite-validation`.
-- Planned branch: `worker/216-radius-finite-validation`.
+- Agent path: `/root/worker_216_radius_finite_validation`.
+- Worktree: `../worker-216-radius-finite-validation`.
+- Branch: `worker/216-radius-finite-validation`.
 - Scope: implement deterministic pre-mutation finite-number validation for
   `style.borderRadius` and per-corner `number | SkPoint` radius fields, with
   generated materialized negative coverage preserving prior radius, clip,
   style, paint, Yoga, layer, matrix, and computed-layout state.
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`; implementation in progress.
+
+Next queued worker:
+
+- None until Worker 216 reports.
 
 Follow-up queue:
 
