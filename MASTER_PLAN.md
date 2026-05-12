@@ -124,11 +124,11 @@ dynamic type boundary for union-member `SharedValue` forms and added packed
 TypeScript plus Reconciler source-level proof for dynamic top-level
 `style.clip` / `style.invertClip`.
 
-Latest accepted audit: worker 184 accepted Worker 183's public/Reconciler
-dynamic-contract proof boundary for scalar global `style.borderRadius`, reran
-the focused checks plus the full feasible matrix, reconfirmed platform-native
-toolchain blockers, and selected dynamic `style.clip` / `style.invertClip`
-public/Reconciler proof as the next strongest locally unblocked target.
+Latest accepted audit: worker 186 accepted Worker 185's dynamic `style.clip` /
+`style.invertClip` public/Reconciler proof boundary, reconfirmed focused and
+full-matrix evidence plus platform blockers, and selected bounded host-native
+raster proof for explicit `style.clip` rect/rrect/path plus `invertClip` as the
+next strongest locally unblocked target.
 
 Goals:
 
@@ -320,22 +320,22 @@ Accepted package-hygiene implementation:
 - `worker-183-border-radius-dynamic-contract`: added public packed TypeScript and Reconciler source-level dynamic-contract proof for scalar global `style.borderRadius`, including invalid initial and late-emission runtime guard coverage.
 - `worker-184-post-183-root-cause-audit`: accepted Worker 183's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected dynamic `style.clip` / `style.invertClip` public/Reconciler proof as Worker 185's target.
 - `worker-185-clip-invertclip-dynamic-proof`: fixed the public `style.clip` union-member `SharedValue` type gap and added packed-consumer plus Reconciler source-level proof for dynamic top-level `style.clip` / `style.invertClip`.
+- `worker-186-post-185-root-cause-audit`: accepted Worker 185's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected explicit `style.clip` rect/rrect/path plus `invertClip` raster proof as Worker 187's target.
 
 Current active worker:
 
-Worker 186 post-Worker 185 root-cause audit.
+Worker 187 explicit `style.clip` raster proof.
 
-- Agent path: `/root/worker_186_post_185_root_cause_audit`.
-- Worktree: `../worker-186-post-185-root-cause-audit`.
-- Branch: `worker/186-post-185-root-cause-audit`.
-- Scope: accept or reject Worker 185's dynamic `style.clip` / `style.invertClip`
-  public/Reconciler proof boundary, reconfirm focused/post-merge evidence and
-  local platform blockers, and select the next strongest locally unblocked
-  root-cause target.
+- Agent path: `/root/worker_187_explicit_clip_raster_proof`.
+- Worktree: `../worker-187-explicit-clip-raster-proof`.
+- Branch: `worker/187-explicit-clip-raster-proof`.
+- Scope: add bounded host-native raster proof for explicit `style.clip`
+  rect/rrect/path plus `invertClip` in `scripts/verify-yoganode-native-commands-render.mjs`,
+  without claiming platform app runtime or real UI-runtime delivery.
 
 Next queued worker:
 
-- None until Worker 186 reports.
+- None until Worker 187 reports.
 
 Acceptance criteria:
 

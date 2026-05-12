@@ -3973,12 +3973,33 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 186 post-Worker 185 root-cause audit accepted:
+  - Accepted Worker 185's dynamic `style.clip` / `style.invertClip`
+    public/Reconciler proof boundary.
+  - Reconfirmed focused evidence and `npm run check:feasible-matrix` 28/28 in
+    `4m 5s`.
+  - Reprobed platform-native blockers: simulator SDK, CocoaPods, Java, Android
+    SDK variables, Gradle, ADB, CMake, and Ninja remain unavailable.
+  - Worker branch commit:
+    `37502fc Audit worker 185 clip proof`.
+  - Merged worker 186 into `main` as
+    `8647b44 Merge worker 186 post-185 audit`.
+  - Selected bounded host-native raster proof for explicit `style.clip`
+    rect/rrect/path plus `invertClip` as the next locally unblocked target.
+- Prepared Worker 187 explicit `style.clip` raster proof:
+  - Worktree: `../worker-187-explicit-clip-raster-proof`.
+  - Branch: `worker/187-explicit-clip-raster-proof`.
+  - Planned agent path: `/root/worker_187_explicit_clip_raster_proof`.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
 
 ## Active Workers
 
-- `/root/worker_186_post_185_root_cause_audit`: post-Worker 185 root-cause
-  audit from isolated worktree `../worker-186-post-185-root-cause-audit` on
-  branch `worker/186-post-185-root-cause-audit`.
+- `/root/worker_187_explicit_clip_raster_proof`: explicit `style.clip`
+  rect/rrect/path plus `invertClip` raster proof from isolated worktree
+  `../worker-187-explicit-clip-raster-proof` on branch
+  `worker/187-explicit-clip-raster-proof`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4184,6 +4205,7 @@ Accepted worker reports:
 - `worker-progress/worker-183-border-radius-dynamic-contract.md`
 - `worker-progress/worker-184-post-183-root-cause-audit.md`
 - `worker-progress/worker-185-clip-invertclip-dynamic-proof.md`
+- `worker-progress/worker-186-post-185-root-cause-audit.md`
 
 ## Pending Workers
 
@@ -4310,11 +4332,16 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Worker 186: post-Worker 185 root-cause audit.
-  - Accept or reject Worker 185's dynamic `style.clip` / `style.invertClip`
-    public/Reconciler proof boundary.
-  - Reconfirm focused/post-merge evidence and local platform-native blockers.
-  - Select the next strongest locally unblocked root-cause target.
+- Worker 187: explicit `style.clip` rect/rrect/path plus `invertClip` raster
+  proof.
+  - Add bounded host-native `YogaNode::renderToContext()` raster evidence in
+    `scripts/verify-yoganode-native-commands-render.mjs`.
+  - Prove explicit rect, rrect, and path clips preserve in-clip pixels and clear
+    out-of-clip pixels, plus an `invertClip` rect case where inside is cleared
+    and outside remains painted.
+  - Keep platform-native build/run, native bridge, Nitro registry,
+    UI-runtime Worklets, and real Reanimated delivery out of scope until local
+    blockers are cleared.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
