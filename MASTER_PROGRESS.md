@@ -4545,6 +4545,32 @@ Last updated: 2026-05-12
   - Selected Worker 210 finite-number validation for native
     `YogaNode::setStyle(...)` numeric style scalars as the next implementation
     target.
+- Worker 210 numeric style finite validation accepted:
+  - Worker branch commit:
+    `29fe602 Validate finite numeric YogaNode style fields`.
+  - Merged worker 210 into `main` as
+    `90253ea Merge worker 210 numeric style finite validation`.
+  - Added deterministic native finite-number validation in
+    `YogaNode::setStyle(...)` for the border-width family, `strokeMiter`, and
+    `opacity`, before `invalidateLayout()`, `_style` replacement, Yoga reset,
+    paint reset, layer reset, clip reset, or matrix reset.
+  - Added generated materialized `setStyle(...)` negative proof for NaN and
+    Infinity values on the selected fields, with assertions that prior
+    `_style`, `_paint`, Yoga border state, `_layerPaint`, clip rect, and
+    matrix state survive rejected inputs.
+  - Worker branch verification passed `git diff --check HEAD~1 HEAD`,
+    `node --check scripts/verify-yoganode-nitro-materialization.mjs`,
+    `npm run check:yoganode-nitro-materialization`, and
+    `npm run check:feasible-matrix` all 28 commands in `6m 8s`.
+  - Post-merge verification from `main` passed `git diff --check HEAD~1 HEAD`,
+    `node --check scripts/verify-yoganode-nitro-materialization.mjs`, and
+    `npm run check:yoganode-nitro-materialization`.
+  - The proof remains scoped to selected finite numeric paint/border fields; it
+    does not claim exhaustive numeric style validation, layout numeric finite
+    validation, transform/matrix/radius validation, range semantics,
+    React Native app runtime delivery, platform app build/run, UI-runtime
+    Worklets execution, Reanimated delivery, or RNGH delivery.
+  - Selected Worker 211 post-worker-210 root-cause audit as the next step.
 
 ## Active Workers
 
@@ -4775,6 +4801,11 @@ Accepted worker reports:
 - `worker-progress/worker-203-layout-field-alignment-proof.md`
 - `worker-progress/worker-204-post-203-root-cause-audit.md`
 - `worker-progress/worker-205-fresh-unblocked-gap-audit.md`
+- `worker-progress/worker-206-layout-unit-validation.md`
+- `worker-progress/worker-207-post-206-root-cause-audit.md`
+- `worker-progress/worker-208-backgroundcolor-string-validation.md`
+- `worker-progress/worker-209-post-208-root-cause-audit.md`
+- `worker-progress/worker-210-numeric-style-finite-validation.md`
 
 ## Pending Workers
 
