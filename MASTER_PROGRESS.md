@@ -3478,10 +3478,20 @@ Last updated: 2026-05-12
   - Post-merge `git diff --check HEAD~1 HEAD`: passed.
 - Next step selected by orchestration: launch Worker 169 for whole
   `style.matrix` `SharedValue` public/Reconciler proof.
+- Prepared Worker 169 whole `style.matrix` `SharedValue` public/Reconciler
+  proof:
+  - Worktree: `../worker-169-matrix-sharedvalue-proof`.
+  - Branch: `worker/169-matrix-sharedvalue-proof`.
+  - Planned agent path: `/root/worker_169_matrix_sharedvalue_proof`.
+  - Symlinked root `node_modules` and `example/node_modules` from the main
+    worktree.
 
 ## Active Workers
 
-- None.
+- `/root/worker_169_matrix_sharedvalue_proof`: whole `style.matrix`
+  `SharedValue` public/Reconciler proof from isolated worktree
+  `../worker-169-matrix-sharedvalue-proof` on branch
+  `worker/169-matrix-sharedvalue-proof`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3796,7 +3806,8 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Worker 169: whole `style.matrix` `SharedValue` public/Reconciler proof.
+- Monitor Worker 169: whole `style.matrix` `SharedValue` public/Reconciler
+  proof.
   - Extend packed-consumer public TypeScript proof for whole `style.matrix`
     `SharedValue` authoring, including representative 9- and 16-value matrix
     array payloads if practical.

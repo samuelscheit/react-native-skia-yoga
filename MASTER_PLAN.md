@@ -298,16 +298,21 @@ Accepted package-hygiene implementation:
 - `worker-167-transform-variant-drift-guard`: added source-level public `Transform` operation inventory extraction, expanded packed-consumer and Reconciler nested transform `SharedValue<number>` coverage to every current public transform operation key, and added verifier drift assertions.
 - `worker-168-post-167-root-cause-audit`: accepted Worker 167's proof boundary, reconfirmed the focused/full-matrix evidence and local platform blockers, and selected whole `style.matrix` `SharedValue` public/Reconciler proof as Worker 169's target.
 
-Current next step:
+Current active worker:
 
-- Launch Worker 169 for whole `style.matrix` `SharedValue` public/Reconciler
-  proof from an isolated worktree and branch.
-- Expected Worker 169 scope: extend packed-consumer public TypeScript proof for
-  whole `style.matrix` `SharedValue` authoring, extend the Reconciler
-  source-level listener/update/cleanup proof for whole matrix SharedValues,
-  preserve or add a negative proof for unsupported nested matrix
-  `SharedValue<number>` entries, and avoid claiming native/platform runtime
-  behavior beyond existing adjacent matrix evidence.
+- Worker 169 whole `style.matrix` `SharedValue` public/Reconciler proof.
+  - Agent path: `/root/worker_169_matrix_sharedvalue_proof`.
+  - Worktree: `../worker-169-matrix-sharedvalue-proof`.
+  - Branch: `worker/169-matrix-sharedvalue-proof`.
+  - Scope: extend packed-consumer public TypeScript proof for whole
+    `style.matrix` `SharedValue` authoring, extend the Reconciler source-level
+    listener/update/cleanup proof for whole matrix SharedValues, preserve or
+    add a negative proof for unsupported nested matrix `SharedValue<number>`
+    entries, and avoid claiming native/platform runtime behavior beyond
+    existing adjacent matrix evidence.
+  - Required verification: focused package-consumer and Reconciler checks,
+    adjacent matrix/native checks, `check:feasible-matrix`, and
+    `git diff --check`.
 
 Acceptance criteria:
 
