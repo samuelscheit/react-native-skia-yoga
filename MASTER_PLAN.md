@@ -447,16 +447,20 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - Worker 219 post-Worker 218 audit.
-- Planned worktree: `../worker-219-post-218-audit`.
-- Planned branch: `worker/219-post-218-audit`.
+- Agent path: `/root/worker_219_post_218_audit`.
+- Worktree: `../worker-219-post-218-audit`.
+- Branch: `worker/219-post-218-audit`.
 - Scope: audit Worker 218's command point finite validation boundary, focused
   verifier evidence, post-merge matrix result, and any remaining numeric
   command payload gaps.
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`; audit in progress.
+
+Next queued worker:
+
+- None until Worker 219 reports.
 
 Follow-up queue:
 
