@@ -317,15 +317,21 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- Worker 182 post-Worker 181 root-cause audit.
+  - Agent path: `/root/worker_182_post_181_root_cause_audit`.
+  - Worktree: `../worker-182-post-181-root-cause-audit`.
+  - Branch: `worker/182-post-181-root-cause-audit`.
+  - Scope: accept or reject Worker 181's global `style.borderRadius`
+    generated/materialized and native hit-test proof boundary, reconfirm
+    focused/post-merge evidence and local platform blockers, and select the
+    next strongest locally unblocked root-cause target.
+  - Required verification: Worker 181 report/code review, focused syntax and
+    verifier checks, `check:feasible-matrix`, platform blocker reprobes, and
+    `git diff --check`.
 
 Next queued worker:
 
-- Worker 182 post-Worker 181 root-cause audit.
-  - Accept or reject Worker 181's global `style.borderRadius` materialized and
-    native hit-test proof boundary.
-  - Reconfirm focused/post-merge evidence and local platform-native blockers.
-  - Select the next strongest locally unblocked root-cause target.
+- None until Worker 182 reports.
 
 Acceptance criteria:
 
