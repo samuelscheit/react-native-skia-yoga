@@ -3993,13 +3993,31 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 187 explicit `style.clip` raster proof accepted:
+  - Added bounded host-native raster proof for explicit `style.clip`
+    rect/rrect/path and `invertClip` rect through `YogaNode::renderToContext()`
+    with a `GroupCmd` parent and full-size `RectCmd` child.
+  - Worker branch commit:
+    `6d2239c Add explicit clip raster proof`.
+  - Merged worker 187 into `main` as
+    `35cf916 Merge worker 187 explicit clip raster proof`.
+  - Post-merge checks passed: `git diff --check HEAD~1 HEAD`,
+    `node --check scripts/verify-yoganode-native-commands-render.mjs`,
+    `npm run check:yoganode-native-commands-render`, and
+    `npm run check:feasible-matrix` 28/28 in `4m 14s`.
+- Prepared Worker 188 post-Worker 187 root-cause audit:
+  - Worktree: `../worker-188-post-187-root-cause-audit`.
+  - Branch: `worker/188-post-187-root-cause-audit`.
+  - Planned agent path: `/root/worker_188_post_187_root_cause_audit`.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
 
 ## Active Workers
 
-- `/root/worker_187_explicit_clip_raster_proof`: explicit `style.clip`
-  rect/rrect/path plus `invertClip` raster proof from isolated worktree
-  `../worker-187-explicit-clip-raster-proof` on branch
-  `worker/187-explicit-clip-raster-proof`.
+- `/root/worker_188_post_187_root_cause_audit`: post-Worker 187 root-cause
+  audit from isolated worktree `../worker-188-post-187-root-cause-audit` on
+  branch `worker/188-post-187-root-cause-audit`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4206,6 +4224,7 @@ Accepted worker reports:
 - `worker-progress/worker-184-post-183-root-cause-audit.md`
 - `worker-progress/worker-185-clip-invertclip-dynamic-proof.md`
 - `worker-progress/worker-186-post-185-root-cause-audit.md`
+- `worker-progress/worker-187-explicit-clip-raster-proof.md`
 
 ## Pending Workers
 
@@ -4332,16 +4351,10 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Worker 187: explicit `style.clip` rect/rrect/path plus `invertClip` raster
-  proof.
-  - Add bounded host-native `YogaNode::renderToContext()` raster evidence in
-    `scripts/verify-yoganode-native-commands-render.mjs`.
-  - Prove explicit rect, rrect, and path clips preserve in-clip pixels and clear
-    out-of-clip pixels, plus an `invertClip` rect case where inside is cleared
-    and outside remains painted.
-  - Keep platform-native build/run, native bridge, Nitro registry,
-    UI-runtime Worklets, and real Reanimated delivery out of scope until local
-    blockers are cleared.
+- Worker 188: post-Worker 187 root-cause audit.
+  - Accept or reject Worker 187's bounded explicit `style.clip` raster proof.
+  - Reconfirm focused/post-merge evidence and local platform-native blockers.
+  - Select the next strongest locally unblocked root-cause target.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
