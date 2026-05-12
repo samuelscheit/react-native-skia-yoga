@@ -415,17 +415,20 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - Worker 215 post-worker-214 root-cause audit.
-- Suggested worktree: `../worker-215-post-214-root-cause-audit`.
-- Suggested branch: `worker/215-post-214-root-cause-audit`.
-- Suggested agent path: `/root/worker_215_post_214_root_cause_audit`.
+- Agent path: `/root/worker_215_post_214_root_cause_audit`.
+- Worktree: `../worker-215-post-214-root-cause-audit`.
+- Branch: `worker/215-post-214-root-cause-audit`.
 - Scope: independently audit Worker 214's matrix/transform finite validation
   proof boundary, rerun focused/full verification as appropriate, and select
   the next strongest locally unblocked root-cause target.
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`; audit in progress.
+
+Next queued worker:
+
+- None until Worker 215 reports.
 
 Follow-up queue:
 
