@@ -124,9 +124,10 @@ evidence that style corner radii in `YogaNode::renderToContext()` clip a
 full-size child, with SkPoint/scalar style radii and explicit separation from
 `style.clip` and `RRectCmd::cornerRadius`.
 
-Latest accepted audit: worker 174 accepted Worker 173's proof boundary and
-selected bounded raster evidence for style corner-radius clipping in
-`YogaNode::renderToContext()` as the next strongest locally unblocked target.
+Latest accepted audit: worker 176 accepted Worker 175's bounded raster proof
+boundary and selected a compact JS/Reconciler all-four corner-key plus whole
+scalar `SharedValue<number>` completion pass as the next strongest locally
+unblocked target.
 
 Goals:
 
@@ -308,22 +309,20 @@ Accepted package-hygiene implementation:
 - `worker-173-native-corner-radius-proof`: added materialized generated `setStyle(...)` proof for all four SkPoint-capable style corner keys, native `_clipToBoundsRadii` mapping, explicit clip separation, and bounded hit-test clipping proof.
 - `worker-174-post-173-root-cause-audit`: accepted Worker 173's generated/native style corner-radius proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected bounded raster evidence for style corner-radius clipping as Worker 175's target.
 - `worker-175-style-corner-radius-raster-proof`: added bounded host-native raster proof that style corner radii clip a full-size child through `YogaNode::renderToContext()`, while remaining distinct from explicit clips and `RRectCmd::cornerRadius`.
+- `worker-176-post-175-root-cause-audit`: accepted Worker 175's bounded host-native style corner-radius raster proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected JS/Reconciler corner-radius completion as Worker 177's target.
 
 Current active worker:
 
-- Worker 176 post-Worker 175 root-cause audit.
-  - Agent path: `/root/worker_176_post_175_root_cause_audit`.
-  - Worktree: `../worker-176-post-175-root-cause-audit`.
-  - Branch: `worker/176-post-175-root-cause-audit`.
-  - Scope: accept or reject Worker 175's bounded style corner-radius raster
-    proof boundary, reconfirm focused/post-merge evidence and local platform
-    blockers, and select the next strongest locally unblocked root-cause target.
-  - Required verification: focused evidence needed for the audit,
-    `check:feasible-matrix`, platform blocker reprobes, and `git diff --check`.
+- None.
 
 Next queued worker:
 
-- None until Worker 176 reports.
+- Worker 177 JS/Reconciler corner-radius completion pass.
+  - Add inventory/drift protection for all four SkPoint-capable corner keys.
+  - Extend packed TypeScript and Reconciler source-level verifier coverage so
+    all four corner keys explicitly cover whole scalar `SharedValue<number>`.
+  - Keep proof bounded to packed TypeScript and Node VM Reconciler behavior; do
+    not claim real UI-runtime/Reanimated delivery or platform presentation.
 
 Acceptance criteria:
 
