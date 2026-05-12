@@ -98,7 +98,7 @@ try {
 		"- Public package entrypoints and lowercase intrinsic JSX compiled from the installed package.",
 	)
 	console.log(
-		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, and whole SharedValue<YogaNodeStyle> authoring.",
+		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, static style.transform arrays, whole style.transform SharedValue<Transform>, selected nested style.transform SharedValue<number> leaves, and whole SharedValue<YogaNodeStyle> authoring.",
 	)
 	console.log(
 		"- Packed consumer TypeScript accepted legacy style.antiaAlias while canonical style.antiAlias remains the preferred public authoring key.",
@@ -306,6 +306,8 @@ import {
 import { Fragment as YogaDevRuntimeFragment } from "react-native-skia-yoga/jsx-dev-runtime"
 import { Fragment as YogaRuntimeFragment } from "react-native-skia-yoga/jsx-runtime"
 
+type PublicTransform = NonNullable<YogaNodeStyle["transform"]>
+
 const rootStyle: YogaNodeStyle = {
 \talignItems: "center",
 \tbackgroundColor: "#0f172a",
@@ -327,6 +329,18 @@ const panelStyle: YogaNodeStyle = {
 
 const legacyAntiAliasStyle: YogaNodeStyle = {
 \tantiaAlias: true,
+}
+
+const staticTransformStyle: YogaNodeStyle = {
+\theight: 28,
+\ttransform: [
+\t\t{ translateX: 4 },
+\t\t{ translateY: 6 },
+\t\t{ scale: 1.25 },
+\t\t{ rotateZ: 0.125 },
+\t\t{ skewX: 0.05 },
+\t],
+\twidth: 72,
 }
 
 const layerPaint = Skia.Paint()
@@ -353,6 +367,11 @@ const sharedSampling = null as unknown as SharedValue<SamplingOptions>
 const sharedSamplingFilter = null as unknown as SharedValue<FilterMode>
 const sharedLayerPaint = null as unknown as SharedValue<SkPaint>
 const sharedLayerOpacity = null as unknown as SharedValue<number>
+const sharedPublicTransform = null as unknown as SharedValue<PublicTransform>
+const sharedTransformTranslateX = null as unknown as SharedValue<number>
+const sharedTransformScale = null as unknown as SharedValue<number>
+const sharedTransformRotateZ = null as unknown as SharedValue<number>
+const sharedTransformSkewY = null as unknown as SharedValue<number>
 const sharedWholeStyle = null as unknown as SharedValue<YogaNodeStyle>
 const compileOnlyPath = null as unknown as SkPath
 
@@ -407,6 +426,25 @@ const dynamicLayerGroupProps: YogaIntrinsicElements["group"] = {
 \tstyle: {
 \t\tlayer: sharedLayerPaint,
 \t\topacity: sharedLayerOpacity,
+\t},
+}
+
+const dynamicWholeTransformGroupProps: YogaIntrinsicElements["group"] = {
+\tstyle: {
+\t\ttransform: sharedPublicTransform,
+\t},
+}
+
+const dynamicNestedTransformRectProps: YogaIntrinsicElements["rect"] = {
+\tstyle: {
+\t\theight: 36,
+\t\ttransform: [
+\t\t\t{ translateX: sharedTransformTranslateX },
+\t\t\t{ scale: sharedTransformScale },
+\t\t\t{ rotateZ: sharedTransformRotateZ },
+\t\t\t{ skewY: sharedTransformSkewY },
+\t\t],
+\t\twidth: 36,
 \t},
 }
 
@@ -469,6 +507,13 @@ export function PackedPackageSmoke() {
 \t\t\t\t\t\t\tcornerRadius={sharedRoundedRectCornerRadius}
 \t\t\t\t\t\t\tstyle={panelStyle}
 \t\t\t\t\t\t>
+\t\t\t\t\t\t\t<group style={staticTransformStyle}>
+\t\t\t\t\t\t\t\t<rect style={{ height: 12, width: 12 }} />
+\t\t\t\t\t\t\t</group>
+\t\t\t\t\t\t\t<group {...dynamicWholeTransformGroupProps}>
+\t\t\t\t\t\t\t\t<rect style={{ height: 12, width: 12 }} />
+\t\t\t\t\t\t\t</group>
+\t\t\t\t\t\t\t<rect {...dynamicNestedTransformRectProps} />
 \t\t\t\t\t\t\t<circle
 \t\t\t\t\t\t\t\tradius={sharedCircleRadius}
 \t\t\t\t\t\t\t\tstyle={{
