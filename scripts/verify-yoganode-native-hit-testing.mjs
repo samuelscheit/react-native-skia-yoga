@@ -133,7 +133,7 @@ try {
 
 	console.log("YogaNode native hit-testing verifier passed:")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, upstream Yoga sources, RN Skia macOS archives, and the helper sources required for object emission.")
-	console.log("- The executable asserted YogaNode::hitTestTagAt / hitTestInternal behavior for pointerEvents, child z-order, layout coordinate translation, matrix inversion, composed public transform-array inversion, clipping, hitSlop, precise-hit geometry, and interactive descendant count propagation.")
+	console.log("- The executable asserted YogaNode::hitTestTagAt / hitTestInternal behavior for pointerEvents, child z-order, layout coordinate translation, matrix inversion, composed public transform-array inversion, overflow clipping, style corner-radius clipping, explicit style.clip clipping, hitSlop, precise-hit geometry, and interactive descendant count propagation.")
 	console.log("- Host-only direct interaction-field setup is limited to the JSI config boundary; hit-test traversal, layout, clipping, transform inversion, precise command checks, and descendant count mutation execute the real native runtime path.")
 	console.log("- -Wl,-undefined,dynamic_lookup is limited to unentered host-incompatible entry points in the shared translation unit.")
 } finally {
@@ -726,6 +726,34 @@ void explicitClipRRect()
     expectTag(root->hitTestTagAt(11, 11), 0.0, "explicit rrect clip rejects rounded corner point");
 }
 
+void styleCornerRadiiClipToBounds()
+{
+    auto root = makeNode(100, 100);
+    auto style = fixedStyle(100, 100);
+    style.borderTopLeftRadius = margelo::nitro::RNSkiaYoga::SkPoint(30.0, 20.0);
+    style.borderBottomRightRadius = margelo::nitro::RNSkiaYoga::SkPoint(25.0, 35.0);
+    root->setStyle(style);
+
+    expect(root->_clipsToBounds, "style corner radii enable YogaNode bounds clipping");
+    expect(root->_clipToBoundsRadii.has_value(), "style corner radii populate _clipToBoundsRadii");
+    expect(!root->_style.clip.has_value(), "style corner radii remain distinct from explicit style.clip");
+    expect(!root->_clipPath.has_value(), "style corner radii do not populate explicit path clip");
+    expect(!root->_clipRect.has_value(), "style corner radii do not populate explicit rect clip");
+    expect(!root->_clipRRect.has_value(), "style corner radii do not populate explicit rrect clip");
+
+    auto child = makeAbsoluteNode(0, 0, 100, 100);
+    root->insertChild(child, std::nullopt);
+
+    configureInteraction(child, 505.0);
+    compute(root);
+
+    expectTag(root->hitTestTagAt(30, 20), 505.0, "style top-left radius allows point inside rounded bounds");
+    expectTag(root->hitTestTagAt(1, 1), 0.0, "style top-left radius rejects rounded clipped corner");
+    expectTag(root->hitTestTagAt(75, 65), 505.0, "style bottom-right radius allows point inside rounded bounds");
+    expectTag(root->hitTestTagAt(99, 99), 0.0, "style bottom-right radius rejects rounded clipped corner");
+    expectTag(root->hitTestTagAt(99, 1), 505.0, "unset top-right style radius keeps that corner square");
+}
+
 void invertedExplicitClip()
 {
     auto root = makeNode(100, 100);
@@ -844,6 +872,7 @@ int main()
     explicitClipRect();
     explicitClipPath();
     explicitClipRRect();
+    styleCornerRadiiClipToBounds();
     invertedExplicitClip();
     hitSlopExpansion();
     preciseHitGeometry();
