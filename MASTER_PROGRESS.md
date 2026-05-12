@@ -5226,6 +5226,23 @@ Accepted worker reports:
     `reasoning_effort: "xhigh"`.
   - Ignored dependency symlinks were set to main's known-good `node_modules`
     and `example/node_modules` installs.
+- Worker 216 completed deterministic radius finite validation. The final branch
+  commit was `a943684 Validate finite radius style payloads`, merged as
+  `71d1d8b Merge worker 216 radius finite validation`. The change adds
+  pre-mutation finite validation for `style.borderRadius`, all per-corner
+  scalar radii, and all per-corner `SkPoint.x` / `SkPoint.y` payload branches,
+  with materialized negative coverage preserving prior style radius fields,
+  `_clipToBoundsRadii`, explicit clip state, `_paint`, Yoga, layer, matrix, and
+  computed-layout state. Main post-merge checks passed: `git diff --check
+  HEAD~1 HEAD`, `node --check
+  scripts/verify-yoganode-nitro-materialization.mjs`, `npm run
+  check:yoganode-nitro-materialization`, and `npm run check:feasible-matrix`
+  all 28 commands in `4m 20s`. The next step is a fresh post-Worker 216
+  root-cause audit.
+- Updated live planning after Worker 216 acceptance: no current active worker;
+  next queued worker is Worker 217 post-Worker 216 root-cause audit in
+  `../worker-217-post-216-root-cause-audit` on branch
+  `worker/217-post-216-root-cause-audit`.
 
 ## Next Worker Candidates
 
