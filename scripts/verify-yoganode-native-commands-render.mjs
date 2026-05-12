@@ -274,13 +274,13 @@ try {
 	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, simple text.textStyle fontSize/color fields, inventory-backed paragraphStyle fields including nested textStyle output, distinct paragraph/text-style heightMultiplier preservation, fontFeatures and strutStyle, line from/to points, and points arrays.")
 	console.log(`- The verifier checked the installed RN Skia public style field inventory before native compilation: ${formatStyleInventorySummary()}`)
 	console.log("- The executable asserted inventory-backed value-bearing toJSI/fromJSI serialization for installed public SkSamplingOptions filter/mipmap and cubic B/C, installed public SkTextStyle supported fields including fontSize/fontFamilies/fontFeatures/decoration/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, normalized text color fields color/backgroundColor/foregroundColor/decorationColor, installed public SkParagraphStyle scalar/textStyle/strutStyle fields, installed public SkStrutStyle fields, dual flattened/nested default text style fields including nested textStyle heightMultiplier output, flattened fontSize/color precedence over nested values, and explicit unsupported fontVariations rejection.")
-	console.log("- The executable asserted generated NodeStyle transport and host-native SkPaint state for canonical style.antiAlias, legacy style.antiaAlias fallback, canonical precedence when both keys are present, generated style.layer JsiSkPaint host-object transport, YogaNode::_layerPaint storage/reset behavior, ordinary _paint separation, and explicit style paint fields overriding SkPaint-backed backgroundColor base paint values.")
-	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, composed public transform-array rendering, style.layer saveLayer alpha modulation of a child subtree, style corner-radius and global style.borderRadius clip-to-bounds raster clipping of full-size children, explicit style.clip rect/rrect/path raster clipping of full-size children, invertClip rect/rrect/path raster clipping, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
+	console.log("- The executable asserted generated NodeStyle transport and host-native SkPaint/Yoga state for canonical style.antiAlias, legacy style.antiaAlias fallback, canonical precedence when both keys are present, overflow hidden/scroll public strings, generated style.layer JsiSkPaint host-object transport, YogaNode::_layerPaint storage/reset behavior, ordinary _paint separation, and explicit style paint fields overriding SkPaint-backed backgroundColor base paint values.")
+	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, composed public transform-array rendering, style.layer saveLayer alpha modulation of a child subtree, plain overflow hidden/scroll rectangular clip-to-bounds raster clipping of oversized children, style corner-radius and global style.borderRadius clip-to-bounds raster clipping of full-size children, explicit style.clip rect/rrect/path raster clipping of full-size children, invertClip rect/rrect/path raster clipping, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
 	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) plus flattened and nested ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection including nested paragraphStyle.textStyle.color, unsupported paragraph fontVariations rejection, and text.textStyle rich-key rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, bounded explicit style.clip rect/rrect/path and invertClip rect/rrect/path raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact style corner-radius, global style.borderRadius, or explicit style.clip render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, overflow hidden/scroll, and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias/Yoga overflow/_clipsToBounds state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded plain overflow hidden/scroll rectangular raster clipping through YogaNode::renderToContext() using a GroupCmd parent and oversized RectCmd child, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, bounded explicit style.clip rect/rrect/path and invertClip rect/rrect/path raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact plain overflow clipping beyond the asserted host-raster pixels, exact style corner-radius, global style.borderRadius, or explicit style.clip render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -734,6 +734,7 @@ using margelo::nitro::RNSkiaYoga::CircleCommandData;
 using margelo::nitro::RNSkiaYoga::ImageCommandData;
 using margelo::nitro::RNSkiaYoga::LineCommandData;
 using margelo::nitro::RNSkiaYoga::NodeCommandKind;
+using margelo::nitro::RNSkiaYoga::Overflow;
 using margelo::nitro::RNSkiaYoga::ParagraphCommandData;
 using margelo::nitro::RNSkiaYoga::PathCommandData;
 using margelo::nitro::RNSkiaYoga::PointsCommandData;
@@ -3345,6 +3346,82 @@ void assertParentChildLayoutRender(jsi::Runtime& runtime)
     expectColorNear(pixelAt(surface, 22, 18), SK_ColorTRANSPARENT, 0, "pixels after child bottom-right remain transparent");
 }
 
+void assertOverflowBoundsClipRender(jsi::Runtime& runtime)
+{
+    struct OverflowClipCase {
+        const char* styleValue;
+        Overflow nativeValue;
+        YGOverflow yogaValue;
+        SkColor childColor;
+        const char* label;
+    };
+
+    const OverflowClipCase cases[] = {
+        { "hidden", Overflow::HIDDEN, YGOverflowHidden, SK_ColorMAGENTA, "overflow hidden" },
+        { "scroll", Overflow::SCROLL, YGOverflowScroll, SK_ColorCYAN, "overflow scroll" },
+    };
+
+    for (const auto& overflowCase : cases) {
+        jsi::Object styleObject(runtime);
+        styleObject.setProperty(runtime, "width", 50.0);
+        styleObject.setProperty(runtime, "height", 50.0);
+        styleObject.setProperty(runtime, "antiAlias", false);
+        styleObject.setProperty(runtime, "overflow", overflowCase.styleValue);
+
+        auto rootStyle = convertNodeStyle(
+            runtime,
+            std::move(styleObject),
+            std::string(overflowCase.label) + " style");
+        expect(rootStyle.overflow.has_value(), std::string(overflowCase.label) + " NodeStyle converter populates overflow");
+        expect(
+            rootStyle.overflow.value() == overflowCase.nativeValue,
+            std::string(overflowCase.label) + " NodeStyle converter stores the expected enum");
+
+        auto serialized = margelo::nitro::JSIConverter<NodeStyle>::toJSI(runtime, rootStyle);
+        expect(serialized.isObject(), std::string(overflowCase.label) + " NodeStyle toJSI returns an object");
+        auto serializedStyle = serialized.asObject(runtime);
+        expect(
+            serializedStyle.getProperty(runtime, "overflow").asString(runtime).utf8(runtime) == overflowCase.styleValue,
+            std::string(overflowCase.label) + " NodeStyle toJSI serializes overflow as the public string");
+
+        auto root = makeYogaNode(rootStyle, groupCommand(runtime, false));
+        auto child = makeYogaNode(
+            absoluteStyle(0.0, 0.0, 80.0, 80.0, overflowCase.childColor),
+            rectCommand(runtime));
+        root->insertChild(child, std::nullopt);
+
+        expect(root->_commandKind == YogaNodeCommandKind::GROUP, std::string(overflowCase.label) + " clip proof uses a GroupCmd parent");
+        expect(dynamic_cast<margelo::nitro::RNSkiaYoga::GroupCmd*>(root->_command.get()) != nullptr, std::string(overflowCase.label) + " clip proof parent has GroupCmd type");
+        expect(child->_commandKind == YogaNodeCommandKind::RECT, std::string(overflowCase.label) + " clip proof uses an oversized RectCmd child");
+        expect(dynamic_cast<margelo::nitro::RNSkiaYoga::RectCmd*>(child->_command.get()) != nullptr, std::string(overflowCase.label) + " clip proof child has RectCmd type");
+        expect(root->_style.overflow.has_value(), std::string(overflowCase.label) + " stays in NodeStyle overflow");
+        expect(root->_style.overflow.value() == overflowCase.nativeValue, std::string(overflowCase.label) + " keeps native overflow enum");
+        expect(
+            YGNodeStyleGetOverflow(root->_node) == overflowCase.yogaValue,
+            std::string(overflowCase.label) + " setStyle writes Yoga overflow state");
+        expect(root->_clipsToBounds, std::string(overflowCase.label) + " enables rectangular YogaNode bounds clipping");
+        expect(!root->_clipToBoundsRadii.has_value(), std::string(overflowCase.label) + " does not use style corner-radius clipping");
+        expect(!root->_style.borderRadius.has_value(), std::string(overflowCase.label) + " does not set global borderRadius");
+        expect(!root->_style.clip.has_value(), std::string(overflowCase.label) + " remains distinct from explicit style.clip");
+        expect(!root->_clipPath.has_value(), std::string(overflowCase.label) + " does not populate explicit path clip");
+        expect(!root->_clipRect.has_value(), std::string(overflowCase.label) + " does not populate explicit rect clip");
+        expect(!root->_clipRRect.has_value(), std::string(overflowCase.label) + " does not populate explicit rrect clip");
+
+        auto surface = makeSurface(72, 72);
+        renderNode(root, surface);
+
+        expectNear(root->_layout.width, 50.0, std::string(overflowCase.label) + " parent layout width");
+        expectNear(root->_layout.height, 50.0, std::string(overflowCase.label) + " parent layout height");
+        expectNear(child->_layout.width, 80.0, std::string(overflowCase.label) + " child layout width stays oversized");
+        expectNear(child->_layout.height, 80.0, std::string(overflowCase.label) + " child layout height stays oversized");
+        expectColorNear(pixelAt(surface, 25, 25), overflowCase.childColor, 0, std::string(overflowCase.label) + " keeps child pixels inside parent bounds");
+        expectColorNear(pixelAt(surface, 49, 49), overflowCase.childColor, 0, std::string(overflowCase.label) + " keeps child pixels at the rectangular lower edge");
+        expectColorNear(pixelAt(surface, 50, 25), SK_ColorTRANSPARENT, 0, std::string(overflowCase.label) + " clips child pixels past parent width");
+        expectColorNear(pixelAt(surface, 25, 50), SK_ColorTRANSPARENT, 0, std::string(overflowCase.label) + " clips child pixels past parent height");
+        expectColorNear(pixelAt(surface, 60, 60), SK_ColorTRANSPARENT, 0, std::string(overflowCase.label) + " render remains bounded outside the parent layout");
+    }
+}
+
 void assertStyleCornerRadiusClipRender(jsi::Runtime& runtime)
 {
     auto rootStyle = groupStyle(100.0, 100.0);
@@ -5129,6 +5206,7 @@ int main()
     assertNodeCommandToJSISerializationSymmetry(*runtime);
     assertRectOpacityRender(*runtime);
     assertParentChildLayoutRender(*runtime);
+    assertOverflowBoundsClipRender(*runtime);
     assertStyleCornerRadiusClipRender(*runtime);
     assertGlobalBorderRadiusClipRender(*runtime);
     assertExplicitRectClipRender(*runtime);
