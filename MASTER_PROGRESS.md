@@ -4419,7 +4419,8 @@ Last updated: 2026-05-12
 
 ## Active Workers
 
-- None.
+- See `MASTER_PLAN.md` for live worker state. This file records completed
+  history only.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4647,7 +4648,8 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- None.
+- See `MASTER_PLAN.md` for live worker state. This file records completed
+  history only.
 
 ## Decisions
 
@@ -4919,10 +4921,8 @@ Accepted worker reports:
 
 ## Next Worker Candidates
 
-- None selected.
-- If continuing before platform tooling changes, schedule an audit-only worker
-  to find a fresh evidence-backed gap instead of extending layout breadth
-  speculatively.
+- See `MASTER_PLAN.md` for live worker state. This file records completed
+  history only.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
