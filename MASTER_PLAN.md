@@ -294,14 +294,19 @@ Accepted package-hygiene implementation:
 - `worker-163-transform-composition-runtime`: added bounded host-native proof that composed public transform arrays affect hit-test inversion and raster rendering through `YogaNode::_matrix`.
 - `worker-164-post-163-root-cause-audit`: accepted Worker 163's proof boundary, reconfirmed the relevant focused checks and full 28-command feasible matrix, and selected public/Reconciler transform authoring proof as Worker 165's target.
 
-Current next step:
+Current active worker:
 
-- Launch Worker 165 for public/Reconciler transform authoring proof from an
-  isolated worktree and branch.
-- Expected Worker 165 scope: extend packed-consumer JSX transform authoring
-  cases and Reconciler source-level dynamic `style.transform` listener proof,
-  while preserving Worker 161's generated materialized proof and Worker 163's
-  host-native runtime-consumer proof boundaries.
+- Worker 165 public/Reconciler transform authoring proof.
+  - Agent path: `/root/worker_165_transform_public_reconciler_proof`.
+  - Worktree: `../worker-165-transform-public-reconciler-proof`.
+  - Branch: `worker/165-transform-public-reconciler-proof`.
+  - Scope: extend packed-consumer JSX transform authoring cases and Reconciler
+    source-level dynamic `style.transform` listener proof, while preserving
+    Worker 161's generated materialized proof and Worker 163's host-native
+    runtime-consumer proof boundaries.
+  - Required verification: focused package-consumer and Reconciler checks,
+    `check:yoganode-nitro-materialization`, `check:feasible-matrix`, and
+    `git diff --check`.
 
 Acceptance criteria:
 

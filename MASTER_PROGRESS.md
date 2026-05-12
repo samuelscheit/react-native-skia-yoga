@@ -3362,10 +3362,19 @@ Last updated: 2026-05-12
   `2bffae3 Clarify spawn_agent worker scheduling docs`, making current
   top-level workers `spawn_agent` subagents and treating tmux/process-log
   references as archival.
+- Prepared Worker 165 public/Reconciler transform authoring proof:
+  - Worktree: `../worker-165-transform-public-reconciler-proof`.
+  - Branch: `worker/165-transform-public-reconciler-proof`.
+  - Planned agent path: `/root/worker_165_transform_public_reconciler_proof`.
+  - Symlinked root `node_modules` and `example/node_modules` from the main
+    worktree.
 
 ## Active Workers
 
-- None.
+- `/root/worker_165_transform_public_reconciler_proof`: public/Reconciler
+  transform authoring proof from isolated worktree
+  `../worker-165-transform-public-reconciler-proof` on branch
+  `worker/165-transform-public-reconciler-proof`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3676,7 +3685,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Worker 165: public/Reconciler transform authoring proof.
+- Monitor Worker 165: public/Reconciler transform authoring proof.
   - Extend `check:package-typescript-consumer` with packed-consumer JSX
     `style.transform` cases for representative static transform arrays, whole
     `SharedValue<Transform>`, and selected nested transform entry
