@@ -3509,10 +3509,18 @@ Last updated: 2026-05-12
     `npm run check:feasible-matrix` 28/28 in `4m 18s`.
 - Next step selected by orchestration: launch Worker 170 for a post-Worker 169
   root-cause audit.
+- Prepared Worker 170 post-Worker 169 root-cause audit:
+  - Worktree: `../worker-170-post-169-root-cause-audit`.
+  - Branch: `worker/170-post-169-root-cause-audit`.
+  - Planned agent path: `/root/worker_170_post_169_root_cause_audit`.
+  - Symlinked root `node_modules` and `example/node_modules` from the main
+    worktree.
 
 ## Active Workers
 
-- None.
+- `/root/worker_170_post_169_root_cause_audit`: post-Worker 169 root-cause
+  audit from isolated worktree `../worker-170-post-169-root-cause-audit` on
+  branch `worker/170-post-169-root-cause-audit`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3828,7 +3836,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Worker 170: post-Worker 169 root-cause audit.
+- Monitor Worker 170: post-Worker 169 root-cause audit.
   - Accept or reject Worker 169's public packed TypeScript and Node VM
     Reconciler source-level whole-matrix SharedValue proof boundary.
   - Reconfirm focused/post-merge evidence and local platform-native blockers.

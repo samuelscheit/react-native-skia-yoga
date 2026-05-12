@@ -299,13 +299,17 @@ Accepted package-hygiene implementation:
 - `worker-168-post-167-root-cause-audit`: accepted Worker 167's proof boundary, reconfirmed the focused/full-matrix evidence and local platform blockers, and selected whole `style.matrix` `SharedValue` public/Reconciler proof as Worker 169's target.
 - `worker-169-matrix-sharedvalue-proof`: added packed-consumer whole `style.matrix` `SharedValue` 9-/16-value authoring proof, packed/Reconciler nested matrix `SharedValue<number>` rejection proof, and Reconciler whole-matrix listener/update/cleanup proof.
 
-Current next step:
+Current active worker:
 
-- Launch Worker 170 for a post-Worker 169 root-cause audit from an isolated
-  worktree and branch.
-- Expected Worker 170 scope: accept or reject Worker 169's proof boundary,
-  reconfirm the latest focused/post-merge evidence and local platform blockers,
-  and select the next strongest locally unblocked root-cause target.
+- Worker 170 post-Worker 169 root-cause audit.
+  - Agent path: `/root/worker_170_post_169_root_cause_audit`.
+  - Worktree: `../worker-170-post-169-root-cause-audit`.
+  - Branch: `worker/170-post-169-root-cause-audit`.
+  - Scope: accept or reject Worker 169's proof boundary, reconfirm the latest
+    focused/post-merge evidence and local platform blockers, and select the
+    next strongest locally unblocked root-cause target.
+  - Required verification: focused evidence needed for the audit,
+    `check:feasible-matrix`, platform blocker reprobes, and `git diff --check`.
 
 Acceptance criteria:
 
