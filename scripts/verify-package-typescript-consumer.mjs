@@ -133,7 +133,7 @@ try {
 		"- Public package entrypoints and lowercase intrinsic JSX compiled from the installed package.",
 	)
 	console.log(
-		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, dynamic scalar global style.borderRadius, inventory-backed dynamic SkPoint-capable corner-radius forms, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, whole style.matrix SharedValue 9-/16-value arrays, inventory-backed static style.transform arrays, whole style.transform SharedValue<Transform>, inventory-backed nested style.transform SharedValue<number> leaves for every public transform operation, and whole SharedValue<YogaNodeStyle> authoring.",
+		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, dynamic scalar global style.borderRadius, dynamic style.clip rect/rrect/path forms with dynamic style.invertClip, inventory-backed dynamic SkPoint-capable corner-radius forms, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, whole style.matrix SharedValue 9-/16-value arrays, inventory-backed static style.transform arrays, whole style.transform SharedValue<Transform>, inventory-backed nested style.transform SharedValue<number> leaves for every public transform operation, and whole SharedValue<YogaNodeStyle> authoring.",
 	)
 	console.log(
 		`- Source public transform operation inventory from src/specs/style.ts matched packed consumer cases: ${formatTransformOperationKeys(
@@ -153,6 +153,9 @@ try {
 	)
 	console.log(
 		"- Packed consumer TypeScript rejected unsupported nested style.matrix SharedValue<number> array entries while accepting SharedValue for the whole matrix.",
+	)
+	console.log(
+		"- Packed consumer TypeScript accepted dynamic style.clip SharedValue<SkRect>, SharedValue<SkRRect>, and SharedValue<SkPath> forms plus style.invertClip SharedValue<boolean> while rejecting SharedValue<number> for style.clip.",
 	)
 	console.log(
 		"- Packed consumer TypeScript accepted scalar global style.borderRadius as SharedValue<number> while rejecting SharedValue<SkPoint> and point-object forms.",
@@ -349,7 +352,7 @@ function writeConsumerProject(consumerDir, packedTarball) {
 
 function consumerSource() {
 	return `import * as React from "react"
-import { Skia, type FilterMode, type SamplingOptions, type SkPaint, type SkPath, type SkPoint } from "@shopify/react-native-skia"
+import { Skia, type FilterMode, type SamplingOptions, type SkPaint, type SkPath, type SkPoint, type SkRect, type SkRRect } from "@shopify/react-native-skia"
 import type { SharedValue } from "react-native-reanimated"
 import {
 \tYogaCanvas,
@@ -365,6 +368,10 @@ type PublicMatrix = NonNullable<YogaNodeStyle["matrix"]>
 type PublicMatrixArray = Extract<PublicMatrix, readonly number[]>
 type PublicMatrix9 = Extract<PublicMatrixArray, { length: 9 }>
 type PublicMatrix16 = Extract<PublicMatrixArray, { length: 16 }>
+type PublicClip = NonNullable<YogaNodeStyle["clip"]>
+type PublicClipPath = Extract<PublicClip, SkPath>
+type PublicClipRect = Extract<PublicClip, SkRect>
+type PublicClipRRect = Extract<PublicClip, SkRRect>
 
 declare function asSharedValue<T>(value: T): SharedValue<T>
 
@@ -455,6 +462,14 @@ const sharedStyleCornerRadiusY = null as unknown as SharedValue<number>
 const invalidStyleCornerRadiusLeaf = null as unknown as SharedValue<string>
 const sharedWholeStyle = null as unknown as SharedValue<YogaNodeStyle>
 const compileOnlyPath = null as unknown as SkPath
+const publicClipRect: PublicClipRect = { x: 2, y: 3, width: 18, height: 19 }
+const publicClipRRect: PublicClipRRect = { rect: publicClipRect, rx: 4, ry: 5 }
+const publicClipPath: PublicClipPath = compileOnlyPath
+const sharedStyleClipRect = asSharedValue<PublicClipRect>(publicClipRect)
+const sharedStyleClipRRect = asSharedValue<PublicClipRRect>(publicClipRRect)
+const sharedStyleClipPath = asSharedValue<PublicClipPath>(publicClipPath)
+const sharedStyleInvertClip = null as unknown as SharedValue<boolean>
+const invalidStyleClipNumber = null as unknown as SharedValue<number>
 const sharedPublicMatrix9 = asSharedValue<PublicMatrix>(publicMatrix9)
 const sharedPublicMatrix16 = asSharedValue<PublicMatrix>(publicMatrix16)
 
@@ -542,6 +557,33 @@ const dynamicGlobalBorderRadiusRectProps: YogaIntrinsicElements["rect"] = {
 \t},
 }
 
+const dynamicClipRectGroupProps: YogaIntrinsicElements["group"] = {
+\tstyle: {
+\t\tclip: sharedStyleClipRect,
+\t\theight: 24,
+\t\tinvertClip: sharedStyleInvertClip,
+\t\twidth: 24,
+\t},
+}
+
+const dynamicClipRRectGroupProps: YogaIntrinsicElements["group"] = {
+\tstyle: {
+\t\tclip: sharedStyleClipRRect,
+\t\theight: 24,
+\t\tinvertClip: sharedStyleInvertClip,
+\t\twidth: 24,
+\t},
+}
+
+const dynamicClipPathGroupProps: YogaIntrinsicElements["group"] = {
+\tstyle: {
+\t\tclip: sharedStyleClipPath,
+\t\theight: 24,
+\t\tinvertClip: sharedStyleInvertClip,
+\t\twidth: 24,
+\t},
+}
+
 const dynamicNestedTransformRectProps: YogaIntrinsicElements["rect"] = {
 \tstyle: {
 \t\theight: 36,
@@ -595,6 +637,13 @@ const unsupportedNestedMatrixProps: YogaIntrinsicElements["rect"] = {
 \t\t\t0,
 \t\t\t1,
 \t\t],
+\t},
+}
+
+const unsupportedClipNumberProps: YogaIntrinsicElements["group"] = {
+\tstyle: {
+\t\t// @ts-expect-error style.clip only accepts SkRect, SkRRect, SkPath, or SharedValue forms of those public clip payloads.
+\t\tclip: invalidStyleClipNumber,
 \t},
 }
 
@@ -691,6 +740,15 @@ export function PackedPackageSmoke() {
 \t\t\t\t\t\t\t<group {...dynamicWholeMatrix16GroupProps}>
 \t\t\t\t\t\t\t\t<rect style={{ height: 12, width: 12 }} />
 \t\t\t\t\t\t\t</group>
+\t\t\t\t\t\t\t<group {...dynamicClipRectGroupProps}>
+\t\t\t\t\t\t\t\t<rect style={{ height: 12, width: 12 }} />
+\t\t\t\t\t\t\t</group>
+\t\t\t\t\t\t\t<group {...dynamicClipRRectGroupProps}>
+\t\t\t\t\t\t\t\t<rect style={{ height: 12, width: 12 }} />
+\t\t\t\t\t\t\t</group>
+\t\t\t\t\t\t\t<group {...dynamicClipPathGroupProps}>
+\t\t\t\t\t\t\t\t<rect style={{ height: 12, width: 12 }} />
+\t\t\t\t\t\t\t</group>
 \t\t\t\t\t\t\t<rect {...dynamicGlobalBorderRadiusRectProps} />
 \t\t\t\t\t\t\t<rect {...dynamicNestedTransformRectProps} />
 \t\t\t\t\t\t\t<rect {...dynamicScalarCornerRadiusRectProps} />
@@ -744,6 +802,7 @@ void devRuntimeFragment
 void runtimeFragment
 void unsupportedNestedSamplingProps
 void unsupportedNestedMatrixProps
+void unsupportedClipNumberProps
 void unsupportedGlobalBorderRadiusSharedPointProps
 void unsupportedGlobalBorderRadiusPointObjectProps
 void unsupportedNestedCornerRadiusProps

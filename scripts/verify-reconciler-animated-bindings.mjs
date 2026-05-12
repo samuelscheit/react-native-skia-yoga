@@ -133,6 +133,46 @@ assertStyleCornerRadiusCaseTableMatchesInventory(
 	cornerRadiusScalarBindingCases,
 )
 
+const styleClipBindingCases = [
+	{
+		cleanupClip: { height: 18, width: 18, x: 1, y: 2 },
+		description: "rect",
+		initialClip: { height: 20, width: 24, x: 2, y: 4 },
+		lateClip: { height: 26, width: 30, x: 9, y: 11 },
+		nextClip: { height: 22, width: 26, x: 5, y: 7 },
+	},
+	{
+		cleanupClip: {
+			rect: { height: 18, width: 20, x: 1, y: 2 },
+			rx: 2,
+			ry: 3,
+		},
+		description: "rrect",
+		initialClip: {
+			rect: { height: 28, width: 32, x: 4, y: 6 },
+			rx: 5,
+			ry: 7,
+		},
+		lateClip: {
+			rect: { height: 38, width: 42, x: 12, y: 14 },
+			rx: 13,
+			ry: 15,
+		},
+		nextClip: {
+			rect: { height: 30, width: 34, x: 8, y: 10 },
+			rx: 9,
+			ry: 11,
+		},
+	},
+	{
+		cleanupClip: { id: "cleanup-path-clip" },
+		description: "path",
+		initialClip: { id: "initial-path-clip" },
+		lateClip: { id: "late-path-clip" },
+		nextClip: { id: "next-path-clip" },
+	},
+]
+
 const nativeCommandBindingCases = [
 	{
 		initialValue: 4,
@@ -384,6 +424,7 @@ verifyJsCommandBindingModeRunsCommandUpdateCallbacks()
 verifyStyleAnimatedListenerUpdatesStyleAndContinuousRedraw()
 verifyTransformStyleSharedValuesUseJsStyleDelivery()
 verifyMatrixStyleSharedValuesUseJsStyleDelivery()
+verifyClipAndInvertClipStyleSharedValuesUseJsStyleDelivery()
 verifyGlobalBorderRadiusStyleSharedValueUsesJsStyleDelivery()
 verifyCornerRadiusStyleSharedValuesUseJsStyleDelivery()
 verifyStyleLayerSharedValueUsesJsStyleDelivery()
@@ -419,6 +460,11 @@ console.log(
 )
 console.log(
 	"- Whole style.matrix SharedValue listeners resolve 9-value snapshots, deliver 16-value updates through the top-level matrix key, rebuild full styles, invalidate, clean up, reject nested SharedValue matrix entries with the explicit boundary error, and avoid native command mirrors.",
+)
+console.log(
+	`- Dynamic style.clip SharedValue listeners cover top-level rect/rrect/path payloads (${formatStyleClipCaseList(
+		styleClipBindingCases,
+	)}) with companion style.invertClip SharedValue<boolean>; both use only top-level listener keys, resolve initial snapshots, rebuild full styles, invalidate, clean up, ignore late emits, and avoid native command mirrors.`,
 )
 console.log(
 	"- Scalar global style.borderRadius SharedValue<number> listeners resolve the initial snapshot, update through the top-level borderRadius key, rebuild full styles, invalidate, clean up, reject initial and late non-number dynamic payloads with the explicit boundary error before native-bound style updates, and avoid native command mirrors.",
@@ -1309,6 +1355,12 @@ function verifyGlobalBorderRadiusStyleSharedValueUsesJsStyleDelivery() {
 	verifyInvalidGlobalBorderRadiusShapesFailWithExplicitError()
 }
 
+function verifyClipAndInvertClipStyleSharedValuesUseJsStyleDelivery() {
+	for (const testCase of styleClipBindingCases) {
+		verifyClipAndInvertClipStyleSharedValueCaseUsesJsStyleDelivery(testCase)
+	}
+}
+
 function verifyCornerRadiusStyleSharedValuesUseJsStyleDelivery() {
 	verifyWholeScalarCornerRadiusSharedValuesUseJsStyleDelivery()
 	verifyNestedCornerRadiusLeavesUseJsStyleDelivery()
@@ -1902,6 +1954,263 @@ function verifyNestedMatrixSharedValueEntriesFailWithExplicitError() {
 		harness.calls.createSynchronizable.length,
 		0,
 		"unsupported nested style.matrix entries should not create native command mirrors",
+	)
+}
+
+function verifyClipAndInvertClipStyleSharedValueCaseUsesJsStyleDelivery(
+	testCase,
+) {
+	const harness = createReconcilerHarness()
+	const config = harness.loadReconcilerHostConfig()
+	const label = `style.clip ${testCase.description}`
+	const clip = harness.makeSharedValue(
+		testCase.initialClip,
+		`${label}.clip`,
+	)
+	const invertClip = harness.makeSharedValue(
+		false,
+		`${label}.invertClip`,
+	)
+	const style = harness.makeVmValue(
+		`({
+			clip: bindings.clip,
+			height: 30,
+			invertClip: bindings.invertClip,
+			opacity: 0.55,
+			width: 50,
+		})`,
+		{ clip, invertClip },
+	)
+	const { calls, container } = harness.makeRootContainer({
+		nativeCommandBindingsEnabled: true,
+	})
+
+	const node = config.createInstance(
+		"group",
+		{
+			rasterize: true,
+			style,
+		},
+		container,
+	)
+
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		`${label} and style.invertClip should use JS style listeners rather than native command mirrors`,
+	)
+	assert.equal(
+		clip.listenerCount(),
+		1,
+		`${label} should register one SharedValue listener`,
+	)
+	assert.equal(
+		invertClip.listenerCount(),
+		1,
+		`${label} companion style.invertClip should register one SharedValue listener`,
+	)
+	assert.deepEqual(
+		harness.calls.uiRuntimeCalls.map((call) => call.args[1]),
+		["clip", "invertClip"],
+		`${label} and style.invertClip should register only top-level style listener keys`,
+	)
+	assert.equal(
+		last(node.commands).data.rasterize,
+		true,
+		"group command props should still be applied while style.clip and style.invertClip bindings are active",
+	)
+	assert.deepEqual(
+		Object.keys(last(node.styles)).sort(),
+		["clip", "height", "invertClip", "opacity", "width"],
+		`${label} should preserve the full initial style payload keys`,
+	)
+	assert.deepEqual(
+		last(node.styles).clip,
+		testCase.initialClip,
+		`${label} should resolve the initial clip snapshot`,
+	)
+	assert.equal(
+		last(node.styles).invertClip,
+		false,
+		`${label} companion style.invertClip should resolve the initial boolean snapshot`,
+	)
+	assert.equal(
+		last(node.styles).opacity,
+		0.55,
+		`${label} should preserve initial static sibling style fields`,
+	)
+	assert.equal(
+		calls.nativeAnimationActive.length,
+		0,
+		`${label} should not mark the node as natively animated`,
+	)
+	assert.equal(
+		calls.invalidations.length,
+		0,
+		`${label} initial listener setup should not invalidate`,
+	)
+
+	clip.emit(testCase.nextClip)
+
+	assert.deepEqual(
+		only(harness.calls.runOnJSCalls).args,
+		["clip", testCase.nextClip],
+		`${label} updates should bridge the top-level clip key and value through runOnJS`,
+	)
+	assert.equal(
+		node.styles.length,
+		2,
+		`${label} updates should call setStyle once after the initial style`,
+	)
+	assert.deepEqual(
+		Object.keys(last(node.styles)).sort(),
+		["clip", "height", "invertClip", "opacity", "width"],
+		`${label} updates should rebuild the full host style keys`,
+	)
+	assert.deepEqual(
+		last(node.styles).clip,
+		testCase.nextClip,
+		`${label} updates should rebuild the host style with the latest clip snapshot`,
+	)
+	assert.equal(
+		last(node.styles).invertClip,
+		false,
+		`${label} updates should preserve the companion style.invertClip snapshot`,
+	)
+	assert.equal(
+		last(node.styles).width,
+		50,
+		`${label} updates should preserve static sibling style fields`,
+	)
+	assert.equal(
+		calls.invalidations.length,
+		1,
+		`${label} updates should invalidate the container`,
+	)
+	assert.equal(
+		harness.calls.setBlocking.length,
+		0,
+		`${label} updates should not use native mirror setBlocking updates`,
+	)
+
+	invertClip.emit(true)
+
+	assert.deepEqual(
+		last(harness.calls.runOnJSCalls).args,
+		["invertClip", true],
+		`${label} companion style.invertClip updates should bridge the top-level invertClip key through runOnJS`,
+	)
+	assert.equal(
+		node.styles.length,
+		3,
+		`${label} companion style.invertClip updates should call setStyle once after the clip update`,
+	)
+	assert.deepEqual(
+		last(node.styles).clip,
+		testCase.nextClip,
+		`${label} companion style.invertClip updates should preserve the latest clip snapshot`,
+	)
+	assert.equal(
+		last(node.styles).invertClip,
+		true,
+		`${label} companion style.invertClip updates should rebuild the host style with the latest boolean snapshot`,
+	)
+	assert.equal(
+		last(node.styles).height,
+		30,
+		`${label} companion style.invertClip updates should preserve static sibling style fields`,
+	)
+	assert.equal(
+		calls.invalidations.length,
+		2,
+		`${label} companion style.invertClip updates should invalidate the container`,
+	)
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		`${label} and style.invertClip should still avoid native command mirrors after emits`,
+	)
+	assert.equal(
+		harness.calls.setBlocking.length,
+		0,
+		`${label} companion style.invertClip updates should not use native mirror setBlocking updates`,
+	)
+
+	config.commitUpdate(
+		node,
+		"group",
+		{ rasterize: true, style },
+		{
+			rasterize: false,
+			style: {
+				clip: testCase.cleanupClip,
+				invertClip: false,
+				opacity: 0.25,
+			},
+		},
+		null,
+	)
+
+	assert.equal(
+		clip.listenerCount(),
+		0,
+		`commitUpdate should remove the ${label} listener`,
+	)
+	assert.equal(
+		invertClip.listenerCount(),
+		0,
+		`commitUpdate should remove the ${label} companion style.invertClip listener`,
+	)
+	assert.deepEqual(
+		harness.calls.sharedRemoveListener.map((call) => call.had),
+		[true, true],
+		`${label} cleanup should remove existing SharedValue listener ids`,
+	)
+	assert.equal(
+		last(node.commands).data.rasterize,
+		false,
+		`commitUpdate should still update command props while ${label} cleanup runs`,
+	)
+	assert.deepEqual(
+		last(node.styles),
+		{
+			clip: testCase.cleanupClip,
+			invertClip: false,
+			opacity: 0.25,
+		},
+		`commitUpdate should apply the cleaned ${label} style after removing listeners`,
+	)
+
+	const styleCallsAfterCleanup = node.styles.length
+	const invalidationsAfterCleanup = calls.invalidations.length
+	const runOnJsCallsAfterCleanup = harness.calls.runOnJSCalls.length
+	clip.emit(testCase.lateClip)
+	invertClip.emit(false)
+
+	assert.equal(
+		node.styles.length,
+		styleCallsAfterCleanup,
+		`removed ${label} and style.invertClip listeners should not rebuild styles after cleanup`,
+	)
+	assert.equal(
+		calls.invalidations.length,
+		invalidationsAfterCleanup,
+		`removed ${label} and style.invertClip listeners should not invalidate after cleanup`,
+	)
+	assert.equal(
+		harness.calls.runOnJSCalls.length,
+		runOnJsCallsAfterCleanup,
+		`removed ${label} and style.invertClip listeners should not bridge through runOnJS after cleanup`,
+	)
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		`removed ${label} and style.invertClip listeners should never create native command mirrors`,
+	)
+	assert.equal(
+		harness.calls.setBlocking.length,
+		0,
+		`removed ${label} and style.invertClip listeners should never update native mirrors`,
 	)
 }
 
@@ -3827,6 +4136,10 @@ function formatJsCommandBindingCase(testCase) {
 
 function formatJsCommandBindingCaseList(cases) {
 	return cases.map(formatJsCommandBindingCase).join(", ")
+}
+
+function formatStyleClipCaseList(cases) {
+	return cases.map((testCase) => testCase.description).join(", ")
 }
 
 function sortNativeBindingCases(cases) {
