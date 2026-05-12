@@ -3826,10 +3826,24 @@ Last updated: 2026-05-12
   - Merged worker 180 into `main` as
     `b637751 Merge worker 180 post-179 audit`.
   - Post-merge `git diff --check HEAD~1 HEAD`: passed.
+- Next step selected by orchestration: launch Worker 181 generated/materialized
+  and native hit-test proof for global `style.borderRadius`.
+- Prepared Worker 181 generated/materialized and native hit-test proof:
+  - Worktree: `../worker-181-border-radius-materialized-hit-test`.
+  - Branch: `worker/181-border-radius-materialized-hit-test`.
+  - Planned agent path: `/root/worker_181_border_radius_materialized_hit_test`.
+  - Symlinked root `node_modules` and `example/node_modules` from the main
+    worktree.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
 
 ## Active Workers
 
-- None.
+- `/root/worker_181_border_radius_materialized_hit_test`: generated/materialized
+  and native hit-test proof for global `style.borderRadius` from isolated
+  worktree `../worker-181-border-radius-materialized-hit-test` on branch
+  `worker/181-border-radius-materialized-hit-test`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4156,8 +4170,8 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Worker 181: generated/materialized plus native hit-test proof for global
-  `style.borderRadius`.
+- Monitor Worker 181: generated/materialized plus native hit-test proof for
+  global `style.borderRadius`.
   - Extend `scripts/verify-yoganode-nitro-materialization.mjs` with generated
     `setStyle({ borderRadius })` coverage through a materialized YogaNode.
   - Extend `scripts/verify-yoganode-native-hit-testing.mjs` with scalar global

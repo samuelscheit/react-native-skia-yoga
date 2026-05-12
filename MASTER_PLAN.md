@@ -317,20 +317,21 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- Worker 181 generated/materialized and native hit-test proof for global
+  `style.borderRadius`.
+  - Agent path: `/root/worker_181_border_radius_materialized_hit_test`.
+  - Worktree: `../worker-181-border-radius-materialized-hit-test`.
+  - Branch: `worker/181-border-radius-materialized-hit-test`.
+  - Scope: add generated materialized `setStyle({ borderRadius })` proof and
+    direct native hit-test proof for scalar global `style.borderRadius`.
+  - Required verification: edited verifier syntax checks,
+    `check:yoganode-nitro-materialization`,
+    `check:yoganode-native-hit-testing`, `check:feasible-matrix`, and
+    `git diff --check`.
 
 Next queued worker:
 
-- Worker 181 generated/materialized and native hit-test proof for global
-  `style.borderRadius`.
-  - Add compact generated `setStyle({ borderRadius })` materialization coverage
-    for `_style.borderRadius`, `_clipsToBounds`, all four
-    `_clipToBoundsRadii` slots, no per-corner style fields, and no explicit
-    `style.clip` state.
-  - Add matching native hit-test coverage proving rounded corner rejection and
-    in-bounds child hits for scalar global `borderRadius`.
-  - Keep platform-native app/runtime claims out of scope unless local
-    toolchain blockers clear.
+- None until Worker 181 reports.
 
 Acceptance criteria:
 
