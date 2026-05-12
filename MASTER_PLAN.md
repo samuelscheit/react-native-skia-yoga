@@ -297,13 +297,18 @@ Accepted package-hygiene implementation:
 - `worker-166-post-165-root-cause-audit`: accepted Worker 165's proof boundary, reconfirmed the focused/post-merge evidence and local platform blockers, and selected transform variant breadth/drift guarding as Worker 167's target.
 - `worker-167-transform-variant-drift-guard`: added source-level public `Transform` operation inventory extraction, expanded packed-consumer and Reconciler nested transform `SharedValue<number>` coverage to every current public transform operation key, and added verifier drift assertions.
 
-Current next step:
+Current active worker:
 
-- Launch Worker 168 for a post-Worker 167 root-cause audit from an isolated
-  worktree and branch.
-- Expected Worker 168 scope: accept or reject Worker 167's verifier-only proof
-  boundary, reconfirm the latest focused/post-merge evidence and local platform
-  blockers, and select the next strongest locally unblocked root-cause target.
+- Worker 168 post-Worker 167 root-cause audit.
+  - Agent path: `/root/worker_168_post_167_root_cause_audit`.
+  - Worktree: `../worker-168-post-167-root-cause-audit`.
+  - Branch: `worker/168-post-167-root-cause-audit`.
+  - Scope: accept or reject Worker 167's verifier-only proof boundary,
+    reconfirm the latest focused/post-merge evidence and local platform
+    blockers, and select the next strongest locally unblocked root-cause
+    target.
+  - Required verification: focused evidence needed for the audit,
+    `check:feasible-matrix`, platform blocker reprobes, and `git diff --check`.
 
 Acceptance criteria:
 
