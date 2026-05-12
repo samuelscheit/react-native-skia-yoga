@@ -4,6 +4,10 @@ import assert from "node:assert/strict"
 import { existsSync, readFileSync } from "node:fs"
 import path from "node:path"
 import vm from "node:vm"
+import {
+	assertStyleCornerRadiusCaseTableMatchesInventory,
+	formatStyleCornerRadiusKeys,
+} from "./style-corner-radius-inventory.mjs"
 import ts from "typescript"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
@@ -90,6 +94,41 @@ const nestedTransformBindingCases = [
 assertTransformOperationCaseTableMatchesInventory(
 	"Reconciler nested style.transform cases",
 	nestedTransformBindingCases,
+)
+const cornerRadiusScalarBindingCases = [
+	{
+		cleanupPoint: { x: 1, y: 2 },
+		initialValue: 3,
+		key: "borderBottomLeftRadius",
+		lateValue: 13,
+		nextValue: 7,
+	},
+	{
+		cleanupPoint: { x: 2, y: 3 },
+		initialValue: 4,
+		key: "borderBottomRightRadius",
+		lateValue: 14,
+		nextValue: 8,
+	},
+	{
+		cleanupPoint: { x: 3, y: 4 },
+		initialValue: 5,
+		key: "borderTopLeftRadius",
+		lateValue: 15,
+		nextValue: 9,
+	},
+	{
+		cleanupPoint: { x: 4, y: 5 },
+		initialValue: 6,
+		key: "borderTopRightRadius",
+		lateValue: 16,
+		nextValue: 10,
+	},
+]
+assertStyleCornerRadiusCaseTableMatchesInventory(
+	rootDir,
+	"Reconciler whole scalar corner-radius cases",
+	cornerRadiusScalarBindingCases,
 )
 
 const nativeCommandBindingCases = [
@@ -371,10 +410,15 @@ console.log(
 	)}) and whole SharedValue<Transform> use JS style listeners, resolve initial snapshots, rebuild host styles on update, invalidate, clean up, and avoid native command mirrors.`,
 )
 console.log(
+	`- Source style corner-radius key inventory from src/specs/style.ts, src/jsx.ts, and src/Reconciler.ts matched Reconciler scalar verifier cases: ${formatStyleCornerRadiusKeys(
+		cornerRadiusScalarBindingCases,
+	)}.`,
+)
+console.log(
 	"- Whole style.matrix SharedValue listeners resolve 9-value snapshots, deliver 16-value updates through the top-level matrix key, rebuild full styles, invalidate, clean up, reject nested SharedValue matrix entries with the explicit boundary error, and avoid native command mirrors.",
 )
 console.log(
-	"- Dynamic SkPoint-capable style.borderTopLeftRadius listeners cover nested { x, y } SharedValue<number> leaves and whole SharedValue<SkPoint> snapshots/updates with stable keys, full style rebuilds, invalidation, cleanup, ignored late emits, explicit invalid-shape errors, and no native command mirrors.",
+	"- Dynamic SkPoint-capable corner-radius listeners cover all four whole scalar SharedValue<number> keys plus representative nested { x, y } SharedValue<number> leaves and whole SharedValue<SkPoint> snapshots/updates with stable keys, full style rebuilds, invalidation, cleanup, ignored late emits, explicit invalid-shape errors, and no native command mirrors.",
 )
 console.log(
 	"- Top-level style.layer SharedValue listeners resolve initial SkPaint snapshots, rebuild full styles on updates, invalidate, clean up, and avoid native command mirrors.",
@@ -1254,6 +1298,7 @@ function verifyMatrixStyleSharedValuesUseJsStyleDelivery() {
 }
 
 function verifyCornerRadiusStyleSharedValuesUseJsStyleDelivery() {
+	verifyWholeScalarCornerRadiusSharedValuesUseJsStyleDelivery()
 	verifyNestedCornerRadiusLeavesUseJsStyleDelivery()
 	verifyWholeCornerRadiusPointSharedValueUsesJsStyleDelivery()
 	verifyInvalidCornerRadiusShapesFailWithExplicitErrors()
@@ -1845,6 +1890,215 @@ function verifyNestedMatrixSharedValueEntriesFailWithExplicitError() {
 		harness.calls.createSynchronizable.length,
 		0,
 		"unsupported nested style.matrix entries should not create native command mirrors",
+	)
+}
+
+function verifyWholeScalarCornerRadiusSharedValuesUseJsStyleDelivery() {
+	for (const testCase of cornerRadiusScalarBindingCases) {
+		verifyWholeScalarCornerRadiusSharedValueUsesJsStyleDelivery(testCase)
+	}
+}
+
+function verifyWholeScalarCornerRadiusSharedValueUsesJsStyleDelivery(testCase) {
+	const harness = createReconcilerHarness()
+	const config = harness.loadReconcilerHostConfig()
+	const label = `style.${testCase.key}`
+	const cornerRadius = harness.makeSharedValue(
+		testCase.initialValue,
+		label,
+	)
+	const style = harness.makeVmValue(
+		`({
+			${testCase.key}: bindings.cornerRadius,
+			height: 30,
+			opacity: 0.65,
+			width: 50,
+		})`,
+		{ cornerRadius },
+	)
+	const { calls, container } = harness.makeRootContainer({
+		nativeCommandBindingsEnabled: true,
+	})
+
+	const node = config.createInstance(
+		"rect",
+		{
+			style,
+		},
+		container,
+	)
+
+	assert.equal(
+		harness.calls.createSynchronizable.length,
+		0,
+		`${label} SharedValue<number> should use JS style listeners rather than native command mirrors`,
+	)
+	assert.equal(
+		cornerRadius.listenerCount(),
+		2,
+		`${label} SharedValue<number> should register paired x/y listeners after scalar expansion`,
+	)
+	assert.deepEqual(
+		harness.calls.uiRuntimeCalls.map((call) => call.args[1]),
+		[`${testCase.key}.x`, `${testCase.key}.y`],
+		`${label} SharedValue<number> should use stable expanded x/y listener keys`,
+	)
+	assert.deepEqual(
+		Object.keys(last(node.styles)).sort(),
+		[testCase.key, "height", "opacity", "width"].sort(),
+		`${label} SharedValue<number> should preserve the full initial style payload keys`,
+	)
+	assert.equal(
+		last(node.styles)[testCase.key].x,
+		testCase.initialValue,
+		`${label} SharedValue<number> should resolve the initial scalar snapshot into x`,
+	)
+	assert.equal(
+		last(node.styles)[testCase.key].y,
+		testCase.initialValue,
+		`${label} SharedValue<number> should resolve the initial scalar snapshot into y`,
+	)
+	assert.equal(
+		calls.nativeAnimationActive.length,
+		0,
+		`${label} SharedValue<number> should not mark the node as natively animated`,
+	)
+	assert.equal(
+		calls.invalidations.length,
+		0,
+		`${label} initial listener setup should not invalidate`,
+	)
+
+	cornerRadius.emit(testCase.nextValue)
+
+	assert.deepEqual(
+		harness.calls.runOnJSCalls.map((call) => call.args),
+		[
+			[`${testCase.key}.x`, testCase.nextValue],
+			[`${testCase.key}.y`, testCase.nextValue],
+		],
+		`${label} SharedValue<number> updates should bridge the expanded listener keys through runOnJS`,
+	)
+	assert.equal(
+		node.styles.length,
+		3,
+		`${label} SharedValue<number> updates should rebuild style once per expanded listener`,
+	)
+	const firstUpdateStyle = node.styles[node.styles.length - 2]
+	const finalUpdateStyle = last(node.styles)
+	assert.deepEqual(
+		Object.keys(firstUpdateStyle).sort(),
+		[testCase.key, "height", "opacity", "width"].sort(),
+		`${label} first scalar update should rebuild the full host style keys`,
+	)
+	assert.equal(
+		firstUpdateStyle[testCase.key].x,
+		testCase.nextValue,
+		`${label} first scalar update should rebuild the latest x snapshot`,
+	)
+	assert.equal(
+		firstUpdateStyle[testCase.key].y,
+		testCase.initialValue,
+		`${label} first scalar update should preserve the previous y snapshot until its listener runs`,
+	)
+	assert.equal(
+		finalUpdateStyle[testCase.key].x,
+		testCase.nextValue,
+		`${label} final scalar update should preserve the latest x snapshot`,
+	)
+	assert.equal(
+		finalUpdateStyle[testCase.key].y,
+		testCase.nextValue,
+		`${label} final scalar update should rebuild the latest y snapshot`,
+	)
+	assert.equal(
+		finalUpdateStyle.height,
+		30,
+		`${label} scalar updates should preserve static height`,
+	)
+	assert.equal(
+		finalUpdateStyle.opacity,
+		0.65,
+		`${label} scalar updates should preserve static opacity`,
+	)
+	assert.equal(
+		finalUpdateStyle.width,
+		50,
+		`${label} scalar updates should preserve static width`,
+	)
+	assert.equal(
+		calls.invalidations.length,
+		2,
+		`${label} scalar updates should invalidate once per expanded listener`,
+	)
+	assert.equal(
+		harness.calls.setBlocking.length,
+		0,
+		`${label} scalar updates should not use native mirror setBlocking updates`,
+	)
+
+	const styleCallsAfterEmit = node.styles.length
+	const runOnJsCallsAfterEmit = harness.calls.runOnJSCalls.length
+	config.commitUpdate(
+		node,
+		"rect",
+		{ style },
+		{
+			style: {
+				[testCase.key]: testCase.cleanupPoint,
+				opacity: 0.3,
+			},
+		},
+		null,
+	)
+
+	assert.equal(
+		cornerRadius.listenerCount(),
+		0,
+		`commitUpdate should remove both ${label} expanded scalar listeners`,
+	)
+	assert.deepEqual(
+		harness.calls.sharedRemoveListener.map((call) => call.had),
+		[true, true],
+		`${label} scalar cleanup should remove existing SharedValue listener ids`,
+	)
+	assert.deepEqual(
+		Object.keys(last(node.styles)).sort(),
+		[testCase.key, "opacity"].sort(),
+		`commitUpdate should apply the cleaned ${label} style keys after removing scalar listeners`,
+	)
+	assert.equal(
+		last(node.styles)[testCase.key].x,
+		testCase.cleanupPoint.x,
+		`commitUpdate should apply the cleaned ${label} x value`,
+	)
+	assert.equal(
+		last(node.styles)[testCase.key].y,
+		testCase.cleanupPoint.y,
+		`commitUpdate should apply the cleaned ${label} y value`,
+	)
+	assert.equal(
+		last(node.styles).opacity,
+		0.3,
+		`commitUpdate should preserve sibling style fields after removing ${label} scalar listeners`,
+	)
+
+	cornerRadius.emit(testCase.lateValue)
+
+	assert.equal(
+		node.styles.length,
+		styleCallsAfterEmit + 1,
+		`removed ${label} scalar listeners should not rebuild styles after cleanup`,
+	)
+	assert.equal(
+		calls.invalidations.length,
+		2,
+		`removed ${label} scalar listeners should not invalidate after cleanup`,
+	)
+	assert.equal(
+		harness.calls.runOnJSCalls.length,
+		runOnJsCallsAfterEmit,
+		`removed ${label} scalar listeners should not bridge through runOnJS after cleanup`,
 	)
 }
 
