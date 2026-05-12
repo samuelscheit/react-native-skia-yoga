@@ -3660,13 +3660,32 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 175 bounded style corner-radius raster clipping proof accepted:
+  - Added a host-native raster case in
+    `scripts/verify-yoganode-native-commands-render.mjs`.
+  - The new case creates a style-radius `GroupCmd` parent with an upper-left
+    SkPoint radius and lower-right scalar radius, inserts a full-size green
+    `RectCmd` child, renders through real `YogaNode::renderToContext()`, and
+    asserts transparent rounded-corner pixels plus colored in-bounds pixels.
+  - The proof asserts `_clipsToBounds`, `_clipToBoundsRadii`, radius-slot
+    mapping, SkPoint/scalar variant preservation, unset square corners, no
+    explicit `style.clip` state, and no `RRectCmd::cornerRadius` dependency.
+  - Worker branch commit:
+    `48f8661 Add style corner radius raster proof`.
+  - Merged worker 175 into `main` as
+    `14d2a97 Merge worker 175 style corner raster proof`.
+  - Post-merge checks passed: `git diff --check HEAD~1 HEAD`,
+    `node --check scripts/verify-yoganode-native-commands-render.mjs`,
+    `npm run check:yoganode-native-commands-render`,
+    `npm run check:yoganode-nitro-materialization`,
+    `npm run check:yoganode-native-hit-testing`, and
+    `npm run check:feasible-matrix` 28/28 in `4m 15s`.
+- Next step selected by orchestration: launch Worker 176 for a post-Worker 175
+  root-cause audit and next-target reranking.
 
 ## Active Workers
 
-- `/root/worker_175_style_corner_radius_raster_proof`: bounded style
-  corner-radius raster clipping proof from isolated worktree
-  `../worker-175-style-corner-radius-raster-proof` on branch
-  `worker/175-style-corner-radius-raster-proof`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3861,6 +3880,7 @@ Accepted worker reports:
 - `worker-progress/worker-172-post-171-root-cause-audit.md`
 - `worker-progress/worker-173-native-corner-radius-proof.md`
 - `worker-progress/worker-174-post-173-root-cause-audit.md`
+- `worker-progress/worker-175-style-corner-radius-raster-proof.md`
 
 ## Pending Workers
 
@@ -3987,18 +4007,14 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor Worker 175: bounded style corner-radius raster clipping proof.
-  - Add host-native raster evidence in
-    `scripts/verify-yoganode-native-commands-render.mjs` proving style corner
-    radii in `YogaNode::renderToContext()` clip a full-size child.
-  - Assert transparent pixels in rounded clipped corners and colored pixels
-    inside rounded bounds, with at least one SkPoint radius and one scalar
-    radius.
-  - Keep the proof distinct from explicit `style.clip` RRect/path/rect state
-    and `RRectCmd::cornerRadius`.
-  - Keep platform-native presentation, exact render fidelity, RN bridge
-    delivery, Nitro registry install, and UI-runtime/Reanimated delivery out of
-    scope.
+- Worker 176: post-Worker 175 root-cause audit.
+  - Accept or reject Worker 175's bounded host-native style corner-radius
+    raster proof boundary.
+  - Reconfirm focused/post-merge evidence and local platform-native blockers.
+  - Select the next strongest locally unblocked root-cause target; likely
+    candidates include a compact JS/Reconciler all-four-corner-key and whole
+    scalar `SharedValue<number>` completion pass, or a stronger source-confirmed
+    gap if the audit finds one.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
