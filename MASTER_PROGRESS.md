@@ -4053,12 +4053,34 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 190 post-Worker 189 root-cause audit accepted:
+  - Worker branch commit:
+    `0f82c29 Add post-worker-189 root-cause audit`.
+  - Merged worker 190 into `main` as
+    `f548907 Merge worker 190 post-189 audit`.
+  - Accepted Worker 189's generated materialized clip/invertClip raster bridge
+    proof within its host-JSC/native boundary.
+  - Reconfirmed focused checks and the full feasible matrix, which passed all
+    28 commands in `4m 9s` in the worker worktree.
+  - Reprobed platform blockers: Command Line Tools-only Xcode selection,
+    missing iPhone simulator SDK, CocoaPods, Java, Android SDK variables,
+    Gradle, ADB, CMake, and Ninja remain unavailable.
+  - Selected paired inverted rrect/path raster proof across direct native and
+    generated materialized harnesses as the next target.
+- Prepared Worker 191 inverted rrect/path raster proof:
+  - Worktree: `../worker-191-inverted-rrect-path-raster-proof`.
+  - Branch: `worker/191-inverted-rrect-path-raster-proof`.
+  - Planned agent path: `/root/worker_191_inverted_rrect_path_raster_proof`.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
 
 ## Active Workers
 
-- `/root/worker_190_post_189_root_cause_audit`: post-Worker 189 root-cause
-  audit from isolated worktree `../worker-190-post-189-root-cause-audit` on
-  branch `worker/190-post-189-root-cause-audit`.
+- `/root/worker_191_inverted_rrect_path_raster_proof`: inverted rrect/path
+  raster proof from isolated worktree
+  `../worker-191-inverted-rrect-path-raster-proof` on branch
+  `worker/191-inverted-rrect-path-raster-proof`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4268,10 +4290,11 @@ Accepted worker reports:
 - `worker-progress/worker-187-explicit-clip-raster-proof.md`
 - `worker-progress/worker-188-post-187-root-cause-audit.md`
 - `worker-progress/worker-189-materialized-clip-raster-bridge.md`
+- `worker-progress/worker-190-post-189-root-cause-audit.md`
 
 ## Pending Workers
 
-- Worker 190 post-Worker 189 root-cause audit.
+- Worker 191 inverted rrect/path raster proof.
 
 ## Decisions
 
@@ -4290,6 +4313,9 @@ Accepted worker reports:
   host-raster bridge proof. The next step is a fresh post-Worker 189 audit to
   accept the proof boundary independently and rerank the remaining local
   root-cause targets.
+- Worker 190 accepted Worker 189's proof boundary and selected paired inverted
+  rrect/path raster proof across the direct native and generated materialized
+  harnesses as the next locally unblocked target.
 - Post-worker-102 target selection: worker 103 accepted worker 102's synthetic ImageCmd fit proof boundary, reconfirmed the 28-command feasible matrix, and selected bounded text/paragraph CSS color-string command conversion/render coverage as the strongest locally unblocked target because public JSX accepts string color values and native text-style conversion parses CSS strings while current text/paragraph command-render coverage uses numeric colors.
 - Post-worker-106 target selection: worker 107 accepted worker 106's expanded generated `setCommand(...)` breadth, reconfirmed the 28-command feasible matrix, and selected direct `StrokeOpts` converter consistency as the strongest locally unblocked product-source target because `fromJSI(...)` rejects non-objects while `canConvert(...)` still advertises objects, `null`, and `undefined` as convertible.
 - Post-worker-108 follow-up: direct `StrokeOpts` converter consistency is integrated; the next step is a fresh audit because worker 107's next-ranked TypeScript dynamic payload caveat needs API-boundary reassessment after the converter fix.
@@ -4398,12 +4424,14 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Worker 190: post-Worker 189 root-cause audit.
-  - Audit the generated materialized clip/invertClip to raster bridge proof,
-    rerun focused checks and the full feasible matrix, reprobe platform
-    blockers, and select the next strongest locally unblocked target.
-  - Consider Worker 189's suggested materialized inverted rrect/path raster
-    cases, but rerank independently against the current proof surface.
+- Worker 191: paired inverted rrect/path raster proof.
+  - Add bounded inverted rrect and inverted path cases to
+    `scripts/verify-yoganode-native-commands-render.mjs`, then mirror them
+    through generated materialized `setStyle(...)` delivery in
+    `scripts/verify-yoganode-nitro-materialization.mjs`.
+  - Keep the proof local to host-native/host-JSC raster assertions and avoid
+    claiming platform app runtime, React Native bridge delivery, or exact
+    antialias/geometry fidelity.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 

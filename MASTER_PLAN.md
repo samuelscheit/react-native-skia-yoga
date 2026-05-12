@@ -124,11 +124,11 @@ Latest accepted implementation: worker 189 added generated materialized
 `YogaNode::toObject(runtime)`, generated JS-facing wrappers, and
 `YogaNode::renderToContext()`.
 
-Latest accepted audit: worker 188 accepted Worker 187's bounded explicit
-`style.clip` raster proof, reconfirmed focused and full-matrix evidence plus
-platform blockers, and selected a generated materialized `setStyle(clip /
-invertClip)` to raster bridge proof as the next strongest locally unblocked
-target. Worker 190 is queued to audit Worker 189 and select the next target.
+Latest accepted audit: worker 190 accepted Worker 189's generated materialized
+clip/invertClip raster bridge proof, reconfirmed focused and full-matrix
+evidence plus platform blockers, and selected paired inverted rrect/path raster
+proof across direct native and generated materialized harnesses as the next
+strongest locally unblocked target.
 
 Goals:
 
@@ -324,21 +324,22 @@ Accepted package-hygiene implementation:
 - `worker-187-explicit-clip-raster-proof`: added bounded host-native raster proof for explicit `style.clip` rect/rrect/path plus `invertClip` through `YogaNode::renderToContext()`.
 - `worker-188-post-187-root-cause-audit`: accepted Worker 187's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected generated materialized clip/invertClip to raster bridge proof as Worker 189's target.
 - `worker-189-materialized-clip-raster-bridge`: added generated materialized `setStyle(clip rect/rrect/path, invertClip)` wrapper delivery to bounded `YogaNode::renderToContext()` raster proof.
+- `worker-190-post-189-root-cause-audit`: accepted Worker 189's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected paired inverted rrect/path raster proof across direct native and generated materialized harnesses.
 
 Current active worker:
 
-Worker 190 post-Worker 189 root-cause audit.
+Worker 191 inverted rrect/path raster proof.
 
-- Agent path: `/root/worker_190_post_189_root_cause_audit`.
-- Worktree: `../worker-190-post-189-root-cause-audit`.
-- Branch: `worker/190-post-189-root-cause-audit`.
-- Scope: audit Worker 189's materialized clip raster bridge proof, rerun
-  focused checks and the feasible matrix, reprobe platform blockers, and select
-  the next strongest locally unblocked root-cause target.
+- Agent path: `/root/worker_191_inverted_rrect_path_raster_proof`.
+- Worktree: `../worker-191-inverted-rrect-path-raster-proof`.
+- Branch: `worker/191-inverted-rrect-path-raster-proof`.
+- Scope: add bounded inverted rrect/path raster proof first to the direct
+  native command/render verifier and then mirror it through generated
+  materialized `setStyle(...)` delivery.
 
 Next queued worker:
 
-- None until Worker 190 reports.
+- None until Worker 191 reports.
 
 Acceptance criteria:
 
