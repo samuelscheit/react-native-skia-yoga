@@ -3772,10 +3772,22 @@ Last updated: 2026-05-12
   - Post-merge `git diff --check HEAD~1 HEAD`: passed.
 - Next step selected by orchestration: launch Worker 179 for global
   `style.borderRadius` scalar host-raster proof.
+- Prepared Worker 179 global `style.borderRadius` scalar host-raster proof:
+  - Worktree: `../worker-179-border-radius-raster-proof`.
+  - Branch: `worker/179-border-radius-raster-proof`.
+  - Planned agent path: `/root/worker_179_border_radius_raster_proof`.
+  - Symlinked root `node_modules` and `example/node_modules` from the main
+    worktree.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
 
 ## Active Workers
 
-- None.
+- `/root/worker_179_border_radius_raster_proof`: global `style.borderRadius`
+  scalar host-raster proof from isolated worktree
+  `../worker-179-border-radius-raster-proof` on branch
+  `worker/179-border-radius-raster-proof`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4100,7 +4112,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Worker 179: global `style.borderRadius` scalar host-raster smoke.
+- Monitor Worker 179: global `style.borderRadius` scalar host-raster smoke.
   - Add a focused case to `scripts/verify-yoganode-native-commands-render.mjs`
     that sets `NodeStyle.borderRadius` on a `GroupCmd` parent, inserts a
     full-size `RectCmd` child, and renders through real

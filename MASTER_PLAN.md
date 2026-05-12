@@ -315,17 +315,20 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- Worker 179 global `style.borderRadius` scalar host-raster smoke.
+  - Agent path: `/root/worker_179_border_radius_raster_proof`.
+  - Worktree: `../worker-179-border-radius-raster-proof`.
+  - Branch: `worker/179-border-radius-raster-proof`.
+  - Scope: add bounded host-native raster evidence for global
+    `NodeStyle.borderRadius` clipping a full-size child through
+    `YogaNode::renderToContext()`.
+  - Required verification: edited verifier syntax check,
+    `check:yoganode-native-commands-render`, `check:feasible-matrix`, and
+    `git diff --check`.
 
 Next queued worker:
 
-- Worker 179 global `style.borderRadius` scalar host-raster smoke.
-  - Add a focused host-native raster case for `NodeStyle.borderRadius` in
-    `scripts/verify-yoganode-native-commands-render.mjs`.
-  - Prove all four `_clipToBoundsRadii` slots are seeded from the global scalar
-    and render clipping affects a full-size child.
-  - Keep proof host-native/raster-only and separate from explicit `style.clip`
-    and `RRectCmd::cornerRadius`.
+- None until Worker 179 reports.
 
 Acceptance criteria:
 
