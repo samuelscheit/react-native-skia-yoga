@@ -133,7 +133,7 @@ try {
 		"- Public package entrypoints and lowercase intrinsic JSX compiled from the installed package.",
 	)
 	console.log(
-		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, dynamic scalar global style.borderRadius, dynamic style.clip rect/rrect/path forms with dynamic style.invertClip, inventory-backed dynamic SkPoint-capable corner-radius forms, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, whole style.matrix SharedValue 9-/16-value arrays, inventory-backed static style.transform arrays, whole style.transform SharedValue<Transform>, inventory-backed nested style.transform SharedValue<number> leaves for every public transform operation, and whole SharedValue<YogaNodeStyle> authoring.",
+		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, dynamic scalar global style.borderRadius, dynamic style.clip rect/rrect/path forms with dynamic style.invertClip, inventory-backed dynamic SkPoint-capable corner-radius forms, representative dynamic layout style fields, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, whole style.matrix SharedValue 9-/16-value arrays, inventory-backed static style.transform arrays, whole style.transform SharedValue<Transform>, inventory-backed nested style.transform SharedValue<number> leaves for every public transform operation, and whole SharedValue<YogaNodeStyle> authoring.",
 	)
 	console.log(
 		`- Source public transform operation inventory from src/specs/style.ts matched packed consumer cases: ${formatTransformOperationKeys(
@@ -372,6 +372,7 @@ type PublicClip = NonNullable<YogaNodeStyle["clip"]>
 type PublicClipPath = Extract<PublicClip, SkPath>
 type PublicClipRect = Extract<PublicClip, SkRect>
 type PublicClipRRect = Extract<PublicClip, SkRRect>
+type PublicStyleField<K extends keyof YogaNodeStyle> = NonNullable<YogaNodeStyle[K]>
 
 declare function asSharedValue<T>(value: T): SharedValue<T>
 
@@ -472,6 +473,38 @@ const sharedStyleInvertClip = null as unknown as SharedValue<boolean>
 const invalidStyleClipNumber = null as unknown as SharedValue<number>
 const sharedPublicMatrix9 = asSharedValue<PublicMatrix>(publicMatrix9)
 const sharedPublicMatrix16 = asSharedValue<PublicMatrix>(publicMatrix16)
+const sharedLayoutWidthPercent = asSharedValue<PublicStyleField<"width">>("66%")
+const sharedLayoutWidthAuto = asSharedValue<PublicStyleField<"width">>("auto")
+const sharedLayoutHeightAuto = asSharedValue<PublicStyleField<"height">>("auto")
+const sharedLayoutMinWidth = asSharedValue<PublicStyleField<"minWidth">>(32)
+const sharedLayoutMaxWidthPercent = asSharedValue<PublicStyleField<"maxWidth">>("90%")
+const sharedLayoutMinHeight = asSharedValue<PublicStyleField<"minHeight">>(24)
+const sharedLayoutMaxHeightPercent = asSharedValue<PublicStyleField<"maxHeight">>("80%")
+const sharedLayoutFlexBasisAuto = asSharedValue<PublicStyleField<"flexBasis">>("auto")
+const sharedLayoutFlexBasisPercent = asSharedValue<PublicStyleField<"flexBasis">>("40%")
+const sharedLayoutGap = asSharedValue<PublicStyleField<"gap">>(6)
+const sharedLayoutRowGap = asSharedValue<PublicStyleField<"rowGap">>(4)
+const sharedLayoutColumnGap = asSharedValue<PublicStyleField<"columnGap">>(5)
+const sharedLayoutFlexGrow = asSharedValue<PublicStyleField<"flexGrow">>(1)
+const sharedLayoutFlexShrink = asSharedValue<PublicStyleField<"flexShrink">>(0)
+const sharedLayoutAlignContent = asSharedValue<PublicStyleField<"alignContent">>("space-between")
+const sharedLayoutAlignSelf = asSharedValue<PublicStyleField<"alignSelf">>("stretch")
+const sharedLayoutFlexWrap = asSharedValue<PublicStyleField<"flexWrap">>("wrap")
+const sharedLayoutDirection = asSharedValue<PublicStyleField<"direction">>("ltr")
+const sharedLayoutDisplay = asSharedValue<PublicStyleField<"display">>("flex")
+const sharedLayoutBoxSizing = asSharedValue<PublicStyleField<"boxSizing">>("border-box")
+const sharedLayoutPosition = asSharedValue<PublicStyleField<"position">>("absolute")
+const sharedLayoutTopPercent = asSharedValue<PublicStyleField<"top">>("10%")
+const sharedLayoutRightPercent = asSharedValue<PublicStyleField<"right">>("8%")
+const sharedLayoutBottomPercent = asSharedValue<PublicStyleField<"bottom">>("6%")
+const sharedLayoutLeftPercent = asSharedValue<PublicStyleField<"left">>("4%")
+const sharedLayoutStartPercent = asSharedValue<PublicStyleField<"start">>("2%")
+const sharedLayoutEndPercent = asSharedValue<PublicStyleField<"end">>("3%")
+const sharedLayoutInsetPercent = asSharedValue<PublicStyleField<"inset">>("5%")
+const sharedLayoutInsetHorizontalPercent = asSharedValue<PublicStyleField<"insetHorizontal">>("7%")
+const sharedLayoutInsetVerticalPercent = asSharedValue<PublicStyleField<"insetVertical">>("9%")
+const sharedLayoutMarginLeftAuto = asSharedValue<PublicStyleField<"marginLeft">>("auto")
+const sharedLayoutMarginRightPercent = asSharedValue<PublicStyleField<"marginRight">>("12%")
 
 const dynamicPathProps: YogaIntrinsicElements["path"] = {
 \tpath: compileOnlyPath,
@@ -591,6 +624,48 @@ const dynamicNestedTransformRectProps: YogaIntrinsicElements["rect"] = {
 ${formatDynamicTransformEntries()}
 \t\t],
 \t\twidth: 36,
+\t},
+}
+
+const dynamicLayoutStyleGroupProps: YogaIntrinsicElements["group"] = {
+\tstyle: {
+\t\talignContent: sharedLayoutAlignContent,
+\t\talignSelf: sharedLayoutAlignSelf,
+\t\tbottom: sharedLayoutBottomPercent,
+\t\tboxSizing: sharedLayoutBoxSizing,
+\t\tcolumnGap: sharedLayoutColumnGap,
+\t\tdirection: sharedLayoutDirection,
+\t\tdisplay: sharedLayoutDisplay,
+\t\tend: sharedLayoutEndPercent,
+\t\tflexBasis: sharedLayoutFlexBasisPercent,
+\t\tflexGrow: sharedLayoutFlexGrow,
+\t\tflexShrink: sharedLayoutFlexShrink,
+\t\tflexWrap: sharedLayoutFlexWrap,
+\t\tgap: sharedLayoutGap,
+\t\theight: sharedLayoutHeightAuto,
+\t\tinset: sharedLayoutInsetPercent,
+\t\tinsetHorizontal: sharedLayoutInsetHorizontalPercent,
+\t\tinsetVertical: sharedLayoutInsetVerticalPercent,
+\t\tleft: sharedLayoutLeftPercent,
+\t\tmarginRight: sharedLayoutMarginRightPercent,
+\t\tmaxHeight: sharedLayoutMaxHeightPercent,
+\t\tmaxWidth: sharedLayoutMaxWidthPercent,
+\t\tminHeight: sharedLayoutMinHeight,
+\t\tminWidth: sharedLayoutMinWidth,
+\t\tposition: sharedLayoutPosition,
+\t\tright: sharedLayoutRightPercent,
+\t\trowGap: sharedLayoutRowGap,
+\t\tstart: sharedLayoutStartPercent,
+\t\ttop: sharedLayoutTopPercent,
+\t\twidth: sharedLayoutWidthPercent,
+\t},
+}
+
+const dynamicAutoLayoutStyleGroupProps: YogaIntrinsicElements["group"] = {
+\tstyle: {
+\t\tflexBasis: sharedLayoutFlexBasisAuto,
+\t\tmarginLeft: sharedLayoutMarginLeftAuto,
+\t\twidth: sharedLayoutWidthAuto,
 \t},
 }
 
@@ -751,6 +826,12 @@ export function PackedPackageSmoke() {
 \t\t\t\t\t\t\t</group>
 \t\t\t\t\t\t\t<rect {...dynamicGlobalBorderRadiusRectProps} />
 \t\t\t\t\t\t\t<rect {...dynamicNestedTransformRectProps} />
+\t\t\t\t\t\t\t<group {...dynamicLayoutStyleGroupProps}>
+\t\t\t\t\t\t\t\t<rect style={{ height: 12, width: 12 }} />
+\t\t\t\t\t\t\t</group>
+\t\t\t\t\t\t\t<group {...dynamicAutoLayoutStyleGroupProps}>
+\t\t\t\t\t\t\t\t<rect style={{ height: 12, width: 12 }} />
+\t\t\t\t\t\t\t</group>
 \t\t\t\t\t\t\t<rect {...dynamicScalarCornerRadiusRectProps} />
 \t\t\t\t\t\t\t<rect {...dynamicPointCornerRadiusRectProps} />
 \t\t\t\t\t\t\t<rect {...dynamicNestedCornerRadiusRectProps} />
