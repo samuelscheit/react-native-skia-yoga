@@ -439,28 +439,29 @@ Accepted package-hygiene implementation:
   validation boundary, reconfirmed focused/full feasible verification and
   local platform-native blockers, and selected command `SkPoint` payload finite
   validation as the next implementation target.
+- `worker-218-command-point-finite-validation`: implemented deterministic
+  pre-mutation finite-number validation for command `SkPoint` payloads:
+  `line.from.x/y`, `line.to.x/y`, and indexed `points.points[].x/y`, with
+  native command/render and generated materialized `setCommand(...)` negative
+  coverage proving previous `LineCmd` / `PointsCmd` state is preserved.
 
 Current active worker:
 
-- Worker 218 command point finite validation.
-- Agent path: `/root/worker_218_command_point_finite_validation`.
-- Worktree: `../worker-218-command-point-finite-validation`.
-- Branch: `worker/218-command-point-finite-validation`.
-- Scope: implement deterministic finite-number rejection for `line.from`,
-  `line.to`, and `points.points[]` `SkPoint.x/y` command payloads before
-  `YogaNode::setCommand(...)` installs or mutates native command state, with
-  native command/render and generated materialized negative coverage.
-- State: spawned with `agent_type: "worker"`, `goal: true`,
-  `fork_turns: "none"`, `model: "gpt-5.5"`, and
-  `reasoning_effort: "xhigh"`; implementation in progress.
+- None.
 
 Next queued worker:
 
-- None until Worker 218 reports.
+- Worker 219 post-Worker 218 audit.
+- Planned worktree: `../worker-219-post-218-audit`.
+- Planned branch: `worker/219-post-218-audit`.
+- Scope: audit Worker 218's command point finite validation boundary, focused
+  verifier evidence, post-merge matrix result, and any remaining numeric
+  command payload gaps.
 
 Follow-up queue:
 
-- Audit Worker 218 after it reports.
+- Consider whether non-`SkPoint` command numeric payloads need the same
+  deterministic finite validation policy.
 
 Acceptance criteria:
 
