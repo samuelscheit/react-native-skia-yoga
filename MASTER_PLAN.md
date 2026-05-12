@@ -119,15 +119,16 @@ Acceptance criteria:
 
 Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, example bundle feedback-loop hygiene fixed, post-worker-035 root-cause audit accepted, RN Skia private import cleanup integrated, post-worker-037 root-cause audit accepted, packed-package TypeScript consumer smoke coverage integrated, post-worker-039 root-cause audit accepted, `react-reconciler` package-surface dependency hygiene integrated, post-worker-041 root-cause audit accepted, public declaration/export boundary cleanup integrated, post-worker-043 root-cause audit accepted, `SkiaYogaObject` lazy initialization integrated, post-worker-045 root-cause audit accepted, `src/util.ts` Nitro boxing lazy-init integrated, post-worker-047 root-cause audit accepted, Worklets transform/closure verification integrated, post-worker-049 root-cause audit accepted, example/Expo Worklets transform verification integrated, public-import graph verifier hardening integrated, direct `NativeSkiaYoga` deep-import hardening integrated, post-worker-056 codegen-schema audit accepted, RN codegen schema verifier integrated, post-worker-058 root-cause audit accepted, Reconciler/gesture Worklets transform verification integrated, post-worker-060 root-cause audit accepted, Reconciler animated binding runtime verifier integrated, YogaCanvas gesture/interaction runtime verifier integrated, post-worker-062 root-cause audit accepted, YogaCanvas lifecycle runtime verifier integrated, post-worker-065 root-cause audit accepted, packed-package RN codegen/autolinking verification integrated, post-worker-067 root-cause audit accepted, example native-generation verifier integrated, local-artifact preservation hardening integrated, post-worker-069 root-cause audit accepted, aggregate feasible-matrix verifier integrated, post-worker-071 root-cause audit accepted, host-native YogaNode hit-testing verifier integrated, post-worker-073 root-cause audit accepted, host-native `SkiaYoga` / `RNSkYogaView` runtime verifier integrated, post-worker-075 root-cause audit accepted, feasible-matrix temp isolation hardening integrated, YogaNode hybrid/JSI raw-method boundary verification integrated, post-worker-078 root-cause audit accepted, YogaNode command/render verification integrated, post-worker-080 audit accepted, deterministic command/render expansion integrated, post-worker-082 audit accepted, ImageCmd command/render verification integrated, post-worker-084 audit accepted, TextCmd/ParagraphCmd command/render verification integrated, post-worker-086 root-cause audit accepted, Nitro YogaNode materialization verification integrated, dynamic AnimatedDouble Synchronizable verification integrated, selected dynamic AnimatedDouble NodeCommand verification integrated, dynamic PathCmd trim verification integrated, Reconciler native command-binding coverage integrated, post-worker-095 root-cause audit accepted, public `path.stroke` payload contract integration accepted, post-worker-097 root-cause audit accepted, Reconciler JS-mode command listener coverage integrated, post-worker-099 root-cause audit accepted, generated Nitro `setCommand(...)` breadth coverage integrated, post-worker-101 root-cause audit accepted, ImageCmd fit-mode coverage integrated, post-worker-103 root-cause audit accepted, TextCmd/ParagraphCmd CSS color-string coverage integrated, post-worker-105 root-cause audit accepted, expanded generated Nitro `setCommand(...)` breadth integrated, post-worker-107 root-cause audit accepted, direct `StrokeOpts` converter consistency integrated, post-worker-109 root-cause audit accepted, packed dynamic JSX type-boundary coverage integrated, post-worker-111 root-cause audit accepted, package export-boundary hardening integrated, NodeCommand `toJSI(...)` serialization symmetry integrated, post-worker-114 root-cause audit accepted, materialized `YogaNode.getChildren()` identity/prototype hardening integrated, post-worker-115 root-cause audit accepted, post-worker-116 root-cause audit accepted, whole `image.sampling` `SharedValue<SamplingOptions>` type support integrated, post-worker-118 root-cause audit accepted, value-bearing style/sampling `toJSI(...)` serialization integrated, post-worker-120 root-cause audit accepted, canonical `style.antiAlias` support integrated, post-worker-122 root-cause audit accepted, expanded `TextStyle` `toJSI(...)` serialization integrated, post-worker-124 root-cause audit accepted, bounded `TextStyle.fontFeatures` serialization integrated, post-worker-126 root-cause audit accepted, bounded `ParagraphStyle` scalar serialization integrated, post-worker-128 root-cause audit accepted, bounded `ParagraphStyle.strutStyle` parser/serializer coverage integrated, post-worker-130 root-cause audit accepted, unsupported public `fontVariations` contract closure integrated, post-worker-132 root-cause audit accepted, simple `<text textStyle>` contract closure integrated, post-worker-134 root-cause audit accepted, nested `paragraphStyle.textStyle` CSS color parsing integrated, post-worker-136 root-cause audit accepted, dynamic nested `paragraphStyle.textStyle` Reconciler proof integrated, post-worker-138 root-cause audit accepted, nested `ParagraphStyle::toJSI(...)` shape preservation integrated, SkPaint-backed `backgroundColor` paint ordering integrated, post-worker-147 root-cause audit accepted, `style.layer` / `_layerPaint` proof integrated, post-worker-149 root-cause audit accepted, dynamic `style.layer` / opaque style `SharedValue` proof integrated, post-worker-152 root-cause audit accepted, materialized `YogaNode.setStyle(...)` paint-field breadth proof integrated, generated materialized transform-operation breadth integrated, post-worker-162 root-cause audit accepted, bounded transform composition runtime proof integrated, post-worker-164 root-cause audit accepted, public/Reconciler transform authoring proof integrated, and post-worker-166 root-cause audit accepted
 
-Latest accepted implementation: worker 187 added bounded host-native raster
-proof for explicit `style.clip` rect/rrect/path plus `invertClip` using
+Latest accepted implementation: worker 189 added generated materialized
+`setStyle(clip/invertClip)` to bounded host-raster proof using
+`YogaNode::toObject(runtime)`, generated JS-facing wrappers, and
 `YogaNode::renderToContext()`.
 
 Latest accepted audit: worker 188 accepted Worker 187's bounded explicit
 `style.clip` raster proof, reconfirmed focused and full-matrix evidence plus
 platform blockers, and selected a generated materialized `setStyle(clip /
 invertClip)` to raster bridge proof as the next strongest locally unblocked
-target.
+target. Worker 190 is queued to audit Worker 189 and select the next target.
 
 Goals:
 
@@ -322,21 +323,22 @@ Accepted package-hygiene implementation:
 - `worker-186-post-185-root-cause-audit`: accepted Worker 185's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected explicit `style.clip` rect/rrect/path plus `invertClip` raster proof as Worker 187's target.
 - `worker-187-explicit-clip-raster-proof`: added bounded host-native raster proof for explicit `style.clip` rect/rrect/path plus `invertClip` through `YogaNode::renderToContext()`.
 - `worker-188-post-187-root-cause-audit`: accepted Worker 187's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected generated materialized clip/invertClip to raster bridge proof as Worker 189's target.
+- `worker-189-materialized-clip-raster-bridge`: added generated materialized `setStyle(clip rect/rrect/path, invertClip)` wrapper delivery to bounded `YogaNode::renderToContext()` raster proof.
 
 Current active worker:
 
-Worker 189 generated materialized clip raster bridge proof.
+Worker 190 post-Worker 189 root-cause audit.
 
-- Agent path: `/root/worker_189_materialized_clip_raster_bridge`.
-- Worktree: `../worker-189-materialized-clip-raster-bridge`.
-- Branch: `worker/189-materialized-clip-raster-bridge`.
-- Scope: add host-JSC/native proof that generated materialized
-  `setStyle(clip rect/rrect/path, invertClip)` delivery is followed by
-  `YogaNode::renderToContext()` bounded raster assertions.
+- Agent path: `/root/worker_190_post_189_root_cause_audit`.
+- Worktree: `../worker-190-post-189-root-cause-audit`.
+- Branch: `worker/190-post-189-root-cause-audit`.
+- Scope: audit Worker 189's materialized clip raster bridge proof, rerun
+  focused checks and the feasible matrix, reprobe platform blockers, and select
+  the next strongest locally unblocked root-cause target.
 
 Next queued worker:
 
-- None until Worker 189 reports.
+- None until Worker 190 reports.
 
 Acceptance criteria:
 
