@@ -295,11 +295,16 @@ Accepted package-hygiene implementation:
 - `worker-164-post-163-root-cause-audit`: accepted Worker 163's proof boundary, reconfirmed the relevant focused checks and full 28-command feasible matrix, and selected public/Reconciler transform authoring proof as Worker 165's target.
 - `worker-165-transform-public-reconciler-proof`: added packed-consumer static and dynamic `style.transform` authoring proof plus Reconciler source-level listener/update/cleanup proof for nested and whole-transform SharedValues.
 
-Current next step:
+Current active worker:
 
-- Launch Worker 166 as a post-worker-165 root-cause audit to accept the new
-  public/Reconciler transform proof boundary, rerank remaining locally
-  unblocked gaps, and select the next target.
+- Worker 166 post-worker-165 root-cause audit.
+  - Agent path: `/root/worker_166_post_165_root_cause_audit`.
+  - Worktree: `../worker-166-post-165-root-cause-audit`.
+  - Branch: `worker/166-post-165-root-cause-audit`.
+  - Scope: accept the new public/Reconciler transform proof boundary, rerank
+    remaining locally unblocked gaps, and select the next target.
+  - Required verification: focused Worker 165 checks, `check:feasible-matrix`,
+    current platform blocker probes, and `git diff --check`.
 
 Acceptance criteria:
 
