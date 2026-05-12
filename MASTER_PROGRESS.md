@@ -4204,20 +4204,36 @@ Last updated: 2026-05-12
     independently verified, reported, and committed manually from the isolated
     Worker 195 worktree.
   - Selected Worker 196 post-Worker 195 root-cause audit as the next step.
-- Prepared Worker 196 post-Worker 195 root-cause audit:
-  - Worktree: `../worker-196-post-195-root-cause-audit`.
-  - Branch: `worker/196-post-195-root-cause-audit`.
-  - Planned agent path: `/root/worker_196_post_195_root_cause_audit`.
-  - Launch parameters: `agent_type: "worker"`, `goal: true`,
-    `fork_turns: "none"`, `model: "gpt-5.5"`, and
-    `reasoning_effort: "xhigh"`.
+- Worker 196 post-Worker 195 root-cause audit accepted:
+  - Worker branch commit:
+    `6539c77 Add post-worker-195 root-cause audit`.
+  - Merged worker 196 into `main` as
+    `a596dc0 Merge worker 196 post-195 audit`.
+  - Accepted Worker 195's overflow render/materialized bridge proof within
+    its bounded direct host-native and host-JSC generated-wrapper proof
+    boundary.
+  - Worker verification passed `git diff --check`, both edited syntax checks,
+    both focused verifier commands, and `npm run check:feasible-matrix` all
+    28 commands in `4m 39s`.
+  - The first Worker 196 spawn-agent and its restarted replacement stalled
+    without a durable report. The audit was manually recovered in the isolated
+    Worker 196 worktree after closing the stuck agents.
+  - The fresh Worker 196 worktree initially had ignored dependency drift
+    (`@react-native/codegen` 0.80.1 and missing local RN Skia include shims)
+    that caused verifier failures unrelated to tracked code. The recovery used
+    main's known-good ignored `node_modules` and `example/node_modules`
+    dependency layout for verification, then removed the stale worker-local
+    install that caused lint scanning noise.
+  - Reprobed platform blockers: Command Line Tools-only Xcode selection,
+    missing iPhone simulator SDK, CocoaPods, Gradle, ADB, CMake, Ninja,
+    usable Java runtime, and Android SDK environment variables all remain
+    unavailable.
+  - Selected residual generated materialized layout edge/constraint breadth as
+    the next locally unblocked root-cause target.
 
 ## Active Workers
 
-- `/root/worker_196_post_195_root_cause_audit`: post-Worker 195
-  root-cause audit from isolated worktree
-  `../worker-196-post-195-root-cause-audit` on branch
-  `worker/196-post-195-root-cause-audit`.
+- None. Worker 196 has been accepted and merged.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4433,10 +4449,11 @@ Accepted worker reports:
 - `worker-progress/worker-193-materialized-layout-breadth.md`
 - `worker-progress/worker-194-post-193-root-cause-audit.md`
 - `worker-progress/worker-195-overflow-render-materialized-bridge.md`
+- `worker-progress/worker-196-post-195-root-cause-audit.md`
 
 ## Pending Workers
 
-- None until Worker 196 reports.
+- Worker 197 residual generated materialized layout edge/constraint breadth.
 
 ## Decisions
 
@@ -4484,6 +4501,11 @@ Accepted worker reports:
   `5m 14s`. The original Worker 195 spawn-agent stalled after scoped edits and
   was manually recovered, verified, reported, and committed from the isolated
   worktree. The next step is a fresh post-Worker 195 root-cause audit.
+- Worker 196 accepted Worker 195's bounded overflow proof boundary,
+  reconfirmed focused/full-matrix evidence, documented the worker-local
+  ignored dependency drift encountered during manual recovery, confirmed local
+  platform-native build/run blockers remain, and selected residual generated
+  materialized layout edge/constraint breadth as Worker 197's target.
 - Post-worker-102 target selection: worker 103 accepted worker 102's synthetic ImageCmd fit proof boundary, reconfirmed the 28-command feasible matrix, and selected bounded text/paragraph CSS color-string command conversion/render coverage as the strongest locally unblocked target because public JSX accepts string color values and native text-style conversion parses CSS strings while current text/paragraph command-render coverage uses numeric colors.
 - Post-worker-106 target selection: worker 107 accepted worker 106's expanded generated `setCommand(...)` breadth, reconfirmed the 28-command feasible matrix, and selected direct `StrokeOpts` converter consistency as the strongest locally unblocked product-source target because `fromJSI(...)` rejects non-objects while `canConvert(...)` still advertises objects, `null`, and `undefined` as convertible.
 - Post-worker-108 follow-up: direct `StrokeOpts` converter consistency is integrated; the next step is a fresh audit because worker 107's next-ranked TypeScript dynamic payload caveat needs API-boundary reassessment after the converter fix.
@@ -4592,7 +4614,18 @@ Accepted worker reports:
 
 ## Next Worker Candidates
 
-- None until Worker 196 reports.
+- Worker 197: residual generated materialized layout edge/constraint breadth.
+  - Extend `scripts/verify-yoganode-nitro-materialization.mjs` with bounded
+    generated materialized layout proof beyond Worker 193's compact flex tree.
+  - Candidate fields include alignContent, alignSelf, flexWrap, direction,
+    display, boxSizing, min/max constraints, aspectRatio, edge-specific
+    aliases, and percentage/auto values where stable.
+  - Use generated materialized `setStyle(...)`, `insertChild(...)`,
+    `computeLayout(...)`, and generated `layout` getter calls.
+  - Assert selected native `_style` optionals, stable Yoga style getters, and
+    selected computed layout values without claiming exact Yoga conformance,
+    exhaustive layout coverage, React Native bridge delivery, platform app
+    runtime, or UI-runtime Worklets.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 

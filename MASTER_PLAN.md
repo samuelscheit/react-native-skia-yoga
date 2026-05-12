@@ -338,22 +338,19 @@ Accepted package-hygiene implementation:
 - `worker-193-materialized-layout-breadth`: expanded the generated materialized Nitro verifier with a compact flexbox/layout tree proof covering representative layout style delivery, selected native Yoga state, native computed layout, and generated `layout` getter output.
 - `worker-194-post-193-root-cause-audit`: accepted Worker 193's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected overflow render/materialized bridge proof as Worker 195's target.
 - `worker-195-overflow-render-materialized-bridge`: added bounded host-native and generated materialized overflow hidden/scroll delivery plus rectangular raster clipping proof through `YogaNode::renderToContext()`.
+- `worker-196-post-195-root-cause-audit`: accepted Worker 195's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected residual generated materialized layout edge/constraint breadth as Worker 197's target.
 
 Current active worker:
 
-Worker 196 post-Worker 195 root-cause audit.
-
-- Agent path: `/root/worker_196_post_195_root_cause_audit`.
-- Worktree: `../worker-196-post-195-root-cause-audit`.
-- Branch: `worker/196-post-195-root-cause-audit`.
-- Scope: independently accept or reject Worker 195's overflow
-  render/materialized proof boundary, rerun focused/full-matrix evidence as
-  appropriate, confirm cleanup/platform-blocker state as needed, and select the
-  next locally unblocked target.
+- None. Worker 196 has been accepted and merged.
 
 Next queued worker:
 
-- None until Worker 196 reports.
+- Worker 197 residual generated materialized layout edge/constraint breadth.
+  Extend generated materialized layout coverage beyond Worker 193's compact
+  flex tree while keeping the proof bounded to host-JSC generated wrappers,
+  selected native Yoga state, selected computed layout values, and generated
+  `layout` getter evidence.
 
 Acceptance criteria:
 
