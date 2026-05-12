@@ -3721,13 +3721,32 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 177 JS/Reconciler corner-radius completion accepted:
+  - Added `scripts/style-corner-radius-inventory.mjs` as a shared drift guard
+    for the four SkPoint-capable corner keys across `src/specs/style.ts`,
+    `src/jsx.ts`, `src/Reconciler.ts`, and verifier case tables.
+  - Expanded `scripts/verify-package-typescript-consumer.mjs` so packed public
+    TypeScript coverage explicitly accepts all four per-corner style radius
+    keys as scalar `SharedValue<number>`, whole `SharedValue<SkPoint>`, and
+    nested `{ x, y }` `SharedValue<number>` leaves.
+  - Expanded `scripts/verify-reconciler-animated-bindings.mjs` with
+    table-driven whole scalar `SharedValue<number>` source-level Reconciler
+    cases for all four keys.
+  - Worker branch commit:
+    `a221402 Verify corner radius JS reconciler coverage`.
+  - Merged worker 177 into `main` as
+    `50c4f94 Merge worker 177 corner radius JS proof`.
+  - Post-merge checks passed: `git diff --check HEAD~1 HEAD`,
+    `node --check` for the new helper and both edited verifiers,
+    `npm run check:package-typescript-consumer`,
+    `npm run check:reconciler-animated-bindings`, and
+    `npm run check:feasible-matrix` 28/28 in `4m 14s`.
+- Next step selected by orchestration: launch Worker 178 for a post-Worker 177
+  root-cause audit.
 
 ## Active Workers
 
-- `/root/worker_177_corner_radius_js_reconciler_completion`: JS/Reconciler
-  corner-radius completion from isolated worktree
-  `../worker-177-corner-radius-js-reconciler-completion` on branch
-  `worker/177-corner-radius-js-reconciler-completion`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3924,6 +3943,7 @@ Accepted worker reports:
 - `worker-progress/worker-174-post-173-root-cause-audit.md`
 - `worker-progress/worker-175-style-corner-radius-raster-proof.md`
 - `worker-progress/worker-176-post-175-root-cause-audit.md`
+- `worker-progress/worker-177-corner-radius-js-reconciler-completion.md`
 
 ## Pending Workers
 
@@ -4050,16 +4070,11 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor Worker 177: JS/Reconciler corner-radius completion pass.
-  - Add a compact corner-key inventory guard keeping `src/specs/style.ts`,
-    `src/jsx.ts`, `src/Reconciler.ts`, and verifier cases aligned for all four
-    SkPoint-capable corner keys.
-  - Extend `scripts/verify-reconciler-animated-bindings.mjs` with table-driven
-    whole scalar `SharedValue<number>` cases for all four keys.
-  - Extend `scripts/verify-package-typescript-consumer.mjs` so packed public
-    TypeScript coverage explicitly names all four dynamic corner keys.
-  - Keep the proof boundary at packed TypeScript plus Node VM Reconciler
-    source-level behavior.
+- Worker 178: post-Worker 177 root-cause audit.
+  - Accept or reject Worker 177's packed TypeScript/Reconciler source-level
+    corner-radius proof boundary.
+  - Reconfirm focused/post-merge evidence and local platform-native blockers.
+  - Select the next strongest locally unblocked root-cause target.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
