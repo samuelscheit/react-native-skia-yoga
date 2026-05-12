@@ -118,7 +118,7 @@ try {
 		"- Public package entrypoints and lowercase intrinsic JSX compiled from the installed package.",
 	)
 	console.log(
-		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, inventory-backed static style.transform arrays, whole style.transform SharedValue<Transform>, inventory-backed nested style.transform SharedValue<number> leaves for every public transform operation, and whole SharedValue<YogaNodeStyle> authoring.",
+		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, whole style.matrix SharedValue 9-/16-value arrays, inventory-backed static style.transform arrays, whole style.transform SharedValue<Transform>, inventory-backed nested style.transform SharedValue<number> leaves for every public transform operation, and whole SharedValue<YogaNodeStyle> authoring.",
 	)
 	console.log(
 		`- Source public transform operation inventory from src/specs/style.ts matched packed consumer cases: ${formatTransformOperationKeys(
@@ -130,6 +130,9 @@ try {
 	)
 	console.log(
 		"- Packed consumer TypeScript still rejected unsupported nested image.sampling SharedValue leaves while sampling remains opaque.",
+	)
+	console.log(
+		"- Packed consumer TypeScript rejected unsupported nested style.matrix SharedValue<number> array entries while accepting SharedValue for the whole matrix.",
 	)
 	console.log(
 		"- Packed consumer TypeScript accepted simple text.textStyle color/fontSize authoring and rejected rich text.textStyle fontFamilies, fontFeatures, fontStyle, letterSpacing, and fontVariations authoring while preserving rich paragraphStyle text styling.",
@@ -332,6 +335,12 @@ import { Fragment as YogaDevRuntimeFragment } from "react-native-skia-yoga/jsx-d
 import { Fragment as YogaRuntimeFragment } from "react-native-skia-yoga/jsx-runtime"
 
 type PublicTransform = NonNullable<YogaNodeStyle["transform"]>
+type PublicMatrix = NonNullable<YogaNodeStyle["matrix"]>
+type PublicMatrixArray = Extract<PublicMatrix, readonly number[]>
+type PublicMatrix9 = Extract<PublicMatrixArray, { length: 9 }>
+type PublicMatrix16 = Extract<PublicMatrixArray, { length: 16 }>
+
+declare function asSharedValue<T>(value: T): SharedValue<T>
 
 const rootStyle: YogaNodeStyle = {
 \talignItems: "center",
@@ -364,6 +373,26 @@ ${formatStaticTransformEntries()}
 \twidth: 72,
 }
 
+const publicMatrix9: PublicMatrix9 = [1, 0, 0, 0, 1, 0, 8, 12, 1]
+const publicMatrix16: PublicMatrix16 = [
+\t1, 0, 0, 0,
+\t0, 1, 0, 0,
+\t0, 0, 1, 0,
+\t8, 12, 0, 1,
+]
+
+const staticMatrix9Style: YogaNodeStyle = {
+\theight: 28,
+\tmatrix: publicMatrix9,
+\twidth: 72,
+}
+
+const staticMatrix16Style: YogaNodeStyle = {
+\theight: 28,
+\tmatrix: publicMatrix16,
+\twidth: 72,
+}
+
 const layerPaint = Skia.Paint()
 layerPaint.setAlphaf(0.75)
 
@@ -388,10 +417,13 @@ const sharedSampling = null as unknown as SharedValue<SamplingOptions>
 const sharedSamplingFilter = null as unknown as SharedValue<FilterMode>
 const sharedLayerPaint = null as unknown as SharedValue<SkPaint>
 const sharedLayerOpacity = null as unknown as SharedValue<number>
+const sharedMatrixEntry = null as unknown as SharedValue<number>
 const sharedPublicTransform = null as unknown as SharedValue<PublicTransform>
 ${formatSharedTransformDeclarations()}
 const sharedWholeStyle = null as unknown as SharedValue<YogaNodeStyle>
 const compileOnlyPath = null as unknown as SkPath
+const sharedPublicMatrix9 = asSharedValue<PublicMatrix>(publicMatrix9)
+const sharedPublicMatrix16 = asSharedValue<PublicMatrix>(publicMatrix16)
 
 const dynamicPathProps: YogaIntrinsicElements["path"] = {
 \tpath: compileOnlyPath,
@@ -453,6 +485,22 @@ const dynamicWholeTransformGroupProps: YogaIntrinsicElements["group"] = {
 \t},
 }
 
+const dynamicWholeMatrix9GroupProps: YogaIntrinsicElements["group"] = {
+\tstyle: {
+\t\theight: 24,
+\t\tmatrix: sharedPublicMatrix9,
+\t\twidth: 24,
+\t},
+}
+
+const dynamicWholeMatrix16GroupProps: YogaIntrinsicElements["group"] = {
+\tstyle: {
+\t\theight: 24,
+\t\tmatrix: sharedPublicMatrix16,
+\t\twidth: 24,
+\t},
+}
+
 const dynamicNestedTransformRectProps: YogaIntrinsicElements["rect"] = {
 \tstyle: {
 \t\theight: 36,
@@ -466,6 +514,23 @@ ${formatDynamicTransformEntries()}
 const unsupportedNestedSamplingProps: YogaIntrinsicElements["image"] = {
 \t// @ts-expect-error nested image.sampling SharedValue leaves are not part of the opaque SamplingOptions contract.
 \tsampling: { filter: sharedSamplingFilter },
+}
+
+const unsupportedNestedMatrixProps: YogaIntrinsicElements["rect"] = {
+\tstyle: {
+\t\t// @ts-expect-error nested style.matrix SharedValue<number> entries are not supported; use a SharedValue for the whole matrix instead.
+\t\tmatrix: [
+\t\t\tsharedMatrixEntry,
+\t\t\t0,
+\t\t\t0,
+\t\t\t0,
+\t\t\t1,
+\t\t\t0,
+\t\t\t0,
+\t\t\t0,
+\t\t\t1,
+\t\t],
+\t},
 }
 
 const unsupportedTextFontVariationsElement = (
@@ -528,6 +593,18 @@ export function PackedPackageSmoke() {
 \t\t\t\t\t\t\t<group {...dynamicWholeTransformGroupProps}>
 \t\t\t\t\t\t\t\t<rect style={{ height: 12, width: 12 }} />
 \t\t\t\t\t\t\t</group>
+\t\t\t\t\t\t\t<group style={staticMatrix9Style}>
+\t\t\t\t\t\t\t\t<rect style={{ height: 12, width: 12 }} />
+\t\t\t\t\t\t\t</group>
+\t\t\t\t\t\t\t<group style={staticMatrix16Style}>
+\t\t\t\t\t\t\t\t<rect style={{ height: 12, width: 12 }} />
+\t\t\t\t\t\t\t</group>
+\t\t\t\t\t\t\t<group {...dynamicWholeMatrix9GroupProps}>
+\t\t\t\t\t\t\t\t<rect style={{ height: 12, width: 12 }} />
+\t\t\t\t\t\t\t</group>
+\t\t\t\t\t\t\t<group {...dynamicWholeMatrix16GroupProps}>
+\t\t\t\t\t\t\t\t<rect style={{ height: 12, width: 12 }} />
+\t\t\t\t\t\t\t</group>
 \t\t\t\t\t\t\t<rect {...dynamicNestedTransformRectProps} />
 \t\t\t\t\t\t\t<circle
 \t\t\t\t\t\t\t\tradius={sharedCircleRadius}
@@ -576,6 +653,7 @@ void smokeElement
 void devRuntimeFragment
 void runtimeFragment
 void unsupportedNestedSamplingProps
+void unsupportedNestedMatrixProps
 void unsupportedTextFontVariationsElement
 void unsupportedTextFontFamiliesElement
 void unsupportedTextFontFeaturesElement
