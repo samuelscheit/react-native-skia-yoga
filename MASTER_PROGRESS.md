@@ -3948,13 +3948,37 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 185 dynamic `style.clip` / `style.invertClip` public/Reconciler proof
+  accepted:
+  - Fixed the public `style.clip` type boundary so exact union-member
+    `SharedValue<SkRect>`, `SharedValue<SkRRect>`, and `SharedValue<SkPath>`
+    forms compile while invalid `SharedValue<number>` remains rejected.
+  - Added packed-consumer proof for dynamic top-level `style.clip`
+    rect/rrect/path forms and `style.invertClip: SharedValue<boolean>`.
+  - Added Reconciler source-level proof for top-level listener keys, initial
+    snapshots, updates, full style rebuilds, invalidation, cleanup, ignored
+    late emits, and no native command mirror.
+  - Worker branch commit:
+    `ed28565 Add dynamic clip invertClip proof`.
+  - Merged worker 185 into `main` as
+    `b25fab2 Merge worker 185 clip invertClip dynamic proof`.
+  - Post-merge checks passed: `git diff --check HEAD~1 HEAD`, both edited
+    verifier syntax checks, `npm run check:package-typescript-consumer`,
+    `npm run check:reconciler-animated-bindings`, and
+    `npm run check:feasible-matrix` 28/28 in `4m 15s`.
+- Prepared Worker 186 post-Worker 185 root-cause audit:
+  - Worktree: `../worker-186-post-185-root-cause-audit`.
+  - Branch: `worker/186-post-185-root-cause-audit`.
+  - Planned agent path: `/root/worker_186_post_185_root_cause_audit`.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
 
 ## Active Workers
 
-- `/root/worker_185_clip_invertclip_dynamic_proof`: dynamic `style.clip` /
-  `style.invertClip` public/Reconciler proof from isolated worktree
-  `../worker-185-clip-invertclip-dynamic-proof` on branch
-  `worker/185-clip-invertclip-dynamic-proof`.
+- `/root/worker_186_post_185_root_cause_audit`: post-Worker 185 root-cause
+  audit from isolated worktree `../worker-186-post-185-root-cause-audit` on
+  branch `worker/186-post-185-root-cause-audit`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4159,6 +4183,7 @@ Accepted worker reports:
 - `worker-progress/worker-182-post-181-root-cause-audit.md`
 - `worker-progress/worker-183-border-radius-dynamic-contract.md`
 - `worker-progress/worker-184-post-183-root-cause-audit.md`
+- `worker-progress/worker-185-clip-invertclip-dynamic-proof.md`
 
 ## Pending Workers
 
@@ -4285,15 +4310,11 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Worker 185: dynamic `style.clip` / `style.invertClip` public/Reconciler
-  proof.
-  - Add packed-consumer TypeScript proof for top-level animated
-    `style.clip` rect/rrect/path forms and `style.invertClip`.
-  - Add Reconciler source-level listener/update/cleanup proof for the same
-    top-level keys.
-  - Keep platform-native build/run, native bridge, Nitro registry,
-    UI-runtime Worklets, and real Reanimated delivery out of scope until local
-    blockers are cleared.
+- Worker 186: post-Worker 185 root-cause audit.
+  - Accept or reject Worker 185's dynamic `style.clip` / `style.invertClip`
+    public/Reconciler proof boundary.
+  - Reconfirm focused/post-merge evidence and local platform-native blockers.
+  - Select the next strongest locally unblocked root-cause target.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
