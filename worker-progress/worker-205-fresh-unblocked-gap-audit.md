@@ -117,9 +117,10 @@ Not proven now:
 
 ## Final Git Status Summary
 
-Actual final `git status --short --branch --untracked-files=all` summary after this report:
+Expected final `git status --short --branch --untracked-files=all` summary after this report correction is committed:
 
 - `## worker/205-fresh-unblocked-gap-audit`
-- `?? worker-progress/worker-205-fresh-unblocked-gap-audit.md`
+- no tracked changes
+- ignored `node_modules` and `example/node_modules` symlinks are expected
 
 Goal finished.
