@@ -343,14 +343,18 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- Worker 198 post-Worker 197 root-cause audit.
+- Agent path: `/root/worker_198_post_197_root_cause_audit`.
+- Worktree: `../worker-198-post-197-root-cause-audit`.
+- Branch: `worker/198-post-197-root-cause-audit`.
+- Scope: independently accept Worker 197's residual layout
+  edge/constraint proof boundary, rerun focused and full-matrix evidence as
+  appropriate, reprobe platform blockers, and select the next locally
+  unblocked root-cause target.
 
 Next queued worker:
 
-- Worker 198 post-Worker 197 root-cause audit: independently accept Worker
-  197's residual layout edge/constraint proof boundary, rerun focused and
-  full-matrix evidence as appropriate, reprobe platform blockers, and select
-  the next locally unblocked root-cause target.
+- None until Worker 198 reports.
 
 Acceptance criteria:
 
