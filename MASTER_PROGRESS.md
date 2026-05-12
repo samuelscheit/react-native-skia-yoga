@@ -3752,12 +3752,30 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 178 post-Worker 177 root-cause audit accepted:
+  - Accepted Worker 177's packed TypeScript/Reconciler source-level
+    corner-radius proof as scoped.
+  - Made a tiny wording correction in Worker 177's report: the inventory guard
+    proves per-corner `NodeStyle` fields accept both `number` and `SkPoint`,
+    not that those are the only union members.
+  - Reconfirmed syntax checks, `check:package-typescript-consumer`,
+    `check:reconciler-animated-bindings`, and `check:feasible-matrix` 28/28.
+  - Reprobed platform blockers: iPhone simulator SDK unavailable, `pod`,
+    `gradle`, `adb`, `cmake`, and `ninja` unavailable, Java runtime absent, and
+    Android SDK environment variables unset.
+  - Selected compact named global `style.borderRadius` scalar host-raster smoke
+    as the next strongest locally unblocked target.
+  - Worker branch commit:
+    `64649d2 Audit worker 177 corner radius proof`.
+  - Merged worker 178 into `main` as
+    `fc14973 Merge worker 178 post-177 audit`.
+  - Post-merge `git diff --check HEAD~1 HEAD`: passed.
+- Next step selected by orchestration: launch Worker 179 for global
+  `style.borderRadius` scalar host-raster proof.
 
 ## Active Workers
 
-- `/root/worker_178_post_177_root_cause_audit`: post-Worker 177 root-cause
-  audit from isolated worktree `../worker-178-post-177-root-cause-audit` on
-  branch `worker/178-post-177-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3955,6 +3973,7 @@ Accepted worker reports:
 - `worker-progress/worker-175-style-corner-radius-raster-proof.md`
 - `worker-progress/worker-176-post-175-root-cause-audit.md`
 - `worker-progress/worker-177-corner-radius-js-reconciler-completion.md`
+- `worker-progress/worker-178-post-177-root-cause-audit.md`
 
 ## Pending Workers
 
@@ -4081,11 +4100,15 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor Worker 178: post-Worker 177 root-cause audit.
-  - Accept or reject Worker 177's packed TypeScript/Reconciler source-level
-    corner-radius proof boundary.
-  - Reconfirm focused/post-merge evidence and local platform-native blockers.
-  - Select the next strongest locally unblocked root-cause target.
+- Worker 179: global `style.borderRadius` scalar host-raster smoke.
+  - Add a focused case to `scripts/verify-yoganode-native-commands-render.mjs`
+    that sets `NodeStyle.borderRadius` on a `GroupCmd` parent, inserts a
+    full-size `RectCmd` child, and renders through real
+    `YogaNode::renderToContext()`.
+  - Assert `_style.borderRadius`, `_clipsToBounds`, and all four
+    `_clipToBoundsRadii` slots.
+  - Assert separation from explicit `style.clip` and `RRectCmd::cornerRadius`.
+  - Keep the proof boundary host-native raster only.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 

@@ -124,9 +124,9 @@ Reconciler source-level all-four corner-radius dynamic proof, including a
 shared source-inventory drift guard and whole scalar `SharedValue<number>`
 coverage for all four SkPoint-capable corner keys.
 
-Latest accepted audit: worker 176 accepted Worker 175's bounded raster proof
-boundary and selected a compact JS/Reconciler all-four corner-key plus whole
-scalar `SharedValue<number>` completion pass as the next strongest locally
+Latest accepted audit: worker 178 accepted Worker 177's packed
+TypeScript/Reconciler proof boundary and selected a compact named global
+`style.borderRadius` scalar host-raster smoke as the next strongest locally
 unblocked target.
 
 Goals:
@@ -311,23 +311,21 @@ Accepted package-hygiene implementation:
 - `worker-175-style-corner-radius-raster-proof`: added bounded host-native raster proof that style corner radii clip a full-size child through `YogaNode::renderToContext()`, while remaining distinct from explicit clips and `RRectCmd::cornerRadius`.
 - `worker-176-post-175-root-cause-audit`: accepted Worker 175's bounded host-native style corner-radius raster proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected JS/Reconciler corner-radius completion as Worker 177's target.
 - `worker-177-corner-radius-js-reconciler-completion`: added a shared corner-radius source-inventory guard, expanded packed TypeScript coverage to all four dynamic corner keys, and added Reconciler scalar `SharedValue<number>` cases for all four keys.
+- `worker-178-post-177-root-cause-audit`: accepted Worker 177's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected global `style.borderRadius` scalar host-raster proof as Worker 179's target.
 
 Current active worker:
 
-- Worker 178 post-Worker 177 root-cause audit.
-  - Agent path: `/root/worker_178_post_177_root_cause_audit`.
-  - Worktree: `../worker-178-post-177-root-cause-audit`.
-  - Branch: `worker/178-post-177-root-cause-audit`.
-  - Scope: accept or reject Worker 177's packed TypeScript/Reconciler
-    corner-radius proof boundary, reconfirm focused/post-merge evidence and
-    local platform blockers, and select the next strongest locally unblocked
-    root-cause target.
-  - Required verification: focused evidence needed for the audit,
-    `check:feasible-matrix`, platform blocker reprobes, and `git diff --check`.
+- None.
 
 Next queued worker:
 
-- None until Worker 178 reports.
+- Worker 179 global `style.borderRadius` scalar host-raster smoke.
+  - Add a focused host-native raster case for `NodeStyle.borderRadius` in
+    `scripts/verify-yoganode-native-commands-render.mjs`.
+  - Prove all four `_clipToBoundsRadii` slots are seeded from the global scalar
+    and render clipping affects a full-size child.
+  - Keep proof host-native/raster-only and separate from explicit `style.clip`
+    and `RRectCmd::cornerRadius`.
 
 Acceptance criteria:
 
