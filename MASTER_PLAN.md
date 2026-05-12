@@ -302,16 +302,19 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - Worker 172 post-Worker 171 root-cause audit.
+  - Agent path: `/root/worker_172_post_171_root_cause_audit`.
+  - Worktree: `../worker-172-post-171-root-cause-audit`.
+  - Branch: `worker/172-post-171-root-cause-audit`.
   - Scope: accept or reject Worker 171's dynamic corner-radius proof boundary,
     reconfirm focused/post-merge evidence and local platform blockers, and
     select the next strongest locally unblocked root-cause target.
   - Required verification: focused evidence needed for the audit,
     `check:feasible-matrix`, platform blocker reprobes, and `git diff --check`.
+
+Next queued worker:
+
+- None until Worker 172 reports.
 
 Acceptance criteria:
 
