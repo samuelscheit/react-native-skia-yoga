@@ -340,19 +340,19 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-None. Worker 194 is merged and post-merge checked.
-
-Next queued worker:
-
 Worker 195 overflow render/materialized bridge proof.
 
-- Planned agent path: `/root/worker_195_overflow_render_materialized_bridge`.
-- Planned worktree: `../worker-195-overflow-render-materialized-bridge`.
-- Planned branch: `worker/195-overflow-render-materialized-bridge`.
+- Agent path: `/root/worker_195_overflow_render_materialized_bridge`.
+- Worktree: `../worker-195-overflow-render-materialized-bridge`.
+- Branch: `worker/195-overflow-render-materialized-bridge`.
 - Scope: add bounded host-native overflow raster proof and generated
   materialized `setStyle({ overflow })` delivery proof without claiming
   platform app runtime, GPU/platform clipping fidelity, or complete overflow
   behavior.
+
+Next queued worker:
+
+- None until Worker 195 reports.
 
 Acceptance criteria:
 

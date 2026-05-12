@@ -4178,10 +4178,20 @@ Last updated: 2026-05-12
     verification and completed nested audit evidence.
   - Selected bounded overflow render/materialized bridge proof as the next
     locally unblocked root-cause target.
+- Prepared Worker 195 overflow render/materialized bridge proof:
+  - Worktree: `../worker-195-overflow-render-materialized-bridge`.
+  - Branch: `worker/195-overflow-render-materialized-bridge`.
+  - Planned agent path: `/root/worker_195_overflow_render_materialized_bridge`.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
 
 ## Active Workers
 
-- None.
+- `/root/worker_195_overflow_render_materialized_bridge`: overflow
+  render/materialized bridge proof from isolated worktree
+  `../worker-195-overflow-render-materialized-bridge` on branch
+  `worker/195-overflow-render-materialized-bridge`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4399,7 +4409,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- Worker 195 overflow render/materialized bridge proof.
+- None until Worker 195 reports.
 
 ## Decisions
 
