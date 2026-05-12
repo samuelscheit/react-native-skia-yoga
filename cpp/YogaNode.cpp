@@ -382,6 +382,13 @@ static std::string yogaLayoutValueExpectation(bool acceptsPercent, bool acceptsA
         "Invalid CSS color string for backgroundColor: \"" + value + "\".");
 }
 
+[[noreturn]] static void throwInvalidNumericStyleValue(const char* propertyName)
+{
+    throw std::invalid_argument(
+        std::string("Invalid numeric style value for ") + propertyName +
+        ": expected a finite number.");
+}
+
 static float parseYogaPercent(
     const char* propertyName,
     const std::string& value,
@@ -539,6 +546,28 @@ static void validateBackgroundColorString(const NodeStyle& style)
     }
 }
 
+static void validateFiniteStyleNumber(const char* propertyName, const std::optional<double>& value)
+{
+    if (value.has_value() && !std::isfinite(*value)) {
+        throwInvalidNumericStyleValue(propertyName);
+    }
+}
+
+static void validateFiniteNumericStyleFields(const NodeStyle& style)
+{
+    validateFiniteStyleNumber("borderBottomWidth", style.borderBottomWidth);
+    validateFiniteStyleNumber("borderEndWidth", style.borderEndWidth);
+    validateFiniteStyleNumber("borderLeftWidth", style.borderLeftWidth);
+    validateFiniteStyleNumber("borderRightWidth", style.borderRightWidth);
+    validateFiniteStyleNumber("borderStartWidth", style.borderStartWidth);
+    validateFiniteStyleNumber("borderTopWidth", style.borderTopWidth);
+    validateFiniteStyleNumber("borderWidth", style.borderWidth);
+    validateFiniteStyleNumber("borderHorizontalWidth", style.borderHorizontalWidth);
+    validateFiniteStyleNumber("borderVerticalWidth", style.borderVerticalWidth);
+    validateFiniteStyleNumber("strokeMiter", style.strokeMiter);
+    validateFiniteStyleNumber("opacity", style.opacity);
+}
+
 // Helper function to handle variant<string, double> values for setting yoga values
 static void setYGValueOrPercent(void (*setter)(YGNodeRef, float),
     void (*percentSetter)(YGNodeRef, float),
@@ -609,6 +638,7 @@ void YogaNode::setStyle(const NodeStyle& style)
     std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
     validateYogaLayoutUnitStrings(style);
     validateBackgroundColorString(style);
+    validateFiniteNumericStyleFields(style);
     invalidateLayout();
     _style = style;
     resetYogaStyle(_node);
