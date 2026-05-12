@@ -133,8 +133,7 @@ Latest accepted audit: worker 205 identified deterministic Yoga layout unit
 string validation as the strongest locally unblocked target, after reconfirming
 the current feasible matrix and local platform blockers.
 
-Next queued worker: worker 206 deterministic layout unit validation. It has
-not been spawned yet.
+Current active worker: worker 206 deterministic layout unit validation.
 
 Goals:
 
@@ -347,12 +346,12 @@ Accepted package-hygiene implementation:
 - `worker-204-post-203-root-cause-audit`: accepted Worker 203's bounded proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and found no concrete unblocked implementation target stronger than platform-runtime proof once tooling is available or a fresh audit-only gap search.
 - `worker-205-fresh-unblocked-gap-audit`: identified deterministic Yoga layout unit string validation as a concrete locally unblocked target across public broad `Percentage = string`, generated `NodeStyle`, and native Yoga setter behavior.
 
-Next queued worker:
+Current active worker:
 
 - Worker 206 deterministic layout unit validation.
-- Agent path: not spawned yet.
-- Worktree: create `../worker-206-layout-unit-validation` before spawning.
-- Branch: create `worker/206-layout-unit-validation` before spawning.
+- Agent path: `/root/worker_206_layout_unit_validation`.
+- Worktree: `../worker-206-layout-unit-validation`.
+- Branch: `worker/206-layout-unit-validation`.
 - Scope: validate Yoga layout unit strings deterministically in native
   `YogaNode::setStyle(...)`, preserving accepted numeric, percent, auto, and
   width-special behavior, and add generated materialized negative/positive
