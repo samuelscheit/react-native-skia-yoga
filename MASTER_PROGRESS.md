@@ -3837,13 +3837,27 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 181 generated/materialized and native hit-test proof accepted:
+  - Added generated materialized `setStyle({ borderRadius })` proof in
+    `scripts/verify-yoganode-nitro-materialization.mjs`.
+  - Added direct native scalar `borderRadius` hit-test proof in
+    `scripts/verify-yoganode-native-hit-testing.mjs`.
+  - Worker branch commit:
+    `76c1ea8 Add borderRadius materialization and hit-test proof`.
+  - Merged worker 181 into `main` as
+    `ee451b7 Merge worker 181 border radius materialized hit-test`.
+  - Post-merge checks passed: `git diff --check HEAD~1 HEAD`,
+    `node --check scripts/verify-yoganode-nitro-materialization.mjs`,
+    `node --check scripts/verify-yoganode-native-hit-testing.mjs`,
+    `npm run check:yoganode-nitro-materialization`,
+    `npm run check:yoganode-native-hit-testing`, and
+    `npm run check:feasible-matrix` 28/28 in `4m 13s`.
+- Next step selected by orchestration: Worker 182 post-Worker 181 root-cause
+  audit.
 
 ## Active Workers
 
-- `/root/worker_181_border_radius_materialized_hit_test`: generated/materialized
-  and native hit-test proof for global `style.borderRadius` from isolated
-  worktree `../worker-181-border-radius-materialized-hit-test` on branch
-  `worker/181-border-radius-materialized-hit-test`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4044,6 +4058,7 @@ Accepted worker reports:
 - `worker-progress/worker-178-post-177-root-cause-audit.md`
 - `worker-progress/worker-179-border-radius-raster-proof.md`
 - `worker-progress/worker-180-post-179-root-cause-audit.md`
+- `worker-progress/worker-181-border-radius-materialized-hit-test.md`
 
 ## Pending Workers
 
@@ -4170,14 +4185,11 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor Worker 181: generated/materialized plus native hit-test proof for
-  global `style.borderRadius`.
-  - Extend `scripts/verify-yoganode-nitro-materialization.mjs` with generated
-    `setStyle({ borderRadius })` coverage through a materialized YogaNode.
-  - Extend `scripts/verify-yoganode-native-hit-testing.mjs` with scalar global
-    `borderRadius` corner rejection and in-bounds child-hit coverage.
-  - Keep platform-native app/runtime claims separate until local toolchain
-    blockers clear.
+- Worker 182: post-Worker 181 root-cause audit.
+  - Accept or reject Worker 181's generated/materialized and native hit-test
+    proof boundary for scalar global `style.borderRadius`.
+  - Reconfirm focused/post-merge evidence and local platform-native blockers.
+  - Select the next strongest locally unblocked root-cause target.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
