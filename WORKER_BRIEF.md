@@ -19,6 +19,9 @@ preserving weak contracts.
   dedicated goal-lifecycle evidence section. Do not report `create_goal`,
   `GOAL_CREATED`, or `update_goal` tool-call evidence as acceptance evidence.
   The final `Goal finished.` line is the required completion signal.
+- The orchestrator did not start a tmux/Codex subprocess for you. Treat tmux,
+  `.codex.log`, `.exitcode`, and process-status references in older reports or
+  prompts as archival history, not current worker lifecycle requirements.
 - Use the assigned git worktree path from your prompt for all reads, edits, and
   verification commands. Do not edit the root checkout or another worker's
   worktree unless the prompt explicitly assigns that location.

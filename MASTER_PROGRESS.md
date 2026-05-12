@@ -8,6 +8,8 @@ Last updated: 2026-05-12
 - Goal state: active; do not mark complete.
 - Current top-level worker scheduling: managed Codex subagents launched with
   `spawn_agent`, from isolated git worktrees for any writable/reporting worker.
+- Current workers are not scheduled by starting `codex` in tmux; tmux/process
+  log entries below are historical evidence only.
 - Worker launch parameters: `agent_type: "worker"`, `goal: true`,
   `fork_turns: "none"`, `model: "gpt-5.5"`, and
   `reasoning_effort: "xhigh"`, with the full worker prompt in `message`.

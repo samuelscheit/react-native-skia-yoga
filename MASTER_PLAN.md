@@ -13,10 +13,12 @@ Breaking changes are acceptable when they remove root causes instead of preservi
 - The orchestrator owns planning, worker coordination, merge hygiene, and root-cause prioritization.
 - Product code changes are delegated to isolated workers.
 - Top-level workers are managed Codex subagents launched with `spawn_agent`
-  from isolated git worktrees.
+  from isolated git worktrees. Do not schedule current top-level project
+  workers by starting `codex` in tmux.
 - Before spawning a writable or report-writing worker, create or assign an
   isolated git worktree and branch for that worker.
-- Launch implementation workers with `agent_type: "worker"`, `goal: true`,
+- Launch implementation workers, and any other writable/report-writing
+  top-level workers, with `agent_type: "worker"`, `goal: true`,
   `fork_turns: "none"`, `model: "gpt-5.5"`, and
   `reasoning_effort: "xhigh"`.
 - Worker prompts must include the full task prompt, absolute worktree path,
