@@ -123,10 +123,10 @@ Latest accepted implementation: worker 181 added generated materialized
 `setStyle({ borderRadius })` delivery proof and direct native hit-test proof
 for scalar global `style.borderRadius`.
 
-Latest accepted audit: worker 180 accepted Worker 179's global
-`style.borderRadius` host-raster proof boundary and selected generated
-materialized delivery plus native hit-test coverage for the same global scalar
-path as the next strongest locally unblocked target.
+Latest accepted audit: worker 182 accepted Worker 181's generated/materialized
+and native hit-test proof boundary for scalar global `style.borderRadius`, and
+selected public/Reconciler dynamic-contract proof for the same scalar as the
+next strongest locally unblocked target.
 
 Goals:
 
@@ -314,24 +314,24 @@ Accepted package-hygiene implementation:
 - `worker-179-border-radius-raster-proof`: added bounded host-native raster proof that global `style.borderRadius` seeds all four clip radii and clips a full-size child through `YogaNode::renderToContext()`.
 - `worker-180-post-179-root-cause-audit`: accepted Worker 179's host-raster proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected generated materialized delivery plus native hit-test coverage for global `style.borderRadius`.
 - `worker-181-border-radius-materialized-hit-test`: added generated materialized `setStyle({ borderRadius })` delivery proof plus direct native hit-test proof for scalar global `style.borderRadius`.
+- `worker-182-post-181-root-cause-audit`: accepted Worker 181's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected public/Reconciler dynamic-contract proof for scalar global `style.borderRadius`.
 
 Current active worker:
 
-- Worker 182 post-Worker 181 root-cause audit.
-  - Agent path: `/root/worker_182_post_181_root_cause_audit`.
-  - Worktree: `../worker-182-post-181-root-cause-audit`.
-  - Branch: `worker/182-post-181-root-cause-audit`.
-  - Scope: accept or reject Worker 181's global `style.borderRadius`
-    generated/materialized and native hit-test proof boundary, reconfirm
-    focused/post-merge evidence and local platform blockers, and select the
-    next strongest locally unblocked root-cause target.
-  - Required verification: Worker 181 report/code review, focused syntax and
-    verifier checks, `check:feasible-matrix`, platform blocker reprobes, and
-    `git diff --check`.
+- None.
 
 Next queued worker:
 
-- None until Worker 182 reports.
+- Worker 183 public/Reconciler scalar global `style.borderRadius` dynamic
+  contract proof.
+  - Add packed-consumer positive coverage for
+    `style.borderRadius: SharedValue<number>` and negative coverage for
+    non-number global `borderRadius` shapes.
+  - Add Reconciler source-level proof for a top-level `borderRadius` style
+    listener key, initial snapshot, update, invalidation, full style rebuild,
+    cleanup, ignored late emits, and no native command mirror.
+  - Consider an explicit runtime shape guard if scalar `borderRadius` invalid
+    dynamic payloads are not rejected before native conversion.
 
 Acceptance criteria:
 
