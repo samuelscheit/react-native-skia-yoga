@@ -3781,13 +3781,29 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 179 global `style.borderRadius` scalar host-raster proof accepted:
+  - Added a focused case in
+    `scripts/verify-yoganode-native-commands-render.mjs`.
+  - The case sets global `NodeStyle.borderRadius` on a `GroupCmd` parent,
+    inserts a full-size `RectCmd` child, renders through real
+    `YogaNode::renderToContext()`, and asserts all four rounded corners clip.
+  - The proof asserts `_style.borderRadius`, `_clipsToBounds`, all four
+    `_clipToBoundsRadii` slots, no explicit `style.clip` state, and no
+    `RRectCmd::cornerRadius` dependency.
+  - Worker branch commit:
+    `a49c0ee Add global border radius raster proof`.
+  - Merged worker 179 into `main` as
+    `16749aa Merge worker 179 border radius raster proof`.
+  - Post-merge checks passed: `git diff --check HEAD~1 HEAD`,
+    `node --check scripts/verify-yoganode-native-commands-render.mjs`,
+    `npm run check:yoganode-native-commands-render`, and
+    `npm run check:feasible-matrix` 28/28 in `4m 10s`.
+- Next step selected by orchestration: Worker 180 post-Worker 179 root-cause
+  audit.
 
 ## Active Workers
 
-- `/root/worker_179_border_radius_raster_proof`: global `style.borderRadius`
-  scalar host-raster proof from isolated worktree
-  `../worker-179-border-radius-raster-proof` on branch
-  `worker/179-border-radius-raster-proof`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3986,6 +4002,7 @@ Accepted worker reports:
 - `worker-progress/worker-176-post-175-root-cause-audit.md`
 - `worker-progress/worker-177-corner-radius-js-reconciler-completion.md`
 - `worker-progress/worker-178-post-177-root-cause-audit.md`
+- `worker-progress/worker-179-border-radius-raster-proof.md`
 
 ## Pending Workers
 
@@ -4112,15 +4129,11 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor Worker 179: global `style.borderRadius` scalar host-raster smoke.
-  - Add a focused case to `scripts/verify-yoganode-native-commands-render.mjs`
-    that sets `NodeStyle.borderRadius` on a `GroupCmd` parent, inserts a
-    full-size `RectCmd` child, and renders through real
-    `YogaNode::renderToContext()`.
-  - Assert `_style.borderRadius`, `_clipsToBounds`, and all four
-    `_clipToBoundsRadii` slots.
-  - Assert separation from explicit `style.clip` and `RRectCmd::cornerRadius`.
-  - Keep the proof boundary host-native raster only.
+- Worker 180: post-Worker 179 root-cause audit.
+  - Accept or reject Worker 179's global `style.borderRadius` host-raster proof
+    boundary.
+  - Reconfirm focused/post-merge evidence and local platform-native blockers.
+  - Select the next strongest locally unblocked root-cause target.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
