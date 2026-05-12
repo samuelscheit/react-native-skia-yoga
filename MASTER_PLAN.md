@@ -123,11 +123,11 @@ Latest accepted implementation: worker 187 added bounded host-native raster
 proof for explicit `style.clip` rect/rrect/path plus `invertClip` using
 `YogaNode::renderToContext()`.
 
-Latest accepted audit: worker 186 accepted Worker 185's dynamic `style.clip` /
-`style.invertClip` public/Reconciler proof boundary, reconfirmed focused and
-full-matrix evidence plus platform blockers, and selected bounded host-native
-raster proof for explicit `style.clip` rect/rrect/path plus `invertClip` as the
-next strongest locally unblocked target.
+Latest accepted audit: worker 188 accepted Worker 187's bounded explicit
+`style.clip` raster proof, reconfirmed focused and full-matrix evidence plus
+platform blockers, and selected a generated materialized `setStyle(clip /
+invertClip)` to raster bridge proof as the next strongest locally unblocked
+target.
 
 Goals:
 
@@ -321,21 +321,22 @@ Accepted package-hygiene implementation:
 - `worker-185-clip-invertclip-dynamic-proof`: fixed the public `style.clip` union-member `SharedValue` type gap and added packed-consumer plus Reconciler source-level proof for dynamic top-level `style.clip` / `style.invertClip`.
 - `worker-186-post-185-root-cause-audit`: accepted Worker 185's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected explicit `style.clip` rect/rrect/path plus `invertClip` raster proof as Worker 187's target.
 - `worker-187-explicit-clip-raster-proof`: added bounded host-native raster proof for explicit `style.clip` rect/rrect/path plus `invertClip` through `YogaNode::renderToContext()`.
+- `worker-188-post-187-root-cause-audit`: accepted Worker 187's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected generated materialized clip/invertClip to raster bridge proof as Worker 189's target.
 
 Current active worker:
 
-Worker 188 post-Worker 187 root-cause audit.
+Worker 189 generated materialized clip raster bridge proof.
 
-- Agent path: `/root/worker_188_post_187_root_cause_audit`.
-- Worktree: `../worker-188-post-187-root-cause-audit`.
-- Branch: `worker/188-post-187-root-cause-audit`.
-- Scope: accept or reject Worker 187's bounded explicit `style.clip` raster
-  proof, reconfirm focused/post-merge evidence and local platform blockers, and
-  select the next strongest locally unblocked root-cause target.
+- Agent path: `/root/worker_189_materialized_clip_raster_bridge`.
+- Worktree: `../worker-189-materialized-clip-raster-bridge`.
+- Branch: `worker/189-materialized-clip-raster-bridge`.
+- Scope: add host-JSC/native proof that generated materialized
+  `setStyle(clip rect/rrect/path, invertClip)` delivery is followed by
+  `YogaNode::renderToContext()` bounded raster assertions.
 
 Next queued worker:
 
-- None until Worker 188 reports.
+- None until Worker 189 reports.
 
 Acceptance criteria:
 
