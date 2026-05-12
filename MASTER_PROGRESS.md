@@ -13,13 +13,13 @@ Last updated: 2026-05-12
 - Worker launch parameters: `agent_type: "worker"`, `goal: true`,
   `fork_turns: "none"`, `model: "gpt-5.5"`, and
   `reasoning_effort: "xhigh"`, with the full worker prompt in `message`.
-- Current worker goal handling: launch workers with `goal: true`; require
-  `Goal finished.` at completion, with no manual goal-lifecycle evidence gate.
+- Current worker completion handling: launch workers with `goal: true`; require
+  only the final `Goal finished.` line as the completion signal.
 - Product code changes authored by orchestrator: none; product changes are accepted worker patches only.
 - Main worktree status at startup: clean on `main` tracking `origin/main`.
 - Historical timeline entries before the current scheduling decision may mention
-  tmux workers, visible `GOAL_CREATED` gates, or manual goal evidence. Treat
-  those entries as archival facts only, not current worker-launch policy.
+  older launch and goal-evidence policies. Treat those entries as archival facts
+  only, not current worker-launch policy.
 
 ## Timeline
 
@@ -3723,10 +3723,10 @@ Accepted worker reports:
 - Top-level workers now run as managed Codex subagents launched with `spawn_agent`, not tmux subprocesses.
 - Implementation workers use isolated git worktrees and branches. Launch them with `agent_type: "worker"`, `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and `reasoning_effort: "xhigh"`.
 - Worker prompts include the full task prompt, absolute worktree path, write scope, verification expectations, and overlap boundaries.
-- `goal: true` replaces the former manual `create_goal`/`GOAL_CREATED` acceptance gate. Worker reports no longer need dedicated goal-lifecycle evidence.
+- `goal: true` creates worker goal state. Worker reports only need to end with `Goal finished.`
 - Workers may spawn nested managed subagents for hypothesis testing and must document delegated checks that affect their conclusions.
-- Historical tmux and manual `create_goal`/`GOAL_CREATED` entries in this file
-  are archival. New top-level workers use `spawn_agent` with `goal: true`, and
+- Historical entries describing older launch and goal-evidence policies are
+  archival. New top-level workers use `spawn_agent` with `goal: true`, and
   acceptance requires the final response/report to end with `Goal finished.`
 - Post-worker-102 target selection: worker 103 accepted worker 102's synthetic ImageCmd fit proof boundary, reconfirmed the 28-command feasible matrix, and selected bounded text/paragraph CSS color-string command conversion/render coverage as the strongest locally unblocked target because public JSX accepts string color values and native text-style conversion parses CSS strings while current text/paragraph command-render coverage uses numeric colors.
 - Post-worker-106 target selection: worker 107 accepted worker 106's expanded generated `setCommand(...)` breadth, reconfirmed the 28-command feasible matrix, and selected direct `StrokeOpts` converter consistency as the strongest locally unblocked product-source target because `fromJSI(...)` rejects non-objects while `canConvert(...)` still advertises objects, `null`, and `undefined` as convertible.

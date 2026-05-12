@@ -23,17 +23,16 @@ Breaking changes are acceptable when they remove root causes instead of preservi
   `reasoning_effort: "xhigh"`.
 - Worker prompts must include the full task prompt, absolute worktree path,
   write scope, verification expectations, and overlap boundaries.
-- Starting workers with `goal: true` replaces the former manual
-  `create_goal`/`GOAL_CREATED` acceptance gate. No dedicated goal-lifecycle or
-  `update_goal` evidence is required; the final response/report must end with
-  `Goal finished.`
+- Worker goal state is created by the `goal: true` launch option. Do not add a
+  separate goal lifecycle evidence gate; the final response/report must end
+  with `Goal finished.`
 - Workers must keep their own progress files under `worker-progress/`.
 - Workers must review quality, maintainability, performance, and security before reporting completion.
 - Workers must use nested subagents/explorers when testing uncertain root-cause hypotheses, and must document those subagent results in their progress files.
 - Finished worker branches are reviewed, verified, merged into `main`, then
   their subagent/worktree is cleaned up.
-- Historical worker prompts and progress entries may mention tmux or manual
-  goal gates as archival facts; new top-level workers use `spawn_agent` with
+- Historical worker prompts and progress entries may mention older launch
+  policies as archival facts; current top-level workers use `spawn_agent` with
   `goal: true`.
 
 ## Current Repository Baseline
