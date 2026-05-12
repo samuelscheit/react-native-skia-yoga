@@ -352,11 +352,11 @@ Accepted package-hygiene implementation:
 Current active worker:
 
 - Worker 207 post-206 root-cause audit.
-- Agent path: `/root/worker_207_post_206_root_cause_audit`.
+- Agent path: `/root/worker_207_post_206_root_cause_audit_recovery`.
 - Worktree: `../worker-207-post-206-root-cause-audit`.
 - Branch: `worker/207-post-206-root-cause-audit`.
-- State: spawned via `spawn_agent` with `goal: true`; report-only audit in
-  progress.
+- State: recovery subagent spawned via `spawn_agent` with `goal: true` after
+  the first Worker 207 subagent stalled before writing a report.
 - Scope: audit the post-worker-206 state, verify the accepted proof boundary,
   rerun focused feasible checks as needed, reconfirm platform-native blockers,
   and select the next strongest locally unblocked root-cause target.
