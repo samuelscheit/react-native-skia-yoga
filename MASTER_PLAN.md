@@ -341,14 +341,19 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None. Worker 195 has been accepted and merged.
+Worker 196 post-Worker 195 root-cause audit.
+
+- Agent path: `/root/worker_196_post_195_root_cause_audit`.
+- Worktree: `../worker-196-post-195-root-cause-audit`.
+- Branch: `worker/196-post-195-root-cause-audit`.
+- Scope: independently accept or reject Worker 195's overflow
+  render/materialized proof boundary, rerun focused/full-matrix evidence as
+  appropriate, confirm cleanup/platform-blocker state as needed, and select the
+  next locally unblocked target.
 
 Next queued worker:
 
-- Worker 196 post-Worker 195 root-cause audit. Independently accept or reject
-  Worker 195's overflow proof boundary, rerun focused/full-matrix evidence as
-  appropriate, reprobe platform blockers if needed, and select the next locally
-  unblocked target.
+- None until Worker 196 reports.
 
 Acceptance criteria:
 
