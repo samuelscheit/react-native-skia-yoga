@@ -124,10 +124,10 @@ evidence for global `style.borderRadius` scalar clipping through
 `YogaNode::renderToContext()`, distinct from explicit `style.clip` and
 `RRectCmd::cornerRadius`.
 
-Latest accepted audit: worker 178 accepted Worker 177's packed
-TypeScript/Reconciler proof boundary and selected a compact named global
-`style.borderRadius` scalar host-raster smoke as the next strongest locally
-unblocked target.
+Latest accepted audit: worker 180 accepted Worker 179's global
+`style.borderRadius` host-raster proof boundary and selected generated
+materialized delivery plus native hit-test coverage for the same global scalar
+path as the next strongest locally unblocked target.
 
 Goals:
 
@@ -313,24 +313,24 @@ Accepted package-hygiene implementation:
 - `worker-177-corner-radius-js-reconciler-completion`: added a shared corner-radius source-inventory guard, expanded packed TypeScript coverage to all four dynamic corner keys, and added Reconciler scalar `SharedValue<number>` cases for all four keys.
 - `worker-178-post-177-root-cause-audit`: accepted Worker 177's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected global `style.borderRadius` scalar host-raster proof as Worker 179's target.
 - `worker-179-border-radius-raster-proof`: added bounded host-native raster proof that global `style.borderRadius` seeds all four clip radii and clips a full-size child through `YogaNode::renderToContext()`.
+- `worker-180-post-179-root-cause-audit`: accepted Worker 179's host-raster proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected generated materialized delivery plus native hit-test coverage for global `style.borderRadius`.
 
 Current active worker:
 
-- Worker 180 post-Worker 179 root-cause audit.
-  - Agent path: `/root/worker_180_post_179_root_cause_audit`.
-  - Worktree: `../worker-180-post-179-root-cause-audit`.
-  - Branch: `worker/180-post-179-root-cause-audit`.
-  - Scope: accept or reject Worker 179's global `style.borderRadius`
-    host-raster proof boundary, reconfirm focused/post-merge evidence and
-    local platform blockers, and select the next strongest locally unblocked
-    root-cause target.
-  - Required verification: Worker 179 report/code review, focused syntax and
-    native command-render checks, `check:feasible-matrix`, platform blocker
-    reprobes, and `git diff --check`.
+- None.
 
 Next queued worker:
 
-- None until Worker 180 reports.
+- Worker 181 generated/materialized and native hit-test proof for global
+  `style.borderRadius`.
+  - Add compact generated `setStyle({ borderRadius })` materialization coverage
+    for `_style.borderRadius`, `_clipsToBounds`, all four
+    `_clipToBoundsRadii` slots, no per-corner style fields, and no explicit
+    `style.clip` state.
+  - Add matching native hit-test coverage proving rounded corner rejection and
+    in-bounds child hits for scalar global `borderRadius`.
+  - Keep platform-native app/runtime claims out of scope unless local
+    toolchain blockers clear.
 
 Acceptance criteria:
 

@@ -3809,12 +3809,27 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 180 post-Worker 179 root-cause audit accepted:
+  - Accepted Worker 179's global `style.borderRadius` host-raster proof as
+    scoped.
+  - Reconfirmed `git diff --check`,
+    `node --check scripts/verify-yoganode-native-commands-render.mjs`,
+    `npm run check:yoganode-native-commands-render`, and
+    `npm run check:feasible-matrix` 28/28 in `4m 26s`.
+  - Reprobed local platform blockers: iPhone simulator SDK unavailable,
+    `pod`, `gradle`, `adb`, `cmake`, and `ninja` unavailable, Java runtime
+    absent, and Android SDK environment variables unset.
+  - Selected generated/materialized global `style.borderRadius` delivery plus
+    native hit-test coverage as the next strongest locally unblocked target.
+  - Worker branch commit:
+    `bcc522e Add worker 180 post-179 audit`.
+  - Merged worker 180 into `main` as
+    `b637751 Merge worker 180 post-179 audit`.
+  - Post-merge `git diff --check HEAD~1 HEAD`: passed.
 
 ## Active Workers
 
-- `/root/worker_180_post_179_root_cause_audit`: post-Worker 179 root-cause
-  audit from isolated worktree `../worker-180-post-179-root-cause-audit` on
-  branch `worker/180-post-179-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4014,6 +4029,7 @@ Accepted worker reports:
 - `worker-progress/worker-177-corner-radius-js-reconciler-completion.md`
 - `worker-progress/worker-178-post-177-root-cause-audit.md`
 - `worker-progress/worker-179-border-radius-raster-proof.md`
+- `worker-progress/worker-180-post-179-root-cause-audit.md`
 
 ## Pending Workers
 
@@ -4140,11 +4156,14 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Worker 180: post-Worker 179 root-cause audit.
-  - Accept or reject Worker 179's global `style.borderRadius` host-raster proof
-    boundary.
-  - Reconfirm focused/post-merge evidence and local platform-native blockers.
-  - Select the next strongest locally unblocked root-cause target.
+- Worker 181: generated/materialized plus native hit-test proof for global
+  `style.borderRadius`.
+  - Extend `scripts/verify-yoganode-nitro-materialization.mjs` with generated
+    `setStyle({ borderRadius })` coverage through a materialized YogaNode.
+  - Extend `scripts/verify-yoganode-native-hit-testing.mjs` with scalar global
+    `borderRadius` corner rejection and in-bounds child-hit coverage.
+  - Keep platform-native app/runtime claims separate until local toolchain
+    blockers clear.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
