@@ -318,20 +318,21 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- Worker 183 public/Reconciler scalar global `style.borderRadius` dynamic
+  contract proof.
+  - Agent path: `/root/worker_183_border_radius_dynamic_contract`.
+  - Worktree: `../worker-183-border-radius-dynamic-contract`.
+  - Branch: `worker/183-border-radius-dynamic-contract`.
+  - Scope: prove packed-consumer and Reconciler source-level dynamic delivery
+    for scalar global `style.borderRadius`.
+  - Required verification: edited verifier syntax checks,
+    `check:package-typescript-consumer`,
+    `check:reconciler-animated-bindings`, `check:feasible-matrix`, and
+    `git diff --check`.
 
 Next queued worker:
 
-- Worker 183 public/Reconciler scalar global `style.borderRadius` dynamic
-  contract proof.
-  - Add packed-consumer positive coverage for
-    `style.borderRadius: SharedValue<number>` and negative coverage for
-    non-number global `borderRadius` shapes.
-  - Add Reconciler source-level proof for a top-level `borderRadius` style
-    listener key, initial snapshot, update, invalidation, full style rebuild,
-    cleanup, ignored late emits, and no native command mirror.
-  - Consider an explicit runtime shape guard if scalar `borderRadius` invalid
-    dynamic payloads are not rejected before native conversion.
+- None until Worker 183 reports.
 
 Acceptance criteria:
 
