@@ -4238,13 +4238,39 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 197 residual generated materialized layout edge/constraint breadth
+  accepted:
+  - Worker branch commit:
+    `fd6c93d Add materialized layout edge breadth proof`.
+  - Merged worker 197 into `main` as
+    `ee50ae8 Merge worker 197 layout edge breadth`.
+  - Expanded `scripts/verify-yoganode-nitro-materialization.mjs` with
+    generated materialized layout breadth beyond Worker 193's compact flex
+    tree, covering alignContent, alignSelf, flexWrap, direction, display,
+    boxSizing, min/max constraints, aspectRatio, start/end/top/bottom edges,
+    percent values, auto values, a display-none child case, selected native
+    Yoga state, selected computed layout values, and generated `layout`
+    getter output.
+  - Worker verification passed `git diff --check`,
+    `node --check scripts/verify-yoganode-nitro-materialization.mjs`,
+    `npm run check:yoganode-nitro-materialization`, and
+    `npm run check:feasible-matrix` all 28 commands in `4m 48s`.
+  - Main post-merge verification passed `git diff --check HEAD~1 HEAD`,
+    `node --check scripts/verify-yoganode-nitro-materialization.mjs`,
+    `npm run check:yoganode-nitro-materialization`, and
+    `npm run check:feasible-matrix` all 28 commands in `4m 48s`
+    (`4:49.13` real time).
+  - The original Worker 197 spawn-agent stalled after producing the scoped
+    verifier patch and before report/commit. The patch was preserved in the
+    isolated Worker 197 worktree, independently verified, reported, and
+    committed manually. The worktree used ignored symlinks to main's
+    known-good `node_modules` and `example/node_modules` dependency layout,
+    matching the prepared worker setup.
+  - Selected Worker 198 post-Worker 197 root-cause audit as the next step.
 
 ## Active Workers
 
-- `/root/worker_197_materialized_layout_edge_breadth`: residual generated
-  materialized layout edge/constraint breadth from isolated worktree
-  `../worker-197-materialized-layout-edge-breadth` on branch
-  `worker/197-materialized-layout-edge-breadth`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4461,10 +4487,11 @@ Accepted worker reports:
 - `worker-progress/worker-194-post-193-root-cause-audit.md`
 - `worker-progress/worker-195-overflow-render-materialized-bridge.md`
 - `worker-progress/worker-196-post-195-root-cause-audit.md`
+- `worker-progress/worker-197-materialized-layout-edge-breadth.md`
 
 ## Pending Workers
 
-- None until Worker 197 reports.
+- Worker 198 post-Worker 197 root-cause audit.
 
 ## Decisions
 
@@ -4517,6 +4544,18 @@ Accepted worker reports:
   ignored dependency drift encountered during manual recovery, confirmed local
   platform-native build/run blockers remain, and selected residual generated
   materialized layout edge/constraint breadth as Worker 197's target.
+- Worker 197 closed the residual generated materialized layout
+  edge/constraint breadth target by adding host-JSC generated-wrapper proof for
+  align, wrap, direction, display, box sizing, min/max constraints,
+  aspect-ratio, edge-position, percent, auto, and display-none layout cases.
+  The worker branch commit was
+  `fd6c93d Add materialized layout edge breadth proof`, merged as
+  `ee50ae8 Merge worker 197 layout edge breadth`. Main post-merge
+  verification passed `git diff --check HEAD~1 HEAD`, syntax check, focused
+  materialization verifier, and the full 28-command feasible matrix in
+  `4m 48s`. The original Worker 197 spawn-agent stalled after scoped edits and
+  was manually recovered, verified, reported, and committed from the isolated
+  worktree. The next step is a fresh post-Worker 197 root-cause audit.
 - Post-worker-102 target selection: worker 103 accepted worker 102's synthetic ImageCmd fit proof boundary, reconfirmed the 28-command feasible matrix, and selected bounded text/paragraph CSS color-string command conversion/render coverage as the strongest locally unblocked target because public JSX accepts string color values and native text-style conversion parses CSS strings while current text/paragraph command-render coverage uses numeric colors.
 - Post-worker-106 target selection: worker 107 accepted worker 106's expanded generated `setCommand(...)` breadth, reconfirmed the 28-command feasible matrix, and selected direct `StrokeOpts` converter consistency as the strongest locally unblocked product-source target because `fromJSI(...)` rejects non-objects while `canConvert(...)` still advertises objects, `null`, and `undefined` as convertible.
 - Post-worker-108 follow-up: direct `StrokeOpts` converter consistency is integrated; the next step is a fresh audit because worker 107's next-ranked TypeScript dynamic payload caveat needs API-boundary reassessment after the converter fix.
@@ -4625,7 +4664,7 @@ Accepted worker reports:
 
 ## Next Worker Candidates
 
-- None until Worker 197 reports.
+- Worker 198 post-Worker 197 root-cause audit.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
