@@ -376,20 +376,24 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- Worker 211 post-worker-210 root-cause audit.
+- Agent path: `/root/worker_211_post_210_root_cause_audit`.
+- Worktree: `../worker-211-post-210-root-cause-audit`.
+- Branch: `worker/211-post-210-root-cause-audit`.
+- Scope: report-only audit of Worker 210's finite numeric validation boundary,
+  focused/full feasible verification as needed, remaining local gap ranking,
+  and next root-cause target selection.
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`; awaiting report.
 
 Next queued worker:
 
-- Worker 211 post-worker-210 root-cause audit.
-- Suggested worktree: `../worker-211-post-210-root-cause-audit`.
-- Suggested branch: `worker/211-post-210-root-cause-audit`.
-- Scope: review Worker 210's finite numeric validation boundary, rerun focused
-  and/or aggregate verification as needed, challenge the remaining local gaps,
-  and select the next strongest unblocked root-cause target.
+- None until Worker 211 reports.
 
 Follow-up queue:
 
-- Depends on Worker 211 audit findings.
+- None until Worker 211 reports.
 
 Acceptance criteria:
 
