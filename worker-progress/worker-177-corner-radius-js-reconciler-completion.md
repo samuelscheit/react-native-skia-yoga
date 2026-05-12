@@ -30,7 +30,7 @@ style corner radii.
 - `scripts/style-corner-radius-inventory.mjs` centralizes the drift guard. It
   parses:
   - `src/specs/style.ts` `NodeStyle` per-corner radius fields and asserts each
-    is `number | SkPoint`.
+    accepts both `number` and `SkPoint`.
   - `src/jsx.ts` `YogaStyleCornerRadiusKey`.
   - `src/Reconciler.ts` `styleNestedRoots` corner entries and
     `scalarCornerRadiusKeys`.
