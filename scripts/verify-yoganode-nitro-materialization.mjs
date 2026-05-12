@@ -174,6 +174,7 @@ try {
 	console.log("- The executable materialized parent/child YogaNodes, inserted the child through the generated parent.insertChild(...) wrapper, called materialized parent.getChildren(), and asserted the returned child is the cached materialized child object with generated and raw YogaNode prototype methods.")
 	console.log("- The executable called generated setStyle/computeLayout/insertChild and raw setInteractionConfig/hitTest/getChildren through the returned child object, then asserted recursive returned-grandchild identity through returnedChild.getChildren().")
 	console.log("- The executable built materialized layout trees through YogaNode::toObject(runtime), generated setStyle(...), insertChild(...), computeLayout(...), and layout getter access; it covered compact flexDirection with justifyContent/alignItems, gap/rowGap/columnGap, padding aliases, margin aliases, flexGrow/flexShrink/flexBasis, absolute position with inset aliases, one stable width special value, and residual alignContent/alignSelf/flexWrap/direction/display/boxSizing/min-max/aspect/edge/percent/auto cases.")
+	console.log("- The executable validates generated setStyle(...) layout unit strings through materialized YogaNodes: finite full-string percentages, allowed auto values, width-only fit-content/max-content/stretch, and deterministic rejection of unsupported strings, malformed percentages, partial numeric parses, and NaN/Infinity-like percentage text.")
 	console.log("- The executable reused the same materialized parent/child YogaNodes for generated setStyle initial, update, and cleanup passes; it asserted replacement of native NodeStyle optionals, selected Yoga getter updates/resets for width/height, constraints, flexBasis, gaps, flexGrow/flexShrink, alignContent/alignSelf/flexWrap/direction/display/boxSizing, position/edge/inset percent/auto values, layout invalidation, computeLayout(...), and generated layout getter values.")
 	console.log("- The executable aligns that same-node sequential materialized proof with Worker 199's exact public/Reconciler dynamic layout field table by separately exercising start/end, marginLeft/marginRight, and inset replacement, cleanup, selected Yoga edge getters, invalidation, computeLayout(...), and generated layout getter values.")
 	console.log("- The executable materialized parent/child YogaNodes, called generated setCommand(group/rect) and setStyle(overflow hidden/scroll, clip rect/rrect/path, plus invertClip rect/rrect/path) wrappers, inserted the child through the generated parent.insertChild(...) wrapper, rendered the native parent through YogaNode::renderToContext(), and asserted bounded in-clip/out-of-clip raster pixels.")
@@ -1173,6 +1174,12 @@ void expectThrows(Fn&& fn, const std::string& messageSubstring, const char* mess
     std::abort();
 }
 
+template <typename Fn>
+void expectThrows(Fn&& fn, const std::string& messageSubstring, const std::string& message)
+{
+    expectThrows(std::forward<Fn>(fn), messageSubstring, message.c_str());
+}
+
 jsi::Object makeGroupCommand(jsi::Runtime& runtime, bool rasterize = true)
 {
     jsi::Object command(runtime);
@@ -1926,6 +1933,26 @@ jsi::Object makeWidthStretchStyle(jsi::Runtime& runtime)
     return style;
 }
 
+jsi::Object makeSingleStringStyle(jsi::Runtime& runtime, const char* propertyName, const char* value)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, propertyName, value);
+    return style;
+}
+
+jsi::Object makeValidatedLayoutUnitStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "width", "25%");
+    style.setProperty(runtime, "height", "auto");
+    style.setProperty(runtime, "minWidth", "12.5%");
+    style.setProperty(runtime, "paddingLeft", "+1.25e1%");
+    style.setProperty(runtime, "marginLeft", "auto");
+    style.setProperty(runtime, "left", "-2.5%");
+    style.setProperty(runtime, "flexBasis", "auto");
+    return style;
+}
+
 jsi::Object makeResidualLayoutParentStyle(jsi::Runtime& runtime)
 {
     jsi::Object style(runtime);
@@ -2318,6 +2345,15 @@ void callGeneratedSetStyle(
         setStyle,
         style,
         message);
+}
+
+void callGeneratedSetStyle(
+    jsi::Runtime& runtime,
+    const MaterializedYogaNode& materialized,
+    const jsi::Object& style,
+    const std::string& message)
+{
+    callGeneratedSetStyle(runtime, materialized, style, message.c_str());
 }
 
 void applyGeneratedStyleAndComputeLayout(
@@ -2770,6 +2806,136 @@ void assertGeneratedWidthStretchStyle(jsi::Runtime& runtime)
         "generated width stretch style must still store ordinary height optional");
     const auto width = YGNodeStyleGetWidth(materialized.node->_node);
     expect(width.unit == YGUnitStretch, "generated width stretch style must update stable Yoga width getter");
+
+    disposeMaterializedObject(runtime, materialized.object);
+}
+
+void assertGeneratedLayoutUnitValidation(jsi::Runtime& runtime)
+{
+    auto materialized = materializeYogaNode(runtime);
+    callGeneratedSetStyle(
+        runtime,
+        materialized,
+        makeValidatedLayoutUnitStyle(runtime),
+        "generated materialized layout unit validation positive setStyle must return undefined");
+
+    expectOptionalStyleString(
+        materialized.node->_style.width,
+        "25%",
+        "generated layout unit validation must store width percent string optional");
+    expectOptionalStyleString(
+        materialized.node->_style.height,
+        "auto",
+        "generated layout unit validation must store height auto string optional");
+    expectOptionalStyleString(
+        materialized.node->_style.minWidth,
+        "12.5%",
+        "generated layout unit validation must store minWidth percent string optional");
+    expectOptionalStyleString(
+        materialized.node->_style.paddingLeft,
+        "+1.25e1%",
+        "generated layout unit validation must store paddingLeft exponent percent string optional");
+    expectOptionalStyleString(
+        materialized.node->_style.marginLeft,
+        "auto",
+        "generated layout unit validation must store marginLeft auto string optional");
+    expectOptionalStyleString(
+        materialized.node->_style.left,
+        "-2.5%",
+        "generated layout unit validation must store left percent string optional");
+    expectOptionalStyleString(
+        materialized.node->_style.flexBasis,
+        "auto",
+        "generated layout unit validation must store flexBasis auto string optional");
+
+    expectYGValuePercent(
+        YGNodeStyleGetWidth(materialized.node->_node),
+        25.0,
+        "generated layout unit validation Yoga width percent getter");
+    expectYGValueAuto(
+        YGNodeStyleGetHeight(materialized.node->_node),
+        "generated layout unit validation Yoga height auto getter");
+    expectYGValuePercent(
+        YGNodeStyleGetMinWidth(materialized.node->_node),
+        12.5,
+        "generated layout unit validation Yoga minWidth percent getter");
+    expectYGValuePercent(
+        YGNodeStyleGetPadding(materialized.node->_node, YGEdgeLeft),
+        12.5,
+        "generated layout unit validation Yoga paddingLeft exponent percent getter");
+    expectYGValueAuto(
+        YGNodeStyleGetMargin(materialized.node->_node, YGEdgeLeft),
+        "generated layout unit validation Yoga marginLeft auto getter");
+    expectYGValuePercent(
+        YGNodeStyleGetPosition(materialized.node->_node, YGEdgeLeft),
+        -2.5,
+        "generated layout unit validation Yoga left percent getter");
+    expectYGValueAuto(
+        YGNodeStyleGetFlexBasis(materialized.node->_node),
+        "generated layout unit validation Yoga flexBasis auto getter");
+
+    struct WidthSpecialCase {
+        const char* value;
+        YGUnit unit;
+    };
+
+    const WidthSpecialCase widthSpecialCases[] = {
+        { "fit-content", YGUnitFitContent },
+        { "max-content", YGUnitMaxContent },
+        { "stretch", YGUnitStretch },
+    };
+
+    for (const auto& widthCase : widthSpecialCases) {
+        auto widthSpecial = materializeYogaNode(runtime);
+        callGeneratedSetStyle(
+            runtime,
+            widthSpecial,
+            makeSingleStringStyle(runtime, "width", widthCase.value),
+            std::string("generated materialized width special setStyle must accept ") + widthCase.value);
+        expectOptionalStyleString(
+            widthSpecial.node->_style.width,
+            widthCase.value,
+            "generated width special style must store width string optional");
+        expect(
+            YGNodeStyleGetWidth(widthSpecial.node->_node).unit == widthCase.unit,
+            std::string("generated width special must update Yoga width unit for ") + widthCase.value);
+        disposeMaterializedObject(runtime, widthSpecial.object);
+    }
+
+    const auto invalidCases = std::array {
+        std::tuple { "left", "10px", "Invalid Yoga layout value for left: \"10px\"" },
+        std::tuple { "padding", "auto", "Invalid Yoga layout value for padding: \"auto\"" },
+        std::tuple { "minWidth", "auto", "Invalid Yoga layout value for minWidth: \"auto\"" },
+        std::tuple { "width", "bogus", "Invalid Yoga layout value for width: \"bogus\"" },
+        std::tuple { "height", "fit-content", "Invalid Yoga layout value for height: \"fit-content\"" },
+        std::tuple { "width", "10abc%", "Invalid Yoga layout value for width: \"10abc%\"" },
+        std::tuple { "width", "10%%", "Invalid Yoga layout value for width: \"10%%\"" },
+        std::tuple { "width", "NaN%", "Invalid Yoga layout value for width: \"NaN%\"" },
+        std::tuple { "width", "Infinity%", "Invalid Yoga layout value for width: \"Infinity%\"" },
+        std::tuple { "width", "1e309%", "Invalid Yoga layout value for width: \"1e309%\"" },
+    };
+
+    for (const auto& invalidCase : invalidCases) {
+        const auto& [propertyName, value, messageSubstring] = invalidCase;
+        expectThrows(
+            [&]() {
+                callGeneratedSetStyle(
+                    runtime,
+                    materialized,
+                    makeSingleStringStyle(runtime, propertyName, value),
+                    "generated materialized invalid layout unit setStyle must not return");
+            },
+            messageSubstring,
+            std::string("generated setStyle must reject invalid layout unit ") + propertyName + "=" + value);
+    }
+
+    expectYGValuePercent(
+        YGNodeStyleGetWidth(materialized.node->_node),
+        25.0,
+        "generated invalid layout unit rejection must preserve previous Yoga width");
+    expectYGValueAuto(
+        YGNodeStyleGetHeight(materialized.node->_node),
+        "generated invalid layout unit rejection must preserve previous Yoga height");
 
     disposeMaterializedObject(runtime, materialized.object);
 }
@@ -4603,6 +4769,8 @@ int main()
     std::cerr << "probe: call generated materialized flex layout breadth" << std::endl;
     assertGeneratedMaterializedFlexLayoutBreadth(*runtime);
     assertGeneratedWidthStretchStyle(*runtime);
+    std::cerr << "probe: call generated layout unit validation" << std::endl;
+    assertGeneratedLayoutUnitValidation(*runtime);
     assertGeneratedMaterializedResidualLayoutBreadth(*runtime);
     assertGeneratedMaterializedDisplayNoneLayout(*runtime);
     assertGeneratedMaterializedSequentialLayoutUpdates(*runtime);
