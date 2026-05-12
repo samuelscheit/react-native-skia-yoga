@@ -553,6 +553,19 @@ static void validateFiniteStyleNumber(const char* propertyName, const std::optio
     }
 }
 
+static void validateFiniteStyleNumber(
+    const char* propertyName,
+    const std::optional<std::variant<std::string, double>>& value)
+{
+    if (!value.has_value() || !std::holds_alternative<double>(*value)) {
+        return;
+    }
+
+    if (!std::isfinite(std::get<double>(*value))) {
+        throwInvalidNumericStyleValue(propertyName);
+    }
+}
+
 static void validateFiniteNumericStyleFields(const NodeStyle& style)
 {
     validateFiniteStyleNumber("borderBottomWidth", style.borderBottomWidth);
@@ -566,6 +579,53 @@ static void validateFiniteNumericStyleFields(const NodeStyle& style)
     validateFiniteStyleNumber("borderVerticalWidth", style.borderVerticalWidth);
     validateFiniteStyleNumber("strokeMiter", style.strokeMiter);
     validateFiniteStyleNumber("opacity", style.opacity);
+
+    validateFiniteStyleNumber("aspectRatio", style.aspectRatio);
+    validateFiniteStyleNumber("flex", style.flex);
+    validateFiniteStyleNumber("flexGrow", style.flexGrow);
+    validateFiniteStyleNumber("flexShrink", style.flexShrink);
+    validateFiniteStyleNumber("gap", style.gap);
+    validateFiniteStyleNumber("rowGap", style.rowGap);
+    validateFiniteStyleNumber("columnGap", style.columnGap);
+
+    validateFiniteStyleNumber("flexBasis", style.flexBasis);
+    validateFiniteStyleNumber("width", style.width);
+    validateFiniteStyleNumber("height", style.height);
+    validateFiniteStyleNumber("minWidth", style.minWidth);
+    validateFiniteStyleNumber("minHeight", style.minHeight);
+    validateFiniteStyleNumber("maxWidth", style.maxWidth);
+    validateFiniteStyleNumber("maxHeight", style.maxHeight);
+
+    validateFiniteStyleNumber("top", style.top);
+    validateFiniteStyleNumber("right", style.right);
+    validateFiniteStyleNumber("bottom", style.bottom);
+    validateFiniteStyleNumber("left", style.left);
+    validateFiniteStyleNumber("start", style.start);
+    validateFiniteStyleNumber("end", style.end);
+
+    validateFiniteStyleNumber("margin", style.margin);
+    validateFiniteStyleNumber("marginTop", style.marginTop);
+    validateFiniteStyleNumber("marginBottom", style.marginBottom);
+    validateFiniteStyleNumber("marginLeft", style.marginLeft);
+    validateFiniteStyleNumber("marginRight", style.marginRight);
+    validateFiniteStyleNumber("marginStart", style.marginStart);
+    validateFiniteStyleNumber("marginEnd", style.marginEnd);
+    validateFiniteStyleNumber("marginHorizontal", style.marginHorizontal);
+    validateFiniteStyleNumber("marginVertical", style.marginVertical);
+
+    validateFiniteStyleNumber("padding", style.padding);
+    validateFiniteStyleNumber("paddingTop", style.paddingTop);
+    validateFiniteStyleNumber("paddingBottom", style.paddingBottom);
+    validateFiniteStyleNumber("paddingLeft", style.paddingLeft);
+    validateFiniteStyleNumber("paddingRight", style.paddingRight);
+    validateFiniteStyleNumber("paddingStart", style.paddingStart);
+    validateFiniteStyleNumber("paddingEnd", style.paddingEnd);
+    validateFiniteStyleNumber("paddingHorizontal", style.paddingHorizontal);
+    validateFiniteStyleNumber("paddingVertical", style.paddingVertical);
+
+    validateFiniteStyleNumber("inset", style.inset);
+    validateFiniteStyleNumber("insetHorizontal", style.insetHorizontal);
+    validateFiniteStyleNumber("insetVertical", style.insetVertical);
 }
 
 // Helper function to handle variant<string, double> values for setting yoga values
