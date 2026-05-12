@@ -133,7 +133,7 @@ Latest accepted audit: worker 205 identified deterministic Yoga layout unit
 string validation as the strongest locally unblocked target, after reconfirming
 the current feasible matrix and local platform blockers.
 
-Current active worker: none.
+Current active worker: worker 207 post-worker-206 root-cause audit.
 
 Goals:
 
@@ -351,14 +351,12 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - Worker 207 post-206 root-cause audit.
-- Agent path: not spawned yet.
-- Worktree: create `../worker-207-post-206-root-cause-audit` before spawning.
-- Branch: create `worker/207-post-206-root-cause-audit` before spawning.
+- Agent path: `/root/worker_207_post_206_root_cause_audit`.
+- Worktree: `../worker-207-post-206-root-cause-audit`.
+- Branch: `worker/207-post-206-root-cause-audit`.
+- State: spawned via `spawn_agent` with `goal: true`; report-only audit in
+  progress.
 - Scope: audit the post-worker-206 state, verify the accepted proof boundary,
   rerun focused feasible checks as needed, reconfirm platform-native blockers,
   and select the next strongest locally unblocked root-cause target.
