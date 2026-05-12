@@ -3594,10 +3594,22 @@ Last updated: 2026-05-12
   - Post-merge `git diff --check HEAD~1 HEAD`: passed.
 - Next step selected by orchestration: launch Worker 173 for generated/native
   style corner-radius proof.
+- Prepared Worker 173 generated/native style corner-radius proof:
+  - Worktree: `../worker-173-native-corner-radius-proof`.
+  - Branch: `worker/173-native-corner-radius-proof`.
+  - Planned agent path: `/root/worker_173_native_corner_radius_proof`.
+  - Symlinked root `node_modules` and `example/node_modules` from the main
+    worktree.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
 
 ## Active Workers
 
-- None.
+- `/root/worker_173_native_corner_radius_proof`: generated/native style
+  corner-radius proof from isolated worktree
+  `../worker-173-native-corner-radius-proof` on branch
+  `worker/173-native-corner-radius-proof`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3916,7 +3928,7 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Launch Worker 173: generated/native style corner-radius proof.
+- Monitor Worker 173: generated/native style corner-radius proof.
   - Extend native/materialized proof for SkPoint-capable style corner radii:
     generated `setStyle(...)` delivery, native `NodeStyle` state,
     `_clipToBoundsRadii`, render clipping, and hit-test clipping.

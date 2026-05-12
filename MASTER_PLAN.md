@@ -303,16 +303,19 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - Worker 173 generated/native style corner-radius proof.
+  - Agent path: `/root/worker_173_native_corner_radius_proof`.
+  - Worktree: `../worker-173-native-corner-radius-proof`.
+  - Branch: `worker/173-native-corner-radius-proof`.
   - Scope: prove generated/materialized `setStyle(...)` delivery for
     SkPoint-capable style corner radii into native `NodeStyle`,
     `_clipToBoundsRadii`, render clipping, and hit-test clipping.
   - Required verification: focused native/materialization checks,
     `git diff --check`, and `check:feasible-matrix`.
+
+Next queued worker:
+
+- None until Worker 173 reports.
 
 Acceptance criteria:
 
