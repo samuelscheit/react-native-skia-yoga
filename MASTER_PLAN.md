@@ -337,22 +337,18 @@ Accepted package-hygiene implementation:
 - `worker-192-post-191-root-cause-audit`: accepted Worker 191's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected generated materialized Yoga layout breadth proof as Worker 193's target.
 - `worker-193-materialized-layout-breadth`: expanded the generated materialized Nitro verifier with a compact flexbox/layout tree proof covering representative layout style delivery, selected native Yoga state, native computed layout, and generated `layout` getter output.
 - `worker-194-post-193-root-cause-audit`: accepted Worker 193's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected overflow render/materialized bridge proof as Worker 195's target.
+- `worker-195-overflow-render-materialized-bridge`: added bounded host-native and generated materialized overflow hidden/scroll delivery plus rectangular raster clipping proof through `YogaNode::renderToContext()`.
 
 Current active worker:
 
-Worker 195 overflow render/materialized bridge proof.
-
-- Agent path: `/root/worker_195_overflow_render_materialized_bridge`.
-- Worktree: `../worker-195-overflow-render-materialized-bridge`.
-- Branch: `worker/195-overflow-render-materialized-bridge`.
-- Scope: add bounded host-native overflow raster proof and generated
-  materialized `setStyle({ overflow })` delivery proof without claiming
-  platform app runtime, GPU/platform clipping fidelity, or complete overflow
-  behavior.
+- None. Worker 195 has been accepted and merged.
 
 Next queued worker:
 
-- None until Worker 195 reports.
+- Worker 196 post-Worker 195 root-cause audit. Independently accept or reject
+  Worker 195's overflow proof boundary, rerun focused/full-matrix evidence as
+  appropriate, reprobe platform blockers if needed, and select the next locally
+  unblocked target.
 
 Acceptance criteria:
 

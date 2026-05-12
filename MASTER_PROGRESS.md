@@ -4178,20 +4178,36 @@ Last updated: 2026-05-12
     verification and completed nested audit evidence.
   - Selected bounded overflow render/materialized bridge proof as the next
     locally unblocked root-cause target.
-- Prepared Worker 195 overflow render/materialized bridge proof:
-  - Worktree: `../worker-195-overflow-render-materialized-bridge`.
-  - Branch: `worker/195-overflow-render-materialized-bridge`.
-  - Planned agent path: `/root/worker_195_overflow_render_materialized_bridge`.
-  - Launch parameters: `agent_type: "worker"`, `goal: true`,
-    `fork_turns: "none"`, `model: "gpt-5.5"`, and
-    `reasoning_effort: "xhigh"`.
+- Worker 195 overflow render/materialized bridge proof accepted:
+  - Worker branch commit:
+    `740cb3c Add overflow render materialized proof`.
+  - Merged worker 195 into `main` as
+    `1f35f96 Merge worker 195 overflow proof`.
+  - Added bounded direct host-native `overflow: "hidden"` and
+    `overflow: "scroll"` NodeStyle transport, Yoga overflow,
+    `_clipsToBounds`, and raster clipping proof in
+    `scripts/verify-yoganode-native-commands-render.mjs`.
+  - Added matching generated materialized `setStyle({ overflow })` delivery,
+    native state, layout, and bounded raster clipping proof in
+    `scripts/verify-yoganode-nitro-materialization.mjs`.
+  - Worker verification passed `git diff --check`,
+    `node --check scripts/verify-yoganode-native-commands-render.mjs`,
+    `node --check scripts/verify-yoganode-nitro-materialization.mjs`,
+    `npm run check:yoganode-native-commands-render`,
+    `npm run check:yoganode-nitro-materialization`, and
+    `npm run check:feasible-matrix` all 28 commands in `4m 39s`.
+  - Main post-merge verification passed `git diff --check HEAD~1 HEAD`, both
+    edited syntax checks, both focused verifier commands, and
+    `npm run check:feasible-matrix` all 28 commands in `5m 14s`.
+  - The original Worker 195 spawn-agent stalled after producing scoped
+    verifier edits and before report writing/commit; the patch was preserved,
+    independently verified, reported, and committed manually from the isolated
+    Worker 195 worktree.
+  - Selected Worker 196 post-Worker 195 root-cause audit as the next step.
 
 ## Active Workers
 
-- `/root/worker_195_overflow_render_materialized_bridge`: overflow
-  render/materialized bridge proof from isolated worktree
-  `../worker-195-overflow-render-materialized-bridge` on branch
-  `worker/195-overflow-render-materialized-bridge`.
+- None. Worker 195 has been accepted and merged.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4406,10 +4422,11 @@ Accepted worker reports:
 - `worker-progress/worker-192-post-191-root-cause-audit.md`
 - `worker-progress/worker-193-materialized-layout-breadth.md`
 - `worker-progress/worker-194-post-193-root-cause-audit.md`
+- `worker-progress/worker-195-overflow-render-materialized-bridge.md`
 
 ## Pending Workers
 
-- None until Worker 195 reports.
+- Worker 196 post-Worker 195 root-cause audit.
 
 ## Decisions
 
@@ -4445,6 +4462,18 @@ Accepted worker reports:
 - Worker 194 accepted Worker 193's generated materialized layout proof
   boundary and selected bounded overflow render/materialized bridge proof as
   the next locally unblocked target.
+- Worker 195 closed bounded overflow render/materialized bridge proof by
+  adding host-native `overflow: "hidden"` / `"scroll"` NodeStyle transport,
+  Yoga overflow, `_clipsToBounds`, and raster clipping assertions plus matching
+  generated materialized `setStyle({ overflow })` delivery and bounded
+  `renderToContext()` raster pixels. The worker branch commit was
+  `740cb3c Add overflow render materialized proof`, merged as
+  `1f35f96 Merge worker 195 overflow proof`. Main post-merge verification
+  passed `git diff --check HEAD~1 HEAD`, both edited syntax checks, both
+  focused verifier commands, and the full 28-command feasible matrix in
+  `5m 14s`. The original Worker 195 spawn-agent stalled after scoped edits and
+  was manually recovered, verified, reported, and committed from the isolated
+  worktree. The next step is a fresh post-Worker 195 root-cause audit.
 - Post-worker-102 target selection: worker 103 accepted worker 102's synthetic ImageCmd fit proof boundary, reconfirmed the 28-command feasible matrix, and selected bounded text/paragraph CSS color-string command conversion/render coverage as the strongest locally unblocked target because public JSX accepts string color values and native text-style conversion parses CSS strings while current text/paragraph command-render coverage uses numeric colors.
 - Post-worker-106 target selection: worker 107 accepted worker 106's expanded generated `setCommand(...)` breadth, reconfirmed the 28-command feasible matrix, and selected direct `StrokeOpts` converter consistency as the strongest locally unblocked product-source target because `fromJSI(...)` rejects non-objects while `canConvert(...)` still advertises objects, `null`, and `undefined` as convertible.
 - Post-worker-108 follow-up: direct `StrokeOpts` converter consistency is integrated; the next step is a fresh audit because worker 107's next-ranked TypeScript dynamic payload caveat needs API-boundary reassessment after the converter fix.
@@ -4553,18 +4582,15 @@ Accepted worker reports:
 
 ## Next Worker Candidates
 
-- Worker 195: overflow render/materialized bridge proof.
-  - Add bounded `overflow: "hidden"` and/or `overflow: "scroll"` raster proof
-    in `scripts/verify-yoganode-native-commands-render.mjs`.
-  - Mirror generated materialized `setStyle({ overflow })` delivery plus
-    selected native state and bounded raster pixels in
-    `scripts/verify-yoganode-nitro-materialization.mjs`.
-  - Keep the proof focused on rectangular overflow clipping, not radius
-    clipping or explicit `style.clip`, which are already covered by adjacent
-    verifiers.
-  - Do not claim exact GPU/platform clipping, platform app runtime, React
-    Native bridge delivery, or complete overflow behavior across all Yoga
-    modes.
+- Worker 196: post-Worker 195 root-cause audit.
+  - Independently inspect Worker 195's report, verifier changes, proof
+    boundary text, and main post-merge evidence.
+  - Accept or reject the bounded overflow render/materialized bridge proof.
+  - Rerun focused/full-matrix checks as appropriate and confirm cleanup state.
+  - Reprobe platform-native blockers only if needed for target ranking.
+  - Select the next locally unblocked root-cause target without claiming
+    platform app runtime, React Native bridge delivery, GPU/platform clipping
+    fidelity, or complete overflow behavior.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
