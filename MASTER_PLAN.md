@@ -385,20 +385,24 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - Worker 212 numeric Yoga layout finite validation.
-- Suggested worktree: `../worker-212-layout-numeric-finite-validation`.
-- Suggested branch: `worker/212-layout-numeric-finite-validation`.
+- Agent path: `/root/worker_212_layout_numeric_finite_validation`.
+- Worktree: `../worker-212-layout-numeric-finite-validation`.
+- Branch: `worker/212-layout-numeric-finite-validation`.
 - Scope: extend pre-mutation finite-number validation in
   `YogaNode::setStyle(...)` to remaining numeric Yoga layout fields and
   generated materialized state-preservation coverage.
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`; awaiting report.
+
+Next queued worker:
+
+- None until Worker 212 reports.
 
 Follow-up queue:
 
-- Depends on Worker 212 results.
+- None until Worker 212 reports.
 
 Acceptance criteria:
 
