@@ -4601,6 +4601,31 @@ Last updated: 2026-05-12
   `agent_type: "worker"`, `goal: true`, `fork_turns: "none"`,
   `model: "gpt-5.5"`, and `reasoning_effort: "xhigh"` as an implementation
   worker.
+- Worker 212 layout numeric finite validation accepted:
+  - Worker branch commit:
+    `00d5af9 Validate finite numeric layout styles`.
+  - Merged worker 212 into `main` as
+    `3a6a1b8 Merge worker 212 layout numeric finite validation`.
+  - Added deterministic pre-mutation finite-number validation for direct
+    numeric Yoga layout scalars and numeric branches of Yoga layout variants,
+    while preserving existing Worker 206 string-unit validation and Worker 210
+    paint/border numeric validation.
+  - Generated materialized `setStyle(...)` coverage now rejects non-finite
+    values across the covered layout inventory and proves preservation of
+    previous selected `_style` optionals, Yoga getter state, computed layout,
+    `_paint`, Yoga border state, `_layerPaint`, clip, and matrix state.
+  - Worker verification passed `git diff --check`,
+    `node --check scripts/verify-yoganode-nitro-materialization.mjs`,
+    `npm run check:yoganode-nitro-materialization`, and
+    `npm run check:feasible-matrix` all 28 commands in `4m 18s`.
+  - Orchestrator verification before merge passed `git diff --check HEAD~1 HEAD`,
+    `node --check scripts/verify-yoganode-nitro-materialization.mjs`, and
+    `npm run check:yoganode-nitro-materialization`.
+  - Post-merge verification from `main` passed `git diff --check HEAD~1 HEAD`,
+    `node --check scripts/verify-yoganode-nitro-materialization.mjs`,
+    `npm run check:yoganode-nitro-materialization`, and
+    `npm run check:feasible-matrix` all 28 commands in `5m 15s`.
+  - Selected Worker 213 post-worker-212 root-cause audit as the next step.
 
 ## Active Workers
 
@@ -4837,6 +4862,7 @@ Accepted worker reports:
 - `worker-progress/worker-209-post-208-root-cause-audit.md`
 - `worker-progress/worker-210-numeric-style-finite-validation.md`
 - `worker-progress/worker-211-post-210-root-cause-audit.md`
+- `worker-progress/worker-212-layout-numeric-finite-validation.md`
 
 ## Pending Workers
 
