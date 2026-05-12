@@ -60,6 +60,13 @@ type YogaAnimatedStyleProp<T> =
 	| T
 	| SharedValue<T>
 	| SharedValue<NonNullable<T>>
+type YogaAnimatedUnionStyleProp<T> =
+	| YogaAnimatedStyleProp<T>
+	| (NonNullable<T> extends infer U
+			? U extends unknown
+				? SharedValue<U>
+				: never
+			: never)
 type YogaOpaqueValue =
 	| SkFont
 	| SkImage
@@ -122,7 +129,9 @@ type YogaAnimatedStyleValue<K extends keyof YogaNodeStyle> =
 			? YogaAnimatedProp<YogaStyleMatrix>
 			: K extends "transform"
 				? YogaAnimatedTransform
-				: YogaAnimatedStyleProp<YogaNodeStyle[K]>
+				: K extends "clip"
+					? YogaAnimatedUnionStyleProp<YogaNodeStyle[K]>
+					: YogaAnimatedStyleProp<YogaNodeStyle[K]>
 
 export type YogaAnimatedStyleObject = {
 	[K in keyof YogaNodeStyle]?: YogaAnimatedStyleValue<K>
