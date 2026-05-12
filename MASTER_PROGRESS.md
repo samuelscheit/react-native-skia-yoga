@@ -3334,12 +3334,38 @@ Last updated: 2026-05-12
   symlinked root/example dependencies from the main worktree, and prepared
   `/root/worker_164_post_163_root_cause_audit` as a managed audit worker
   subagent with `goal: true`.
+- The initial Worker 164 subagent and a shorter retry both stayed running
+  without producing a report, commit, or worktree changes; both were closed as
+  stuck.
+- Recovered the report-only Worker 164 audit from the assigned clean worktree.
+  The recovered report transparently documents the stuck subagents, accepts
+  Worker 163's proof boundary, reranks the remaining locally unblocked gaps,
+  and selects public/Reconciler transform authoring proof as Worker 165's
+  target.
+- Worker 164 verification:
+  - `git diff --check 5cfe4bc~1 5cfe4bc`: passed.
+  - `node --check scripts/verify-yoganode-native-hit-testing.mjs`: passed.
+  - `node --check scripts/verify-yoganode-native-commands-render.mjs`: passed.
+  - `npm run check:yoganode-native-hit-testing`: passed.
+  - `npm run check:yoganode-native-commands-render`: passed.
+  - `npm run check:yoganode-nitro-materialization`: passed.
+  - `npm run check:feasible-matrix`: passed 28/28 in `4m 46s`.
+- Worker 164 branch commit:
+  `e826d44 Add Worker 164 post-163 audit`.
+- Merged worker 164 into `main` as
+  `1bc422c Merge worker 164 post-163 audit`.
+- Post-merge `git diff --check HEAD~1 HEAD`: passed.
+- Worker 164 cleanup:
+  - Removed `../worker-164-post-163-root-cause-audit`.
+  - Deleted branch `worker/164-post-163-root-cause-audit`.
+- Clarified current scheduling docs in
+  `2bffae3 Clarify spawn_agent worker scheduling docs`, making current
+  top-level workers `spawn_agent` subagents and treating tmux/process-log
+  references as archival.
 
 ## Active Workers
 
-- `/root/worker_164_post_163_root_cause_audit`: auditing the post-worker-163
-  proof boundary and selecting the next strongest locally unblocked target from
-  isolated worktree `../worker-164-post-163-root-cause-audit`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3523,6 +3549,7 @@ Accepted worker reports:
 - `worker-progress/worker-161-materialized-transform-breadth.md`
 - `worker-progress/worker-162-post-161-root-cause-audit.md`
 - `worker-progress/worker-163-transform-composition-runtime.md`
+- `worker-progress/worker-164-post-163-root-cause-audit.md`
 
 ## Pending Workers
 
@@ -3649,8 +3676,17 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor Worker 164's post-worker-163 root-cause audit from isolated worktree
-  `../worker-164-post-163-root-cause-audit`.
+- Worker 165: public/Reconciler transform authoring proof.
+  - Extend `check:package-typescript-consumer` with packed-consumer JSX
+    `style.transform` cases for representative static transform arrays, whole
+    `SharedValue<Transform>`, and selected nested transform entry
+    `SharedValue<number>` leaves.
+  - Extend `check:reconciler-animated-bindings` with source-level Reconciler
+    cases proving dynamic `style.transform` leaves register JS style listeners,
+    resolve initial snapshots, rebuild host style on updates, invalidate, and
+    clean up listeners.
+  - Preserve Worker 161's generated materialized transform proof and Worker
+    163's host-native render/hit-test proof boundaries.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
