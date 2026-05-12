@@ -16,6 +16,10 @@ import {
 	createVerifierTempDir,
 	formatVerifierTempDiagnostics,
 } from "./verifier-temp-utils.mjs"
+import {
+	assertStyleCornerRadiusCaseTableMatchesInventory,
+	formatStyleCornerRadiusKeys,
+} from "./style-corner-radius-inventory.mjs"
 import ts from "typescript"
 
 const rootDir = path.resolve(import.meta.dirname, "..")
@@ -37,9 +41,20 @@ const packageTransformOperationCases = [
 	{ key: "skewX", staticValue: 0.05, typeName: "TransformSkewX" },
 	{ key: "skewY", staticValue: 0.075, typeName: "TransformSkewY" },
 ]
+const packageStyleCornerRadiusCases = [
+	{ key: "borderBottomLeftRadius" },
+	{ key: "borderBottomRightRadius" },
+	{ key: "borderTopLeftRadius" },
+	{ key: "borderTopRightRadius" },
+]
 assertTransformOperationCaseTableMatchesInventory(
 	"package TypeScript consumer transform cases",
 	packageTransformOperationCases,
+)
+assertStyleCornerRadiusCaseTableMatchesInventory(
+	rootDir,
+	"package TypeScript consumer corner-radius cases",
+	packageStyleCornerRadiusCases,
 )
 
 const tempRoot = createVerifierTempDir("rnskia-package-typescript-consumer-")
@@ -118,11 +133,16 @@ try {
 		"- Public package entrypoints and lowercase intrinsic JSX compiled from the installed package.",
 	)
 	console.log(
-		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, dynamic SkPoint-capable style.borderTopLeftRadius forms, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, whole style.matrix SharedValue 9-/16-value arrays, inventory-backed static style.transform arrays, whole style.transform SharedValue<Transform>, inventory-backed nested style.transform SharedValue<number> leaves for every public transform operation, and whole SharedValue<YogaNodeStyle> authoring.",
+		"- Packed consumer JSX compiled representative dynamic SharedValue command props plus canonical style.antiAlias, inventory-backed dynamic SkPoint-capable corner-radius forms, static style.layer Skia.Paint(), dynamic style.layer SharedValue<SkPaint>, dynamic style.opacity, whole style.matrix SharedValue 9-/16-value arrays, inventory-backed static style.transform arrays, whole style.transform SharedValue<Transform>, inventory-backed nested style.transform SharedValue<number> leaves for every public transform operation, and whole SharedValue<YogaNodeStyle> authoring.",
 	)
 	console.log(
 		`- Source public transform operation inventory from src/specs/style.ts matched packed consumer cases: ${formatTransformOperationKeys(
 			publicTransformOperationInventory,
+		)}.`,
+	)
+	console.log(
+		`- Source style corner-radius key inventory from src/specs/style.ts, src/jsx.ts, and src/Reconciler.ts matched packed consumer cases: ${formatStyleCornerRadiusKeys(
+			packageStyleCornerRadiusCases,
 		)}.`,
 	)
 	console.log(
@@ -135,7 +155,7 @@ try {
 		"- Packed consumer TypeScript rejected unsupported nested style.matrix SharedValue<number> array entries while accepting SharedValue for the whole matrix.",
 	)
 	console.log(
-		"- Packed consumer TypeScript accepted style.borderTopLeftRadius as SharedValue<number>, SharedValue<SkPoint>, and { x, y } SharedValue<number> leaves while rejecting invalid point leaves.",
+		"- Packed consumer TypeScript accepted all four per-corner style radius keys as SharedValue<number>, SharedValue<SkPoint>, and { x, y } SharedValue<number> leaves while rejecting invalid point leaves.",
 	)
 	console.log(
 		"- Packed consumer TypeScript accepted simple text.textStyle color/fontSize authoring and rejected rich text.textStyle fontFamilies, fontFeatures, fontStyle, letterSpacing, and fontVariations authoring while preserving rich paragraphStyle text styling.",
@@ -521,7 +541,7 @@ ${formatDynamicTransformEntries()}
 
 const dynamicScalarCornerRadiusRectProps: YogaIntrinsicElements["rect"] = {
 \tstyle: {
-\t\tborderTopLeftRadius: sharedStyleCornerRadiusNumber,
+${formatCornerRadiusStyleEntries("sharedStyleCornerRadiusNumber")}
 \t\theight: 24,
 \t\twidth: 24,
 \t},
@@ -529,7 +549,7 @@ const dynamicScalarCornerRadiusRectProps: YogaIntrinsicElements["rect"] = {
 
 const dynamicPointCornerRadiusRectProps: YogaIntrinsicElements["rect"] = {
 \tstyle: {
-\t\tborderTopLeftRadius: sharedStyleCornerRadiusPoint,
+${formatCornerRadiusStyleEntries("sharedStyleCornerRadiusPoint")}
 \t\theight: 24,
 \t\twidth: 24,
 \t},
@@ -537,10 +557,7 @@ const dynamicPointCornerRadiusRectProps: YogaIntrinsicElements["rect"] = {
 
 const dynamicNestedCornerRadiusRectProps: YogaIntrinsicElements["rect"] = {
 \tstyle: {
-\t\tborderTopLeftRadius: {
-\t\t\tx: sharedStyleCornerRadiusX,
-\t\t\ty: sharedStyleCornerRadiusY,
-\t\t},
+${formatNestedCornerRadiusStyleEntries()}
 \t\theight: 24,
 \t\twidth: 24,
 \t},
@@ -734,6 +751,21 @@ function formatSharedTransformDeclarations() {
 function formatDynamicTransformEntries() {
 	return packageTransformOperationCases
 		.map(({ key }) => `\t\t\t{ ${key}: ${sharedTransformValueName(key)} },`)
+		.join("\n")
+}
+
+function formatCornerRadiusStyleEntries(valueName) {
+	return packageStyleCornerRadiusCases
+		.map(({ key }) => `\t\t${key}: ${valueName},`)
+		.join("\n")
+}
+
+function formatNestedCornerRadiusStyleEntries() {
+	return packageStyleCornerRadiusCases
+		.map(
+			({ key }) =>
+				`\t\t${key}: { x: sharedStyleCornerRadiusX, y: sharedStyleCornerRadiusY },`,
+		)
 		.join("\n")
 }
 
