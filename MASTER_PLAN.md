@@ -333,19 +333,19 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-None. Worker 193 is merged and post-merge verified.
-
-Next queued worker:
-
 Worker 194 post-Worker 193 root-cause audit.
 
-- Planned agent path: `/root/worker_194_post_193_root_cause_audit`.
-- Planned worktree: `../worker-194-post-193-root-cause-audit`.
-- Planned branch: `worker/194-post-193-root-cause-audit`.
+- Agent path: `/root/worker_194_post_193_root_cause_audit`.
+- Worktree: `../worker-194-post-193-root-cause-audit`.
+- Branch: `worker/194-post-193-root-cause-audit`.
 - Scope: independently audit Worker 193's generated materialized layout
   breadth proof, rerun focused and full feasible checks as appropriate,
   reprobe local platform blockers, and select the next strongest locally
   unblocked root-cause target.
+
+Next queued worker:
+
+- None until Worker 194 reports.
 
 Acceptance criteria:
 

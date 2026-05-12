@@ -4150,10 +4150,19 @@ Last updated: 2026-05-12
     manually.
   - Next target: fresh post-Worker 193 root-cause audit to accept the proof
     boundary independently and rerank remaining local targets.
+- Prepared Worker 194 post-Worker 193 root-cause audit:
+  - Worktree: `../worker-194-post-193-root-cause-audit`.
+  - Branch: `worker/194-post-193-root-cause-audit`.
+  - Planned agent path: `/root/worker_194_post_193_root_cause_audit`.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
 
 ## Active Workers
 
-- None.
+- `/root/worker_194_post_193_root_cause_audit`: post-Worker 193 root-cause
+  audit from isolated worktree `../worker-194-post-193-root-cause-audit` on
+  branch `worker/194-post-193-root-cause-audit`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4370,7 +4379,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- Worker 194 post-Worker 193 root-cause audit.
+- None until Worker 194 reports.
 
 ## Decisions
 
