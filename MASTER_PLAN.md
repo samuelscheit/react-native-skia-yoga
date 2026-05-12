@@ -342,15 +342,19 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None. Worker 196 has been accepted and merged.
+Worker 197 residual generated materialized layout edge/constraint breadth.
+
+- Agent path: `/root/worker_197_materialized_layout_edge_breadth`.
+- Worktree: `../worker-197-materialized-layout-edge-breadth`.
+- Branch: `worker/197-materialized-layout-edge-breadth`.
+- Scope: extend generated materialized layout coverage beyond Worker 193's
+  compact flex tree while keeping the proof bounded to host-JSC generated
+  wrappers, selected native Yoga state, selected computed layout values, and
+  generated `layout` getter evidence.
 
 Next queued worker:
 
-- Worker 197 residual generated materialized layout edge/constraint breadth.
-  Extend generated materialized layout coverage beyond Worker 193's compact
-  flex tree while keeping the proof bounded to host-JSC generated wrappers,
-  selected native Yoga state, selected computed layout values, and generated
-  `layout` getter evidence.
+- None until Worker 197 reports.
 
 Acceptance criteria:
 

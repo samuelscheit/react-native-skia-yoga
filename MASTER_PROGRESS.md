@@ -4230,10 +4230,21 @@ Last updated: 2026-05-12
     unavailable.
   - Selected residual generated materialized layout edge/constraint breadth as
     the next locally unblocked root-cause target.
+- Prepared Worker 197 residual generated materialized layout edge/constraint
+  breadth:
+  - Worktree: `../worker-197-materialized-layout-edge-breadth`.
+  - Branch: `worker/197-materialized-layout-edge-breadth`.
+  - Planned agent path: `/root/worker_197_materialized_layout_edge_breadth`.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
 
 ## Active Workers
 
-- None. Worker 196 has been accepted and merged.
+- `/root/worker_197_materialized_layout_edge_breadth`: residual generated
+  materialized layout edge/constraint breadth from isolated worktree
+  `../worker-197-materialized-layout-edge-breadth` on branch
+  `worker/197-materialized-layout-edge-breadth`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4453,7 +4464,7 @@ Accepted worker reports:
 
 ## Pending Workers
 
-- Worker 197 residual generated materialized layout edge/constraint breadth.
+- None until Worker 197 reports.
 
 ## Decisions
 
@@ -4614,18 +4625,7 @@ Accepted worker reports:
 
 ## Next Worker Candidates
 
-- Worker 197: residual generated materialized layout edge/constraint breadth.
-  - Extend `scripts/verify-yoganode-nitro-materialization.mjs` with bounded
-    generated materialized layout proof beyond Worker 193's compact flex tree.
-  - Candidate fields include alignContent, alignSelf, flexWrap, direction,
-    display, boxSizing, min/max constraints, aspectRatio, edge-specific
-    aliases, and percentage/auto values where stable.
-  - Use generated materialized `setStyle(...)`, `insertChild(...)`,
-    `computeLayout(...)`, and generated `layout` getter calls.
-  - Assert selected native `_style` optionals, stable Yoga style getters, and
-    selected computed layout values without claiming exact Yoga conformance,
-    exhaustive layout coverage, React Native bridge delivery, platform app
-    runtime, or UI-runtime Worklets.
+- None until Worker 197 reports.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
