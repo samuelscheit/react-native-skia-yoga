@@ -3603,13 +3603,28 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 173 generated/native style corner-radius proof accepted:
+  - Added materialized generated `setStyle(...)` proof for all four
+    SkPoint-capable style corner keys.
+  - Proved generated conversion populates native `NodeStyle` scalar/SkPoint
+    variants, enables `_clipsToBounds`, populates `_clipToBoundsRadii`, and
+    remains distinct from explicit `style.clip` state.
+  - Added bounded host-native hit-test proof that style corner radii clip a
+    full-size child independently of overflow and explicit `style.clip` cases.
+  - Worker branch commit:
+    `4c061b6 Prove native style corner radius clipping`.
+  - Merged worker 173 into `main` as
+    `5aec0c9 Merge worker 173 native corner radius proof`.
+  - Post-merge checks passed: `git diff --check HEAD~1 HEAD`, both edited
+    `node --check` commands, `npm run check:yoganode-nitro-materialization`,
+    `npm run check:yoganode-native-hit-testing`, and
+    `npm run check:feasible-matrix` 28/28 in `4m 29s`.
+- Next step selected by orchestration: launch Worker 174 for a post-Worker 173
+  root-cause audit.
 
 ## Active Workers
 
-- `/root/worker_173_native_corner_radius_proof`: generated/native style
-  corner-radius proof from isolated worktree
-  `../worker-173-native-corner-radius-proof` on branch
-  `worker/173-native-corner-radius-proof`.
+- None.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -3802,6 +3817,7 @@ Accepted worker reports:
 - `worker-progress/worker-170-post-169-root-cause-audit.md`
 - `worker-progress/worker-171-corner-radius-dynamic-proof.md`
 - `worker-progress/worker-172-post-171-root-cause-audit.md`
+- `worker-progress/worker-173-native-corner-radius-proof.md`
 
 ## Pending Workers
 
@@ -3928,12 +3944,11 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Monitor Worker 173: generated/native style corner-radius proof.
-  - Extend native/materialized proof for SkPoint-capable style corner radii:
-    generated `setStyle(...)` delivery, native `NodeStyle` state,
-    `_clipToBoundsRadii`, render clipping, and hit-test clipping.
-  - Keep any all-four-key JS/Reconciler sweep secondary unless source evidence
-    shows it is required for the native proof.
+- Launch Worker 174: post-Worker 173 root-cause audit.
+  - Accept or reject Worker 173's generated/materialized and host-native
+    hit-test style corner-radius proof boundary.
+  - Reconfirm focused/post-merge evidence and local platform-native blockers.
+  - Select the next strongest locally unblocked root-cause target.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
