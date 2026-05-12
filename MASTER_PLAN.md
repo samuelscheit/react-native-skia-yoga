@@ -124,10 +124,11 @@ Reconciler source-level dynamic-contract proof for scalar global
 `style.borderRadius`, including a narrow runtime guard for invalid global
 payload shapes.
 
-Latest accepted audit: worker 182 accepted Worker 181's generated/materialized
-and native hit-test proof boundary for scalar global `style.borderRadius`, and
-selected public/Reconciler dynamic-contract proof for the same scalar as the
-next strongest locally unblocked target.
+Latest accepted audit: worker 184 accepted Worker 183's public/Reconciler
+dynamic-contract proof boundary for scalar global `style.borderRadius`, reran
+the focused checks plus the full feasible matrix, reconfirmed platform-native
+toolchain blockers, and selected dynamic `style.clip` / `style.invertClip`
+public/Reconciler proof as the next strongest locally unblocked target.
 
 Goals:
 
@@ -317,24 +318,23 @@ Accepted package-hygiene implementation:
 - `worker-181-border-radius-materialized-hit-test`: added generated materialized `setStyle({ borderRadius })` delivery proof plus direct native hit-test proof for scalar global `style.borderRadius`.
 - `worker-182-post-181-root-cause-audit`: accepted Worker 181's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected public/Reconciler dynamic-contract proof for scalar global `style.borderRadius`.
 - `worker-183-border-radius-dynamic-contract`: added public packed TypeScript and Reconciler source-level dynamic-contract proof for scalar global `style.borderRadius`, including invalid initial and late-emission runtime guard coverage.
+- `worker-184-post-183-root-cause-audit`: accepted Worker 183's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected dynamic `style.clip` / `style.invertClip` public/Reconciler proof as Worker 185's target.
 
 Current active worker:
 
-- Worker 184 post-Worker 183 root-cause audit.
-  - Agent path: `/root/worker_184_post_183_root_cause_audit`.
-  - Worktree: `../worker-184-post-183-root-cause-audit`.
-  - Branch: `worker/184-post-183-root-cause-audit`.
-  - Scope: accept or reject Worker 183's public/Reconciler dynamic-contract
-    proof boundary for scalar global `style.borderRadius`, reconfirm
-    focused/post-merge evidence and local platform blockers, and select the
-    next strongest locally unblocked root-cause target.
-  - Required verification: Worker 183 report/code review, focused syntax and
-    verifier checks, `check:feasible-matrix`, platform blocker reprobes, and
-    `git diff --check`.
+Worker 185 dynamic `style.clip` / `style.invertClip` public/Reconciler proof.
+
+- Agent path: `/root/worker_185_clip_invertclip_dynamic_proof`.
+- Worktree: `../worker-185-clip-invertclip-dynamic-proof`.
+- Branch: `worker/185-clip-invertclip-dynamic-proof`.
+- Scope: add packed TypeScript and Reconciler source-level proof for dynamic
+  top-level `style.clip` and `style.invertClip`, without claiming platform app
+  runtime, native bridge, Nitro registry, UI-runtime Worklets, or real
+  Reanimated delivery.
 
 Next queued worker:
 
-- None until Worker 184 reports.
+- None until Worker 185 reports.
 
 Acceptance criteria:
 

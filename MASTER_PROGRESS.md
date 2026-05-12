@@ -3925,12 +3925,36 @@ Last updated: 2026-05-12
   - Launch parameters: `agent_type: "worker"`, `goal: true`,
     `fork_turns: "none"`, `model: "gpt-5.5"`, and
     `reasoning_effort: "xhigh"`.
+- Worker 184 post-Worker 183 root-cause audit accepted:
+  - Accepted Worker 183's public/Reconciler dynamic-contract proof boundary
+    for scalar global `style.borderRadius`.
+  - Worker branch commit:
+    `9452ed0 Audit worker 183 border radius dynamic proof`.
+  - Merged worker 184 into `main` as
+    `Merge worker 184 post-183 audit`.
+  - Checks passed: `git diff --check`, both edited verifier syntax checks,
+    `npm run check:package-typescript-consumer`,
+    `npm run check:reconciler-animated-bindings`, and
+    `npm run check:feasible-matrix` 28/28 in `4m 23s`.
+  - Platform-native build/run remains blocked by missing simulator SDK,
+    CocoaPods, Java, Android SDK variables, Gradle, ADB, CMake, and Ninja.
+  - Selected dynamic `style.clip` / `style.invertClip` public/Reconciler proof
+    as the next locally unblocked root-cause target.
+- Prepared Worker 185 dynamic `style.clip` / `style.invertClip`
+  public/Reconciler proof:
+  - Worktree: `../worker-185-clip-invertclip-dynamic-proof`.
+  - Branch: `worker/185-clip-invertclip-dynamic-proof`.
+  - Planned agent path: `/root/worker_185_clip_invertclip_dynamic_proof`.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
 
 ## Active Workers
 
-- `/root/worker_184_post_183_root_cause_audit`: post-Worker 183 root-cause
-  audit from isolated worktree `../worker-184-post-183-root-cause-audit` on
-  branch `worker/184-post-183-root-cause-audit`.
+- `/root/worker_185_clip_invertclip_dynamic_proof`: dynamic `style.clip` /
+  `style.invertClip` public/Reconciler proof from isolated worktree
+  `../worker-185-clip-invertclip-dynamic-proof` on branch
+  `worker/185-clip-invertclip-dynamic-proof`.
 
 Invalid/stale tmux sessions cleaned up:
 
@@ -4134,6 +4158,7 @@ Accepted worker reports:
 - `worker-progress/worker-181-border-radius-materialized-hit-test.md`
 - `worker-progress/worker-182-post-181-root-cause-audit.md`
 - `worker-progress/worker-183-border-radius-dynamic-contract.md`
+- `worker-progress/worker-184-post-183-root-cause-audit.md`
 
 ## Pending Workers
 
@@ -4260,11 +4285,15 @@ Accepted worker reports:
 
 ## Next Implementation Candidates
 
-- Worker 184: post-Worker 183 root-cause audit.
-  - Accept or reject Worker 183's public/Reconciler dynamic-contract proof
-    boundary for scalar global `style.borderRadius`.
-  - Reconfirm focused/post-merge evidence and local platform-native blockers.
-  - Select the next strongest locally unblocked root-cause target.
+- Worker 185: dynamic `style.clip` / `style.invertClip` public/Reconciler
+  proof.
+  - Add packed-consumer TypeScript proof for top-level animated
+    `style.clip` rect/rrect/path forms and `style.invertClip`.
+  - Add Reconciler source-level listener/update/cleanup proof for the same
+    top-level keys.
+  - Keep platform-native build/run, native bridge, Nitro registry,
+    UI-runtime Worklets, and real Reanimated delivery out of scope until local
+    blockers are cleared.
 - Keep platform/native runtime proof gaps separate unless the audit finds newly available local toolchain evidence.
 - Continue platform-native build/run verification once local prerequisites such as CocoaPods, full Xcode selection, Java, Android SDK/Gradle/ADB/CMake/Ninja are available.
 
