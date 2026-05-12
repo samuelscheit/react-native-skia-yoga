@@ -173,10 +173,11 @@ try {
 	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height/antiAlias/layer), setStyle(SkPaint-backed backgroundColor plus paint fields), setStyle(global borderRadius), setStyle(style corner radii, clip path/rect/rrect, 9- and 16-value matrix arrays, single-operation transform variants, non-empty transform precedence, empty transform matrix fallback, empty transform no-matrix reset, invertClip), computeLayout(width, height), and the layout getter.")
 	console.log("- The executable materialized parent/child YogaNodes, inserted the child through the generated parent.insertChild(...) wrapper, called materialized parent.getChildren(), and asserted the returned child is the cached materialized child object with generated and raw YogaNode prototype methods.")
 	console.log("- The executable called generated setStyle/computeLayout/insertChild and raw setInteractionConfig/hitTest/getChildren through the returned child object, then asserted recursive returned-grandchild identity through returnedChild.getChildren().")
+	console.log("- The executable materialized parent/child YogaNodes, called generated setCommand(group/rect) and setStyle(clip rect/rrect/path plus invertClip rect) wrappers, inserted the child through the generated parent.insertChild(...) wrapper, rendered the native parent through YogaNode::renderToContext(), and asserted bounded in-clip/out-of-clip raster pixels.")
 	console.log("- The executable used fresh materialized YogaNode objects to invoke generated JS-facing setCommand(line), setCommand(points), setCommand(path), setCommand(text), setCommand(paragraph), setCommand(circle), setCommand(rrect), setCommand(blurMaskFilter), setCommand(rect), setCommand(oval), and setCommand(image) wrappers, preserving the native no-command-kind-change invariant.")
-	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized global borderRadius delivery into _style.borderRadius, _clipsToBounds, and all four _clipToBoundsRadii slots without per-corner or explicit clip state, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
+	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized global borderRadius delivery into _style.borderRadius, _clipsToBounds, and all four _clipToBoundsRadii slots without per-corner or explicit clip state, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect plus bounded renderToContext raster pixels, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate plus bounded rect renderToContext raster pixels, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
 	console.log("- For CircleCmd, RRectCmd, and BlurMaskFilterCmd, selected no-pixel draw calls are used only to expose render-time native state/mask-filter side effects after generated wrapper delivery; no command-rendering or render-fidelity claim is made.")
-	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, and selected generated/raw YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, pixel rendering, exact hit-test behavior, command rendering, or exact render fidelity.")
+	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect clips, and selected generated/raw YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact clip render fidelity beyond asserted pixels, exact hit-test behavior, or every command rendering path.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -939,6 +940,19 @@ sk_sp<SkSurface> makeSurface(int width, int height)
     return surface;
 }
 
+SkColor pixelAt(const sk_sp<SkSurface>& surface, int x, int y)
+{
+    SkPixmap pixmap;
+    expect(surface->peekPixels(&pixmap), "state probe raster surface pixels must be readable");
+    return pixmap.getColor(x, y);
+}
+
+void renderNode(const std::shared_ptr<YogaNode>& node, const sk_sp<SkSurface>& surface)
+{
+    RNSkia::DrawingCtx ctx(surface->getCanvas());
+    node->renderToContext(ctx);
+}
+
 void drawCommandToResolveRenderTimeState(YogaNode& node)
 {
     auto surface = makeSurface(64, 64);
@@ -997,11 +1011,11 @@ void expectThrows(Fn&& fn, const std::string& messageSubstring, const char* mess
     std::abort();
 }
 
-jsi::Object makeGroupCommand(jsi::Runtime& runtime)
+jsi::Object makeGroupCommand(jsi::Runtime& runtime, bool rasterize = true)
 {
     jsi::Object command(runtime);
     jsi::Object data(runtime);
-    data.setProperty(runtime, "rasterize", true);
+    data.setProperty(runtime, "rasterize", rasterize);
     command.setProperty(runtime, "type", "group");
     command.setProperty(runtime, "data", data);
     return command;
@@ -1468,6 +1482,47 @@ jsi::Object makeStyle(jsi::Runtime& runtime, double width, double height)
     return style;
 }
 
+jsi::Object makeAbsoluteRectChildStyle(jsi::Runtime& runtime, const char* color)
+{
+    auto style = makeStyle(runtime, 100.0, 100.0);
+    style.setProperty(runtime, "position", "absolute");
+    style.setProperty(runtime, "left", 0.0);
+    style.setProperty(runtime, "top", 0.0);
+    style.setProperty(runtime, "backgroundColor", color);
+    return style;
+}
+
+jsi::Object makeRenderClipRectStyle(jsi::Runtime& runtime)
+{
+    auto style = makeStyle(runtime, 100.0, 100.0);
+    style.setProperty(runtime, "clip", makeRectObject(runtime, 10.0, 10.0, 40.0, 40.0));
+    return style;
+}
+
+jsi::Object makeRenderClipRRectStyle(jsi::Runtime& runtime)
+{
+    auto style = makeStyle(runtime, 100.0, 100.0);
+    style.setProperty(runtime, "clip", makeRRectObject(runtime, 10.0, 10.0, 40.0, 40.0, 18.0, 18.0));
+    return style;
+}
+
+jsi::Object makeRenderClipPathStyle(jsi::Runtime& runtime)
+{
+    SkPath path;
+    path.addCircle(50.0f, 50.0f, 20.0f);
+
+    auto style = makeStyle(runtime, 100.0, 100.0);
+    style.setProperty(runtime, "clip", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
+    return style;
+}
+
+jsi::Object makeRenderInvertedClipRectStyle(jsi::Runtime& runtime)
+{
+    auto style = makeRenderClipRectStyle(runtime);
+    style.setProperty(runtime, "invertClip", true);
+    return style;
+}
+
 jsi::Object makeLayerStyle(jsi::Runtime& runtime, double width, double height)
 {
     auto style = makeStyle(runtime, width, height);
@@ -1743,6 +1798,22 @@ void callGeneratedSetCommand(
         message);
 }
 
+void callGeneratedSetStyle(
+    jsi::Runtime& runtime,
+    const MaterializedYogaNode& materialized,
+    const jsi::Object& style,
+    const char* message)
+{
+    expectObjectFunction(runtime, materialized.object, "setStyle");
+    auto setStyle = materialized.object.getPropertyAsFunction(runtime, "setStyle");
+    callFunctionWithOneObject(
+        runtime,
+        materialized.object,
+        setStyle,
+        style,
+        message);
+}
+
 void applyGeneratedStyleAndComputeLayout(
     jsi::Runtime& runtime,
     const MaterializedYogaNode& materialized,
@@ -1750,12 +1821,10 @@ void applyGeneratedStyleAndComputeLayout(
 {
     expectObjectFunction(runtime, materialized.object, "setStyle");
     expectObjectFunction(runtime, materialized.object, "computeLayout");
-    auto setStyle = materialized.object.getPropertyAsFunction(runtime, "setStyle");
     auto computeLayout = materialized.object.getPropertyAsFunction(runtime, "computeLayout");
-    callFunctionWithOneObject(
+    callGeneratedSetStyle(
         runtime,
-        materialized.object,
-        setStyle,
+        materialized,
         style,
         "generated setStyle for materialized setCommand case must return undefined");
     callComputeLayout(runtime, materialized.object, computeLayout);
@@ -2494,6 +2563,183 @@ void assertGeneratedInvertClipStyle(jsi::Runtime& runtime)
     disposeMaterializedObject(runtime, materialized.object);
 }
 
+struct MaterializedClipRenderTree {
+    MaterializedYogaNode parent;
+    MaterializedYogaNode child;
+};
+
+MaterializedClipRenderTree makeMaterializedClipRenderTree(
+    jsi::Runtime& runtime,
+    jsi::Object parentStyle,
+    const char* childColor)
+{
+    auto parent = materializeYogaNode(runtime);
+    auto child = materializeYogaNode(runtime);
+
+    callGeneratedSetCommand(
+        runtime,
+        parent,
+        makeGroupCommand(runtime, false),
+        "generated clip raster bridge parent setCommand(group) must return undefined");
+    callGeneratedSetCommand(
+        runtime,
+        child,
+        makeEmptyCommand(runtime, "rect"),
+        "generated clip raster bridge child setCommand(rect) must return undefined");
+    callGeneratedSetStyle(
+        runtime,
+        parent,
+        parentStyle,
+        "generated clip raster bridge parent setStyle must return undefined");
+    callGeneratedSetStyle(
+        runtime,
+        child,
+        makeAbsoluteRectChildStyle(runtime, childColor),
+        "generated clip raster bridge child setStyle must return undefined");
+    callGeneratedInsertChild(
+        runtime,
+        parent.object,
+        child.object,
+        "generated clip raster bridge parent.insertChild(child) must return undefined");
+
+    expect(parent.node->_children.size() == 1, "generated clip raster bridge must attach one native child");
+    expect(parent.node->_children[0].get() == child.node.get(), "generated clip raster bridge must attach the expected native child");
+
+    auto computeLayout = parent.object.getPropertyAsFunction(runtime, "computeLayout");
+    callComputeLayout(runtime, parent.object, computeLayout);
+
+    expectNear(parent.node->_layout.width, 100.0, "generated clip raster bridge parent layout width");
+    expectNear(parent.node->_layout.height, 100.0, "generated clip raster bridge parent layout height");
+    expectNear(child.node->_layout.width, 100.0, "generated clip raster bridge child layout width");
+    expectNear(child.node->_layout.height, 100.0, "generated clip raster bridge child layout height");
+
+    expect(parent.node->_commandKind == YogaNodeCommandKind::GROUP, "generated clip raster bridge uses a GroupCmd parent");
+    expect(dynamic_cast<GroupCmd*>(parent.node->_command.get()) != nullptr, "generated clip raster bridge parent has GroupCmd type");
+    expect(!parent.node->_command->rasterizesSubtree(), "generated clip raster bridge disables group raster cache to isolate clip rendering");
+    expect(child.node->_commandKind == YogaNodeCommandKind::RECT, "generated clip raster bridge uses a full-size RectCmd child");
+    expect(dynamic_cast<RectCmd*>(child.node->_command.get()) != nullptr, "generated clip raster bridge child has RectCmd type");
+    expect(!parent.node->_clipsToBounds, "generated clip raster bridge does not use implicit bounds clipping");
+    expect(!parent.node->_clipToBoundsRadii.has_value(), "generated clip raster bridge does not use style corner-radius clipping");
+
+    return MaterializedClipRenderTree { std::move(parent), std::move(child) };
+}
+
+void disposeMaterializedClipRenderTree(jsi::Runtime& runtime, const MaterializedClipRenderTree& tree)
+{
+    disposeMaterializedObject(runtime, tree.child.object);
+    disposeMaterializedObject(runtime, tree.parent.object);
+}
+
+void assertGeneratedClipRectRender(jsi::Runtime& runtime)
+{
+    auto tree = makeMaterializedClipRenderTree(
+        runtime,
+        makeRenderClipRectStyle(runtime),
+        "#00ff00");
+
+    expect(tree.parent.node->_style.clip.has_value(), "generated clip rect render keeps explicit clip in NodeStyle");
+    expect(std::holds_alternative<SkRect>(*tree.parent.node->_style.clip), "generated clip rect render materializes a SkRect clip");
+    expectSkRectNear(std::get<SkRect>(*tree.parent.node->_style.clip), 10.0, 10.0, 40.0, 40.0, "generated clip rect render style optional");
+    expect(tree.parent.node->_clipRect.has_value(), "generated clip rect render populates _clipRect");
+    expectSkRectNear(*tree.parent.node->_clipRect, 10.0, 10.0, 40.0, 40.0, "generated clip rect render native state");
+    expect(!tree.parent.node->_clipPath.has_value(), "generated clip rect render leaves _clipPath empty");
+    expect(!tree.parent.node->_clipRRect.has_value(), "generated clip rect render leaves _clipRRect empty");
+    expect(!tree.parent.node->_style.invertClip.value_or(false), "generated clip rect render uses intersect clipping by default");
+
+    auto surface = makeSurface(108, 108);
+    renderNode(tree.parent.node, surface);
+
+    expectColor(pixelAt(surface, 20, 20), SK_ColorGREEN, "generated clip rect render keeps child pixels inside style.clip");
+    expectColor(pixelAt(surface, 5, 5), SK_ColorTRANSPARENT, "generated clip rect render clears child pixels before style.clip");
+    expectColor(pixelAt(surface, 70, 70), SK_ColorTRANSPARENT, "generated clip rect render clears child pixels after style.clip");
+    expectColor(pixelAt(surface, 104, 104), SK_ColorTRANSPARENT, "generated clip rect render remains bounded outside the parent layout");
+
+    disposeMaterializedClipRenderTree(runtime, tree);
+}
+
+void assertGeneratedClipRRectRender(jsi::Runtime& runtime)
+{
+    auto tree = makeMaterializedClipRenderTree(
+        runtime,
+        makeRenderClipRRectStyle(runtime),
+        "#0000ff");
+
+    expect(tree.parent.node->_style.clip.has_value(), "generated clip rrect render keeps explicit clip in NodeStyle");
+    expect(std::holds_alternative<SkRRect>(*tree.parent.node->_style.clip), "generated clip rrect render materializes a SkRRect clip");
+    expectSkRRectNear(std::get<SkRRect>(*tree.parent.node->_style.clip), 10.0, 10.0, 40.0, 40.0, 18.0, 18.0, "generated clip rrect render style optional");
+    expect(tree.parent.node->_clipRRect.has_value(), "generated clip rrect render populates _clipRRect");
+    expectSkRRectNear(*tree.parent.node->_clipRRect, 10.0, 10.0, 40.0, 40.0, 18.0, 18.0, "generated clip rrect render native state");
+    expect(!tree.parent.node->_clipPath.has_value(), "generated clip rrect render leaves _clipPath empty");
+    expect(!tree.parent.node->_clipRect.has_value(), "generated clip rrect render leaves _clipRect empty");
+    expect(!tree.parent.node->_style.invertClip.value_or(false), "generated clip rrect render uses intersect clipping by default");
+
+    auto surface = makeSurface(108, 108);
+    renderNode(tree.parent.node, surface);
+
+    expectColor(pixelAt(surface, 30, 30), SK_ColorBLUE, "generated clip rrect render keeps child pixels inside rounded style.clip");
+    expectColor(pixelAt(surface, 11, 11), SK_ColorTRANSPARENT, "generated clip rrect render clears child pixels in the rounded corner");
+    expectColor(pixelAt(surface, 70, 70), SK_ColorTRANSPARENT, "generated clip rrect render clears child pixels outside the rounded rect");
+    expectColor(pixelAt(surface, 104, 104), SK_ColorTRANSPARENT, "generated clip rrect render remains bounded outside the parent layout");
+
+    disposeMaterializedClipRenderTree(runtime, tree);
+}
+
+void assertGeneratedClipPathRender(jsi::Runtime& runtime)
+{
+    auto tree = makeMaterializedClipRenderTree(
+        runtime,
+        makeRenderClipPathStyle(runtime),
+        "#00ffff");
+
+    expect(tree.parent.node->_style.clip.has_value(), "generated clip path render keeps explicit clip in NodeStyle");
+    expect(std::holds_alternative<SkPath>(*tree.parent.node->_style.clip), "generated clip path render materializes a SkPath clip");
+    expect(std::get<SkPath>(*tree.parent.node->_style.clip).contains(50.0f, 50.0f), "generated clip path render style optional keeps host-object circle path");
+    expect(tree.parent.node->_clipPath.has_value(), "generated clip path render populates _clipPath");
+    expect(tree.parent.node->_clipPath->contains(50.0f, 50.0f), "generated clip path render native state keeps host-object circle path");
+    expect(!tree.parent.node->_clipPath->contains(10.0f, 10.0f), "generated clip path render native state rejects outside point");
+    expect(!tree.parent.node->_clipRect.has_value(), "generated clip path render leaves _clipRect empty");
+    expect(!tree.parent.node->_clipRRect.has_value(), "generated clip path render leaves _clipRRect empty");
+    expect(!tree.parent.node->_style.invertClip.value_or(false), "generated clip path render uses intersect clipping by default");
+
+    auto surface = makeSurface(108, 108);
+    renderNode(tree.parent.node, surface);
+
+    expectColor(pixelAt(surface, 50, 50), SK_ColorCYAN, "generated clip path render keeps child pixels inside style.clip path");
+    expectColor(pixelAt(surface, 10, 10), SK_ColorTRANSPARENT, "generated clip path render clears child pixels outside the path");
+    expectColor(pixelAt(surface, 80, 50), SK_ColorTRANSPARENT, "generated clip path render clears child pixels past the path radius");
+    expectColor(pixelAt(surface, 104, 104), SK_ColorTRANSPARENT, "generated clip path render remains bounded outside the parent layout");
+
+    disposeMaterializedClipRenderTree(runtime, tree);
+}
+
+void assertGeneratedInvertClipRectRender(jsi::Runtime& runtime)
+{
+    auto tree = makeMaterializedClipRenderTree(
+        runtime,
+        makeRenderInvertedClipRectStyle(runtime),
+        "#ff00ff");
+
+    expect(tree.parent.node->_style.clip.has_value(), "generated invertClip rect render keeps explicit clip in NodeStyle");
+    expect(std::holds_alternative<SkRect>(*tree.parent.node->_style.clip), "generated invertClip rect render materializes a SkRect clip");
+    expectSkRectNear(std::get<SkRect>(*tree.parent.node->_style.clip), 10.0, 10.0, 40.0, 40.0, "generated invertClip rect render style optional");
+    expect(tree.parent.node->_style.invertClip.has_value(), "generated invertClip rect render stores invertClip optional");
+    expect(tree.parent.node->_style.invertClip.value(), "generated invertClip rect render stores invertClip=true");
+    expect(tree.parent.node->_clipRect.has_value(), "generated invertClip rect render populates _clipRect");
+    expectSkRectNear(*tree.parent.node->_clipRect, 10.0, 10.0, 40.0, 40.0, "generated invertClip rect render native state");
+    expect(!tree.parent.node->_clipPath.has_value(), "generated invertClip rect render leaves _clipPath empty");
+    expect(!tree.parent.node->_clipRRect.has_value(), "generated invertClip rect render leaves _clipRRect empty");
+
+    auto surface = makeSurface(108, 108);
+    renderNode(tree.parent.node, surface);
+
+    expectColor(pixelAt(surface, 20, 20), SK_ColorTRANSPARENT, "generated invertClip rect render clears child pixels inside style.clip");
+    expectColor(pixelAt(surface, 5, 5), SK_ColorMAGENTA, "generated invertClip rect render keeps child pixels before style.clip");
+    expectColor(pixelAt(surface, 70, 70), SK_ColorMAGENTA, "generated invertClip rect render keeps child pixels after style.clip");
+    expectColor(pixelAt(surface, 104, 104), SK_ColorTRANSPARENT, "generated invertClip rect render remains bounded outside the parent layout");
+
+    disposeMaterializedClipRenderTree(runtime, tree);
+}
+
 void assertGeneratedMatrixStyle(jsi::Runtime& runtime)
 {
     auto materialized = materializeYogaNode(runtime);
@@ -2785,6 +3031,10 @@ int main()
     assertGeneratedClipRRectStyle(*runtime);
     assertGeneratedClipPathStyle(*runtime);
     assertGeneratedInvertClipStyle(*runtime);
+    assertGeneratedClipRectRender(*runtime);
+    assertGeneratedClipRRectRender(*runtime);
+    assertGeneratedClipPathRender(*runtime);
+    assertGeneratedInvertClipRectRender(*runtime);
     assertGeneratedMatrixStyle(*runtime);
     assertGeneratedMatrix16Style(*runtime);
     assertGeneratedSingleTransformOperationStyles(*runtime);
