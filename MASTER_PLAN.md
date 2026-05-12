@@ -137,7 +137,7 @@ focused and full-matrix evidence plus platform blockers, and selected
 public/Reconciler dynamic layout-style proof as the next strongest locally
 unblocked target.
 
-Next queued worker: worker 200 post-Worker 199 root-cause audit.
+Current active worker: worker 200 post-Worker 199 root-cause audit.
 
 Goals:
 
@@ -346,11 +346,18 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- Worker 200 post-Worker 199 root-cause audit.
+- Agent path: `/root/worker_200_post_199_root_cause_audit`.
+- Worktree: `../worker-200-post-199-root-cause-audit`.
+- Branch: `worker/200-post-199-root-cause-audit`.
+- Scope: independently audit Worker 199's public/Reconciler dynamic
+  layout-style proof boundary, rerun focused/full feasible evidence as needed,
+  reprobe local platform blockers, and select the next locally unblocked
+  root-cause target.
 
 Next queued worker:
 
-- Worker 200 post-Worker 199 root-cause audit.
+- None until Worker 200 reports.
 
 Acceptance criteria:
 
