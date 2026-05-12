@@ -405,15 +405,17 @@ Accepted package-hygiene implementation:
 Current active worker:
 
 - Worker 214 matrix/transform finite validation.
-- Agent path: `/root/worker_214_matrix_transform_finite_validation`.
+- Agent path: `/root/worker_214_matrix_transform_finite_validation_recovery`.
 - Worktree: `../worker-214-matrix-transform-finite-validation`.
 - Branch: `worker/214-matrix-transform-finite-validation`.
 - Scope: deterministic pre-mutation finite-number validation for
   `style.matrix` array / `SkMatrix` payloads and `style.transform` operation
   leaves, with generated materialized negative coverage.
-- State: spawned with `agent_type: "worker"`, `goal: true`,
-  `fork_turns: "none"`, `model: "gpt-5.5"`, and
-  `reasoning_effort: "xhigh"`; implementation in progress.
+- State: original agent
+  `/root/worker_214_matrix_transform_finite_validation` stalled after partial
+  edits and was closed; recovery agent spawned with `agent_type: "worker"`,
+  `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`; implementation recovery in progress.
 
 Next queued worker:
 

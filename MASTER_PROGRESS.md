@@ -5168,6 +5168,16 @@ Accepted worker reports:
     `reasoning_effort: "xhigh"`.
   - Ignored dependency symlinks were set to main's known-good `node_modules`
     and `example/node_modules` installs.
+- Worker 214 original agent stalled after partial uncommitted edits in
+  `cpp/JSIConverter+SkMatrix.hpp`, `cpp/YogaNode.cpp`, and
+  `scripts/verify-yoganode-nitro-materialization.mjs`, did not respond to a
+  status follow-up, and was closed before recovery. The partial verifier script
+  passed `node --check scripts/verify-yoganode-nitro-materialization.mjs`.
+  Recovery agent `/root/worker_214_matrix_transform_finite_validation_recovery`
+  was launched in the same isolated worktree with `agent_type: "worker"`,
+  `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"` to adopt, repair, verify, report, and commit the
+  branch.
 
 ## Next Worker Candidates
 
