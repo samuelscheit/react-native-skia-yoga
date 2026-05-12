@@ -29,6 +29,9 @@
 #include <type_traits>
 #include <variant>
 #include <yoga/Yoga.h>
+#include <cstdlib>
+#include <stdexcept>
+#include <string_view>
 
 namespace margelo::nitro::RNSkiaYoga {
 
@@ -289,20 +292,248 @@ YogaNode::YogaNode()
     YGNodeSetContext(_node, this);
 }
 
-// Helper function to handle variant<string, double> values dfor setting yoga values
+static bool isAsciiDigit(char value)
+{
+    return value >= '0' && value <= '9';
+}
+
+static bool isFiniteDecimalNumberText(std::string_view value)
+{
+    if (value.empty()) {
+        return false;
+    }
+
+    size_t index = 0;
+    if (value[index] == '+' || value[index] == '-') {
+        ++index;
+        if (index == value.size()) {
+            return false;
+        }
+    }
+
+    bool hasMantissaDigit = false;
+    while (index < value.size() && isAsciiDigit(value[index])) {
+        hasMantissaDigit = true;
+        ++index;
+    }
+
+    if (index < value.size() && value[index] == '.') {
+        ++index;
+        while (index < value.size() && isAsciiDigit(value[index])) {
+            hasMantissaDigit = true;
+            ++index;
+        }
+    }
+
+    if (!hasMantissaDigit) {
+        return false;
+    }
+
+    if (index < value.size() && (value[index] == 'e' || value[index] == 'E')) {
+        ++index;
+        if (index < value.size() && (value[index] == '+' || value[index] == '-')) {
+            ++index;
+        }
+
+        bool hasExponentDigit = false;
+        while (index < value.size() && isAsciiDigit(value[index])) {
+            hasExponentDigit = true;
+            ++index;
+        }
+        if (!hasExponentDigit) {
+            return false;
+        }
+    }
+
+    return index == value.size();
+}
+
+static std::string yogaLayoutValueExpectation(bool acceptsPercent, bool acceptsAuto, bool acceptsWidthSpecial)
+{
+    std::string expected = "a number";
+    if (acceptsPercent) {
+        expected += " or a finite percentage string";
+    }
+    if (acceptsAuto) {
+        expected += " or \"auto\"";
+    }
+    if (acceptsWidthSpecial) {
+        expected += " or \"fit-content\", \"max-content\", or \"stretch\"";
+    }
+    return expected;
+}
+
+[[noreturn]] static void throwInvalidYogaLayoutString(
+    const char* propertyName,
+    const std::string& value,
+    bool acceptsPercent,
+    bool acceptsAuto,
+    bool acceptsWidthSpecial)
+{
+    throw std::invalid_argument(
+        std::string("Invalid Yoga layout value for ") + propertyName +
+        ": \"" + value + "\". Expected " +
+        yogaLayoutValueExpectation(acceptsPercent, acceptsAuto, acceptsWidthSpecial) + ".");
+}
+
+static float parseYogaPercent(
+    const char* propertyName,
+    const std::string& value,
+    bool acceptsAuto,
+    bool acceptsWidthSpecial)
+{
+    if (value.size() < 2 || value.back() != '%') {
+        throwInvalidYogaLayoutString(propertyName, value, true, acceptsAuto, acceptsWidthSpecial);
+    }
+
+    const std::string_view numberText(value.data(), value.size() - 1);
+    if (!isFiniteDecimalNumberText(numberText)) {
+        throwInvalidYogaLayoutString(propertyName, value, true, acceptsAuto, acceptsWidthSpecial);
+    }
+
+    const std::string numberString(numberText);
+    char* end = nullptr;
+    const double parsed = std::strtod(numberString.c_str(), &end);
+    const bool consumedAll = end == numberString.c_str() + numberString.size();
+    const auto percent = static_cast<float>(parsed);
+    if (!consumedAll || !std::isfinite(parsed) || !std::isfinite(percent)) {
+        throwInvalidYogaLayoutString(propertyName, value, true, acceptsAuto, acceptsWidthSpecial);
+    }
+
+    return percent;
+}
+
+static void validateYGValueOrPercent(
+    const char* propertyName,
+    const std::variant<std::string, double>& value,
+    bool acceptsPercent,
+    bool acceptsAuto,
+    bool acceptsWidthSpecial = false)
+{
+    if (!std::holds_alternative<std::string>(value)) {
+        return;
+    }
+
+    const auto& strValue = std::get<std::string>(value);
+    if (strValue == "auto") {
+        if (acceptsAuto) {
+            return;
+        }
+        throwInvalidYogaLayoutString(propertyName, strValue, acceptsPercent, acceptsAuto, acceptsWidthSpecial);
+    }
+
+    if (!strValue.empty() && strValue.back() == '%') {
+        if (acceptsPercent) {
+            parseYogaPercent(propertyName, strValue, acceptsAuto, acceptsWidthSpecial);
+            return;
+        }
+        throwInvalidYogaLayoutString(propertyName, strValue, acceptsPercent, acceptsAuto, acceptsWidthSpecial);
+    }
+
+    throwInvalidYogaLayoutString(propertyName, strValue, acceptsPercent, acceptsAuto, acceptsWidthSpecial);
+}
+
+static bool isYGWidthSpecialValue(const std::string& value)
+{
+    return value == "fit-content" || value == "max-content" || value == "stretch";
+}
+
+static bool applyYGWidthSpecialValue(YGNodeRef node, const std::string& value)
+{
+    if (value == "fit-content") {
+        YGNodeStyleSetWidthFitContent(node);
+        return true;
+    }
+    if (value == "max-content") {
+        YGNodeStyleSetWidthMaxContent(node);
+        return true;
+    }
+    if (value == "stretch") {
+        YGNodeStyleSetWidthStretch(node);
+        return true;
+    }
+    return false;
+}
+
+static void validateYGWidthValue(const std::variant<std::string, double>& value)
+{
+    if (std::holds_alternative<std::string>(value) && isYGWidthSpecialValue(std::get<std::string>(value))) {
+        return;
+    }
+
+    validateYGValueOrPercent("width", value, true, true, true);
+}
+
+static void validateYogaLayoutUnitStrings(const NodeStyle& style)
+{
+    auto validateValue = [](const char* propertyName,
+                             const std::optional<std::variant<std::string, double>>& value,
+                             bool acceptsAuto) {
+        if (value) {
+            validateYGValueOrPercent(propertyName, *value, true, acceptsAuto);
+        }
+    };
+
+    validateValue("flexBasis", style.flexBasis, true);
+    if (style.width) {
+        validateYGWidthValue(*style.width);
+    }
+    validateValue("height", style.height, true);
+    validateValue("minWidth", style.minWidth, false);
+    validateValue("minHeight", style.minHeight, false);
+    validateValue("maxWidth", style.maxWidth, false);
+    validateValue("maxHeight", style.maxHeight, false);
+
+    validateValue("top", style.top, true);
+    validateValue("bottom", style.bottom, true);
+    validateValue("left", style.left, true);
+    validateValue("right", style.right, true);
+    validateValue("start", style.start, true);
+    validateValue("end", style.end, true);
+
+    validateValue("margin", style.margin, true);
+    validateValue("marginTop", style.marginTop, true);
+    validateValue("marginBottom", style.marginBottom, true);
+    validateValue("marginLeft", style.marginLeft, true);
+    validateValue("marginRight", style.marginRight, true);
+    validateValue("marginStart", style.marginStart, true);
+    validateValue("marginEnd", style.marginEnd, true);
+    validateValue("marginHorizontal", style.marginHorizontal, true);
+    validateValue("marginVertical", style.marginVertical, true);
+
+    validateValue("padding", style.padding, false);
+    validateValue("paddingTop", style.paddingTop, false);
+    validateValue("paddingBottom", style.paddingBottom, false);
+    validateValue("paddingLeft", style.paddingLeft, false);
+    validateValue("paddingRight", style.paddingRight, false);
+    validateValue("paddingStart", style.paddingStart, false);
+    validateValue("paddingEnd", style.paddingEnd, false);
+    validateValue("paddingHorizontal", style.paddingHorizontal, false);
+    validateValue("paddingVertical", style.paddingVertical, false);
+
+    validateValue("inset", style.inset, true);
+    validateValue("insetHorizontal", style.insetHorizontal, true);
+    validateValue("insetVertical", style.insetVertical, true);
+}
+
+// Helper function to handle variant<string, double> values for setting yoga values
 static void setYGValueOrPercent(void (*setter)(YGNodeRef, float),
     void (*percentSetter)(YGNodeRef, float),
     void (*autoSetter)(YGNodeRef),
     YGNodeRef node,
-    const std::variant<std::string, double>& value)
+    const std::variant<std::string, double>& value,
+    const char* propertyName,
+    bool acceptsWidthSpecial = false)
 {
     if (std::holds_alternative<std::string>(value)) {
         const std::string& strValue = std::get<std::string>(value);
-        if (strValue == "auto" && autoSetter) {
+        const bool acceptsPercent = percentSetter != nullptr;
+        const bool acceptsAuto = autoSetter != nullptr;
+        validateYGValueOrPercent(propertyName, value, acceptsPercent, acceptsAuto, acceptsWidthSpecial);
+        if (strValue == "auto") {
             autoSetter(node);
-        } else if (!strValue.empty() && strValue.back() == '%' && percentSetter) {
-            // Optimized percentage parsing - avoid substr allocation
-            float percent = std::stof(std::string(strValue.data(), strValue.length() - 1));
+        } else if (!strValue.empty() && strValue.back() == '%') {
+            const float percent = parseYogaPercent(propertyName, strValue, acceptsAuto, acceptsWidthSpecial);
             percentSetter(node, percent);
         }
     } else {
@@ -317,15 +548,18 @@ static void setYGEdgeValue(void (*setter)(YGNodeRef, YGEdge, float),
     void (*autoSetter)(YGNodeRef, YGEdge),
     YGNodeRef node,
     YGEdge edge,
-    const std::variant<std::string, double>& value)
+    const std::variant<std::string, double>& value,
+    const char* propertyName)
 {
     if (std::holds_alternative<std::string>(value)) {
         const std::string& strValue = std::get<std::string>(value);
-        if (strValue == "auto" && autoSetter) {
+        const bool acceptsPercent = percentSetter != nullptr;
+        const bool acceptsAuto = autoSetter != nullptr;
+        validateYGValueOrPercent(propertyName, value, acceptsPercent, acceptsAuto);
+        if (strValue == "auto") {
             autoSetter(node, edge);
-        } else if (!strValue.empty() && strValue.back() == '%' && percentSetter) {
-            // Optimized percentage parsing - avoid substr allocation
-            float percent = std::stof(std::string(strValue.data(), strValue.length() - 1));
+        } else if (!strValue.empty() && strValue.back() == '%') {
+            const float percent = parseYogaPercent(propertyName, strValue, acceptsAuto, false);
             percentSetter(node, edge, percent);
         }
     } else {
@@ -334,9 +568,23 @@ static void setYGEdgeValue(void (*setter)(YGNodeRef, YGEdge, float),
     }
 }
 
+static void setYGWidthValue(YGNodeRef node, const std::variant<std::string, double>& value)
+{
+    if (std::holds_alternative<std::string>(value)) {
+        const auto& strValue = std::get<std::string>(value);
+        if (applyYGWidthSpecialValue(node, strValue)) {
+            return;
+        }
+    }
+
+    setYGValueOrPercent(YGNodeStyleSetWidth, YGNodeStyleSetWidthPercent,
+        YGNodeStyleSetWidthAuto, node, value, "width", true);
+}
+
 void YogaNode::setStyle(const NodeStyle& style)
 {
     std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
+    validateYogaLayoutUnitStrings(style);
     invalidateLayout();
     _style = style;
     resetYogaStyle(_node);
@@ -409,27 +657,12 @@ void YogaNode::setStyle(const NodeStyle& style)
 
     if (const auto& value = style.flexBasis) {
         setYGValueOrPercent(YGNodeStyleSetFlexBasis, YGNodeStyleSetFlexBasisPercent,
-            YGNodeStyleSetFlexBasisAuto, _node, *value);
+            YGNodeStyleSetFlexBasisAuto, _node, *value, "flexBasis");
     }
 
     // Size properties
     if (const auto& value = style.width) {
-        if (std::holds_alternative<std::string>(*value)) {
-            const auto& s = std::get<std::string>(*value);
-            if (s == "fit-content") {
-                YGNodeStyleSetWidthFitContent(_node);
-            } else if (s == "max-content") {
-                YGNodeStyleSetWidthMaxContent(_node);
-            } else if (s == "stretch") {
-                YGNodeStyleSetWidthStretch(_node);
-            } else {
-                setYGValueOrPercent(YGNodeStyleSetWidth, YGNodeStyleSetWidthPercent,
-                    YGNodeStyleSetWidthAuto, _node, *value);
-            }
-        } else {
-            setYGValueOrPercent(YGNodeStyleSetWidth, YGNodeStyleSetWidthPercent,
-                YGNodeStyleSetWidthAuto, _node, *value);
-        }
+        setYGWidthValue(_node, *value);
     } else if (_commandKind == YogaNodeCommandKind::PARAGRAPH) {
         // default width for paragraphs is to stretch but not beyond
         YGNodeStyleSetWidthStretch(_node);
@@ -437,27 +670,27 @@ void YogaNode::setStyle(const NodeStyle& style)
 
     if (const auto& value = style.height) {
         setYGValueOrPercent(YGNodeStyleSetHeight, YGNodeStyleSetHeightPercent,
-            YGNodeStyleSetHeightAuto, _node, *value);
+            YGNodeStyleSetHeightAuto, _node, *value, "height");
     }
 
     if (const auto& value = style.minWidth) {
         setYGValueOrPercent(YGNodeStyleSetMinWidth, YGNodeStyleSetMinWidthPercent,
-            nullptr, _node, *value);
+            nullptr, _node, *value, "minWidth");
     }
 
     if (const auto& value = style.minHeight) {
         setYGValueOrPercent(YGNodeStyleSetMinHeight, YGNodeStyleSetMinHeightPercent,
-            nullptr, _node, *value);
+            nullptr, _node, *value, "minHeight");
     }
 
     if (const auto& value = style.maxWidth) {
         setYGValueOrPercent(YGNodeStyleSetMaxWidth, YGNodeStyleSetMaxWidthPercent,
-            nullptr, _node, *value);
+            nullptr, _node, *value, "maxWidth");
     }
 
     if (const auto& value = style.maxHeight) {
         setYGValueOrPercent(YGNodeStyleSetMaxHeight, YGNodeStyleSetMaxHeightPercent,
-            nullptr, _node, *value);
+            nullptr, _node, *value, "maxHeight");
     }
 
     // Aspect ratio
@@ -468,124 +701,124 @@ void YogaNode::setStyle(const NodeStyle& style)
     // Position properties
     if (const auto& value = style.top) {
         setYGEdgeValue(YGNodeStyleSetPosition, YGNodeStyleSetPositionPercent,
-            YGNodeStyleSetPositionAuto, _node, YGEdgeTop, *value);
+            YGNodeStyleSetPositionAuto, _node, YGEdgeTop, *value, "top");
     }
 
     if (const auto& value = style.bottom) {
         setYGEdgeValue(YGNodeStyleSetPosition, YGNodeStyleSetPositionPercent,
-            YGNodeStyleSetPositionAuto, _node, YGEdgeBottom, *value);
+            YGNodeStyleSetPositionAuto, _node, YGEdgeBottom, *value, "bottom");
     }
 
     if (const auto& value = style.left) {
         setYGEdgeValue(YGNodeStyleSetPosition, YGNodeStyleSetPositionPercent,
-            YGNodeStyleSetPositionAuto, _node, YGEdgeLeft, *value);
+            YGNodeStyleSetPositionAuto, _node, YGEdgeLeft, *value, "left");
     }
 
     if (const auto& value = style.right) {
         setYGEdgeValue(YGNodeStyleSetPosition, YGNodeStyleSetPositionPercent,
-            YGNodeStyleSetPositionAuto, _node, YGEdgeRight, *value);
+            YGNodeStyleSetPositionAuto, _node, YGEdgeRight, *value, "right");
     }
 
     if (const auto& value = style.start) {
         setYGEdgeValue(YGNodeStyleSetPosition, YGNodeStyleSetPositionPercent,
-            YGNodeStyleSetPositionAuto, _node, YGEdgeStart, *value);
+            YGNodeStyleSetPositionAuto, _node, YGEdgeStart, *value, "start");
     }
 
     if (const auto& value = style.end) {
         setYGEdgeValue(YGNodeStyleSetPosition, YGNodeStyleSetPositionPercent,
-            YGNodeStyleSetPositionAuto, _node, YGEdgeEnd, *value);
+            YGNodeStyleSetPositionAuto, _node, YGEdgeEnd, *value, "end");
     }
 
     // Margin properties
     if (const auto& value = style.margin) {
         setYGEdgeValue(YGNodeStyleSetMargin, YGNodeStyleSetMarginPercent,
-            YGNodeStyleSetMarginAuto, _node, YGEdgeAll, *value);
+            YGNodeStyleSetMarginAuto, _node, YGEdgeAll, *value, "margin");
     }
 
     if (const auto& value = style.marginTop) {
         setYGEdgeValue(YGNodeStyleSetMargin, YGNodeStyleSetMarginPercent,
-            YGNodeStyleSetMarginAuto, _node, YGEdgeTop, *value);
+            YGNodeStyleSetMarginAuto, _node, YGEdgeTop, *value, "marginTop");
     }
 
     if (const auto& value = style.marginBottom) {
         setYGEdgeValue(YGNodeStyleSetMargin, YGNodeStyleSetMarginPercent,
-            YGNodeStyleSetMarginAuto, _node, YGEdgeBottom, *value);
+            YGNodeStyleSetMarginAuto, _node, YGEdgeBottom, *value, "marginBottom");
     }
 
     if (const auto& value = style.marginLeft) {
         setYGEdgeValue(YGNodeStyleSetMargin, YGNodeStyleSetMarginPercent,
-            YGNodeStyleSetMarginAuto, _node, YGEdgeLeft, *value);
+            YGNodeStyleSetMarginAuto, _node, YGEdgeLeft, *value, "marginLeft");
     }
 
     if (const auto& value = style.marginRight) {
         setYGEdgeValue(YGNodeStyleSetMargin, YGNodeStyleSetMarginPercent,
-            YGNodeStyleSetMarginAuto, _node, YGEdgeRight, *value);
+            YGNodeStyleSetMarginAuto, _node, YGEdgeRight, *value, "marginRight");
     }
 
     if (const auto& value = style.marginStart) {
         setYGEdgeValue(YGNodeStyleSetMargin, YGNodeStyleSetMarginPercent,
-            YGNodeStyleSetMarginAuto, _node, YGEdgeStart, *value);
+            YGNodeStyleSetMarginAuto, _node, YGEdgeStart, *value, "marginStart");
     }
 
     if (const auto& value = style.marginEnd) {
         setYGEdgeValue(YGNodeStyleSetMargin, YGNodeStyleSetMarginPercent,
-            YGNodeStyleSetMarginAuto, _node, YGEdgeEnd, *value);
+            YGNodeStyleSetMarginAuto, _node, YGEdgeEnd, *value, "marginEnd");
     }
 
     if (const auto& value = style.marginHorizontal) {
         setYGEdgeValue(YGNodeStyleSetMargin, YGNodeStyleSetMarginPercent,
-            YGNodeStyleSetMarginAuto, _node, YGEdgeHorizontal, *value);
+            YGNodeStyleSetMarginAuto, _node, YGEdgeHorizontal, *value, "marginHorizontal");
     }
 
     if (const auto& value = style.marginVertical) {
         setYGEdgeValue(YGNodeStyleSetMargin, YGNodeStyleSetMarginPercent,
-            YGNodeStyleSetMarginAuto, _node, YGEdgeVertical, *value);
+            YGNodeStyleSetMarginAuto, _node, YGEdgeVertical, *value, "marginVertical");
     }
 
     // Padding properties
     if (const auto& value = style.padding) {
         setYGEdgeValue(YGNodeStyleSetPadding, YGNodeStyleSetPaddingPercent,
-            nullptr, _node, YGEdgeAll, *value);
+            nullptr, _node, YGEdgeAll, *value, "padding");
     }
 
     if (const auto& value = style.paddingTop) {
         setYGEdgeValue(YGNodeStyleSetPadding, YGNodeStyleSetPaddingPercent,
-            nullptr, _node, YGEdgeTop, *value);
+            nullptr, _node, YGEdgeTop, *value, "paddingTop");
     }
 
     if (const auto& value = style.paddingBottom) {
         setYGEdgeValue(YGNodeStyleSetPadding, YGNodeStyleSetPaddingPercent,
-            nullptr, _node, YGEdgeBottom, *value);
+            nullptr, _node, YGEdgeBottom, *value, "paddingBottom");
     }
 
     if (const auto& value = style.paddingLeft) {
         setYGEdgeValue(YGNodeStyleSetPadding, YGNodeStyleSetPaddingPercent,
-            nullptr, _node, YGEdgeLeft, *value);
+            nullptr, _node, YGEdgeLeft, *value, "paddingLeft");
     }
 
     if (const auto& value = style.paddingRight) {
         setYGEdgeValue(YGNodeStyleSetPadding, YGNodeStyleSetPaddingPercent,
-            nullptr, _node, YGEdgeRight, *value);
+            nullptr, _node, YGEdgeRight, *value, "paddingRight");
     }
 
     if (const auto& value = style.paddingStart) {
         setYGEdgeValue(YGNodeStyleSetPadding, YGNodeStyleSetPaddingPercent,
-            nullptr, _node, YGEdgeStart, *value);
+            nullptr, _node, YGEdgeStart, *value, "paddingStart");
     }
 
     if (const auto& value = style.paddingEnd) {
         setYGEdgeValue(YGNodeStyleSetPadding, YGNodeStyleSetPaddingPercent,
-            nullptr, _node, YGEdgeEnd, *value);
+            nullptr, _node, YGEdgeEnd, *value, "paddingEnd");
     }
 
     if (const auto& value = style.paddingHorizontal) {
         setYGEdgeValue(YGNodeStyleSetPadding, YGNodeStyleSetPaddingPercent,
-            nullptr, _node, YGEdgeHorizontal, *value);
+            nullptr, _node, YGEdgeHorizontal, *value, "paddingHorizontal");
     }
 
     if (const auto& value = style.paddingVertical) {
         setYGEdgeValue(YGNodeStyleSetPadding, YGNodeStyleSetPaddingPercent,
-            nullptr, _node, YGEdgeVertical, *value);
+            nullptr, _node, YGEdgeVertical, *value, "paddingVertical");
     }
 
     if (const auto& value = style.backgroundColor) {
@@ -672,17 +905,17 @@ void YogaNode::setStyle(const NodeStyle& style)
     if (const auto& value = style.inset) {
         // Apply to all edges
         setYGEdgeValue(YGNodeStyleSetPosition, YGNodeStyleSetPositionPercent,
-            YGNodeStyleSetPositionAuto, _node, YGEdgeAll, *value);
+            YGNodeStyleSetPositionAuto, _node, YGEdgeAll, *value, "inset");
     }
 
     if (const auto& value = style.insetHorizontal) {
         setYGEdgeValue(YGNodeStyleSetPosition, YGNodeStyleSetPositionPercent,
-            YGNodeStyleSetPositionAuto, _node, YGEdgeHorizontal, *value);
+            YGNodeStyleSetPositionAuto, _node, YGEdgeHorizontal, *value, "insetHorizontal");
     }
 
     if (const auto& value = style.insetVertical) {
         setYGEdgeValue(YGNodeStyleSetPosition, YGNodeStyleSetPositionPercent,
-            YGNodeStyleSetPositionAuto, _node, YGEdgeVertical, *value);
+            YGNodeStyleSetPositionAuto, _node, YGEdgeVertical, *value, "insetVertical");
     }
 
     if (const auto& value = style.layer) {
