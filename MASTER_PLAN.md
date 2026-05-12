@@ -433,16 +433,20 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - Worker 217 post-worker-216 root-cause audit.
-- Planned worktree: `../worker-217-post-216-root-cause-audit`.
-- Planned branch: `worker/217-post-216-root-cause-audit`.
+- Agent path: `/root/worker_217_post_216_root_cause_audit`.
+- Worktree: `../worker-217-post-216-root-cause-audit`.
+- Branch: `worker/217-post-216-root-cause-audit`.
 - Scope: independently audit Worker 216's radius finite validation proof
   boundary, rerun focused/full verification as appropriate, and select the next
   strongest locally unblocked root-cause target.
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`; audit in progress.
+
+Next queued worker:
+
+- None until Worker 217 reports.
 
 Follow-up queue:
 

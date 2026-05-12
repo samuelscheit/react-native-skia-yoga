@@ -5243,6 +5243,15 @@ Accepted worker reports:
   next queued worker is Worker 217 post-Worker 216 root-cause audit in
   `../worker-217-post-216-root-cause-audit` on branch
   `worker/217-post-216-root-cause-audit`.
+- Prepared Worker 217 post-Worker 216 root-cause audit:
+  - Worktree: `../worker-217-post-216-root-cause-audit`.
+  - Branch: `worker/217-post-216-root-cause-audit`.
+  - Agent path: `/root/worker_217_post_216_root_cause_audit`.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
+  - Ignored dependency symlinks were set to main's known-good `node_modules`
+    and `example/node_modules` installs.
 
 ## Next Worker Candidates
 
