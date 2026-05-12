@@ -376,6 +376,12 @@ static std::string yogaLayoutValueExpectation(bool acceptsPercent, bool acceptsA
         yogaLayoutValueExpectation(acceptsPercent, acceptsAuto, acceptsWidthSpecial) + ".");
 }
 
+[[noreturn]] static void throwInvalidBackgroundColorString(const std::string& value)
+{
+    throw std::invalid_argument(
+        "Invalid CSS color string for backgroundColor: \"" + value + "\".");
+}
+
 static float parseYogaPercent(
     const char* propertyName,
     const std::string& value,
@@ -516,6 +522,23 @@ static void validateYogaLayoutUnitStrings(const NodeStyle& style)
     validateValue("insetVertical", style.insetVertical, true);
 }
 
+static void validateBackgroundColorString(const NodeStyle& style)
+{
+    if (!style.backgroundColor.has_value()) {
+        return;
+    }
+
+    const auto& value = *style.backgroundColor;
+    if (!std::holds_alternative<std::string>(value)) {
+        return;
+    }
+
+    const auto& color = std::get<std::string>(value);
+    if (!parseCssColor(color).has_value()) {
+        throwInvalidBackgroundColorString(color);
+    }
+}
+
 // Helper function to handle variant<string, double> values for setting yoga values
 static void setYGValueOrPercent(void (*setter)(YGNodeRef, float),
     void (*percentSetter)(YGNodeRef, float),
@@ -585,6 +608,7 @@ void YogaNode::setStyle(const NodeStyle& style)
 {
     std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
     validateYogaLayoutUnitStrings(style);
+    validateBackgroundColorString(style);
     invalidateLayout();
     _style = style;
     resetYogaStyle(_node);

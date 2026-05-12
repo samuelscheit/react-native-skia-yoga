@@ -170,7 +170,7 @@ try {
 	console.log("- Prior risk source-confirmed: HybridObject::toObject() enters HybridObjectPrototype/JSICache, JSICache calls getRuntimeId(runtime), and getRuntimeId(runtime) depends on platform ThreadUtils; this verifier links the real iOS ThreadUtils implementation for the host-JSC probe.")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, generated HybridYogaNodeSpec.cpp, Nitro HybridObject/prototype/cache sources, platform ThreadUtils, React Native JSC, upstream Yoga sources, RN Skia macOS archives, RN Skia CSSColorParser, a host platform context, Worklets shared-item sources, ColorParser, PlatformContextAccessor, AnimatedDouble, and Nitro/JSI helper sources.")
 	console.log("- The executable created a shared YogaNode, called YogaNode::toObject(runtime), asserted the returned value is a JS object with NativeState wrapping the original YogaNode, and asserted repeated toObject(runtime) returns the cached JS object.")
-	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height/antiAlias/layer), setStyle(SkPaint-backed backgroundColor plus paint fields), setStyle(global borderRadius), setStyle(style corner radii, overflow hidden/scroll, clip path/rect/rrect, 9- and 16-value matrix arrays, single-operation transform variants, non-empty transform precedence, empty transform matrix fallback, empty transform no-matrix reset, invertClip), computeLayout(width, height), and the layout getter.")
+	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height/antiAlias/layer), setStyle(CSS-string backgroundColor validation), setStyle(SkPaint-backed backgroundColor plus paint fields), setStyle(global borderRadius), setStyle(style corner radii, overflow hidden/scroll, clip path/rect/rrect, 9- and 16-value matrix arrays, single-operation transform variants, non-empty transform precedence, empty transform matrix fallback, empty transform no-matrix reset, invertClip), computeLayout(width, height), and the layout getter.")
 	console.log("- The executable materialized parent/child YogaNodes, inserted the child through the generated parent.insertChild(...) wrapper, called materialized parent.getChildren(), and asserted the returned child is the cached materialized child object with generated and raw YogaNode prototype methods.")
 	console.log("- The executable called generated setStyle/computeLayout/insertChild and raw setInteractionConfig/hitTest/getChildren through the returned child object, then asserted recursive returned-grandchild identity through returnedChild.getChildren().")
 	console.log("- The executable built materialized layout trees through YogaNode::toObject(runtime), generated setStyle(...), insertChild(...), computeLayout(...), and layout getter access; it covered compact flexDirection with justifyContent/alignItems, gap/rowGap/columnGap, padding aliases, margin aliases, flexGrow/flexShrink/flexBasis, absolute position with inset aliases, one stable width special value, and residual alignContent/alignSelf/flexWrap/direction/display/boxSizing/min-max/aspect/edge/percent/auto cases.")
@@ -179,9 +179,9 @@ try {
 	console.log("- The executable aligns that same-node sequential materialized proof with Worker 199's exact public/Reconciler dynamic layout field table by separately exercising start/end, marginLeft/marginRight, and inset replacement, cleanup, selected Yoga edge getters, invalidation, computeLayout(...), and generated layout getter values.")
 	console.log("- The executable materialized parent/child YogaNodes, called generated setCommand(group/rect) and setStyle(overflow hidden/scroll, clip rect/rrect/path, plus invertClip rect/rrect/path) wrappers, inserted the child through the generated parent.insertChild(...) wrapper, rendered the native parent through YogaNode::renderToContext(), and asserted bounded in-clip/out-of-clip raster pixels.")
 	console.log("- The executable used fresh materialized YogaNode objects to invoke generated JS-facing setCommand(line), setCommand(points), setCommand(path), setCommand(text), setCommand(paragraph), setCommand(circle), setCommand(rrect), setCommand(blurMaskFilter), setCommand(rect), setCommand(oval), and setCommand(image) wrappers, preserving the native no-command-kind-change invariant.")
-	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized global borderRadius delivery into _style.borderRadius, _clipsToBounds, and all four _clipToBoundsRadii slots without per-corner or explicit clip state, generated materialized overflow hidden/scroll delivery into _style.overflow, Yoga overflow state, and rectangular _clipsToBounds without radius or explicit clip state plus bounded renderToContext raster pixels, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect plus bounded renderToContext raster pixels, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate plus bounded rect/rrect/path renderToContext raster pixels, generated materialized layout style delivery into native _style optionals and selected Yoga style getters for flex, gap, padding, margin, position/inset, width stretch, alignContent, alignSelf, flexWrap, direction, display, boxSizing, min/max constraints, aspectRatio, edge-specific start/end/top/bottom, percentage values, and auto values, sequential generated materialized setStyle initial/update/cleanup delivery into the same parent/child Yoga nodes with stale optionals and Yoga setters reset, exact Worker 199 sequential edge-alias alignment for start/end, marginLeft/marginRight, and inset, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
+	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized CSS-string backgroundColor delivery plus invalid-string rejection without previous _style.backgroundColor/_paint mutation, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized global borderRadius delivery into _style.borderRadius, _clipsToBounds, and all four _clipToBoundsRadii slots without per-corner or explicit clip state, generated materialized overflow hidden/scroll delivery into _style.overflow, Yoga overflow state, and rectangular _clipsToBounds without radius or explicit clip state plus bounded renderToContext raster pixels, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect plus bounded renderToContext raster pixels, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate plus bounded rect/rrect/path renderToContext raster pixels, generated materialized layout style delivery into native _style optionals and selected Yoga style getters for flex, gap, padding, margin, position/inset, width stretch, alignContent, alignSelf, flexWrap, direction, display, boxSizing, min/max constraints, aspectRatio, edge-specific start/end/top/bottom, percentage values, and auto values, sequential generated materialized setStyle initial/update/cleanup delivery into the same parent/child Yoga nodes with stale optionals and Yoga setters reset, exact Worker 199 sequential edge-alias alignment for start/end, marginLeft/marginRight, and inset, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
 	console.log("- For CircleCmd, RRectCmd, and BlurMaskFilterCmd, selected no-pixel draw calls are used only to expose render-time native state/mask-filter side effects after generated wrapper delivery; no command-rendering or render-fidelity claim is made.")
-	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/overflow hidden/scroll/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized setStyle flexbox/layout/edge/constraint delivery into selected native _style optionals, selected stable Yoga style getters, selected sequential same-node layout setter replacement/reset behavior including exact Worker 199 edge aliases, and selected computed native/generated layout getter values, generated materialized overflow hidden/scroll delivery followed by bounded host-raster renderToContext pixel assertions for rectangular parent bounds clipping, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect/rrect/path clips, and selected generated/raw YogaNode method/getter execution only; this does not prove exact Yoga conformance beyond asserted values, actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact overflow or clip render fidelity beyond asserted pixels, exact hit-test behavior, exhaustive layout field coverage, or every command rendering path.")
+	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(CSS-string backgroundColor) delivery and invalid CSS-string rejection preserving previous _style.backgroundColor/_paint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/overflow hidden/scroll/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized setStyle flexbox/layout/edge/constraint delivery into selected native _style optionals, selected stable Yoga style getters, selected sequential same-node layout setter replacement/reset behavior including exact Worker 199 edge aliases, and selected computed native/generated layout getter values, generated materialized overflow hidden/scroll delivery followed by bounded host-raster renderToContext pixel assertions for rectangular parent bounds clipping, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect/rrect/path clips, and selected generated/raw YogaNode method/getter execution only; this does not prove exact Yoga conformance beyond asserted values, actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact overflow or clip render fidelity beyond asserted pixels, exact hit-test behavior, exhaustive layout field coverage, or every command rendering path.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -1723,6 +1723,33 @@ jsi::Object makeLayerStyle(jsi::Runtime& runtime, double width, double height)
 
     style.setProperty(runtime, "backgroundColor", "#0000ff");
     style.setProperty(runtime, "layer", makePaintHostObject(runtime, layerPaint));
+    return style;
+}
+
+jsi::Object makeCssBackgroundColorStyle(jsi::Runtime& runtime, const char* color)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "backgroundColor", color);
+    style.setProperty(runtime, "borderWidth", 3.5);
+    style.setProperty(
+        runtime,
+        "strokeCap",
+        static_cast<double>(static_cast<int>(StrokeCap::SQUARE)));
+    style.setProperty(
+        runtime,
+        "strokeJoin",
+        static_cast<double>(static_cast<int>(StrokeJoin::ROUND)));
+    style.setProperty(runtime, "strokeMiter", 8.25);
+    style.setProperty(runtime, "dither", true);
+    style.setProperty(runtime, "antiAlias", true);
+    style.setProperty(runtime, "opacity", 0.4);
+    return style;
+}
+
+jsi::Object makeBackgroundColorOnlyStyle(jsi::Runtime& runtime, const char* color)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "backgroundColor", color);
     return style;
 }
 
@@ -3835,6 +3862,61 @@ void assertGeneratedImageSetCommand(jsi::Runtime& runtime)
     disposeMaterializedObject(runtime, materialized.object);
 }
 
+void assertGeneratedCssBackgroundColorStringValidation(jsi::Runtime& runtime)
+{
+    auto materialized = materializeYogaNode(runtime);
+    auto validStyle = makeCssBackgroundColorStyle(runtime, "#123456");
+    callGeneratedSetStyle(
+        runtime,
+        materialized,
+        validStyle,
+        "generated setStyle(CSS-string backgroundColor plus paint fields) must return undefined");
+
+    expect(materialized.node->_style.backgroundColor.has_value(), "generated CSS backgroundColor style must populate backgroundColor optional");
+    const auto& backgroundColor = materialized.node->_style.backgroundColor.value();
+    expect(std::holds_alternative<std::string>(backgroundColor), "generated CSS backgroundColor style must materialize as a string");
+    expect(
+        std::get<std::string>(backgroundColor) == "#123456",
+        "generated CSS backgroundColor style must preserve source string in native style");
+    expectColorRgb(materialized.node->_paint.getColor(), SkColorSetARGB(255, 18, 52, 86), "generated CSS backgroundColor style must parse CSS string rgb into _paint");
+    expectNear(materialized.node->_paint.getStrokeWidth(), 3.5, "generated CSS backgroundColor style paint stroke width before invalid rejection");
+    expect(materialized.node->_paint.getStrokeCap() == SkPaint::Cap::kSquare_Cap, "generated CSS backgroundColor style paint cap before invalid rejection");
+    expect(materialized.node->_paint.getStrokeJoin() == SkPaint::Join::kRound_Join, "generated CSS backgroundColor style paint join before invalid rejection");
+    expectNear(materialized.node->_paint.getStrokeMiter(), 8.25, "generated CSS backgroundColor style paint miter before invalid rejection");
+    expect(materialized.node->_paint.isDither(), "generated CSS backgroundColor style paint dither before invalid rejection");
+    expect(materialized.node->_paint.isAntiAlias(), "generated CSS backgroundColor style paint antiAlias before invalid rejection");
+    expectNear(materialized.node->_paint.getAlphaf(), 0.4, "generated CSS backgroundColor style paint alpha before invalid rejection");
+
+    auto invalidStyle = makeBackgroundColorOnlyStyle(runtime, "not-a-css-color");
+    expectThrows(
+        [&]() {
+            callGeneratedSetStyle(
+                runtime,
+                materialized,
+                invalidStyle,
+                "generated setStyle(invalid CSS-string backgroundColor) must throw before returning");
+        },
+        "Invalid CSS color string for backgroundColor: \"not-a-css-color\"",
+        "generated setStyle(invalid CSS-string backgroundColor) must reject deterministically");
+
+    expect(materialized.node->_style.backgroundColor.has_value(), "invalid CSS backgroundColor rejection must preserve previous backgroundColor optional");
+    const auto& preservedBackgroundColor = materialized.node->_style.backgroundColor.value();
+    expect(std::holds_alternative<std::string>(preservedBackgroundColor), "invalid CSS backgroundColor rejection must preserve previous string variant");
+    expect(
+        std::get<std::string>(preservedBackgroundColor) == "#123456",
+        "invalid CSS backgroundColor rejection must preserve previous backgroundColor string");
+    expectColorRgb(materialized.node->_paint.getColor(), SkColorSetARGB(255, 18, 52, 86), "invalid CSS backgroundColor rejection must preserve _paint rgb");
+    expectNear(materialized.node->_paint.getStrokeWidth(), 3.5, "invalid CSS backgroundColor rejection must preserve _paint stroke width");
+    expect(materialized.node->_paint.getStrokeCap() == SkPaint::Cap::kSquare_Cap, "invalid CSS backgroundColor rejection must preserve _paint cap");
+    expect(materialized.node->_paint.getStrokeJoin() == SkPaint::Join::kRound_Join, "invalid CSS backgroundColor rejection must preserve _paint join");
+    expectNear(materialized.node->_paint.getStrokeMiter(), 8.25, "invalid CSS backgroundColor rejection must preserve _paint miter");
+    expect(materialized.node->_paint.isDither(), "invalid CSS backgroundColor rejection must preserve _paint dither");
+    expect(materialized.node->_paint.isAntiAlias(), "invalid CSS backgroundColor rejection must preserve _paint antiAlias");
+    expectNear(materialized.node->_paint.getAlphaf(), 0.4, "invalid CSS backgroundColor rejection must preserve _paint alpha");
+
+    disposeMaterializedObject(runtime, materialized.object);
+}
+
 void assertGeneratedPaintBackedStyle(jsi::Runtime& runtime)
 {
     auto materialized = materializeYogaNode(runtime);
@@ -4724,6 +4806,9 @@ int main()
     expectNear(node->_paint.getAlphaf(), 1.0, "generated setStyle ordinary _paint alpha stays separate from layer alpha");
     expectNear(std::get<double>(*node->_style.width), 64.0, "generated setStyle native width");
     expectNear(std::get<double>(*node->_style.height), 32.0, "generated setStyle native height");
+
+    std::cerr << "probe: call generated CSS-string backgroundColor validation" << std::endl;
+    assertGeneratedCssBackgroundColorStringValidation(*runtime);
 
     std::cerr << "probe: call generated paint-backed setStyle" << std::endl;
     assertGeneratedPaintBackedStyle(*runtime);
