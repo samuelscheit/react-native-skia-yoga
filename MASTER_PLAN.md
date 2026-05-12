@@ -123,12 +123,10 @@ Latest accepted implementation: worker 191 added paired inverted rrect/path
 raster proof across the direct host-native command/render verifier and the
 generated materialized Nitro verifier.
 
-Latest accepted audit: worker 190 accepted Worker 189's generated materialized
-clip/invertClip raster bridge proof, reconfirmed focused and full-matrix
-evidence plus platform blockers, and selected paired inverted rrect/path raster
-proof across direct native and generated materialized harnesses as the next
-strongest locally unblocked target. Worker 192 is queued to audit Worker 191
-and select the next target.
+Latest accepted audit: worker 192 accepted Worker 191's paired inverted
+rrect/path raster proof, reconfirmed focused and full-matrix evidence plus
+platform blockers, and selected generated materialized Yoga layout breadth
+proof as the next strongest locally unblocked target.
 
 Goals:
 
@@ -326,21 +324,24 @@ Accepted package-hygiene implementation:
 - `worker-189-materialized-clip-raster-bridge`: added generated materialized `setStyle(clip rect/rrect/path, invertClip)` wrapper delivery to bounded `YogaNode::renderToContext()` raster proof.
 - `worker-190-post-189-root-cause-audit`: accepted Worker 189's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected paired inverted rrect/path raster proof across direct native and generated materialized harnesses.
 - `worker-191-inverted-rrect-path-raster-proof`: added direct and generated materialized inverted rrect/path raster proof, completing bounded inverted rect/rrect/path clip coverage.
+- `worker-192-post-191-root-cause-audit`: accepted Worker 191's proof boundary, reconfirmed focused/full-matrix evidence and local platform blockers, and selected generated materialized Yoga layout breadth proof as Worker 193's target.
 
 Current active worker:
 
-Worker 192 post-Worker 191 root-cause audit.
+Worker 193 generated materialized Yoga layout breadth proof.
 
-- Agent path: `/root/worker_192_post_191_root_cause_audit`.
-- Worktree: `../worker-192-post-191-root-cause-audit`.
-- Branch: `worker/192-post-191-root-cause-audit`.
-- Scope: audit Worker 191's paired inverted rrect/path raster proof, rerun
-  focused checks and the feasible matrix, reprobe platform blockers, and select
-  the next strongest locally unblocked root-cause target.
+- Planned agent path: `/root/worker_193_materialized_layout_breadth`.
+- Worktree: `../worker-193-materialized-layout-breadth`.
+- Branch: `worker/193-materialized-layout-breadth`.
+- Scope: extend `scripts/verify-yoganode-nitro-materialization.mjs` with a
+  compact generated materialized Yoga layout breadth proof, covering
+  representative public layout categories through generated `setStyle(...)`,
+  generated `computeLayout(...)`, selected native Yoga state, and generated
+  `layout` getter output.
 
 Next queued worker:
 
-- None until Worker 192 reports.
+- None until Worker 193 reports.
 
 Acceptance criteria:
 
