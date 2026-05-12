@@ -170,13 +170,13 @@ try {
 	console.log("- Prior risk source-confirmed: HybridObject::toObject() enters HybridObjectPrototype/JSICache, JSICache calls getRuntimeId(runtime), and getRuntimeId(runtime) depends on platform ThreadUtils; this verifier links the real iOS ThreadUtils implementation for the host-JSC probe.")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, generated HybridYogaNodeSpec.cpp, Nitro HybridObject/prototype/cache sources, platform ThreadUtils, React Native JSC, upstream Yoga sources, RN Skia macOS archives, RN Skia CSSColorParser, a host platform context, Worklets shared-item sources, ColorParser, PlatformContextAccessor, AnimatedDouble, and Nitro/JSI helper sources.")
 	console.log("- The executable created a shared YogaNode, called YogaNode::toObject(runtime), asserted the returned value is a JS object with NativeState wrapping the original YogaNode, and asserted repeated toObject(runtime) returns the cached JS object.")
-	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height/antiAlias/layer), setStyle(SkPaint-backed backgroundColor plus paint fields), setStyle(style corner radii, clip path/rect/rrect, 9- and 16-value matrix arrays, single-operation transform variants, non-empty transform precedence, empty transform matrix fallback, empty transform no-matrix reset, invertClip), computeLayout(width, height), and the layout getter.")
+	console.log("- The executable asserted generated prototype members setCommand, setStyle, computeLayout, and layout exist on the materialized object, then invoked generated JS-facing wrappers for setCommand(group), setStyle(width/height/antiAlias/layer), setStyle(SkPaint-backed backgroundColor plus paint fields), setStyle(global borderRadius), setStyle(style corner radii, clip path/rect/rrect, 9- and 16-value matrix arrays, single-operation transform variants, non-empty transform precedence, empty transform matrix fallback, empty transform no-matrix reset, invertClip), computeLayout(width, height), and the layout getter.")
 	console.log("- The executable materialized parent/child YogaNodes, inserted the child through the generated parent.insertChild(...) wrapper, called materialized parent.getChildren(), and asserted the returned child is the cached materialized child object with generated and raw YogaNode prototype methods.")
 	console.log("- The executable called generated setStyle/computeLayout/insertChild and raw setInteractionConfig/hitTest/getChildren through the returned child object, then asserted recursive returned-grandchild identity through returnedChild.getChildren().")
 	console.log("- The executable used fresh materialized YogaNode objects to invoke generated JS-facing setCommand(line), setCommand(points), setCommand(path), setCommand(text), setCommand(paragraph), setCommand(circle), setCommand(rrect), setCommand(blurMaskFilter), setCommand(rect), setCommand(oval), and setCommand(image) wrappers, preserving the native no-command-kind-change invariant.")
-	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
+	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized global borderRadius delivery into _style.borderRadius, _clipsToBounds, and all four _clipToBoundsRadii slots without per-corner or explicit clip state, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
 	console.log("- For CircleCmd, RRectCmd, and BlurMaskFilterCmd, selected no-pixel draw calls are used only to expose render-time native state/mask-filter side effects after generated wrapper delivery; no command-rendering or render-fidelity claim is made.")
-	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(corner-radius/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, and selected generated/raw YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, pixel rendering, exact hit-test behavior, command rendering, or exact render fidelity.")
+	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, and selected generated/raw YogaNode method/getter execution only; this does not prove actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, pixel rendering, exact hit-test behavior, command rendering, or exact render fidelity.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -289,6 +289,17 @@ function assertCurrentGapAndRisk() {
 			`Generated NodeStyle must still accept SkPoint-capable ${cornerKey}.`,
 		)
 	}
+	assert(
+		styleSpec.includes("borderRadius?: number") &&
+			generatedNodeStyle.includes("std::optional<double> borderRadius") &&
+			generatedNodeStyle.includes('obj.getProperty(runtime, "borderRadius")') &&
+			yogaNodeCpp.includes("style.borderRadius.has_value()") &&
+			yogaNodeCpp.includes("radii[SkRRect::kUpperLeft_Corner] = SkVector::Make(radius, radius)") &&
+			yogaNodeCpp.includes("radii[SkRRect::kUpperRight_Corner] = SkVector::Make(radius, radius)") &&
+			yogaNodeCpp.includes("radii[SkRRect::kLowerRight_Corner] = SkVector::Make(radius, radius)") &&
+			yogaNodeCpp.includes("radii[SkRRect::kLowerLeft_Corner] = SkVector::Make(radius, radius)"),
+		"Public/generated/native style paths must retain scalar borderRadius delivery and all-corner seeding.",
+	)
 	assert(
 		skMatrixConverter.includes("len == 9 || len == 16") &&
 			jsiSkMatrix.includes("array.size(runtime) == 16"),
@@ -1480,6 +1491,13 @@ jsi::Object makeCornerRadiusStyle(jsi::Runtime& runtime)
     return style;
 }
 
+jsi::Object makeGlobalBorderRadiusStyle(jsi::Runtime& runtime)
+{
+    jsi::Object style(runtime);
+    style.setProperty(runtime, "borderRadius", 17.0);
+    return style;
+}
+
 jsi::Object makePaintBackedStyle(jsi::Runtime& runtime)
 {
     SkPaint backgroundPaint;
@@ -2340,6 +2358,50 @@ void assertGeneratedCornerRadiusStyle(jsi::Runtime& runtime)
     disposeMaterializedObject(runtime, materialized.object);
 }
 
+void assertGeneratedGlobalBorderRadiusStyle(jsi::Runtime& runtime)
+{
+    auto materialized = materializeYogaNode(runtime);
+    auto setStyle = materialized.object.getPropertyAsFunction(runtime, "setStyle");
+    auto style = makeGlobalBorderRadiusStyle(runtime);
+    callFunctionWithOneObject(
+        runtime,
+        materialized.object,
+        setStyle,
+        style,
+        "generated setStyle(global borderRadius) must return undefined");
+
+    expectNativeStateWrapsOriginal(runtime, materialized.object, materialized.node);
+    jsi::Value objectValue(runtime, materialized.object);
+    auto cachedObjectValue = materialized.node->toObject(runtime);
+    expect(
+        jsi::Value::strictEquals(runtime, objectValue, cachedObjectValue),
+        "generated setStyle(global borderRadius) must preserve cached materialized object identity");
+
+    expectOptionalDoubleNear(
+        materialized.node->_style.borderRadius,
+        17.0,
+        "generated global borderRadius style must populate scalar borderRadius optional");
+    expect(!materialized.node->_style.borderTopLeftRadius.has_value(), "generated global borderRadius must not populate borderTopLeftRadius");
+    expect(!materialized.node->_style.borderTopRightRadius.has_value(), "generated global borderRadius must not populate borderTopRightRadius");
+    expect(!materialized.node->_style.borderBottomRightRadius.has_value(), "generated global borderRadius must not populate borderBottomRightRadius");
+    expect(!materialized.node->_style.borderBottomLeftRadius.has_value(), "generated global borderRadius must not populate borderBottomLeftRadius");
+    expect(materialized.node->_clipsToBounds, "generated global borderRadius must enable YogaNode bounds clipping");
+    expect(materialized.node->_clipToBoundsRadii.has_value(), "generated global borderRadius must populate _clipToBoundsRadii");
+
+    const auto& radii = *materialized.node->_clipToBoundsRadii;
+    expectCornerRadiiNear(radii, SkRRect::kUpperLeft_Corner, 17.0, 17.0, "generated global borderRadius upper-left clip radius");
+    expectCornerRadiiNear(radii, SkRRect::kUpperRight_Corner, 17.0, 17.0, "generated global borderRadius upper-right clip radius");
+    expectCornerRadiiNear(radii, SkRRect::kLowerRight_Corner, 17.0, 17.0, "generated global borderRadius lower-right clip radius");
+    expectCornerRadiiNear(radii, SkRRect::kLowerLeft_Corner, 17.0, 17.0, "generated global borderRadius lower-left clip radius");
+
+    expect(!materialized.node->_style.clip.has_value(), "generated global borderRadius must leave explicit style.clip absent");
+    expect(!materialized.node->_clipPath.has_value(), "generated global borderRadius must not populate _clipPath");
+    expect(!materialized.node->_clipRect.has_value(), "generated global borderRadius must not populate _clipRect");
+    expect(!materialized.node->_clipRRect.has_value(), "generated global borderRadius must not populate _clipRRect");
+
+    disposeMaterializedObject(runtime, materialized.object);
+}
+
 void assertGeneratedClipRectStyle(jsi::Runtime& runtime)
 {
     auto materialized = materializeYogaNode(runtime);
@@ -2715,6 +2777,7 @@ int main()
     assertGeneratedPaintBackedStyle(*runtime);
 
     std::cerr << "probe: call generated corner-radius setStyle" << std::endl;
+    assertGeneratedGlobalBorderRadiusStyle(*runtime);
     assertGeneratedCornerRadiusStyle(*runtime);
 
     std::cerr << "probe: call generated clip/matrix/transform setStyle" << std::endl;

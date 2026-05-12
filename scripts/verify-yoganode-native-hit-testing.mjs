@@ -133,7 +133,7 @@ try {
 
 	console.log("YogaNode native hit-testing verifier passed:")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, upstream Yoga sources, RN Skia macOS archives, and the helper sources required for object emission.")
-	console.log("- The executable asserted YogaNode::hitTestTagAt / hitTestInternal behavior for pointerEvents, child z-order, layout coordinate translation, matrix inversion, composed public transform-array inversion, overflow clipping, style corner-radius clipping, explicit style.clip clipping, hitSlop, precise-hit geometry, and interactive descendant count propagation.")
+	console.log("- The executable asserted YogaNode::hitTestTagAt / hitTestInternal behavior for pointerEvents, child z-order, layout coordinate translation, matrix inversion, composed public transform-array inversion, overflow clipping, scalar global borderRadius clipping, style corner-radius clipping, explicit style.clip clipping, hitSlop, precise-hit geometry, and interactive descendant count propagation.")
 	console.log("- Host-only direct interaction-field setup is limited to the JSI config boundary; hit-test traversal, layout, clipping, transform inversion, precise command checks, and descendant count mutation execute the real native runtime path.")
 	console.log("- -Wl,-undefined,dynamic_lookup is limited to unentered host-incompatible entry points in the shared translation unit.")
 } finally {
@@ -437,6 +437,26 @@ void expectTag(double actual, double expected, const std::string& message)
         out << message << " expected tag " << expected << " but got " << actual;
         fail(out.str());
     }
+}
+
+void expectNear(double actual, double expected, const std::string& message)
+{
+    if (std::abs(actual - expected) > 0.001) {
+        std::ostringstream out;
+        out << message << " expected " << expected << " but got " << actual;
+        fail(out.str());
+    }
+}
+
+void expectCornerRadiiNear(
+    const margelo::nitro::RNSkiaYoga::detail::CornerRadii& radii,
+    SkRRect::Corner corner,
+    double expectedX,
+    double expectedY,
+    const std::string& message)
+{
+    expectNear(radii[corner].fX, expectedX, message + " x");
+    expectNear(radii[corner].fY, expectedY, message + " y");
 }
 
 void expectCount(const std::shared_ptr<YogaNode>& node, int expected, const std::string& message)
@@ -754,6 +774,48 @@ void styleCornerRadiiClipToBounds()
     expectTag(root->hitTestTagAt(99, 1), 505.0, "unset top-right style radius keeps that corner square");
 }
 
+void globalBorderRadiusClipToBounds()
+{
+    auto root = makeNode(100, 100);
+    auto style = fixedStyle(100, 100);
+    style.borderRadius = 30.0;
+    root->setStyle(style);
+
+    expect(root->_clipsToBounds, "global borderRadius enables YogaNode bounds clipping");
+    expect(root->_clipToBoundsRadii.has_value(), "global borderRadius populates _clipToBoundsRadii");
+    expect(root->_style.borderRadius.has_value(), "global borderRadius stays in NodeStyle borderRadius");
+    expectNear(*root->_style.borderRadius, 30.0, "global borderRadius scalar state");
+    expect(!root->_style.borderTopLeftRadius.has_value(), "global borderRadius leaves borderTopLeftRadius absent");
+    expect(!root->_style.borderTopRightRadius.has_value(), "global borderRadius leaves borderTopRightRadius absent");
+    expect(!root->_style.borderBottomRightRadius.has_value(), "global borderRadius leaves borderBottomRightRadius absent");
+    expect(!root->_style.borderBottomLeftRadius.has_value(), "global borderRadius leaves borderBottomLeftRadius absent");
+    expect(!root->_style.clip.has_value(), "global borderRadius remains distinct from explicit style.clip");
+    expect(!root->_clipPath.has_value(), "global borderRadius does not populate explicit path clip");
+    expect(!root->_clipRect.has_value(), "global borderRadius does not populate explicit rect clip");
+    expect(!root->_clipRRect.has_value(), "global borderRadius does not populate explicit rrect clip");
+
+    const auto& radii = *root->_clipToBoundsRadii;
+    expectCornerRadiiNear(radii, SkRRect::kUpperLeft_Corner, 30.0, 30.0, "global borderRadius upper-left clip radius");
+    expectCornerRadiiNear(radii, SkRRect::kUpperRight_Corner, 30.0, 30.0, "global borderRadius upper-right clip radius");
+    expectCornerRadiiNear(radii, SkRRect::kLowerRight_Corner, 30.0, 30.0, "global borderRadius lower-right clip radius");
+    expectCornerRadiiNear(radii, SkRRect::kLowerLeft_Corner, 30.0, 30.0, "global borderRadius lower-left clip radius");
+
+    auto child = makeAbsoluteNode(0, 0, 100, 100);
+    root->insertChild(child, std::nullopt);
+
+    configureInteraction(child, 506.0);
+    compute(root);
+
+    expectTag(root->hitTestTagAt(1, 1), 0.0, "global borderRadius rejects upper-left rounded corner");
+    expectTag(root->hitTestTagAt(99, 1), 0.0, "global borderRadius rejects upper-right rounded corner");
+    expectTag(root->hitTestTagAt(99, 99), 0.0, "global borderRadius rejects lower-right rounded corner");
+    expectTag(root->hitTestTagAt(1, 99), 0.0, "global borderRadius rejects lower-left rounded corner");
+    expectTag(root->hitTestTagAt(30, 10), 506.0, "global borderRadius accepts upper-left in-bounds rounded point");
+    expectTag(root->hitTestTagAt(70, 10), 506.0, "global borderRadius accepts upper-right in-bounds rounded point");
+    expectTag(root->hitTestTagAt(70, 90), 506.0, "global borderRadius accepts lower-right in-bounds rounded point");
+    expectTag(root->hitTestTagAt(30, 90), 506.0, "global borderRadius accepts lower-left in-bounds rounded point");
+}
+
 void invertedExplicitClip()
 {
     auto root = makeNode(100, 100);
@@ -872,6 +934,7 @@ int main()
     explicitClipRect();
     explicitClipPath();
     explicitClipRRect();
+    globalBorderRadiusClipToBounds();
     styleCornerRadiiClipToBounds();
     invertedExplicitClip();
     hitSlopExpansion();
