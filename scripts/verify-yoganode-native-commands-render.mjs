@@ -275,12 +275,12 @@ try {
 	console.log(`- The verifier checked the installed RN Skia public style field inventory before native compilation: ${formatStyleInventorySummary()}`)
 	console.log("- The executable asserted inventory-backed value-bearing toJSI/fromJSI serialization for installed public SkSamplingOptions filter/mipmap and cubic B/C, installed public SkTextStyle supported fields including fontSize/fontFamilies/fontFeatures/decoration/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, normalized text color fields color/backgroundColor/foregroundColor/decorationColor, installed public SkParagraphStyle scalar/textStyle/strutStyle fields, installed public SkStrutStyle fields, dual flattened/nested default text style fields including nested textStyle heightMultiplier output, flattened fontSize/color precedence over nested values, and explicit unsupported fontVariations rejection.")
 	console.log("- The executable asserted generated NodeStyle transport and host-native SkPaint state for canonical style.antiAlias, legacy style.antiaAlias fallback, canonical precedence when both keys are present, generated style.layer JsiSkPaint host-object transport, YogaNode::_layerPaint storage/reset behavior, ordinary _paint separation, and explicit style paint fields overriding SkPaint-backed backgroundColor base paint values.")
-	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, composed public transform-array rendering, style.layer saveLayer alpha modulation of a child subtree, style corner-radius clip-to-bounds raster clipping of a full-size child, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
+	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, composed public transform-array rendering, style.layer saveLayer alpha modulation of a child subtree, style corner-radius and global style.borderRadius clip-to-bounds raster clipping of full-size children, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
 	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) plus flattened and nested ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection including nested paragraphStyle.textStyle.color, unsupported paragraph fontVariations rejection, and text.textStyle rich-key rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact style corner-radius render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact style corner-radius or global style.borderRadius render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -3399,6 +3399,63 @@ void assertStyleCornerRadiusClipRender(jsi::Runtime& runtime)
     expectColorNear(pixelAt(surface, 104, 104), SK_ColorTRANSPARENT, 0, "style corner-radius render remains bounded outside the parent layout");
 }
 
+void assertGlobalBorderRadiusClipRender(jsi::Runtime& runtime)
+{
+    constexpr double radius = 24.0;
+
+    auto rootStyle = groupStyle(100.0, 100.0);
+    rootStyle.borderRadius = radius;
+
+    auto root = makeYogaNode(rootStyle, groupCommand(runtime, false));
+    auto child = makeYogaNode(
+        absoluteStyle(0.0, 0.0, 100.0, 100.0, SK_ColorBLUE),
+        rectCommand(runtime));
+    root->insertChild(child, std::nullopt);
+
+    expect(root->_commandKind == YogaNodeCommandKind::GROUP, "global borderRadius clip proof uses a GroupCmd parent");
+    expect(dynamic_cast<margelo::nitro::RNSkiaYoga::RRectCmd*>(root->_command.get()) == nullptr, "global borderRadius clip proof parent is not an RRectCmd");
+    expect(child->_commandKind == YogaNodeCommandKind::RECT, "global borderRadius clip proof uses a full-size RectCmd child");
+    expect(dynamic_cast<margelo::nitro::RNSkiaYoga::RRectCmd*>(child->_command.get()) == nullptr, "global borderRadius clip proof child is not an RRectCmd");
+    expect(!child->_style.borderRadius.has_value(), "global borderRadius clip proof keeps the radius on the GroupCmd parent");
+    expect(!child->_clipToBoundsRadii.has_value(), "global borderRadius clip proof does not rely on the child RectCmd rounded draw branch");
+
+    expect(root->_style.borderRadius.has_value(), "global borderRadius clip proof stores the scalar style radius");
+    expectNear(*root->_style.borderRadius, radius, "global borderRadius scalar value is preserved");
+    expect(!root->_style.borderTopLeftRadius.has_value(), "global borderRadius clip proof does not set upper-left style radius");
+    expect(!root->_style.borderTopRightRadius.has_value(), "global borderRadius clip proof does not set upper-right style radius");
+    expect(!root->_style.borderBottomRightRadius.has_value(), "global borderRadius clip proof does not set lower-right style radius");
+    expect(!root->_style.borderBottomLeftRadius.has_value(), "global borderRadius clip proof does not set lower-left style radius");
+    expect(root->_clipsToBounds, "global borderRadius enables YogaNode bounds clipping before render");
+    expect(root->_clipToBoundsRadii.has_value(), "global borderRadius populates _clipToBoundsRadii before render");
+
+    const auto& radii = *root->_clipToBoundsRadii;
+    expectNear(radii[SkRRect::kUpperLeft_Corner].fX, radius, "global borderRadius upper-left clip radius x");
+    expectNear(radii[SkRRect::kUpperLeft_Corner].fY, radius, "global borderRadius upper-left clip radius y");
+    expectNear(radii[SkRRect::kUpperRight_Corner].fX, radius, "global borderRadius upper-right clip radius x");
+    expectNear(radii[SkRRect::kUpperRight_Corner].fY, radius, "global borderRadius upper-right clip radius y");
+    expectNear(radii[SkRRect::kLowerRight_Corner].fX, radius, "global borderRadius lower-right clip radius x");
+    expectNear(radii[SkRRect::kLowerRight_Corner].fY, radius, "global borderRadius lower-right clip radius y");
+    expectNear(radii[SkRRect::kLowerLeft_Corner].fX, radius, "global borderRadius lower-left clip radius x");
+    expectNear(radii[SkRRect::kLowerLeft_Corner].fY, radius, "global borderRadius lower-left clip radius y");
+    expect(!root->_style.clip.has_value(), "global borderRadius remains distinct from explicit style.clip");
+    expect(!root->_clipPath.has_value(), "global borderRadius does not populate explicit path clip");
+    expect(!root->_clipRect.has_value(), "global borderRadius does not populate explicit rect clip");
+    expect(!root->_clipRRect.has_value(), "global borderRadius does not populate explicit rrect clip");
+
+    auto surface = makeSurface(108, 108);
+    renderNode(root, surface);
+
+    expectColorNear(pixelAt(surface, 1, 1), SK_ColorTRANSPARENT, 0, "global borderRadius clips the upper-left child corner");
+    expectColorNear(pixelAt(surface, 99, 1), SK_ColorTRANSPARENT, 0, "global borderRadius clips the upper-right child corner");
+    expectColorNear(pixelAt(surface, 99, 99), SK_ColorTRANSPARENT, 0, "global borderRadius clips the lower-right child corner");
+    expectColorNear(pixelAt(surface, 1, 99), SK_ColorTRANSPARENT, 0, "global borderRadius clips the lower-left child corner");
+    expectColorNear(pixelAt(surface, 24, 24), SK_ColorBLUE, 0, "global borderRadius keeps pixels inside the upper-left rounded bounds");
+    expectColorNear(pixelAt(surface, 75, 24), SK_ColorBLUE, 0, "global borderRadius keeps pixels inside the upper-right rounded bounds");
+    expectColorNear(pixelAt(surface, 75, 75), SK_ColorBLUE, 0, "global borderRadius keeps pixels inside the lower-right rounded bounds");
+    expectColorNear(pixelAt(surface, 24, 75), SK_ColorBLUE, 0, "global borderRadius keeps pixels inside the lower-left rounded bounds");
+    expectColorNear(pixelAt(surface, 104, 104), SK_ColorTRANSPARENT, 0, "global borderRadius render remains bounded outside the parent layout");
+}
+
 void assertComposedTransformRender(jsi::Runtime& runtime)
 {
     auto root = makeYogaNode(groupStyle(36.0, 28.0), groupCommand(runtime, false));
@@ -4866,6 +4923,7 @@ int main()
     assertRectOpacityRender(*runtime);
     assertParentChildLayoutRender(*runtime);
     assertStyleCornerRadiusClipRender(*runtime);
+    assertGlobalBorderRadiusClipRender(*runtime);
     assertComposedTransformRender(*runtime);
     assertLayerPaintSaveLayerRender(*runtime);
     assertGroupRasterCacheBehavior(*runtime);
