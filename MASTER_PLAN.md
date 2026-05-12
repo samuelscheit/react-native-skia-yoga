@@ -362,17 +362,20 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - Worker 209 post-208 root-cause audit.
-- Agent path: not spawned yet.
-- Worktree: create `../worker-209-post-208-root-cause-audit` before spawning.
-- Branch: create `worker/209-post-208-root-cause-audit` before spawning.
+- Agent path: `/root/worker_209_post_208_root_cause_audit`.
+- Worktree: `../worker-209-post-208-root-cause-audit`.
+- Branch: `worker/209-post-208-root-cause-audit`.
 - Scope: audit the post-worker-208 state, verify the accepted proof boundary,
   rerun focused feasible checks as needed, reconfirm platform-native blockers,
   and select the next strongest locally unblocked root-cause target.
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`; awaiting report.
+
+Next queued worker:
+
+- None until Worker 209 reports.
 
 Follow-up queue:
 
