@@ -8,6 +8,7 @@
 
 #include <jsi/jsi.h>
 #include <cmath>
+#include <limits>
 #include <memory>
 #include <string>
 
@@ -36,7 +37,9 @@ inline void validateFiniteMatrixArray(jsi::Runtime& runtime, const jsi::Object& 
 
   for (size_t i = 0; i < length; ++i) {
     const auto value = array.getValueAtIndex(runtime, i).asNumber();
-    if (!std::isfinite(value)) {
+    if (
+        !std::isfinite(value) ||
+        std::abs(value) > static_cast<double>(std::numeric_limits<float>::max())) {
       throw jsi::JSError(
           runtime,
           "Invalid numeric style value for matrix[" + std::to_string(i) +
