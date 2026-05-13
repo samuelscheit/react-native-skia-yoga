@@ -10,6 +10,7 @@ const rootDir = path.resolve(import.meta.dirname, "..")
 
 verifyYogaCanvasGestureWiring()
 verifyInteractionRegistryConfigAndCleanup()
+verifyInteractionRegistryHitSlopValidation()
 verifyUseCanvasGesturesPressRuntime()
 verifyUseCanvasGesturesPanRuntime()
 verifyUseCanvasGesturesCancellationRuntime()
@@ -20,7 +21,7 @@ console.log(
 	"- YogaCanvas source still creates a YogaInteractionRegistry and passes gesture/interactions/node into useCanvasGestures.",
 )
 console.log(
-	"- YogaInteractionRegistry normalizes hitSlop, pointerEvents, preciseHit, event tags, dispatch order, and handler cleanup.",
+	"- YogaInteractionRegistry normalizes and finite-validates hitSlop, pointerEvents, preciseHit, event tags, dispatch order, and handler cleanup.",
 )
 console.log(
 	"- useCanvasGestures press flow dispatches pressIn/pressOut/press through runOnJS with hit-test filtering and state transitions.",
@@ -275,6 +276,22 @@ function verifyInteractionRegistryConfigAndCleanup() {
 		2,
 		"configureNode should allocate a distinct event tag for a second node.",
 	)
+	assert.deepEqual(
+		configs[3],
+		{
+			eventTag: 2,
+			hitSlop: {
+				bottom: 0,
+				left: 0,
+				right: 0,
+				top: 0,
+			},
+			otherNode: true,
+			pointerEvents: "auto",
+			preciseHit: false,
+		},
+		"configureNode should default omitted hitSlop to empty insets.",
+	)
 
 	registry.unregisterNode(node)
 	assert.deepEqual(
@@ -308,6 +325,162 @@ function verifyInteractionRegistryConfigAndCleanup() {
 			"press",
 		],
 		"unregisterNode should remove the first node handlers without disturbing the second node.",
+	)
+}
+
+function verifyInteractionRegistryHitSlopValidation() {
+	const harness = createGestureHarness()
+	const { YogaInteractionRegistry } = harness.loadProjectModule(
+		"src/interactivity.ts",
+	)
+	const registry = new YogaInteractionRegistry()
+	const configs = []
+	const calls = []
+	const node = {
+		setInteractionConfig(config) {
+			configs.push(cloneInteractionConfig(config))
+		},
+	}
+	const invalidNode = {
+		setInteractionConfig(config) {
+			configs.push({
+				...cloneInteractionConfig(config),
+				invalidNode: true,
+			})
+		},
+	}
+	const otherNode = {
+		setInteractionConfig(config) {
+			configs.push({
+				...cloneInteractionConfig(config),
+				otherNode: true,
+			})
+		},
+	}
+	const pointerEvent = makeExpectedPointerEvent(1, 10, 12)
+
+	registry.configureNode(node, {
+		hitSlop: {
+			bottom: 4,
+			horizontal: 5,
+			left: 1,
+			right: 2,
+			top: 3,
+			vertical: 6,
+		},
+		onPress() {
+			calls.push("original")
+		},
+		pointerEvents: "box-only",
+		preciseHit: true,
+	})
+
+	assert.deepEqual(
+		configs[0],
+		{
+			eventTag: 1,
+			hitSlop: {
+				bottom: 10,
+				left: 6,
+				right: 7,
+				top: 9,
+			},
+			pointerEvents: "box-only",
+			preciseHit: true,
+		},
+		"valid object hitSlop should validate leaves and combined edge-axis values.",
+	)
+
+	const combinedOverflow = 2e38
+	const invalidCases = [
+		{ hitSlop: Number.NaN, label: "scalar NaN" },
+		{ hitSlop: Infinity, label: "scalar Infinity" },
+		{ hitSlop: -Infinity, label: "scalar -Infinity" },
+		{ hitSlop: Number.MAX_VALUE, label: "scalar native-float overflow" },
+		{ hitSlop: { left: Number.NaN }, label: "object left NaN" },
+		{ hitSlop: { right: Infinity }, label: "object right Infinity" },
+		{ hitSlop: { top: -Infinity }, label: "object top -Infinity" },
+		{
+			hitSlop: { bottom: Number.MAX_VALUE },
+			label: "object bottom native-float overflow",
+		},
+		{ hitSlop: { horizontal: Infinity }, label: "object horizontal Infinity" },
+		{ hitSlop: { vertical: -Infinity }, label: "object vertical -Infinity" },
+		{
+			hitSlop: { horizontal: combinedOverflow, left: combinedOverflow },
+			label: "object horizontal combined native-float overflow",
+		},
+		{
+			hitSlop: { top: -combinedOverflow, vertical: -combinedOverflow },
+			label: "object vertical combined native-float overflow",
+		},
+	]
+
+	for (const invalidCase of invalidCases) {
+		assert.throws(
+			() =>
+				registry.configureNode(invalidNode, {
+					hitSlop: invalidCase.hitSlop,
+					onPress() {
+						calls.push(invalidCase.label)
+					},
+					pointerEvents: "none",
+					preciseHit: false,
+				}),
+			/finite native float/,
+			`${invalidCase.label} should reject before native forwarding.`,
+		)
+		assert.equal(
+			configs.length,
+			1,
+			`${invalidCase.label} should not call setInteractionConfig.`,
+		)
+	}
+
+	assert.throws(
+		() =>
+			registry.configureNode(node, {
+				hitSlop: Number.NaN,
+				onPress() {
+					calls.push("invalid replacement")
+				},
+			}),
+		/finite native float/,
+		"reconfiguring an existing node with invalid hitSlop should reject.",
+	)
+	assert.equal(
+		configs.length,
+		1,
+		"invalid hitSlop should preserve the previous native config snapshot.",
+	)
+
+	registry.dispatchPress(1, pointerEvent)
+	assert.deepEqual(
+		calls,
+		["original"],
+		"invalid hitSlop should preserve existing JS handlers.",
+	)
+
+	registry.configureNode(otherNode, {
+		onPress() {
+			calls.push("other")
+		},
+	})
+	assert.deepEqual(
+		configs[1],
+		{
+			eventTag: 2,
+			hitSlop: {
+				bottom: 0,
+				left: 0,
+				right: 0,
+				top: 0,
+			},
+			otherNode: true,
+			pointerEvents: "auto",
+			preciseHit: false,
+		},
+		"invalid hitSlop should not consume event tags and omitted hitSlop should stay empty.",
 	)
 }
 

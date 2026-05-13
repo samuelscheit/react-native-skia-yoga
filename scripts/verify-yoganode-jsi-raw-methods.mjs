@@ -167,7 +167,7 @@ try {
 	console.log("YogaNode JSI raw-method verifier passed:")
 	console.log("- Source invariant holds: generated HybridYogaNodeSpec methods and manual YogaNode raw methods have no duplicate names.")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, and Nitro/JSI helper sources.")
-	console.log("- The executable called YogaNode::loadHybridMethods() without duplicate-name overlap, created a real JSC runtime, converted a generated NodeStyle object, and called raw setInteractionConfig() / hitTest() with valid and invalid JSI inputs.")
+	console.log("- The executable called YogaNode::loadHybridMethods() without duplicate-name overlap, created a real JSC runtime, converted a generated NodeStyle object, and called raw setInteractionConfig() / hitTest() with valid and invalid JSI inputs, including invalid hitSlop state-preservation cases.")
 	console.log("- Proof boundary: source-level duplicate-registration invariant plus host-native compile/link and direct host-JSC execution of the remaining raw methods. This harness does not claim Nitro toObject()/prototype materialization proof, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, or RNGH native delivery.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
@@ -464,6 +464,7 @@ function nativeProbeSource() {
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -519,6 +520,50 @@ void expectNear(double actual, double expected, const char* message)
     if (std::fabs(actual - expected) > 0.001) {
         std::cerr << "FAIL: " << message << " expected=" << expected << " actual=" << actual << "\n";
         std::abort();
+    }
+}
+
+struct InteractionStateSnapshot {
+    PointerEventsMode pointerEvents;
+    HitSlopInsets hitSlop;
+    bool preciseHit;
+    bool selfInteractive;
+    int interactiveDescendantCount;
+    double eventTag;
+};
+
+InteractionStateSnapshot captureInteractionState(const YogaNode& node)
+{
+    return InteractionStateSnapshot {
+        .pointerEvents = node._pointerEvents,
+        .hitSlop = node._hitSlop,
+        .preciseHit = node._preciseHit,
+        .selfInteractive = node._selfInteractive,
+        .interactiveDescendantCount = node._interactiveDescendantCount,
+        .eventTag = node._eventTag,
+    };
+}
+
+void expectInteractionStatePreserved(
+    const YogaNode& node,
+    const InteractionStateSnapshot& state,
+    int parentInteractiveDescendantCount,
+    const YogaNode* parent,
+    const char* message)
+{
+    expect(node._pointerEvents == state.pointerEvents, (std::string(message) + " preserves pointerEvents").c_str());
+    expectNear(node._hitSlop.top, state.hitSlop.top, (std::string(message) + " preserves hitSlop top").c_str());
+    expectNear(node._hitSlop.right, state.hitSlop.right, (std::string(message) + " preserves hitSlop right").c_str());
+    expectNear(node._hitSlop.bottom, state.hitSlop.bottom, (std::string(message) + " preserves hitSlop bottom").c_str());
+    expectNear(node._hitSlop.left, state.hitSlop.left, (std::string(message) + " preserves hitSlop left").c_str());
+    expect(node._preciseHit == state.preciseHit, (std::string(message) + " preserves preciseHit").c_str());
+    expect(node._selfInteractive == state.selfInteractive, (std::string(message) + " preserves selfInteractive").c_str());
+    expect(node._interactiveDescendantCount == state.interactiveDescendantCount, (std::string(message) + " preserves interactive count").c_str());
+    expectNear(node._eventTag, state.eventTag, (std::string(message) + " preserves eventTag").c_str());
+    if (parent != nullptr) {
+        expect(
+            parent->_interactiveDescendantCount == parentInteractiveDescendantCount,
+            (std::string(message) + " preserves parent interactive count").c_str());
     }
 }
 
@@ -606,6 +651,27 @@ double callHitTest(
     return result.asNumber();
 }
 
+template <typename ConfigureHitSlop>
+void expectInvalidHitSlopPreservesState(
+    YogaNode& node,
+    jsi::Runtime& runtime,
+    const YogaNode* parent,
+    ConfigureHitSlop&& configureHitSlop,
+    const char* message)
+{
+    const auto state = captureInteractionState(node);
+    const auto parentInteractiveDescendantCount = parent == nullptr ? 0 : parent->_interactiveDescendantCount;
+    auto config = makeConfig(runtime, 99.0, "none", false);
+    configureHitSlop(config);
+    expectThrows(
+        [&]() {
+            callSetInteraction(node, runtime, config);
+        },
+        "finite native float",
+        message);
+    expectInteractionStatePreserved(node, state, parentInteractiveDescendantCount, parent, message);
+}
+
 } // namespace
 
 int main()
@@ -665,6 +731,131 @@ int main()
     expect(node->_interactiveDescendantCount == 1, "eventTag update must not double-count interactivity");
     expectNear(callHitTest(*node, *runtime, -3.0, -6.0), 12.0, "valid hitTest inside object hitSlop");
 
+    auto parent = std::make_shared<YogaNode>();
+    parent->insertChild(node, std::nullopt);
+    expect(parent->_interactiveDescendantCount == 1, "parent observes interactive child before invalid hitSlop updates");
+
+    std::cerr << "probe: reject invalid hitSlop without mutating interaction state" << std::endl;
+    const auto nan = std::numeric_limits<double>::quiet_NaN();
+    const auto infinity = std::numeric_limits<double>::infinity();
+    const auto nativeFloatOverflow = std::numeric_limits<double>::max();
+    const auto combinedOverflow = 2.0e38;
+
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            config.setProperty(*runtime, "hitSlop", nan);
+        },
+        "scalar NaN hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            config.setProperty(*runtime, "hitSlop", infinity);
+        },
+        "scalar Infinity hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            config.setProperty(*runtime, "hitSlop", -infinity);
+        },
+        "scalar -Infinity hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            config.setProperty(*runtime, "hitSlop", nativeFloatOverflow);
+        },
+        "scalar native-float overflow hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            jsi::Object hitSlop(*runtime);
+            hitSlop.setProperty(*runtime, "left", nan);
+            config.setProperty(*runtime, "hitSlop", hitSlop);
+        },
+        "object left NaN hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            jsi::Object hitSlop(*runtime);
+            hitSlop.setProperty(*runtime, "right", infinity);
+            config.setProperty(*runtime, "hitSlop", hitSlop);
+        },
+        "object right Infinity hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            jsi::Object hitSlop(*runtime);
+            hitSlop.setProperty(*runtime, "top", -infinity);
+            config.setProperty(*runtime, "hitSlop", hitSlop);
+        },
+        "object top -Infinity hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            jsi::Object hitSlop(*runtime);
+            hitSlop.setProperty(*runtime, "bottom", nativeFloatOverflow);
+            config.setProperty(*runtime, "hitSlop", hitSlop);
+        },
+        "object bottom native-float overflow hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            jsi::Object hitSlop(*runtime);
+            hitSlop.setProperty(*runtime, "horizontal", infinity);
+            config.setProperty(*runtime, "hitSlop", hitSlop);
+        },
+        "object horizontal Infinity hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            jsi::Object hitSlop(*runtime);
+            hitSlop.setProperty(*runtime, "vertical", -infinity);
+            config.setProperty(*runtime, "hitSlop", hitSlop);
+        },
+        "object vertical -Infinity hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            jsi::Object hitSlop(*runtime);
+            hitSlop.setProperty(*runtime, "left", combinedOverflow);
+            hitSlop.setProperty(*runtime, "horizontal", combinedOverflow);
+            config.setProperty(*runtime, "hitSlop", hitSlop);
+        },
+        "object horizontal combined overflow hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            jsi::Object hitSlop(*runtime);
+            hitSlop.setProperty(*runtime, "top", -combinedOverflow);
+            hitSlop.setProperty(*runtime, "vertical", -combinedOverflow);
+            config.setProperty(*runtime, "hitSlop", hitSlop);
+        },
+        "object vertical combined overflow hitSlop must preserve interaction state");
+
     std::cerr << "probe: exercise pointerEvents none and reset" << std::endl;
     auto noneConfig = makeConfig(*runtime, 13.0, "none", false);
     noneConfig.setProperty(*runtime, "hitSlop", 0.0);
@@ -677,6 +868,7 @@ int main()
     callSetInteraction(*node, *runtime, resetConfig);
     expect(!node->_selfInteractive, "eventTag zero clears self interactive state");
     expect(node->_interactiveDescendantCount == 0, "eventTag zero decrements interactive count");
+    expect(parent->_interactiveDescendantCount == 0, "eventTag zero decrements parent interactive count");
 
     std::cerr << "probe: exercise invalid raw inputs" << std::endl;
     expectThrows(
