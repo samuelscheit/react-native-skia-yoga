@@ -184,9 +184,10 @@ try {
 	console.log("- The executable used fresh materialized YogaNode objects to invoke generated JS-facing setCommand(line), setCommand(points), setCommand(path), setCommand(text), setCommand(paragraph), setCommand(circle), setCommand(rrect), setCommand(blurMaskFilter), setCommand(rect), setCommand(oval), and setCommand(image) wrappers, preserving the native no-command-kind-change invariant.")
 	console.log("- The executable asserted generated materialized setCommand(...) rejects non-finite line.from.x/y, line.to.x/y, and indexed points.points[] x/y payloads with NaN, Infinity, and -Infinity before mutating the existing native LineCmd/PointsCmd state.")
 	console.log("- The executable asserted generated materialized setCommand(...) rejects non-finite static AnimatedDouble payloads for rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, path.trimEnd, and circle.radius before mutating the existing same-type native command state.")
-	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized CSS-string backgroundColor delivery plus invalid-string rejection without previous _style.backgroundColor/_paint mutation, generated materialized selected finite numeric paint/border/layout rejection without previous _style/_paint/Yoga/clip/layer/matrix/computed-layout mutation, generated materialized radius finite rejection without previous _style radius/_clipToBoundsRadii/_paint/Yoga/clip/layer/matrix/computed-layout mutation, generated materialized matrix-array/SkMatrix/transform-leaf finite rejection without previous _style/_matrix/_paint/Yoga/clip/radius/layer/computed-layout mutation, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized global borderRadius delivery into _style.borderRadius, _clipsToBounds, and all four _clipToBoundsRadii slots without per-corner or explicit clip state, generated materialized overflow hidden/scroll delivery into _style.overflow, Yoga overflow state, and rectangular _clipsToBounds without radius or explicit clip state plus bounded renderToContext raster pixels, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect plus bounded renderToContext raster pixels, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate plus bounded rect/rrect/path renderToContext raster pixels, generated materialized layout style delivery into native _style optionals and selected Yoga style getters for flex, gap, padding, margin, position/inset, width stretch, alignContent, alignSelf, flexWrap, direction, display, boxSizing, min/max constraints, aspectRatio, edge-specific start/end/top/bottom, percentage values, and auto values, sequential generated materialized setStyle initial/update/cleanup delivery into the same parent/child Yoga nodes with stale optionals and Yoga setters reset, exact Worker 199 sequential edge-alias alignment for start/end, marginLeft/marginRight, and inset, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
+	console.log("- The executable asserted generated materialized setCommand(path) rejects non-finite stroke.width, stroke.miter_limit, stroke.miterLimit alias fallback, and stroke.precision payloads before mutating the existing same-type native PathCmd stroke state.")
+	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload and path stroke numeric finite rejection from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized CSS-string backgroundColor delivery plus invalid-string rejection without previous _style.backgroundColor/_paint mutation, generated materialized selected finite numeric paint/border/layout rejection without previous _style/_paint/Yoga/clip/layer/matrix/computed-layout mutation, generated materialized radius finite rejection without previous _style radius/_clipToBoundsRadii/_paint/Yoga/clip/layer/matrix/computed-layout mutation, generated materialized matrix-array/SkMatrix/transform-leaf finite rejection without previous _style/_matrix/_paint/Yoga/clip/radius/layer/computed-layout mutation, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized global borderRadius delivery into _style.borderRadius, _clipsToBounds, and all four _clipToBoundsRadii slots without per-corner or explicit clip state, generated materialized overflow hidden/scroll delivery into _style.overflow, Yoga overflow state, and rectangular _clipsToBounds without radius or explicit clip state plus bounded renderToContext raster pixels, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect plus bounded renderToContext raster pixels, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate plus bounded rect/rrect/path renderToContext raster pixels, generated materialized layout style delivery into native _style optionals and selected Yoga style getters for flex, gap, padding, margin, position/inset, width stretch, alignContent, alignSelf, flexWrap, direction, display, boxSizing, min/max constraints, aspectRatio, edge-specific start/end/top/bottom, percentage values, and auto values, sequential generated materialized setStyle initial/update/cleanup delivery into the same parent/child Yoga nodes with stale optionals and Yoga setters reset, exact Worker 199 sequential edge-alias alignment for start/end, marginLeft/marginRight, and inset, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
 	console.log("- For CircleCmd, RRectCmd, and BlurMaskFilterCmd, selected no-pixel draw calls are used only to expose render-time native state/mask-filter side effects after generated wrapper delivery; no command-rendering or render-fidelity claim is made.")
-	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setCommand command-point finite rejection through generated JS-facing wrapper conversion before same-type LineCmd/PointsCmd state mutation, generated materialized static AnimatedDouble command finite rejection through generated JS-facing wrapper conversion before same-type CircleCmd/RRectCmd/BlurMaskFilterCmd/PathCmd state mutation, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(CSS-string backgroundColor) delivery and invalid CSS-string rejection preserving previous _style.backgroundColor/_paint state, generated materialized selected finite numeric paint/border rejection for border-width family, strokeMiter, and opacity preserving previous _style/_paint/Yoga/clip/layer/matrix state, generated materialized selected finite numeric layout rejection for the Worker 212 scalar and variant numeric inventory preserving previous selected _style/Yoga/computed-layout state, generated materialized borderRadius/per-corner scalar/per-corner SkPoint x/y finite rejection preserving previous selected _style radius fields, _clipToBoundsRadii, _paint, Yoga, clip, layer, matrix, and computed-layout state, generated materialized matrix-array/SkMatrix/transform-leaf finite rejection preserving previous selected _style/_matrix/_paint/Yoga/clip/radius/layer/computed-layout state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/overflow hidden/scroll/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized setStyle flexbox/layout/edge/constraint delivery into selected native _style optionals, selected stable Yoga style getters, selected sequential same-node layout setter replacement/reset behavior including exact Worker 199 edge aliases, and selected computed native/generated layout getter values, generated materialized overflow hidden/scroll delivery followed by bounded host-raster renderToContext pixel assertions for rectangular parent bounds clipping, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect/rrect/path clips, and selected generated/raw YogaNode method/getter execution only; this does not prove exact Yoga conformance beyond asserted values, actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact overflow or clip render fidelity beyond asserted pixels, exact hit-test behavior beyond asserted clipping predicates, exhaustive numeric style validation beyond covered inventories, or every command rendering path.")
+	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setCommand command-point finite rejection through generated JS-facing wrapper conversion before same-type LineCmd/PointsCmd state mutation, generated materialized static AnimatedDouble command finite rejection through generated JS-facing wrapper conversion before same-type CircleCmd/RRectCmd/BlurMaskFilterCmd/PathCmd state mutation, generated materialized path stroke numeric finite rejection through generated JS-facing wrapper conversion before same-type PathCmd stroke state mutation, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(CSS-string backgroundColor) delivery and invalid CSS-string rejection preserving previous _style.backgroundColor/_paint state, generated materialized selected finite numeric paint/border rejection for border-width family, strokeMiter, and opacity preserving previous _style/_paint/Yoga/clip/layer/matrix state, generated materialized selected finite numeric layout rejection for the Worker 212 scalar and variant numeric inventory preserving previous selected _style/Yoga/computed-layout state, generated materialized borderRadius/per-corner scalar/per-corner SkPoint x/y finite rejection preserving previous selected _style radius fields, _clipToBoundsRadii, _paint, Yoga, clip, layer, matrix, and computed-layout state, generated materialized matrix-array/SkMatrix/transform-leaf finite rejection preserving previous selected _style/_matrix/_paint/Yoga/clip/radius/layer/computed-layout state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/overflow hidden/scroll/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized setStyle flexbox/layout/edge/constraint delivery into selected native _style optionals, selected stable Yoga style getters, selected sequential same-node layout setter replacement/reset behavior including exact Worker 199 edge aliases, and selected computed native/generated layout getter values, generated materialized overflow hidden/scroll delivery followed by bounded host-raster renderToContext pixel assertions for rectangular parent bounds clipping, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect/rrect/path clips, and selected generated/raw YogaNode method/getter execution only; this does not prove exact Yoga conformance beyond asserted values, actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact overflow or clip render fidelity beyond asserted pixels, exact hit-test behavior beyond asserted clipping predicates, exhaustive numeric style validation beyond covered inventories, or every command rendering path.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -214,6 +215,7 @@ function assertCurrentGapAndRisk() {
 	const yogaNodeCpp = readProjectFile("cpp/YogaNode.cpp")
 	const yogaNodeConverter = readProjectFile("cpp/JSIConverter+YogaNode.hpp")
 	const nodeCommandConverter = readProjectFile("cpp/JSIConverter+NodeCommand.hpp")
+	const strokeOptsConverter = readProjectFile("cpp/JSIConverter+StrokeOpts.hpp")
 	const materializationVerifier = readProjectFile(
 		"scripts/verify-yoganode-nitro-materialization.mjs",
 	)
@@ -241,6 +243,9 @@ function assertCurrentGapAndRisk() {
 	)
 	const threadUtils = readProjectFile(
 		"node_modules/react-native-nitro-modules/ios/platform/ThreadUtils.cpp",
+	)
+	const rnSkiaStrokeOpts = readProjectFile(
+		rnSkiaTypesPath("Path", "Path.ts"),
 	)
 
 	assert(
@@ -495,6 +500,46 @@ function assertCurrentGapAndRisk() {
 			materializationVerifier.includes("generated path.trimStart NaN") &&
 			materializationVerifier.includes("generated path.trimEnd Infinity"),
 		"Generated materialized setCommand verifier must retain non-finite static AnimatedDouble rejection coverage.",
+	)
+	assert(
+		JSON.stringify(extractInterfaceFields(commandSpec, "PathCommandPayload")) ===
+			JSON.stringify(["fillType", "path", "stroke", "trimEnd", "trimStart"]) &&
+			commandSpec.includes("stroke?: StrokeOptsNative") &&
+			rnSkiaStrokeOpts.includes("width?: number") &&
+			rnSkiaStrokeOpts.includes("miter_limit?: number") &&
+			rnSkiaStrokeOpts.includes("precision?: number"),
+		"Public path stroke numeric field inventory must retain width, miter_limit, and precision.",
+	)
+	assert(
+		strokeOptsConverter.includes("Invalid numeric stroke value for ") &&
+			strokeOptsConverter.includes("std::isfinite(number)") &&
+			strokeOptsConverter.includes("std::isfinite(narrowed)") &&
+			strokeOptsConverter.includes('"stroke.width"') &&
+			strokeOptsConverter.includes('"stroke.miter_limit"') &&
+			strokeOptsConverter.includes('"stroke.miterLimit"') &&
+			strokeOptsConverter.includes('"stroke.precision"'),
+		"Direct StrokeOpts converter must retain finite-number validation for public numeric fields and miterLimit alias fallback.",
+	)
+	assert(
+		nodeCommandConverter.includes("getOptionalFiniteStrokeProperty") &&
+			nodeCommandConverter.includes("std::isfinite(*parsed)") &&
+			nodeCommandConverter.includes('"path.stroke.width"') &&
+			nodeCommandConverter.includes('"path.stroke.miter_limit"') &&
+			nodeCommandConverter.includes('"path.stroke.miterLimit"') &&
+			nodeCommandConverter.includes('"path.stroke.precision"'),
+		"NodeCommand path stroke parser must retain finite-number validation for public numeric fields and miterLimit alias fallback.",
+	)
+	assert(
+		commandVerifier.includes("assertPathStrokeNumericFiniteRejections(*runtime);") &&
+			commandVerifier.includes("assertStrokeOptsConverterFiniteRejections(*runtime);") &&
+			materializationVerifier.includes(
+				"assertGeneratedPathStrokeNumericFiniteRejections(*runtime);",
+			) &&
+			materializationVerifier.includes("generated path.stroke.width NaN") &&
+			materializationVerifier.includes("generated path.stroke.miter_limit Infinity") &&
+			materializationVerifier.includes("generated path.stroke.miterLimit -Infinity") &&
+			materializationVerifier.includes("generated path.stroke.precision NaN"),
+		"Native and generated materialized verifiers must retain path stroke numeric finite rejection coverage.",
 	)
 	assert(
 		yogaNodeCpp.includes("_children[i]->toObject(runtime)") &&
@@ -2043,6 +2088,40 @@ jsi::Object makePublicPathStrokeCommand(jsi::Runtime& runtime)
     stroke.setProperty(runtime, "width", 4.0);
     stroke.setProperty(runtime, "miter_limit", 7.0);
     stroke.setProperty(runtime, "precision", 1.25);
+    stroke.setProperty(
+        runtime,
+        "join",
+        static_cast<double>(static_cast<int>(SkPaint::Join::kMiter_Join)));
+    stroke.setProperty(
+        runtime,
+        "cap",
+        static_cast<double>(static_cast<int>(SkPaint::Cap::kSquare_Cap)));
+
+    jsi::Object command(runtime);
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
+    data.setProperty(runtime, "stroke", stroke);
+    data.setProperty(runtime, "trimStart", 0.0);
+    data.setProperty(runtime, "trimEnd", 1.0);
+    command.setProperty(runtime, "type", "path");
+    command.setProperty(runtime, "data", data);
+    return command;
+}
+
+jsi::Object makePathStrokeCommand(
+    jsi::Runtime& runtime,
+    double width,
+    const char* miterKey,
+    double miterValue,
+    double precision)
+{
+    SkPath path;
+    path.addRect(SkRect::MakeXYWH(0.0f, 0.0f, 10.0f, 6.0f));
+
+    jsi::Object stroke(runtime);
+    stroke.setProperty(runtime, "width", width);
+    stroke.setProperty(runtime, miterKey, miterValue);
+    stroke.setProperty(runtime, "precision", precision);
     stroke.setProperty(
         runtime,
         "join",
@@ -4485,6 +4564,39 @@ void expectGeneratedPathTrimCommandState(
     expectNear(pathCmd->props.end, expectedTrimEnd, std::string(label) + " trimEnd");
 }
 
+std::string invalidStrokeCommandMessage(const char* propertyPath)
+{
+    return std::string("Invalid numeric stroke value for ") + propertyPath + ": expected a finite number.";
+}
+
+void expectGeneratedPathStrokeCommandState(
+    const MaterializedYogaNode& materialized,
+    double expectedWidth,
+    double expectedMiterLimit,
+    double expectedPrecision,
+    const char* label)
+{
+    expect(materialized.node->_commandKind == YogaNodeCommandKind::PATH, std::string(label) + " preserves PathCmd kind");
+    expect(materialized.node->_command != nullptr, std::string(label) + " preserves native command");
+    auto* pathCmd = dynamic_cast<PathCmd*>(materialized.node->_command.get());
+    expect(pathCmd != nullptr, std::string(label) + " preserves PathCmd type");
+    expect(!pathCmd->isDynamic(), std::string(label) + " preserves static PathCmd behavior");
+    expect(pathCmd->props.stroke.has_value(), std::string(label) + " preserves stroke optional");
+    const auto& stroke = pathCmd->props.stroke.value();
+    const auto widthLabel = std::string(label) + " stroke.width";
+    const auto miterLabel = std::string(label) + " stroke.miter_limit";
+    const auto precisionLabel = std::string(label) + " stroke.precision";
+    expectOptionalFloatNear(stroke.width, expectedWidth, widthLabel.c_str());
+    expectOptionalFloatNear(stroke.miter_limit, expectedMiterLimit, miterLabel.c_str());
+    expectOptionalFloatNear(stroke.precision, expectedPrecision, precisionLabel.c_str());
+    expect(
+        stroke.join.has_value() && stroke.join.value() == SkPaint::Join::kMiter_Join,
+        std::string(label) + " stroke.join");
+    expect(
+        stroke.cap.has_value() && stroke.cap.value() == SkPaint::Cap::kSquare_Cap,
+        std::string(label) + " stroke.cap");
+}
+
 void assertGeneratedStaticAnimatedDoubleCommandFiniteRejections(jsi::Runtime& runtime)
 {
     const double nan = std::numeric_limits<double>::quiet_NaN();
@@ -4573,6 +4685,64 @@ void assertGeneratedStaticAnimatedDoubleCommandFiniteRejections(jsi::Runtime& ru
     expect(pathMaterialized.node->_command.get() == initialPathCommand, "generated path.trimEnd Infinity preserves command pointer");
     expectGeneratedPathTrimCommandState(pathMaterialized, 0.25, 0.75, "generated path.trimEnd Infinity");
     disposeMaterializedObject(runtime, pathMaterialized.object);
+}
+
+void assertGeneratedPathStrokeNumericFiniteRejections(jsi::Runtime& runtime)
+{
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    const double positiveInfValue = std::numeric_limits<double>::infinity();
+    const double negativeInfValue = -std::numeric_limits<double>::infinity();
+
+    auto materialized = materializeYogaNode(runtime);
+    callGeneratedSetCommand(
+        runtime,
+        materialized,
+        makePublicPathStrokeCommand(runtime),
+        "generated path stroke finite rejection baseline setCommand must return undefined");
+    const auto* initialCommand = materialized.node->_command.get();
+    expectGeneratedPathStrokeCommandState(materialized, 4.0, 7.0, 1.25, "generated path stroke finite rejection baseline");
+
+    struct InvalidCase {
+        const char* label;
+        double width;
+        const char* miterKey;
+        double miterValue;
+        double precision;
+        const char* propertyPath;
+    };
+
+    const std::array<InvalidCase, 12> invalidCases {{
+        { "generated path.stroke.width NaN", nan, "miter_limit", 7.0, 1.25, "path.stroke.width" },
+        { "generated path.stroke.width Infinity", positiveInfValue, "miter_limit", 7.0, 1.25, "path.stroke.width" },
+        { "generated path.stroke.width -Infinity", negativeInfValue, "miter_limit", 7.0, 1.25, "path.stroke.width" },
+        { "generated path.stroke.miter_limit NaN", 4.0, "miter_limit", nan, 1.25, "path.stroke.miter_limit" },
+        { "generated path.stroke.miter_limit Infinity", 4.0, "miter_limit", positiveInfValue, 1.25, "path.stroke.miter_limit" },
+        { "generated path.stroke.miter_limit -Infinity", 4.0, "miter_limit", negativeInfValue, 1.25, "path.stroke.miter_limit" },
+        { "generated path.stroke.miterLimit NaN", 4.0, "miterLimit", nan, 1.25, "path.stroke.miterLimit" },
+        { "generated path.stroke.miterLimit Infinity", 4.0, "miterLimit", positiveInfValue, 1.25, "path.stroke.miterLimit" },
+        { "generated path.stroke.miterLimit -Infinity", 4.0, "miterLimit", negativeInfValue, 1.25, "path.stroke.miterLimit" },
+        { "generated path.stroke.precision NaN", 4.0, "miter_limit", 7.0, nan, "path.stroke.precision" },
+        { "generated path.stroke.precision Infinity", 4.0, "miter_limit", 7.0, positiveInfValue, "path.stroke.precision" },
+        { "generated path.stroke.precision -Infinity", 4.0, "miter_limit", 7.0, negativeInfValue, "path.stroke.precision" },
+    }};
+
+    for (const auto& invalidCase : invalidCases) {
+        expectGeneratedSetCommandRejects(
+            runtime,
+            materialized,
+            makePathStrokeCommand(
+                runtime,
+                invalidCase.width,
+                invalidCase.miterKey,
+                invalidCase.miterValue,
+                invalidCase.precision),
+            invalidStrokeCommandMessage(invalidCase.propertyPath),
+            invalidCase.label);
+        expect(materialized.node->_command.get() == initialCommand, std::string(invalidCase.label) + " preserves command pointer");
+        expectGeneratedPathStrokeCommandState(materialized, 4.0, 7.0, 1.25, invalidCase.label);
+    }
+
+    disposeMaterializedObject(runtime, materialized.object);
 }
 
 void assertGeneratedPublicPathStrokeSetCommand(jsi::Runtime& runtime)
@@ -6334,6 +6504,7 @@ int main()
     assertGeneratedPointsSetCommand(*runtime);
     assertGeneratedCommandPointFiniteRejections(*runtime);
     assertGeneratedStaticAnimatedDoubleCommandFiniteRejections(*runtime);
+    assertGeneratedPathStrokeNumericFiniteRejections(*runtime);
     assertGeneratedPublicPathStrokeSetCommand(*runtime);
     assertGeneratedTextSetCommand(*runtime);
     assertGeneratedParagraphSetCommand(*runtime);
@@ -6359,6 +6530,18 @@ int main()
 
 function readProjectFile(relativePath) {
 	return readFileSync(projectPathChecked(relativePath), "utf8")
+}
+
+function rnSkiaTypesPath(...segments) {
+	return path.join(
+		"node_modules",
+		"@shopify",
+		"react-native-skia",
+		"src",
+		"skia",
+		"types",
+		...segments,
+	)
 }
 
 function projectPath(relativePath) {

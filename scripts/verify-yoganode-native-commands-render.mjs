@@ -163,6 +163,7 @@ try {
 	assertInstalledStyleSerializerFieldInventory()
 	assertCommandPointFiniteValidationInventory()
 	assertCommandAnimatedDoubleFiniteValidationInventory()
+	assertPathStrokeNumericFiniteValidationInventory()
 	createNitroModulesShim(tmpDir)
 
 	const probePath = path.join(tmpDir, "yoganode-native-commands-render.cpp")
@@ -276,15 +277,16 @@ try {
 	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, simple text.textStyle fontSize/color fields, inventory-backed paragraphStyle fields including nested textStyle output, distinct paragraph/text-style heightMultiplier preservation, fontFeatures and strutStyle, line from/to points, and points arrays.")
 	console.log("- The executable asserted non-finite command point rejection for line.from.x/y, line.to.x/y, and indexed points.points[] x/y payloads with NaN, Infinity, and -Infinity, preserving the previously installed native LineCmd/PointsCmd state.")
 	console.log("- The executable asserted non-finite static AnimatedDouble command rejection for rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, path.trimEnd, and circle.radius payloads before same-type setCommand mutation, while retaining dynamic Worklets-backed AnimatedDouble command behavior.")
+	console.log("- The executable asserted non-finite path stroke numeric rejection for stroke.width, stroke.miter_limit, stroke.miterLimit alias fallback, and stroke.precision before same-type PathCmd state mutation, while preserving direct StrokeOpts converter behavior.")
 	console.log(`- The verifier checked the installed RN Skia public style field inventory before native compilation: ${formatStyleInventorySummary()}`)
 	console.log("- The executable asserted inventory-backed value-bearing toJSI/fromJSI serialization for installed public SkSamplingOptions filter/mipmap and cubic B/C, installed public SkTextStyle supported fields including fontSize/fontFamilies/fontFeatures/decoration/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, normalized text color fields color/backgroundColor/foregroundColor/decorationColor, installed public SkParagraphStyle scalar/textStyle/strutStyle fields, installed public SkStrutStyle fields, dual flattened/nested default text style fields including nested textStyle heightMultiplier output, flattened fontSize/color precedence over nested values, and explicit unsupported fontVariations rejection.")
 	console.log("- The executable asserted generated NodeStyle transport and host-native SkPaint/Yoga state for canonical style.antiAlias, legacy style.antiaAlias fallback, canonical precedence when both keys are present, overflow hidden/scroll public strings, generated style.layer JsiSkPaint host-object transport, YogaNode::_layerPaint storage/reset behavior, ordinary _paint separation, and explicit style paint fields overriding SkPaint-backed backgroundColor base paint values.")
 	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, composed public transform-array rendering, style.layer saveLayer alpha modulation of a child subtree, plain overflow hidden/scroll rectangular clip-to-bounds raster clipping of oversized children, style corner-radius and global style.borderRadius clip-to-bounds raster clipping of full-size children, explicit style.clip rect/rrect/path raster clipping of full-size children, invertClip rect/rrect/path raster clipping, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
 	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) plus flattened and nested ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection including nested paragraphStyle.textStyle.color, unsupported paragraph fontVariations rejection, and text.textStyle rich-key rejection in JSIConverter<NodeCommand>::fromJSI(...).")
-	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
+	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; finite rejection for direct width, miter_limit, miterLimit alias fallback, and precision payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, overflow hidden/scroll, and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias/Yoga overflow/_clipsToBounds state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded plain overflow hidden/scroll rectangular raster clipping through YogaNode::renderToContext() using a GroupCmd parent and oversized RectCmd child, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, bounded explicit style.clip rect/rrect/path and invertClip rect/rrect/path raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, command point finite rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate LineCmd/PointsCmd state, static numeric AnimatedDouble command finite rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate CircleCmd/RRectCmd/BlurMaskFilterCmd/PathCmd state, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact plain overflow clipping beyond the asserted host-raster pixels, exact style corner-radius, global style.borderRadius, or explicit style.clip render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, overflow hidden/scroll, and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias/Yoga overflow/_clipsToBounds state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded plain overflow hidden/scroll rectangular raster clipping through YogaNode::renderToContext() using a GroupCmd parent and oversized RectCmd child, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, bounded explicit style.clip rect/rrect/path and invertClip rect/rrect/path raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, command point finite rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate LineCmd/PointsCmd state, static numeric AnimatedDouble command finite rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate CircleCmd/RRectCmd/BlurMaskFilterCmd/PathCmd state, path stroke numeric finite rejection through direct JSIConverter<StrokeOpts>::fromJSI and JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate PathCmd stroke state, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact plain overflow clipping beyond the asserted host-raster pixels, exact style corner-radius, global style.borderRadius, or explicit style.clip render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -651,6 +653,94 @@ function assertCommandAnimatedDoubleFiniteValidationInventory() {
 			materializationVerifier.includes("generated path.trimStart NaN") &&
 			materializationVerifier.includes("generated path.trimEnd Infinity"),
 		"Generated materialized setCommand verifier must retain non-finite static AnimatedDouble rejection coverage.",
+	)
+}
+
+function assertPathStrokeNumericFiniteValidationInventory() {
+	const commandSpecPath = "src/specs/commands.ts"
+	const commandSpec = readProjectFile(commandSpecPath)
+	const rnSkiaStrokeOpts = readProjectFile(
+		rnSkiaTypesPath("Path", "Path.ts"),
+	)
+	const reconciler = readProjectFile("src/Reconciler.ts")
+	const strokeOptsConverter = readProjectFile("cpp/JSIConverter+StrokeOpts.hpp")
+	const nodeCommandConverter = readProjectFile("cpp/JSIConverter+NodeCommand.hpp")
+	const nativeVerifier = readProjectFile(
+		"scripts/verify-yoganode-native-commands-render.mjs",
+	)
+	const materializationVerifier = readProjectFile(
+		"scripts/verify-yoganode-nitro-materialization.mjs",
+	)
+
+	assertSource(
+		JSON.stringify(extractExportedInterfaceFields(commandSpecPath, "PathCommandPayload")) ===
+			JSON.stringify(["fillType", "path", "stroke", "trimEnd", "trimStart"]) &&
+			commandSpec.includes("stroke?: StrokeOptsNative"),
+		"Public PathCommandPayload must keep stroke in the path command inventory.",
+	)
+	assertSource(
+		rnSkiaStrokeOpts.includes("width?: number") &&
+			rnSkiaStrokeOpts.includes("miter_limit?: number") &&
+			rnSkiaStrokeOpts.includes("precision?: number") &&
+			rnSkiaStrokeOpts.includes("join?: StrokeJoin") &&
+			rnSkiaStrokeOpts.includes("cap?: StrokeCap"),
+		"Installed RN Skia StrokeOpts inventory must retain width, miter_limit, precision, join, and cap fields.",
+	)
+	assertSource(
+		reconciler.includes('path: ["fillType", "path", "stroke", "trimEnd", "trimStart"],') &&
+			reconciler.includes("stroke: props.stroke as any"),
+		"Reconciler path command inventory must keep forwarding the public stroke payload.",
+	)
+
+	const directWidthIndex = strokeOptsConverter.indexOf('"stroke.width"')
+	const directMiterIndex = strokeOptsConverter.indexOf('"stroke.miter_limit"')
+	const directAliasIndex = strokeOptsConverter.indexOf('"stroke.miterLimit"')
+	const directPrecisionIndex = strokeOptsConverter.indexOf('"stroke.precision"')
+	assertSource(
+		strokeOptsConverter.includes("Invalid numeric stroke value for ") &&
+			strokeOptsConverter.includes("std::isfinite(number)") &&
+			strokeOptsConverter.includes("std::isfinite(narrowed)") &&
+			directWidthIndex >= 0 &&
+			directMiterIndex > directWidthIndex &&
+			directAliasIndex > directMiterIndex &&
+			directPrecisionIndex > directAliasIndex,
+		"Direct StrokeOpts converter must finite-check width, miter_limit, miterLimit alias fallback, and precision with stable labels.",
+	)
+
+	const parseStrokeIndex = nodeCommandConverter.indexOf("parseStrokeOpts(")
+	const pathWidthIndex = nodeCommandConverter.indexOf('"path.stroke.width"', parseStrokeIndex)
+	const pathMiterIndex = nodeCommandConverter.indexOf('"path.stroke.miter_limit"', parseStrokeIndex)
+	const pathAliasIndex = nodeCommandConverter.indexOf('"path.stroke.miterLimit"', parseStrokeIndex)
+	const pathPrecisionIndex = nodeCommandConverter.indexOf('"path.stroke.precision"', parseStrokeIndex)
+	assertSource(
+		nodeCommandConverter.includes("getOptionalFiniteStrokeProperty") &&
+			nodeCommandConverter.includes("Invalid numeric stroke value for ") &&
+			nodeCommandConverter.includes("std::isfinite(*parsed)") &&
+			pathWidthIndex > parseStrokeIndex &&
+			pathMiterIndex > pathWidthIndex &&
+			pathAliasIndex > pathMiterIndex &&
+			pathPrecisionIndex > pathAliasIndex,
+		"Native NodeCommand path stroke parser must finite-check width, miter_limit, miterLimit alias fallback, and precision with stable path labels.",
+	)
+
+	assertSource(
+		nativeVerifier.includes("assertPathStrokeNumericFiniteRejections(*runtime);") &&
+			nativeVerifier.includes("path.stroke.width NaN") &&
+			nativeVerifier.includes("path.stroke.miter_limit Infinity") &&
+			nativeVerifier.includes("path.stroke.miterLimit -Infinity") &&
+			nativeVerifier.includes("path.stroke.precision NaN") &&
+			nativeVerifier.includes("assertStrokeOptsConverterFiniteRejections(*runtime);"),
+		"Native command/render verifier must retain path stroke numeric finite rejection and direct StrokeOpts finite rejection coverage.",
+	)
+	assertSource(
+		materializationVerifier.includes(
+			"assertGeneratedPathStrokeNumericFiniteRejections(*runtime);",
+		) &&
+			materializationVerifier.includes("generated path.stroke.width NaN") &&
+			materializationVerifier.includes("generated path.stroke.miter_limit Infinity") &&
+			materializationVerifier.includes("generated path.stroke.miterLimit -Infinity") &&
+			materializationVerifier.includes("generated path.stroke.precision NaN"),
+		"Generated materialized setCommand verifier must retain path stroke numeric finite rejection coverage.",
 	)
 }
 
@@ -2243,6 +2333,41 @@ NodeCommand pathCommand(jsi::Runtime& runtime)
 {
     auto command = pathTrimCommandObject(runtime, 0.0, 1.0);
     return convertCommand(runtime, std::move(command));
+}
+
+jsi::Object pathStrokeCommandObject(
+    jsi::Runtime& runtime,
+    double width,
+    const char* miterKey,
+    double miterValue,
+    double precision)
+{
+    SkPath path;
+    path.addRect(SkRect::MakeXYWH(0.0f, 0.0f, 10.0f, 6.0f));
+
+    jsi::Object stroke(runtime);
+    stroke.setProperty(runtime, "width", width);
+    stroke.setProperty(runtime, miterKey, miterValue);
+    stroke.setProperty(runtime, "precision", precision);
+    stroke.setProperty(
+        runtime,
+        "join",
+        static_cast<double>(static_cast<int>(SkPaint::Join::kMiter_Join)));
+    stroke.setProperty(
+        runtime,
+        "cap",
+        static_cast<double>(static_cast<int>(SkPaint::Cap::kSquare_Cap)));
+
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
+    data.setProperty(runtime, "stroke", std::move(stroke));
+    data.setProperty(runtime, "trimStart", 0.0);
+    data.setProperty(runtime, "trimEnd", 1.0);
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "path");
+    command.setProperty(runtime, "data", std::move(data));
+    return command;
 }
 
 NodeCommand publicPathStrokeCommand(jsi::Runtime& runtime)
@@ -4482,6 +4607,36 @@ void expectPathTrimCommandState(
     expectNear(pathCmd->props.end, expectedTrimEnd, std::string(label) + " trimEnd");
 }
 
+std::string invalidStrokeCommandMessage(const char* propertyPath)
+{
+    return std::string("Invalid numeric stroke value for ") + propertyPath + ": expected a finite number.";
+}
+
+void expectPathStrokeCommandState(
+    const std::shared_ptr<YogaNode>& root,
+    double expectedWidth,
+    double expectedMiterLimit,
+    double expectedPrecision,
+    const char* label)
+{
+    expect(root->_commandKind == YogaNodeCommandKind::PATH, std::string(label) + " preserves PathCmd kind");
+    expect(root->_command != nullptr, std::string(label) + " preserves native command");
+    auto* pathCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::PathCmd*>(root->_command.get());
+    expect(pathCmd != nullptr, std::string(label) + " preserves PathCmd type");
+    expect(!pathCmd->isDynamic(), std::string(label) + " preserves static PathCmd behavior");
+    expect(pathCmd->props.stroke.has_value(), std::string(label) + " preserves stroke optional");
+    const auto& stroke = pathCmd->props.stroke.value();
+    expectOptionalFloatNear(stroke.width, expectedWidth, std::string(label) + " stroke.width");
+    expectOptionalFloatNear(stroke.miter_limit, expectedMiterLimit, std::string(label) + " stroke.miter_limit");
+    expectOptionalFloatNear(stroke.precision, expectedPrecision, std::string(label) + " stroke.precision");
+    expect(
+        stroke.join.has_value() && stroke.join.value() == SkPaint::Join::kMiter_Join,
+        std::string(label) + " stroke.join");
+    expect(
+        stroke.cap.has_value() && stroke.cap.value() == SkPaint::Cap::kSquare_Cap,
+        std::string(label) + " stroke.cap");
+}
+
 void assertStaticAnimatedDoubleCommandFiniteRejections(jsi::Runtime& runtime)
 {
     const double nan = std::numeric_limits<double>::quiet_NaN();
@@ -4560,6 +4715,59 @@ void assertStaticAnimatedDoubleCommandFiniteRejections(jsi::Runtime& runtime)
             "path.trimEnd Infinity");
         expect(root->_command.get() == initialCommand, "path.trimEnd Infinity preserves command pointer");
         expectPathTrimCommandState(root, 0.25, 0.75, "path.trimEnd Infinity");
+    }
+}
+
+void assertPathStrokeNumericFiniteRejections(jsi::Runtime& runtime)
+{
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    const double positiveInfValue = std::numeric_limits<double>::infinity();
+    const double negativeInfValue = -std::numeric_limits<double>::infinity();
+
+    auto root = makeYogaNode(
+        fixedStyle(20.0, 12.0, SK_ColorCYAN),
+        publicPathStrokeCommand(runtime));
+    const auto* initialCommand = root->_command.get();
+    expectPathStrokeCommandState(root, 4.0, 7.0, 1.25, "path stroke finite rejection baseline");
+
+    struct InvalidCase {
+        const char* label;
+        double width;
+        const char* miterKey;
+        double miterValue;
+        double precision;
+        const char* propertyPath;
+    };
+
+    const std::array<InvalidCase, 12> invalidCases {{
+        { "path.stroke.width NaN", nan, "miter_limit", 7.0, 1.25, "path.stroke.width" },
+        { "path.stroke.width Infinity", positiveInfValue, "miter_limit", 7.0, 1.25, "path.stroke.width" },
+        { "path.stroke.width -Infinity", negativeInfValue, "miter_limit", 7.0, 1.25, "path.stroke.width" },
+        { "path.stroke.miter_limit NaN", 4.0, "miter_limit", nan, 1.25, "path.stroke.miter_limit" },
+        { "path.stroke.miter_limit Infinity", 4.0, "miter_limit", positiveInfValue, 1.25, "path.stroke.miter_limit" },
+        { "path.stroke.miter_limit -Infinity", 4.0, "miter_limit", negativeInfValue, 1.25, "path.stroke.miter_limit" },
+        { "path.stroke.miterLimit NaN", 4.0, "miterLimit", nan, 1.25, "path.stroke.miterLimit" },
+        { "path.stroke.miterLimit Infinity", 4.0, "miterLimit", positiveInfValue, 1.25, "path.stroke.miterLimit" },
+        { "path.stroke.miterLimit -Infinity", 4.0, "miterLimit", negativeInfValue, 1.25, "path.stroke.miterLimit" },
+        { "path.stroke.precision NaN", 4.0, "miter_limit", 7.0, nan, "path.stroke.precision" },
+        { "path.stroke.precision Infinity", 4.0, "miter_limit", 7.0, positiveInfValue, "path.stroke.precision" },
+        { "path.stroke.precision -Infinity", 4.0, "miter_limit", 7.0, negativeInfValue, "path.stroke.precision" },
+    }};
+
+    for (const auto& invalidCase : invalidCases) {
+        expectConvertedSetCommandRejects(
+            runtime,
+            *root,
+            pathStrokeCommandObject(
+                runtime,
+                invalidCase.width,
+                invalidCase.miterKey,
+                invalidCase.miterValue,
+                invalidCase.precision),
+            invalidStrokeCommandMessage(invalidCase.propertyPath),
+            invalidCase.label);
+        expect(root->_command.get() == initialCommand, std::string(invalidCase.label) + " preserves command pointer");
+        expectPathStrokeCommandState(root, 4.0, 7.0, 1.25, invalidCase.label);
     }
 }
 
@@ -4998,6 +5206,105 @@ void assertStrokeOptsConverterDirectConsistency(jsi::Runtime& runtime)
     expectRejected(numberValue, "number");
     expectRejected(boolValue, "boolean");
     expectRejected(stringValue, "string");
+}
+
+void assertStrokeOptsConverterFiniteRejections(jsi::Runtime& runtime)
+{
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    const double positiveInfValue = std::numeric_limits<double>::infinity();
+    const double negativeInfValue = -std::numeric_limits<double>::infinity();
+
+    const auto expectRejected = [&](
+        const std::function<void(jsi::Object&)>& configure,
+        const std::string& expectedMessage,
+        const char* label) {
+        jsi::Object stroke(runtime);
+        configure(stroke);
+        jsi::Value strokeValue(runtime, stroke);
+        expect(
+            margelo::nitro::JSIConverter<RNSkia::StrokeOpts>::canConvert(runtime, strokeValue),
+            std::string("StrokeOpts canConvert accepts object before finite rejection for ") + label);
+        expectJsiThrows(
+            [&]() {
+                (void)margelo::nitro::JSIConverter<RNSkia::StrokeOpts>::fromJSI(runtime, strokeValue);
+            },
+            expectedMessage,
+            std::string("StrokeOpts fromJSI rejects ") + label);
+    };
+
+    expectRejected(
+        [&](jsi::Object& stroke) {
+            stroke.setProperty(runtime, "width", nan);
+        },
+        invalidStrokeCommandMessage("stroke.width"),
+        "stroke.width NaN");
+    expectRejected(
+        [&](jsi::Object& stroke) {
+            stroke.setProperty(runtime, "width", positiveInfValue);
+        },
+        invalidStrokeCommandMessage("stroke.width"),
+        "stroke.width Infinity");
+    expectRejected(
+        [&](jsi::Object& stroke) {
+            stroke.setProperty(runtime, "width", negativeInfValue);
+        },
+        invalidStrokeCommandMessage("stroke.width"),
+        "stroke.width -Infinity");
+    expectRejected(
+        [&](jsi::Object& stroke) {
+            stroke.setProperty(runtime, "miter_limit", nan);
+        },
+        invalidStrokeCommandMessage("stroke.miter_limit"),
+        "stroke.miter_limit NaN");
+    expectRejected(
+        [&](jsi::Object& stroke) {
+            stroke.setProperty(runtime, "miterLimit", 2.0);
+            stroke.setProperty(runtime, "miter_limit", positiveInfValue);
+        },
+        invalidStrokeCommandMessage("stroke.miter_limit"),
+        "stroke.miter_limit Infinity with alias present");
+    expectRejected(
+        [&](jsi::Object& stroke) {
+            stroke.setProperty(runtime, "miter_limit", negativeInfValue);
+        },
+        invalidStrokeCommandMessage("stroke.miter_limit"),
+        "stroke.miter_limit -Infinity");
+    expectRejected(
+        [&](jsi::Object& stroke) {
+            stroke.setProperty(runtime, "miterLimit", nan);
+        },
+        invalidStrokeCommandMessage("stroke.miterLimit"),
+        "stroke.miterLimit NaN");
+    expectRejected(
+        [&](jsi::Object& stroke) {
+            stroke.setProperty(runtime, "miterLimit", positiveInfValue);
+        },
+        invalidStrokeCommandMessage("stroke.miterLimit"),
+        "stroke.miterLimit Infinity");
+    expectRejected(
+        [&](jsi::Object& stroke) {
+            stroke.setProperty(runtime, "miterLimit", negativeInfValue);
+        },
+        invalidStrokeCommandMessage("stroke.miterLimit"),
+        "stroke.miterLimit -Infinity");
+    expectRejected(
+        [&](jsi::Object& stroke) {
+            stroke.setProperty(runtime, "precision", nan);
+        },
+        invalidStrokeCommandMessage("stroke.precision"),
+        "stroke.precision NaN");
+    expectRejected(
+        [&](jsi::Object& stroke) {
+            stroke.setProperty(runtime, "precision", positiveInfValue);
+        },
+        invalidStrokeCommandMessage("stroke.precision"),
+        "stroke.precision Infinity");
+    expectRejected(
+        [&](jsi::Object& stroke) {
+            stroke.setProperty(runtime, "precision", negativeInfValue);
+        },
+        invalidStrokeCommandMessage("stroke.precision"),
+        "stroke.precision -Infinity");
 }
 
 struct ExpectedPixel {
@@ -5618,6 +5925,18 @@ void assertDynamicPathTrimCommandRejections(jsi::Runtime& runtime)
 
 void assertPathStrokeCommandRejections(jsi::Runtime& runtime)
 {
+    auto omittedStrokeCommand = pathCommand(runtime);
+    expect(
+        !std::get<PathCommandData>(omittedStrokeCommand.data).stroke.has_value(),
+        "NodeCommand conversion preserves omitted path.stroke as no stroke");
+
+    auto nullStrokeCommand = convertCommand(
+        runtime,
+        pathCommandObjectWithStrokeValue(runtime, jsi::Value::null()));
+    expect(
+        !std::get<PathCommandData>(nullStrokeCommand.data).stroke.has_value(),
+        "NodeCommand conversion preserves null path.stroke as no stroke");
+
     auto nonObjectCommand = pathCommandObjectWithStrokeValue(runtime, jsi::Value(42.0));
     jsi::Value nonObjectCommandValue(runtime, nonObjectCommand);
 
@@ -5869,6 +6188,7 @@ int main()
     assertLineCommandRender(*runtime);
     assertCommandPointFiniteRejections(*runtime);
     assertStaticAnimatedDoubleCommandFiniteRejections(*runtime);
+    assertPathStrokeNumericFiniteRejections(*runtime);
     assertOvalCommandRender(*runtime);
     assertCircleCommandRender(*runtime);
     assertDynamicCircleCommandRender(*runtime);
@@ -5881,6 +6201,7 @@ int main()
     assertPathStrokeMiterAliasPrecedence(*runtime);
     assertStrokeOptsConverterPublicMiterContract(*runtime);
     assertStrokeOptsConverterDirectConsistency(*runtime);
+    assertStrokeOptsConverterFiniteRejections(*runtime);
     assertDynamicPathTrimCommandRender(*runtime);
     assertImageFitCommandRender(*runtime);
     assertTextCommandStateAndRender(*runtime);

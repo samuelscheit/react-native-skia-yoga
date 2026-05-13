@@ -8,6 +8,7 @@
 
 #include <include/core/SkPaint.h>
 #include <jsi/jsi.h>
+#include <cmath>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -24,23 +25,37 @@ namespace {
 inline std::optional<float> getOptionalFloatProperty(
     jsi::Runtime& runtime,
     const jsi::Object& object,
-    const char* key) {
+    const char* key,
+    const char* propertyPath) {
   const auto value = object.getProperty(runtime, key);
   if (value.isUndefined() || value.isNull()) {
     return std::nullopt;
   }
-  return static_cast<float>(value.asNumber());
+  const auto number = value.asNumber();
+  const auto narrowed = static_cast<float>(number);
+  if (!std::isfinite(number) || !std::isfinite(narrowed)) {
+    throw std::invalid_argument(
+        std::string("Invalid numeric stroke value for ") + propertyPath +
+        ": expected a finite number.");
+  }
+  return narrowed;
 }
 
 inline std::optional<float> getOptionalFloatPropertyWithAlias(
     jsi::Runtime& runtime,
     const jsi::Object& object,
     const char* publicKey,
-    const char* aliasKey) {
+    const char* aliasKey,
+    const char* publicPropertyPath,
+    const char* aliasPropertyPath) {
   if (object.hasProperty(runtime, publicKey)) {
-    return getOptionalFloatProperty(runtime, object, publicKey);
+    return getOptionalFloatProperty(
+        runtime,
+        object,
+        publicKey,
+        publicPropertyPath);
   }
-  return getOptionalFloatProperty(runtime, object, aliasKey);
+  return getOptionalFloatProperty(runtime, object, aliasKey, aliasPropertyPath);
 }
 
 inline std::optional<SkPaint::Join> getOptionalStrokeJoin(
@@ -112,13 +127,23 @@ struct JSIConverter<RNSkia::StrokeOpts> final {
 
     const auto object = arg.asObject(runtime);
     RNSkia::StrokeOpts opts;
-    opts.width = getOptionalFloatProperty(runtime, object, "width");
+    opts.width = getOptionalFloatProperty(
+        runtime,
+        object,
+        "width",
+        "stroke.width");
     opts.miter_limit = getOptionalFloatPropertyWithAlias(
         runtime,
         object,
         "miter_limit",
-        "miterLimit");
-    opts.precision = getOptionalFloatProperty(runtime, object, "precision");
+        "miterLimit",
+        "stroke.miter_limit",
+        "stroke.miterLimit");
+    opts.precision = getOptionalFloatProperty(
+        runtime,
+        object,
+        "precision",
+        "stroke.precision");
     opts.join = getOptionalStrokeJoin(runtime, object);
     opts.cap = getOptionalStrokeCap(runtime, object);
     return opts;

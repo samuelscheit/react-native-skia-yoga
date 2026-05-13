@@ -245,6 +245,34 @@ inline std::optional<SkPaint::Cap> parseStrokeCap(jsi::Runtime& runtime, const j
     }
 }
 
+inline std::optional<float> getOptionalFiniteStrokeProperty(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* key,
+    const char* propertyPath)
+{
+    auto parsed = getOptionalProperty<float>(runtime, object, key);
+    if (parsed.has_value() && !std::isfinite(*parsed)) {
+        throw std::invalid_argument(
+            std::string("Invalid numeric stroke value for ") + propertyPath + ": expected a finite number.");
+    }
+    return parsed;
+}
+
+inline std::optional<float> getOptionalFiniteStrokePropertyWithAlias(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* publicKey,
+    const char* aliasKey,
+    const char* publicPropertyPath,
+    const char* aliasPropertyPath)
+{
+    if (object.hasProperty(runtime, publicKey)) {
+        return getOptionalFiniteStrokeProperty(runtime, object, publicKey, publicPropertyPath);
+    }
+    return getOptionalFiniteStrokeProperty(runtime, object, aliasKey, aliasPropertyPath);
+}
+
 inline std::optional<margelo::nitro::RNSkiaYoga::PathCommandData::StrokeOptsData> parseStrokeOpts(
     jsi::Runtime& runtime,
     const jsi::Value& value)
@@ -258,9 +286,15 @@ inline std::optional<margelo::nitro::RNSkiaYoga::PathCommandData::StrokeOptsData
 
     auto object = value.asObject(runtime);
     return margelo::nitro::RNSkiaYoga::PathCommandData::StrokeOptsData {
-        .width = getOptionalProperty<float>(runtime, object, "width"),
-        .miterLimit = getOptionalPropertyWithAlias<float>(runtime, object, "miter_limit", "miterLimit"),
-        .precision = getOptionalProperty<float>(runtime, object, "precision"),
+        .width = getOptionalFiniteStrokeProperty(runtime, object, "width", "path.stroke.width"),
+        .miterLimit = getOptionalFiniteStrokePropertyWithAlias(
+            runtime,
+            object,
+            "miter_limit",
+            "miterLimit",
+            "path.stroke.miter_limit",
+            "path.stroke.miterLimit"),
+        .precision = getOptionalFiniteStrokeProperty(runtime, object, "precision", "path.stroke.precision"),
         .join = parseStrokeJoin(runtime, object.getProperty(runtime, "join")),
         .cap = parseStrokeCap(runtime, object.getProperty(runtime, "cap")),
     };
