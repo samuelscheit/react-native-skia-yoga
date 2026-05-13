@@ -495,11 +495,25 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- Worker 228 public command numeric enum validation implementation.
+- Agent path: `/root/worker_228_command_numeric_enum_validation`.
+- Worktree: `../worker-228-command-numeric-enum-validation`.
+- Branch: `worker/228-command-numeric-enum-validation`.
+- Scope: deterministic finite/integer/range validation for public command
+  enum numeric payloads: `blurMaskFilter.blurStyle`, `points.pointMode`,
+  `path.fillType`, and stroke `join`/`cap`.
+- Required tracked report:
+  `worker-progress/worker-228-command-numeric-enum-validation.md`.
+- Required verification: native command/render, generated Nitro
+  materialization, direct `StrokeOpts` coverage, typecheck if TS changes, and
+  full feasible matrix unless blocked.
+- State: ready to spawn with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`.
 
 Next queued worker:
 
-- Public command numeric enum validation implementation.
+- None until Worker 228 reports.
 
 Follow-up queue:
 
