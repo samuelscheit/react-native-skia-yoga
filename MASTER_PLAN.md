@@ -164,7 +164,7 @@ targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
 Current active worker: worker 236 command `SkPoint` native-float validation
-(`spawn_agent` pending).
+(`/root/worker_236_command_skpoint_native_float_validation` spawned).
 Next queued worker: selected after worker 236.
 
 Goals:
@@ -525,7 +525,8 @@ Current active worker:
 - `worker-236-command-skpoint-native-float-validation`: reject non-finite and
   native-float-overflowing command point coordinates before same-type
   `LineCmd` or `PointsCmd` mutation in both direct and generated
-  `setCommand(...)` paths. State: spawn pending. Branch:
+  `setCommand(...)` paths. State: spawned as
+  `/root/worker_236_command_skpoint_native_float_validation`. Branch:
   `worker/236-command-skpoint-native-float-validation`. Worktree:
   `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-236-command-skpoint-native-float-validation`.
   Expected write scope: `cpp/JSIConverter+NodeCommand.hpp`,
@@ -539,9 +540,7 @@ Next queued worker:
 
 Follow-up queue:
 
-- Spawn worker 236 with `agent_type: "worker"`, `goal: true`,
-  `fork_turns: "none"`, `model: "gpt-5.5"`, and
-  `reasoning_effort: "xhigh"`.
+- Monitor worker 236 and review its implementation/report when complete.
 
 Acceptance criteria:
 
