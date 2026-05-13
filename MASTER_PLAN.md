@@ -121,15 +121,16 @@ Acceptance criteria:
 ## Phase 3: Integration and Example Confidence
 
 Status: active; latest accepted implementation is worker 234 static
-`AnimatedDouble` native-float validation. Latest accepted audit is worker 233.
-Next queued work is a post-Worker 234 root-cause audit. Detailed historical
-accepted work lives in `MASTER_PROGRESS.md` and `worker-progress/`.
+`AnimatedDouble` native-float validation. Latest accepted audit is worker 235.
+Next queued work is command `SkPoint` native-float validation for `line.from`,
+`line.to`, and `points.points[]` coordinates. Detailed historical accepted
+work lives in `MASTER_PROGRESS.md` and `worker-progress/`.
 
-Latest accepted root-cause audit: worker 233 accepted Worker 232's dynamic
-`AnimatedDouble` native-float validation boundary, reconfirmed focused checks
-plus generated materialization preservation, and selected static
-`AnimatedDouble` native-float-overflow conversion policy for direct/generated
-`setCommand(...)` paths as the next locally unblocked root-cause target.
+Latest accepted root-cause audit: worker 235 accepted Worker 234's static
+`AnimatedDouble` native-float validation boundary, reconfirmed focused direct
+and generated checks, and selected command `SkPoint` native-float validation
+for `line.from`, `line.to`, and `points.points[]` coordinates as the next
+locally unblocked root-cause target.
 
 Latest accepted implementation: worker 232 added
 `AnimatedDouble::resolveNativeFloat()` and applied fail-closed dynamic
@@ -162,9 +163,9 @@ leaves now reject non-finite values, native-float overflow, fractional integer
 targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
-Current active worker: worker 235 post-Worker 234 root-cause audit
-(`/root/worker_235_post_234_root_cause_audit` spawned).
-Next queued worker: selected by worker 235.
+Current active worker: none.
+Next queued worker: command `SkPoint` native-float validation for `line.from`,
+`line.to`, and `points.points[]` coordinates.
 
 Goals:
 
@@ -513,23 +514,25 @@ Accepted package-hygiene implementation:
   direct/generated `setCommand(...)` paths, covering `circle.radius`,
   `rrect.cornerRadius`, `blurMaskFilter.blur`, `path.trimStart`, and
   `path.trimEnd`, with focused verifier updates and a full feasible matrix.
+- `worker-235-post-234-root-cause-audit`: accepted Worker 234's static
+  `AnimatedDouble` native-float validation boundary, reran focused direct and
+  generated verifier checks, and selected command `SkPoint` native-float
+  validation for `line.from`, `line.to`, and `points.points[]` coordinates as
+  the next implementation target.
 
 Current active worker:
 
-- `worker-235-post-234-root-cause-audit`: post-Worker 234 audit and next
-  root-cause target selection. State: spawned as
-  `/root/worker_235_post_234_root_cause_audit`. Branch:
-  `worker/235-post-234-root-cause-audit`. Worktree:
-  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-235-post-234-root-cause-audit`.
-  Write scope: `worker-progress/worker-235-post-234-root-cause-audit.md`.
+- None.
 
 Next queued worker:
 
-- Selected by worker 235.
+- Command `SkPoint` native-float validation for `line.from`, `line.to`, and
+  `points.points[]` coordinates.
 
 Follow-up queue:
 
-- Monitor worker 235 and review its report/diff when complete.
+- Launch the command `SkPoint` native-float validation worker from an isolated
+  worktree and branch.
 
 Acceptance criteria:
 
