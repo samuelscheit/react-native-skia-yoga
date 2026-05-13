@@ -256,6 +256,21 @@ RNSkia::StrokeOpts toNativeStrokeOpts(const PathCommandData::StrokeOptsData& str
         ": expected a finite native float.");
 }
 
+[[noreturn]] static void throwInvalidYogaNodeMethodNumber(const char* propertyPath)
+{
+    throw std::invalid_argument(
+        std::string("Invalid numeric YogaNode method value for ") + propertyPath +
+        ": expected a finite native float.");
+}
+
+float toFiniteYogaNodeMethodFloat(double value, const char* propertyPath)
+{
+    if (!std::isfinite(value) || std::abs(value) > static_cast<double>(std::numeric_limits<float>::max())) {
+        throwInvalidYogaNodeMethodNumber(propertyPath);
+    }
+    return static_cast<float>(value);
+}
+
 float toFiniteHitSlopFloat(double value, const char* propertyPath)
 {
     if (!std::isfinite(value) || std::abs(value) > static_cast<double>(std::numeric_limits<float>::max())) {
@@ -1828,8 +1843,8 @@ jsi::Value YogaNode::getChildren(jsi::Runtime& runtime, const jsi::Value& thisAr
 void YogaNode::computeLayout(std::optional<double> width, std::optional<double> height)
 {
     std::lock_guard<std::recursive_mutex> lock(yogaTreeMutex());
-    float w = width.has_value() ? static_cast<float>(width.value()) : YGUndefined;
-    float h = height.has_value() ? static_cast<float>(height.value()) : YGUndefined;
+    float w = width.has_value() ? toFiniteYogaNodeMethodFloat(width.value(), "computeLayout.width") : YGUndefined;
+    float h = height.has_value() ? toFiniteYogaNodeMethodFloat(height.value(), "computeLayout.height") : YGUndefined;
 
     YGNodeCalculateLayout(_node, w, h, YGDirectionInherit);
     recursiveSetLayout();
@@ -2005,8 +2020,8 @@ jsi::Value YogaNode::hitTest(jsi::Runtime& runtime, const jsi::Value& thisArg, c
             throw jsi::JSError(runtime, "YogaNode.hitTest(x, y) expects numeric x and y arguments.");
         }
 
-        const auto x = static_cast<float>(args[0].asNumber());
-        const auto y = static_cast<float>(args[1].asNumber());
+        const auto x = toFiniteYogaNodeMethodFloat(args[0].asNumber(), "hitTest.x");
+        const auto y = toFiniteYogaNodeMethodFloat(args[1].asNumber(), "hitTest.y");
         return jsi::Value(hitTestTagAt(x, y));
     });
 }

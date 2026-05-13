@@ -167,7 +167,7 @@ try {
 	console.log("YogaNode JSI raw-method verifier passed:")
 	console.log("- Source invariant holds: generated HybridYogaNodeSpec methods and manual YogaNode raw methods have no duplicate names.")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, and Nitro/JSI helper sources.")
-	console.log("- The executable called YogaNode::loadHybridMethods() without duplicate-name overlap, created a real JSC runtime, converted a generated NodeStyle object, and called raw setInteractionConfig() / hitTest() with valid and invalid JSI inputs, including invalid hitSlop state-preservation cases.")
+	console.log("- The executable called YogaNode::loadHybridMethods() without duplicate-name overlap, created a real JSC runtime, converted a generated NodeStyle object, and called raw setInteractionConfig() / hitTest() with valid and invalid JSI inputs, including invalid hitSlop and hitTest numeric state-preservation cases.")
 	console.log("- Proof boundary: source-level duplicate-registration invariant plus host-native compile/link and direct host-JSC execution of the remaining raw methods. This harness does not claim Nitro toObject()/prototype materialization proof, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, or RNGH native delivery.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
@@ -482,6 +482,7 @@ using margelo::nitro::RNSkiaYoga::Overflow;
 using margelo::nitro::RNSkiaYoga::PointerEventsMode;
 using margelo::nitro::RNSkiaYoga::Position;
 using margelo::nitro::RNSkiaYoga::YogaNode;
+using margelo::nitro::RNSkiaYoga::YogaNodeLayout;
 
 namespace {
 
@@ -565,6 +566,46 @@ void expectInteractionStatePreserved(
             parent->_interactiveDescendantCount == parentInteractiveDescendantCount,
             (std::string(message) + " preserves parent interactive count").c_str());
     }
+}
+
+struct HitTestStateSnapshot {
+    InteractionStateSnapshot interaction;
+    bool hasLayoutBeenComputed;
+    YogaNodeLayout layout;
+    int parentInteractiveDescendantCount;
+};
+
+HitTestStateSnapshot captureHitTestState(const YogaNode& node, const YogaNode* parent)
+{
+    return HitTestStateSnapshot {
+        .interaction = captureInteractionState(node),
+        .hasLayoutBeenComputed = node._hasLayoutBeenComputed,
+        .layout = node._layout,
+        .parentInteractiveDescendantCount = parent == nullptr ? 0 : parent->_interactiveDescendantCount,
+    };
+}
+
+void expectHitTestStatePreserved(
+    const YogaNode& node,
+    const HitTestStateSnapshot& state,
+    const YogaNode* parent,
+    const char* message)
+{
+    expectInteractionStatePreserved(
+        node,
+        state.interaction,
+        state.parentInteractiveDescendantCount,
+        parent,
+        message);
+    expect(
+        node._hasLayoutBeenComputed == state.hasLayoutBeenComputed,
+        (std::string(message) + " preserves layout-computed flag").c_str());
+    expectNear(node._layout.left, state.layout.left, (std::string(message) + " preserves layout left").c_str());
+    expectNear(node._layout.right, state.layout.right, (std::string(message) + " preserves layout right").c_str());
+    expectNear(node._layout.top, state.layout.top, (std::string(message) + " preserves layout top").c_str());
+    expectNear(node._layout.bottom, state.layout.bottom, (std::string(message) + " preserves layout bottom").c_str());
+    expectNear(node._layout.width, state.layout.width, (std::string(message) + " preserves layout width").c_str());
+    expectNear(node._layout.height, state.layout.height, (std::string(message) + " preserves layout height").c_str());
 }
 
 std::string errorMessage(const jsi::JSError& error)
@@ -670,6 +711,26 @@ void expectInvalidHitSlopPreservesState(
         "finite native float",
         message);
     expectInteractionStatePreserved(node, state, parentInteractiveDescendantCount, parent, message);
+}
+
+void expectInvalidHitTestPreservesState(
+    YogaNode& node,
+    jsi::Runtime& runtime,
+    const YogaNode* parent,
+    double x,
+    double y,
+    const std::string& messageSubstring,
+    const char* message)
+{
+    const auto state = captureHitTestState(node, parent);
+    expectThrows(
+        [&]() {
+            jsi::Value args[] = {jsi::Value(x), jsi::Value(y)};
+            node.hitTest(runtime, jsi::Value::undefined(), args, 2);
+        },
+        messageSubstring,
+        message);
+    expectHitTestStatePreserved(node, state, parent, message);
 }
 
 } // namespace
@@ -895,6 +956,42 @@ int main()
         },
         "expects numeric x and y arguments",
         "hitTest must reject missing y");
+
+    std::cerr << "probe: reject invalid hitTest numeric values before implicit layout" << std::endl;
+    node->_layout = YogaNodeLayout(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
+    node->_hasLayoutBeenComputed = false;
+    expectInvalidHitTestPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        nan,
+        1.0,
+        "hitTest.x",
+        "hitTest.x NaN must reject and preserve state");
+    expectInvalidHitTestPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        infinity,
+        1.0,
+        "hitTest.x",
+        "hitTest.x Infinity must reject and preserve state");
+    expectInvalidHitTestPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        1.0,
+        -infinity,
+        "hitTest.y",
+        "hitTest.y -Infinity must reject and preserve state");
+    expectInvalidHitTestPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        1.0,
+        nativeFloatOverflow,
+        "hitTest.y",
+        "hitTest.y native-float overflow must reject and preserve state");
 
     std::cout << "YogaNode JSI raw-method host probe passed\n";
     std::cerr << "probe: finished" << std::endl;
