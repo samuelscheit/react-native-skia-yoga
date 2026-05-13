@@ -439,11 +439,22 @@ Accepted package-hygiene implementation:
   negative coverage proving previous same-type command state is preserved while
   dynamic Worklets-backed command values remain supported.
 
-Current active worker: none.
+Current active worker:
+
+- Worker 221 post-Worker 220 root-cause audit.
+- Agent path: `/root/worker_221_post_220_root_cause_audit`.
+- Worktree: `../worker-221-post-220-root-cause-audit`.
+- Branch: `worker/221-post-220-root-cause-audit`.
+- Scope: report-only audit of Worker 220's command `AnimatedDouble` finite
+  validation boundary, focused/full feasible verification, and next
+  root-cause target selection.
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`; audit in progress.
 
 Next queued worker:
 
-- Worker 221 post-Worker 220 root-cause audit.
+- None until Worker 221 reports.
 
 Follow-up queue:
 

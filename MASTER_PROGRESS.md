@@ -5352,6 +5352,18 @@ Accepted worker reports:
   check:yoganode-nitro-materialization`, and the full 28-command `npm run
   check:feasible-matrix` in `9m 11s`. The next queued worker is a fresh
   post-Worker 220 audit.
+- Prepared Worker 221 post-Worker 220 root-cause audit:
+  - Worktree: `../worker-221-post-220-root-cause-audit`.
+  - Branch: `worker/221-post-220-root-cause-audit`.
+  - Agent path: `/root/worker_221_post_220_root_cause_audit`.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
+  - Ignored dependency symlinks were set to main's known-good `node_modules`
+    and `example/node_modules` installs.
+  - Scope: report-only audit of Worker 220's command `AnimatedDouble` finite
+    validation boundary and next-target selection; intended tracked edit is
+    `worker-progress/worker-221-post-220-root-cause-audit.md`.
 
 ## Next Worker Candidates
 
