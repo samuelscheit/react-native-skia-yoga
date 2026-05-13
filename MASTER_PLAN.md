@@ -580,18 +580,24 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None. Worker 242 has been accepted and merged.
-
-Next queued worker:
-
 - `worker-243-post-242-root-cause-audit`: audit Worker 242's accepted
   `NodeStyle` native-float validation boundary, rerun focused evidence as
   needed, and select the next highest-value locally unblocked root-cause
-  target. This worker has not been launched yet.
+  target. State: prepared for `spawn_agent`. Branch:
+  `worker/243-post-242-root-cause-audit`. Worktree:
+  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-243-post-242-root-cause-audit`.
+  Expected files: `worker-progress/worker-243-post-242-root-cause-audit.md`
+  only unless the audit finds a necessary verifier/doc correction.
+  Verification: `git diff --check`, focused source/runtime checks needed to
+  accept or challenge Worker 242, and no product-code edits.
+
+Next queued worker:
+
+- Selected by Worker 243.
 
 Follow-up queue:
 
-- Prepare an isolated worktree/branch for Worker 243 before launch.
+- Launch Worker 243, monitor completion, then review its report/diff.
 
 Acceptance criteria:
 
