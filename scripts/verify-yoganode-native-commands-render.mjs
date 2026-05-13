@@ -161,7 +161,7 @@ const samplingOptionsUnionInventory = {
 
 try {
 	assertInstalledStyleSerializerFieldInventory()
-	assertCommandPointFiniteValidationInventory()
+	assertCommandPointNativeFloatValidationInventory()
 	assertCommandAnimatedDoubleFiniteValidationInventory()
 	assertPathStrokeNumericFiniteValidationInventory()
 	assertCommandNumericEnumValidationInventory()
@@ -277,7 +277,7 @@ try {
 	console.log("- The executable created a JSC runtime, converted numeric, CSS color-string, and Worklets Synchronizable NodeCommand payloads through JSIConverter<NodeCommand>::fromJSI(...), serialized representative payloads through JSIConverter<NodeCommand>::toJSI(...), and executed real YogaNode::setCommand().")
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
 	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, simple text.textStyle fontSize/color fields, inventory-backed paragraphStyle fields including nested textStyle output, distinct paragraph/text-style heightMultiplier preservation, fontFeatures and strutStyle, line from/to points, and points arrays.")
-	console.log("- The executable asserted non-finite command point rejection for line.from.x/y, line.to.x/y, and indexed points.points[] x/y payloads with NaN, Infinity, and -Infinity, preserving the previously installed native LineCmd/PointsCmd state.")
+	console.log("- The executable asserted non-finite and native-float-overflow command point rejection for line.from.x/y, line.to.x/y, and indexed points.points[] x/y payloads, preserving the previously installed native LineCmd/PointsCmd state.")
 	console.log("- The executable asserted non-finite and native-float-overflow static AnimatedDouble command rejection for rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, path.trimEnd, and circle.radius payloads before same-type setCommand mutation, while retaining dynamic Worklets-backed AnimatedDouble command behavior.")
 	console.log("- The executable asserted dynamic AnimatedDouble render-time native-float validation fails closed for NaN, Infinity, and native-float-overflow Synchronizable mutations without installing invalid float props.")
 	console.log("- The executable asserted non-finite path stroke numeric rejection for stroke.width, stroke.miter_limit, stroke.miterLimit alias fallback, and stroke.precision before same-type PathCmd state mutation, while preserving direct StrokeOpts converter behavior.")
@@ -291,7 +291,7 @@ try {
 	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) plus flattened and nested ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection including nested paragraphStyle.textStyle.color, unsupported paragraph fontVariations rejection, and text.textStyle rich-key rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; finite rejection for direct width, miter_limit, miterLimit alias fallback, and precision payloads; numeric enum rejection for direct join/cap finite/integer/range violations; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, later Synchronizable::setBlocking(...) mutation observation, and invalid dynamic mutation fail-closed behavior through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, overflow hidden/scroll, and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias/Yoga overflow/_clipsToBounds state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded plain overflow hidden/scroll rectangular raster clipping through YogaNode::renderToContext() using a GroupCmd parent and oversized RectCmd child, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, bounded explicit style.clip rect/rrect/path and invertClip rect/rrect/path raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, command point finite rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate LineCmd/PointsCmd state, static numeric AnimatedDouble command native-float validation through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate CircleCmd/RRectCmd/BlurMaskFilterCmd/PathCmd state, dynamic AnimatedDouble native-float validation through AnimatedDouble::resolveNativeFloat before selected render paths narrow or mutate command props, command numeric enum finite/integer/range rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate BlurMaskFilterCmd/PointsCmd/PathCmd state, path stroke numeric finite rejection through direct JSIConverter<StrokeOpts>::fromJSI and JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate PathCmd stroke state, direct StrokeOpts numeric enum finite/integer/range rejection through JSIConverter<StrokeOpts>::fromJSI for join/cap, text/paragraph style numeric finite and native-range-overflow rejection through JSIConverter<NodeCommand>::fromJSI before same-type TextCmd/ParagraphCmd mutation, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact plain overflow clipping beyond the asserted host-raster pixels, exact style corner-radius, global style.borderRadius, or explicit style.clip render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, overflow hidden/scroll, and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias/Yoga overflow/_clipsToBounds state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded plain overflow hidden/scroll rectangular raster clipping through YogaNode::renderToContext() using a GroupCmd parent and oversized RectCmd child, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, bounded explicit style.clip rect/rrect/path and invertClip rect/rrect/path raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, command point native-float validation through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate LineCmd/PointsCmd state, static numeric AnimatedDouble command native-float validation through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate CircleCmd/RRectCmd/BlurMaskFilterCmd/PathCmd state, dynamic AnimatedDouble native-float validation through AnimatedDouble::resolveNativeFloat before selected render paths narrow or mutate command props, command numeric enum finite/integer/range rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate BlurMaskFilterCmd/PointsCmd/PathCmd state, path stroke numeric finite rejection through direct JSIConverter<StrokeOpts>::fromJSI and JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate PathCmd stroke state, direct StrokeOpts numeric enum finite/integer/range rejection through JSIConverter<StrokeOpts>::fromJSI for join/cap, text/paragraph style numeric finite and native-range-overflow rejection through JSIConverter<NodeCommand>::fromJSI before same-type TextCmd/ParagraphCmd mutation, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact plain overflow clipping beyond the asserted host-raster pixels, exact style corner-radius, global style.borderRadius, or explicit style.clip render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -391,7 +391,7 @@ function assertInstalledStyleSerializerFieldInventory() {
 	}
 }
 
-function assertCommandPointFiniteValidationInventory() {
+function assertCommandPointNativeFloatValidationInventory() {
 	const commandSpecPath = "src/specs/commands.ts"
 	const commandSpec = readProjectFile(commandSpecPath)
 	const reconciler = readProjectFile("src/Reconciler.ts")
@@ -481,31 +481,41 @@ function assertCommandPointFiniteValidationInventory() {
 		converterPointsIndex,
 	)
 	assertSource(
-		nodeCommandConverter.includes("parseFinitePointNumber") &&
-			nodeCommandConverter.includes("std::isfinite(value)") &&
+		nodeCommandConverter.includes("parseFiniteNativePointNumber") &&
+			nodeCommandConverter.includes("isValidCommandPointNativeFloat") &&
+			nodeCommandConverter.includes("std::numeric_limits<float>::max()") &&
+			nodeCommandConverter.includes("expected a finite native float") &&
 			nodeCommandConverter.includes("Invalid numeric command point value for ") &&
 			nodeCommandConverter.includes('"points.points[" + std::to_string(index) + "]"') &&
 			converterLineFromIndex > converterLineIndex &&
 			converterLineToIndex > converterLineFromIndex &&
 			converterParsePointsIndex > converterPointsIndex,
-		"Native NodeCommand converter must finite-check line and indexed points SkPoint payloads with stable path labels.",
+		"Native NodeCommand converter must native-float-check line and indexed points SkPoint payloads with stable path labels.",
 	)
 
 	assertSource(
-		nativeVerifier.includes("assertCommandPointFiniteRejections(*runtime);") &&
+		nativeVerifier.includes("assertCommandPointNativeFloatRejections(*runtime);") &&
 			nativeVerifier.includes("line.from.x NaN") &&
 			nativeVerifier.includes("line.from.y Infinity") &&
 			nativeVerifier.includes("line.to.x -Infinity") &&
-			nativeVerifier.includes("points.points[1].y NaN"),
-		"Native command/render verifier must retain non-finite line and indexed points rejection coverage.",
+			nativeVerifier.includes("line.from.x native-float overflow") &&
+			nativeVerifier.includes("line.to.y native-float overflow") &&
+			nativeVerifier.includes("points.points[1].y NaN") &&
+			nativeVerifier.includes("points.points[0].x native-float overflow") &&
+			nativeVerifier.includes("points.points[1].y native-float overflow"),
+		"Native command/render verifier must retain non-finite and native-float-overflow line and indexed points rejection coverage.",
 	)
 	assertSource(
 		materializationVerifier.includes(
-			"assertGeneratedCommandPointFiniteRejections(*runtime);",
+			"assertGeneratedCommandPointNativeFloatRejections(*runtime);",
 		) &&
 			materializationVerifier.includes("generated line.from.x NaN") &&
-			materializationVerifier.includes("generated points.points[1].y NaN"),
-		"Generated materialized setCommand verifier must retain non-finite command point rejection coverage.",
+			materializationVerifier.includes("generated line.to.y native-float overflow") &&
+			materializationVerifier.includes("generated points.points[1].y NaN") &&
+			materializationVerifier.includes(
+				"generated points.points[1].y native-float overflow",
+			),
+		"Generated materialized setCommand verifier must retain non-finite and native-float-overflow command point rejection coverage.",
 	)
 }
 
@@ -4796,17 +4806,18 @@ void expectPointsCommandState(
     }
 }
 
-void assertCommandPointFiniteRejections(jsi::Runtime& runtime)
+void assertCommandPointNativeFloatRejections(jsi::Runtime& runtime)
 {
     const double nan = std::numeric_limits<double>::quiet_NaN();
     const double positiveInfValue = std::numeric_limits<double>::infinity();
     const double negativeInfValue = -std::numeric_limits<double>::infinity();
+    const double nativeFloatOverflow = nativeFloatOverflowValue();
 
     auto lineRoot = makeYogaNode(
         strokeStyle(24.0, 10.0, SK_ColorBLUE, 3.0f),
         lineCommand(runtime));
     const auto* initialLineCommand = lineRoot->_command.get();
-    expectLineCommandState(lineRoot, 0.0, 3.0, 20.0, 3.0, "line finite rejection baseline");
+    expectLineCommandState(lineRoot, 0.0, 3.0, 20.0, 3.0, "line native-float rejection baseline");
 
     struct LineInvalidCase {
         const char* label;
@@ -4817,11 +4828,15 @@ void assertCommandPointFiniteRejections(jsi::Runtime& runtime)
         const char* propertyPath;
     };
 
-    const std::array<LineInvalidCase, 4> lineInvalidCases {{
+    const std::array<LineInvalidCase, 8> lineInvalidCases {{
         { "line.from.x NaN", nan, 5.0, 21.0, 6.0, "line.from.x" },
         { "line.from.y Infinity", 2.0, positiveInfValue, 21.0, 6.0, "line.from.y" },
         { "line.to.x -Infinity", 2.0, 5.0, negativeInfValue, 6.0, "line.to.x" },
         { "line.to.y NaN", 2.0, 5.0, 21.0, nan, "line.to.y" },
+        { "line.from.x native-float overflow", nativeFloatOverflow, 5.0, 21.0, 6.0, "line.from.x" },
+        { "line.from.y native-float overflow", 2.0, -nativeFloatOverflow, 21.0, 6.0, "line.from.y" },
+        { "line.to.x native-float overflow", 2.0, 5.0, nativeFloatOverflow, 6.0, "line.to.x" },
+        { "line.to.y native-float overflow", 2.0, 5.0, 21.0, -nativeFloatOverflow, "line.to.y" },
     }};
 
     for (const auto& invalidCase : lineInvalidCases) {
@@ -4834,7 +4849,7 @@ void assertCommandPointFiniteRejections(jsi::Runtime& runtime)
                 invalidCase.fromY,
                 invalidCase.toX,
                 invalidCase.toY),
-            std::string("Invalid numeric command point value for ") + invalidCase.propertyPath + ": expected a finite number.",
+            std::string("Invalid numeric command point value for ") + invalidCase.propertyPath + ": expected a finite native float.",
             invalidCase.label);
         expect(lineRoot->_command.get() == initialLineCommand, std::string(invalidCase.label) + " preserves command pointer");
         expectLineCommandState(lineRoot, 0.0, 3.0, 20.0, 3.0, invalidCase.label);
@@ -4848,7 +4863,7 @@ void assertCommandPointFiniteRejections(jsi::Runtime& runtime)
         ::SkPoint::Make(3.0f, 4.0f),
         ::SkPoint::Make(13.0f, 14.0f),
     };
-    expectPointsCommandState(pointsRoot, baselinePoints, SkCanvas::PointMode::kLines_PointMode, "points finite rejection baseline");
+    expectPointsCommandState(pointsRoot, baselinePoints, SkCanvas::PointMode::kLines_PointMode, "points native-float rejection baseline");
 
     struct PointsInvalidCase {
         const char* label;
@@ -4859,11 +4874,15 @@ void assertCommandPointFiniteRejections(jsi::Runtime& runtime)
         const char* propertyPath;
     };
 
-    const std::array<PointsInvalidCase, 4> pointsInvalidCases {{
+    const std::array<PointsInvalidCase, 8> pointsInvalidCases {{
         { "points.points[0].x NaN", nan, 4.0, 13.0, 14.0, "points.points[0].x" },
         { "points.points[0].y Infinity", 3.0, positiveInfValue, 13.0, 14.0, "points.points[0].y" },
         { "points.points[1].x -Infinity", 3.0, 4.0, negativeInfValue, 14.0, "points.points[1].x" },
         { "points.points[1].y NaN", 3.0, 4.0, 13.0, nan, "points.points[1].y" },
+        { "points.points[0].x native-float overflow", nativeFloatOverflow, 4.0, 13.0, 14.0, "points.points[0].x" },
+        { "points.points[0].y native-float overflow", 3.0, -nativeFloatOverflow, 13.0, 14.0, "points.points[0].y" },
+        { "points.points[1].x native-float overflow", 3.0, 4.0, nativeFloatOverflow, 14.0, "points.points[1].x" },
+        { "points.points[1].y native-float overflow", 3.0, 4.0, 13.0, -nativeFloatOverflow, "points.points[1].y" },
     }};
 
     for (const auto& invalidCase : pointsInvalidCases) {
@@ -4876,7 +4895,7 @@ void assertCommandPointFiniteRejections(jsi::Runtime& runtime)
                 invalidCase.firstY,
                 invalidCase.secondX,
                 invalidCase.secondY),
-            std::string("Invalid numeric command point value for ") + invalidCase.propertyPath + ": expected a finite number.",
+            std::string("Invalid numeric command point value for ") + invalidCase.propertyPath + ": expected a finite native float.",
             invalidCase.label);
         expect(pointsRoot->_command.get() == initialPointsCommand, std::string(invalidCase.label) + " preserves command pointer");
         expectPointsCommandState(pointsRoot, baselinePoints, SkCanvas::PointMode::kLines_PointMode, invalidCase.label);
@@ -6933,7 +6952,7 @@ int main()
     assertDynamicPathTrimRasterizedGroupBypassesCache(*runtime);
     assertAdditionalPointsCommandRender(*runtime);
     assertLineCommandRender(*runtime);
-    assertCommandPointFiniteRejections(*runtime);
+    assertCommandPointNativeFloatRejections(*runtime);
     assertStaticAnimatedDoubleCommandFiniteRejections(*runtime);
     assertPathStrokeNumericFiniteRejections(*runtime);
     assertCommandNumericEnumRejections(*runtime);

@@ -403,20 +403,25 @@ inline margelo::nitro::RNSkiaYoga::AnimatedDouble parseStaticFiniteAnimatedDoubl
 {
     throw jsi::JSError(
         runtime,
-        "Invalid numeric command point value for " + propertyPath + ": expected a finite number.");
+        "Invalid numeric command point value for " + propertyPath + ": expected a finite native float.");
 }
 
-inline double parseFinitePointNumber(
+inline bool isValidCommandPointNativeFloat(double value)
+{
+    return std::isfinite(value) && std::abs(value) <= static_cast<double>(std::numeric_limits<float>::max());
+}
+
+inline float parseFiniteNativePointNumber(
     jsi::Runtime& runtime,
     const jsi::Object& object,
     const char* key,
     const std::string& pointPath)
 {
     const auto value = object.getProperty(runtime, key).asNumber();
-    if (!std::isfinite(value)) {
+    if (!isValidCommandPointNativeFloat(value)) {
         throwInvalidCommandPointValue(runtime, pointPath + "." + key);
     }
-    return value;
+    return static_cast<float>(value);
 }
 
 inline ::SkPoint parsePoint(jsi::Runtime& runtime, const jsi::Value& value, const std::string& pointPath)
@@ -427,8 +432,8 @@ inline ::SkPoint parsePoint(jsi::Runtime& runtime, const jsi::Value& value, cons
 
     auto object = value.asObject(runtime);
     return ::SkPoint::Make(
-        static_cast<float>(parseFinitePointNumber(runtime, object, "x", pointPath)),
-        static_cast<float>(parseFinitePointNumber(runtime, object, "y", pointPath)));
+        parseFiniteNativePointNumber(runtime, object, "x", pointPath),
+        parseFiniteNativePointNumber(runtime, object, "y", pointPath));
 }
 
 inline std::vector<::SkPoint> parsePoints(jsi::Runtime& runtime, const jsi::Value& value)
