@@ -12,6 +12,8 @@
 #include "JsiSkTextStyle.h"
 #include "JsiSkPoint.h"
 #include "SkiaGlue.hpp"
+#include <cmath>
+#include <limits>
 #include <optional>
 #include <string>
 #include <variant>
@@ -60,6 +62,123 @@ inline std::optional<SkPaint> parseOptionalPaint(jsi::Runtime& runtime, const js
     SkPaint paint;
     paint.setColor(color.value());
     return paint;
+}
+
+[[noreturn]] inline void throwInvalidTextParagraphStyleNumericValue(
+    jsi::Runtime& runtime,
+    const std::string& propertyPath)
+{
+    throw jsi::JSError(
+        runtime,
+        "Invalid numeric text/paragraph style value for " + propertyPath +
+            ": expected a finite number within native range.");
+}
+
+inline double getRequiredFiniteStyleNumber(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* key,
+    const std::string& propertyPath)
+{
+    const auto number = object.getProperty(runtime, key).asNumber();
+    if (!std::isfinite(number)) {
+        throwInvalidTextParagraphStyleNumericValue(runtime, propertyPath);
+    }
+    return number;
+}
+
+inline float getRequiredFiniteStyleFloat(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* key,
+    const std::string& propertyPath)
+{
+    const auto number = getRequiredFiniteStyleNumber(runtime, object, key, propertyPath);
+    const auto narrowed = static_cast<float>(number);
+    if (!std::isfinite(narrowed)) {
+        throwInvalidTextParagraphStyleNumericValue(runtime, propertyPath);
+    }
+    return narrowed;
+}
+
+inline int getRequiredFiniteStyleInt(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* key,
+    const std::string& propertyPath)
+{
+    const auto number = getRequiredFiniteStyleNumber(runtime, object, key, propertyPath);
+    if (
+        std::trunc(number) != number ||
+        number < static_cast<double>(std::numeric_limits<int>::min()) ||
+        number > static_cast<double>(std::numeric_limits<int>::max())) {
+        throwInvalidTextParagraphStyleNumericValue(runtime, propertyPath);
+    }
+    return static_cast<int>(number);
+}
+
+template <typename T>
+inline T getRequiredFiniteStyleEnum(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* key,
+    const std::string& propertyPath)
+{
+    return static_cast<T>(getRequiredFiniteStyleInt(runtime, object, key, propertyPath));
+}
+
+inline void validateOptionalStyleFloat(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* key,
+    const std::string& propertyPath)
+{
+    if (object.hasProperty(runtime, key)) {
+        (void)getRequiredFiniteStyleFloat(runtime, object, key, propertyPath);
+    }
+}
+
+inline void validateOptionalStyleNumber(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* key,
+    const std::string& propertyPath)
+{
+    if (object.hasProperty(runtime, key)) {
+        (void)getRequiredFiniteStyleNumber(runtime, object, key, propertyPath);
+    }
+}
+
+inline void validateOptionalStyleInt(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* key,
+    const std::string& propertyPath)
+{
+    if (object.hasProperty(runtime, key)) {
+        (void)getRequiredFiniteStyleInt(runtime, object, key, propertyPath);
+    }
+}
+
+inline SkPoint parseFiniteTextStylePoint(
+    jsi::Runtime& runtime,
+    const jsi::Value& value,
+    const std::string& propertyPath)
+{
+    const auto object = value.asObject(runtime);
+    if (object.isHostObject(runtime)) {
+        auto point = object.asHostObject<RNSkia::JsiSkPoint>(runtime)->getObject();
+        const auto x = point->x();
+        const auto y = point->y();
+        if (!std::isfinite(x) || !std::isfinite(y)) {
+            throwInvalidTextParagraphStyleNumericValue(runtime, propertyPath);
+        }
+        return *point;
+    }
+
+    return SkPoint::Make(
+        getRequiredFiniteStyleFloat(runtime, object, "x", propertyPath + ".x"),
+        getRequiredFiniteStyleFloat(runtime, object, "y", propertyPath + ".y"));
 }
 
 inline void rejectUnsupportedFontVariations(
@@ -190,6 +309,71 @@ inline std::optional<SkColor> textStyleBackgroundColor(
     return std::nullopt;
 }
 
+inline void validateTextStyleNumericFields(
+    jsi::Runtime& runtime,
+    const jsi::Value& value,
+    const std::string& stylePath,
+    bool skipHeightMultiplier = false)
+{
+    if (value.isUndefined() || value.isNull()) {
+        return;
+    }
+    if (!value.isObject()) {
+        throw jsi::JSError(runtime, "Expected textStyle object.");
+    }
+
+    auto object = value.asObject(runtime);
+    validateOptionalStyleInt(runtime, object, "decoration", stylePath + ".decoration");
+    validateOptionalStyleFloat(runtime, object, "decorationThickness", stylePath + ".decorationThickness");
+    validateOptionalStyleInt(runtime, object, "decorationStyle", stylePath + ".decorationStyle");
+    validateOptionalStyleFloat(runtime, object, "fontSize", stylePath + ".fontSize");
+    if (!skipHeightMultiplier) {
+        validateOptionalStyleFloat(runtime, object, "heightMultiplier", stylePath + ".heightMultiplier");
+    }
+    validateOptionalStyleFloat(runtime, object, "letterSpacing", stylePath + ".letterSpacing");
+    validateOptionalStyleFloat(runtime, object, "wordSpacing", stylePath + ".wordSpacing");
+    validateOptionalStyleInt(runtime, object, "textBaseline", stylePath + ".textBaseline");
+
+    if (object.hasProperty(runtime, "fontFeatures")) {
+        auto features = object.getProperty(runtime, "fontFeatures").asObject(runtime).asArray(runtime);
+        const auto size = features.size(runtime);
+        for (size_t index = 0; index < size; ++index) {
+            auto feature = features.getValueAtIndex(runtime, index).asObject(runtime);
+            validateOptionalStyleInt(
+                runtime,
+                feature,
+                "value",
+                stylePath + ".fontFeatures[" + std::to_string(index) + "].value");
+        }
+    }
+
+    if (object.hasProperty(runtime, "fontStyle")) {
+        auto fontStyle = object.getProperty(runtime, "fontStyle").asObject(runtime);
+        validateOptionalStyleInt(runtime, fontStyle, "weight", stylePath + ".fontStyle.weight");
+        validateOptionalStyleInt(runtime, fontStyle, "width", stylePath + ".fontStyle.width");
+        validateOptionalStyleInt(runtime, fontStyle, "slant", stylePath + ".fontStyle.slant");
+    }
+
+    if (object.hasProperty(runtime, "shadows")) {
+        auto shadows = object.getProperty(runtime, "shadows").asObject(runtime).asArray(runtime);
+        const auto size = shadows.size(runtime);
+        for (size_t index = 0; index < size; ++index) {
+            auto shadow = shadows.getValueAtIndex(runtime, index).asObject(runtime);
+            validateOptionalStyleNumber(
+                runtime,
+                shadow,
+                "blurRadius",
+                stylePath + ".shadows[" + std::to_string(index) + "].blurRadius");
+            if (shadow.hasProperty(runtime, "offset")) {
+                (void)parseFiniteTextStylePoint(
+                    runtime,
+                    shadow.getProperty(runtime, "offset"),
+                    stylePath + ".shadows[" + std::to_string(index) + "].offset");
+            }
+        }
+    }
+}
+
 inline void writeTextStylePublicFieldsToJSI(
     jsi::Runtime& runtime,
     jsi::Object& object,
@@ -234,7 +418,8 @@ inline void applyTextStyle(
     jsi::Runtime& runtime,
     const jsi::Value& value,
     skia::textlayout::TextStyle& textStyle,
-    bool skipHeightMultiplier = false)
+    bool skipHeightMultiplier = false,
+    const std::string& stylePath = "TextStyle")
 {
     if (value.isUndefined() || value.isNull()) {
         return;
@@ -245,6 +430,7 @@ inline void applyTextStyle(
 
     auto object = value.asObject(runtime);
     rejectUnsupportedFontVariations(runtime, object, "TextStyle.fontVariations");
+    validateTextStyleNumericFields(runtime, value, stylePath, skipHeightMultiplier);
 
     if (auto backgroundPaint = parseOptionalPaint(runtime, object, "backgroundColor")) {
         textStyle.setBackgroundPaint(backgroundPaint.value());
@@ -253,16 +439,28 @@ inline void applyTextStyle(
         textStyle.setColor(color.value());
     }
     if (object.hasProperty(runtime, "decoration")) {
-        textStyle.setDecoration(static_cast<skia::textlayout::TextDecoration>(object.getProperty(runtime, "decoration").asNumber()));
+        textStyle.setDecoration(getRequiredFiniteStyleEnum<skia::textlayout::TextDecoration>(
+            runtime,
+            object,
+            "decoration",
+            stylePath + ".decoration"));
     }
     if (auto decorationColor = parseOptionalColor(runtime, object, "decorationColor")) {
         textStyle.setDecorationColor(decorationColor.value());
     }
     if (object.hasProperty(runtime, "decorationThickness")) {
-        textStyle.setDecorationThicknessMultiplier(object.getProperty(runtime, "decorationThickness").asNumber());
+        textStyle.setDecorationThicknessMultiplier(getRequiredFiniteStyleFloat(
+            runtime,
+            object,
+            "decorationThickness",
+            stylePath + ".decorationThickness"));
     }
     if (object.hasProperty(runtime, "decorationStyle")) {
-        textStyle.setDecorationStyle(static_cast<skia::textlayout::TextDecorationStyle>(object.getProperty(runtime, "decorationStyle").asNumber()));
+        textStyle.setDecorationStyle(getRequiredFiniteStyleEnum<skia::textlayout::TextDecorationStyle>(
+            runtime,
+            object,
+            "decorationStyle",
+            stylePath + ".decorationStyle"));
     }
     if (auto families = parseOptionalFontFamilies(runtime, object)) {
         textStyle.setFontFamilies(families.value());
@@ -274,26 +472,34 @@ inline void applyTextStyle(
         for (size_t index = 0; index < size; ++index) {
             auto feature = features.getValueAtIndex(runtime, index).asObject(runtime);
             auto name = feature.getProperty(runtime, "name").asString(runtime).utf8(runtime);
-            auto featureValue = feature.getProperty(runtime, "value").asNumber();
+            auto featureValue = getRequiredFiniteStyleInt(
+                runtime,
+                feature,
+                "value",
+                stylePath + ".fontFeatures[" + std::to_string(index) + "].value");
             textStyle.addFontFeature(SkString(name), featureValue);
         }
     }
     if (object.hasProperty(runtime, "fontSize")) {
-        textStyle.setFontSize(object.getProperty(runtime, "fontSize").asNumber());
+        textStyle.setFontSize(getRequiredFiniteStyleFloat(
+            runtime,
+            object,
+            "fontSize",
+            stylePath + ".fontSize"));
     }
     if (object.hasProperty(runtime, "fontStyle")) {
         auto fontStyle = object.getProperty(runtime, "fontStyle").asObject(runtime);
         auto weight = static_cast<SkFontStyle::Weight>(
             fontStyle.hasProperty(runtime, "weight")
-                ? fontStyle.getProperty(runtime, "weight").asNumber()
+                ? getRequiredFiniteStyleInt(runtime, fontStyle, "weight", stylePath + ".fontStyle.weight")
                 : static_cast<double>(SkFontStyle::Weight::kNormal_Weight));
         auto width = static_cast<SkFontStyle::Width>(
             fontStyle.hasProperty(runtime, "width")
-                ? fontStyle.getProperty(runtime, "width").asNumber()
+                ? getRequiredFiniteStyleInt(runtime, fontStyle, "width", stylePath + ".fontStyle.width")
                 : static_cast<double>(SkFontStyle::Width::kNormal_Width));
         auto slant = static_cast<SkFontStyle::Slant>(
             fontStyle.hasProperty(runtime, "slant")
-                ? fontStyle.getProperty(runtime, "slant").asNumber()
+                ? getRequiredFiniteStyleInt(runtime, fontStyle, "slant", stylePath + ".fontStyle.slant")
                 : static_cast<double>(SkFontStyle::Slant::kUpright_Slant));
         textStyle.setFontStyle(SkFontStyle(weight, width, slant));
     }
@@ -301,17 +507,29 @@ inline void applyTextStyle(
         textStyle.setForegroundColor(foregroundPaint.value());
     }
     if (!skipHeightMultiplier && object.hasProperty(runtime, "heightMultiplier")) {
-        textStyle.setHeight(object.getProperty(runtime, "heightMultiplier").asNumber());
+        textStyle.setHeight(getRequiredFiniteStyleFloat(
+            runtime,
+            object,
+            "heightMultiplier",
+            stylePath + ".heightMultiplier"));
         textStyle.setHeightOverride(true);
     }
     if (object.hasProperty(runtime, "halfLeading")) {
         textStyle.setHalfLeading(object.getProperty(runtime, "halfLeading").getBool());
     }
     if (object.hasProperty(runtime, "letterSpacing")) {
-        textStyle.setLetterSpacing(object.getProperty(runtime, "letterSpacing").asNumber());
+        textStyle.setLetterSpacing(getRequiredFiniteStyleFloat(
+            runtime,
+            object,
+            "letterSpacing",
+            stylePath + ".letterSpacing"));
     }
     if (object.hasProperty(runtime, "wordSpacing")) {
-        textStyle.setWordSpacing(object.getProperty(runtime, "wordSpacing").asNumber());
+        textStyle.setWordSpacing(getRequiredFiniteStyleFloat(
+            runtime,
+            object,
+            "wordSpacing",
+            stylePath + ".wordSpacing"));
     }
     if (object.hasProperty(runtime, "locale")) {
         textStyle.setLocale(SkString(object.getProperty(runtime, "locale").asString(runtime).utf8(runtime)));
@@ -327,16 +545,27 @@ inline void applyTextStyle(
                 : SK_ColorBLACK;
             SkPoint offset = SkPoint::Make(0, 0);
             if (shadow.hasProperty(runtime, "offset")) {
-                offset = *RNSkia::JsiSkPoint::fromValue(runtime, shadow.getProperty(runtime, "offset")).get();
+                offset = parseFiniteTextStylePoint(
+                    runtime,
+                    shadow.getProperty(runtime, "offset"),
+                    stylePath + ".shadows[" + std::to_string(index) + "].offset");
             }
             auto blurSigma = shadow.hasProperty(runtime, "blurRadius")
-                ? shadow.getProperty(runtime, "blurRadius").asNumber()
+                ? getRequiredFiniteStyleNumber(
+                    runtime,
+                    shadow,
+                    "blurRadius",
+                    stylePath + ".shadows[" + std::to_string(index) + "].blurRadius")
                 : 0;
             textStyle.addShadow(skia::textlayout::TextShadow(color, offset, blurSigma));
         }
     }
     if (object.hasProperty(runtime, "textBaseline")) {
-        textStyle.setTextBaseline(static_cast<skia::textlayout::TextBaseline>(object.getProperty(runtime, "textBaseline").asNumber()));
+        textStyle.setTextBaseline(getRequiredFiniteStyleEnum<skia::textlayout::TextBaseline>(
+            runtime,
+            object,
+            "textBaseline",
+            stylePath + ".textBaseline"));
     }
 }
 
