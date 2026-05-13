@@ -499,33 +499,34 @@ Accepted package-hygiene implementation:
   and direct `StrokeOpts` `stroke.join` / `stroke.cap`, with native
   command/render and generated Nitro materialized `setCommand(...)`
   state-preservation proof plus the full feasible matrix.
+- `worker-229-post-228-root-cause-audit`: accepted Worker 228's command
+  numeric enum validation boundary, reconfirmed focused native/generated
+  checks, and selected YogaNode method numeric argument validation as the next
+  implementation target.
 
 Current active worker:
 
-- Worker 229 post-Worker 228 root-cause audit.
-- Agent path: `/root/worker_229_post_228_root_cause_audit`.
-- Worktree: `../worker-229-post-228-root-cause-audit`.
-- Branch: `worker/229-post-228-root-cause-audit`.
-- Scope: report-only audit of Worker 228's command numeric enum validation
-  boundary, focused verification evidence, residual risks, and next unblocked
-  root-cause target.
-- Required tracked report:
-  `worker-progress/worker-229-post-228-root-cause-audit.md`.
-- Required verification: inspect Worker 228 diff/report and main post-merge
-  evidence; run focused checks only if the audit finds uncertainty that needs
-  fresh proof.
-- State: ready to spawn with `agent_type: "worker"`, `goal: true`,
-  `fork_turns: "none"`, `model: "gpt-5.5"`, and
-  `reasoning_effort: "xhigh"`.
+- None. Worker 229 has been accepted and merged; the next work item is Worker
+  230 YogaNode method numeric argument validation.
 
 Next queued worker:
 
-- None until Worker 229 reports.
+- Worker 230 YogaNode method numeric argument validation implementation.
+- Scope: deterministic finite/native-float validation for generated
+  `computeLayout(width, height)` and raw `hitTest(x, y)` numeric arguments,
+  rejecting invalid numbers before layout or hit-test state/traversal changes.
+- Required tracked report:
+  `worker-progress/worker-230-yoganode-method-numeric-validation.md`.
+- Required verification: raw JSI methods, generated Nitro materialization,
+  typecheck if TS changes, and full feasible matrix unless blocked.
+- Required launch parameters when prepared: `agent_type: "worker"`,
+  `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`.
 
 Follow-up queue:
 
-- Audit the Worker 228 command numeric enum validation boundary and choose the
-  next root-cause target from the remaining local feasible gaps.
+- Implement YogaNode method numeric argument finite/native-float validation for
+  generated `computeLayout(width, height)` and raw `hitTest(x, y)`.
 
 Acceptance criteria:
 
