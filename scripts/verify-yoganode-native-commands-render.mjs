@@ -278,7 +278,7 @@ try {
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
 	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, simple text.textStyle fontSize/color fields, inventory-backed paragraphStyle fields including nested textStyle output, distinct paragraph/text-style heightMultiplier preservation, fontFeatures and strutStyle, line from/to points, and points arrays.")
 	console.log("- The executable asserted non-finite command point rejection for line.from.x/y, line.to.x/y, and indexed points.points[] x/y payloads with NaN, Infinity, and -Infinity, preserving the previously installed native LineCmd/PointsCmd state.")
-	console.log("- The executable asserted non-finite static AnimatedDouble command rejection for rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, path.trimEnd, and circle.radius payloads before same-type setCommand mutation, while retaining dynamic Worklets-backed AnimatedDouble command behavior.")
+	console.log("- The executable asserted non-finite and native-float-overflow static AnimatedDouble command rejection for rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, path.trimEnd, and circle.radius payloads before same-type setCommand mutation, while retaining dynamic Worklets-backed AnimatedDouble command behavior.")
 	console.log("- The executable asserted dynamic AnimatedDouble render-time native-float validation fails closed for NaN, Infinity, and native-float-overflow Synchronizable mutations without installing invalid float props.")
 	console.log("- The executable asserted non-finite path stroke numeric rejection for stroke.width, stroke.miter_limit, stroke.miterLimit alias fallback, and stroke.precision before same-type PathCmd state mutation, while preserving direct StrokeOpts converter behavior.")
 	console.log("- The executable asserted numeric enum rejection for blurMaskFilter.blurStyle, points.pointMode, path.fillType, path.stroke.join, and path.stroke.cap finite/integer/range violations before same-type command mutation.")
@@ -291,7 +291,7 @@ try {
 	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) plus flattened and nested ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection including nested paragraphStyle.textStyle.color, unsupported paragraph fontVariations rejection, and text.textStyle rich-key rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; finite rejection for direct width, miter_limit, miterLimit alias fallback, and precision payloads; numeric enum rejection for direct join/cap finite/integer/range violations; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, later Synchronizable::setBlocking(...) mutation observation, and invalid dynamic mutation fail-closed behavior through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, overflow hidden/scroll, and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias/Yoga overflow/_clipsToBounds state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded plain overflow hidden/scroll rectangular raster clipping through YogaNode::renderToContext() using a GroupCmd parent and oversized RectCmd child, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, bounded explicit style.clip rect/rrect/path and invertClip rect/rrect/path raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, command point finite rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate LineCmd/PointsCmd state, static numeric AnimatedDouble command finite rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate CircleCmd/RRectCmd/BlurMaskFilterCmd/PathCmd state, dynamic AnimatedDouble native-float validation through AnimatedDouble::resolveNativeFloat before selected render paths narrow or mutate command props, command numeric enum finite/integer/range rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate BlurMaskFilterCmd/PointsCmd/PathCmd state, path stroke numeric finite rejection through direct JSIConverter<StrokeOpts>::fromJSI and JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate PathCmd stroke state, direct StrokeOpts numeric enum finite/integer/range rejection through JSIConverter<StrokeOpts>::fromJSI for join/cap, text/paragraph style numeric finite and native-range-overflow rejection through JSIConverter<NodeCommand>::fromJSI before same-type TextCmd/ParagraphCmd mutation, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact plain overflow clipping beyond the asserted host-raster pixels, exact style corner-radius, global style.borderRadius, or explicit style.clip render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, overflow hidden/scroll, and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias/Yoga overflow/_clipsToBounds state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded plain overflow hidden/scroll rectangular raster clipping through YogaNode::renderToContext() using a GroupCmd parent and oversized RectCmd child, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, bounded explicit style.clip rect/rrect/path and invertClip rect/rrect/path raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, command point finite rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate LineCmd/PointsCmd state, static numeric AnimatedDouble command native-float validation through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate CircleCmd/RRectCmd/BlurMaskFilterCmd/PathCmd state, dynamic AnimatedDouble native-float validation through AnimatedDouble::resolveNativeFloat before selected render paths narrow or mutate command props, command numeric enum finite/integer/range rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate BlurMaskFilterCmd/PointsCmd/PathCmd state, path stroke numeric finite rejection through direct JSIConverter<StrokeOpts>::fromJSI and JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate PathCmd stroke state, direct StrokeOpts numeric enum finite/integer/range rejection through JSIConverter<StrokeOpts>::fromJSI for join/cap, text/paragraph style numeric finite and native-range-overflow rejection through JSIConverter<NodeCommand>::fromJSI before same-type TextCmd/ParagraphCmd mutation, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact plain overflow clipping beyond the asserted host-raster pixels, exact style corner-radius, global style.borderRadius, or explicit style.clip render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -632,14 +632,17 @@ function assertCommandAnimatedDoubleFiniteValidationInventory() {
 	)
 	assertSource(
 		nodeCommandConverter.includes("parseStaticFiniteAnimatedDouble") &&
-			nodeCommandConverter.includes("std::isfinite(animated.value.value())") &&
+			nodeCommandConverter.includes("isValidStaticAnimatedDoubleNativeFloat") &&
+			nodeCommandConverter.includes("std::isfinite(value)") &&
+			nodeCommandConverter.includes("std::numeric_limits<float>::max()") &&
+			nodeCommandConverter.includes("expected a finite native float") &&
 			nodeCommandConverter.includes("Invalid numeric AnimatedDouble command value for ") &&
 			converterRRectRadiusIndex > converterRRectIndex &&
 			converterBlurFieldIndex > converterBlurIndex &&
 			converterPathTrimEndIndex > converterPathIndex &&
 			converterPathTrimStartIndex > converterPathTrimEndIndex &&
 			converterCircleRadiusIndex > converterCircleIndex,
-		"Native NodeCommand converter must finite-check static numeric AnimatedDouble command payloads with stable field labels.",
+		"Native NodeCommand converter must native-float-check static numeric AnimatedDouble command payloads with stable field labels.",
 	)
 
 	assertSource(
@@ -658,11 +661,16 @@ function assertCommandAnimatedDoubleFiniteValidationInventory() {
 	assertSource(
 		nativeVerifier.includes("assertStaticAnimatedDoubleCommandFiniteRejections(*runtime);") &&
 			nativeVerifier.includes("circle.radius NaN") &&
+			nativeVerifier.includes("circle.radius native-float overflow") &&
 			nativeVerifier.includes("rrect.cornerRadius Infinity") &&
+			nativeVerifier.includes("rrect.cornerRadius native-float overflow") &&
 			nativeVerifier.includes("blurMaskFilter.blur -Infinity") &&
+			nativeVerifier.includes("blurMaskFilter.blur native-float overflow") &&
 			nativeVerifier.includes("path.trimStart NaN") &&
-			nativeVerifier.includes("path.trimEnd Infinity"),
-		"Native command/render verifier must retain non-finite static AnimatedDouble rejection coverage.",
+			nativeVerifier.includes("path.trimStart native-float overflow") &&
+			nativeVerifier.includes("path.trimEnd Infinity") &&
+			nativeVerifier.includes("path.trimEnd native-float overflow"),
+		"Native command/render verifier must retain non-finite and native-float-overflow static AnimatedDouble rejection coverage.",
 	)
 	assertSource(
 		nativeVerifier.includes("dynamic CircleCmd render preserves last valid radius after NaN mutation") &&
@@ -677,11 +685,16 @@ function assertCommandAnimatedDoubleFiniteValidationInventory() {
 			"assertGeneratedStaticAnimatedDoubleCommandFiniteRejections(*runtime);",
 		) &&
 			materializationVerifier.includes("generated circle.radius NaN") &&
+			materializationVerifier.includes("generated circle.radius native-float overflow") &&
 			materializationVerifier.includes("generated rrect.cornerRadius Infinity") &&
+			materializationVerifier.includes("generated rrect.cornerRadius native-float overflow") &&
 			materializationVerifier.includes("generated blurMaskFilter.blur -Infinity") &&
+			materializationVerifier.includes("generated blurMaskFilter.blur native-float overflow") &&
 			materializationVerifier.includes("generated path.trimStart NaN") &&
-			materializationVerifier.includes("generated path.trimEnd Infinity"),
-		"Generated materialized setCommand verifier must retain non-finite static AnimatedDouble rejection coverage.",
+			materializationVerifier.includes("generated path.trimStart native-float overflow") &&
+			materializationVerifier.includes("generated path.trimEnd Infinity") &&
+			materializationVerifier.includes("generated path.trimEnd native-float overflow"),
+		"Generated materialized setCommand verifier must retain non-finite and native-float-overflow static AnimatedDouble rejection coverage.",
 	)
 }
 
@@ -4872,7 +4885,7 @@ void assertCommandPointFiniteRejections(jsi::Runtime& runtime)
 
 std::string invalidStaticAnimatedDoubleCommandMessage(const char* propertyPath)
 {
-    return std::string("Invalid numeric AnimatedDouble command value for ") + propertyPath + ": expected a finite number.";
+    return std::string("Invalid numeric AnimatedDouble command value for ") + propertyPath + ": expected a finite native float.";
 }
 
 void expectCircleCommandState(
@@ -4999,6 +5012,7 @@ void assertStaticAnimatedDoubleCommandFiniteRejections(jsi::Runtime& runtime)
     const double nan = std::numeric_limits<double>::quiet_NaN();
     const double positiveInfValue = std::numeric_limits<double>::infinity();
     const double negativeInfValue = -std::numeric_limits<double>::infinity();
+    const double nativeFloatOverflow = nativeFloatOverflowValue();
 
     {
         auto root = makeYogaNode(
@@ -5014,6 +5028,14 @@ void assertStaticAnimatedDoubleCommandFiniteRejections(jsi::Runtime& runtime)
             "circle.radius NaN");
         expect(root->_command.get() == initialCommand, "circle.radius NaN preserves command pointer");
         expectCircleCommandState(root, 8.0, "circle.radius NaN");
+        expectConvertedSetCommandRejects(
+            runtime,
+            *root,
+            circleCommandObject(runtime, nativeFloatOverflow),
+            invalidStaticAnimatedDoubleCommandMessage("circle.radius"),
+            "circle.radius native-float overflow");
+        expect(root->_command.get() == initialCommand, "circle.radius native-float overflow preserves command pointer");
+        expectCircleCommandState(root, 8.0, "circle.radius native-float overflow");
     }
 
     {
@@ -5030,6 +5052,14 @@ void assertStaticAnimatedDoubleCommandFiniteRejections(jsi::Runtime& runtime)
             "rrect.cornerRadius Infinity");
         expect(root->_command.get() == initialCommand, "rrect.cornerRadius Infinity preserves command pointer");
         expectRRectCommandState(root, 5.0, "rrect.cornerRadius Infinity");
+        expectConvertedSetCommandRejects(
+            runtime,
+            *root,
+            rrectCommandObject(runtime, nativeFloatOverflow),
+            invalidStaticAnimatedDoubleCommandMessage("rrect.cornerRadius"),
+            "rrect.cornerRadius native-float overflow");
+        expect(root->_command.get() == initialCommand, "rrect.cornerRadius native-float overflow preserves command pointer");
+        expectRRectCommandState(root, 5.0, "rrect.cornerRadius native-float overflow");
     }
 
     {
@@ -5046,6 +5076,14 @@ void assertStaticAnimatedDoubleCommandFiniteRejections(jsi::Runtime& runtime)
             "blurMaskFilter.blur -Infinity");
         expect(root->_command.get() == initialCommand, "blurMaskFilter.blur -Infinity preserves command pointer");
         expectBlurMaskFilterCommandState(root, "blurMaskFilter.blur -Infinity");
+        expectConvertedSetCommandRejects(
+            runtime,
+            *root,
+            blurMaskFilterCommandObject(runtime, nativeFloatOverflow),
+            invalidStaticAnimatedDoubleCommandMessage("blurMaskFilter.blur"),
+            "blurMaskFilter.blur native-float overflow");
+        expect(root->_command.get() == initialCommand, "blurMaskFilter.blur native-float overflow preserves command pointer");
+        expectBlurMaskFilterCommandState(root, "blurMaskFilter.blur native-float overflow");
     }
 
     {
@@ -5063,6 +5101,14 @@ void assertStaticAnimatedDoubleCommandFiniteRejections(jsi::Runtime& runtime)
             "path.trimStart NaN");
         expect(root->_command.get() == initialCommand, "path.trimStart NaN preserves command pointer");
         expectPathTrimCommandState(root, 0.25, 0.75, "path.trimStart NaN");
+        expectConvertedSetCommandRejects(
+            runtime,
+            *root,
+            pathTrimCommandObject(runtime, nativeFloatOverflow, 0.75),
+            invalidStaticAnimatedDoubleCommandMessage("path.trimStart"),
+            "path.trimStart native-float overflow");
+        expect(root->_command.get() == initialCommand, "path.trimStart native-float overflow preserves command pointer");
+        expectPathTrimCommandState(root, 0.25, 0.75, "path.trimStart native-float overflow");
 
         expectConvertedSetCommandRejects(
             runtime,
@@ -5072,6 +5118,14 @@ void assertStaticAnimatedDoubleCommandFiniteRejections(jsi::Runtime& runtime)
             "path.trimEnd Infinity");
         expect(root->_command.get() == initialCommand, "path.trimEnd Infinity preserves command pointer");
         expectPathTrimCommandState(root, 0.25, 0.75, "path.trimEnd Infinity");
+        expectConvertedSetCommandRejects(
+            runtime,
+            *root,
+            pathTrimCommandObject(runtime, 0.25, nativeFloatOverflow),
+            invalidStaticAnimatedDoubleCommandMessage("path.trimEnd"),
+            "path.trimEnd native-float overflow");
+        expect(root->_command.get() == initialCommand, "path.trimEnd native-float overflow preserves command pointer");
+        expectPathTrimCommandState(root, 0.25, 0.75, "path.trimEnd native-float overflow");
     }
 }
 

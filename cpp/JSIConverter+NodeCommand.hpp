@@ -21,6 +21,7 @@
 #include <array>
 #include <cmath>
 #include <jsi/jsi.h>
+#include <limits>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -378,7 +379,12 @@ inline std::optional<margelo::nitro::RNSkiaYoga::PathCommandData::StrokeOptsData
 {
     throw jsi::JSError(
         runtime,
-        "Invalid numeric AnimatedDouble command value for " + propertyPath + ": expected a finite number.");
+        "Invalid numeric AnimatedDouble command value for " + propertyPath + ": expected a finite native float.");
+}
+
+inline bool isValidStaticAnimatedDoubleNativeFloat(double value)
+{
+    return std::isfinite(value) && std::abs(value) <= static_cast<double>(std::numeric_limits<float>::max());
 }
 
 inline margelo::nitro::RNSkiaYoga::AnimatedDouble parseStaticFiniteAnimatedDouble(
@@ -387,7 +393,7 @@ inline margelo::nitro::RNSkiaYoga::AnimatedDouble parseStaticFiniteAnimatedDoubl
     const char* propertyPath)
 {
     auto animated = JSIConverter<margelo::nitro::RNSkiaYoga::AnimatedDouble>::fromJSI(runtime, value);
-    if (!animated.isDynamic() && animated.value.has_value() && !std::isfinite(animated.value.value())) {
+    if (!animated.isDynamic() && animated.value.has_value() && !isValidStaticAnimatedDoubleNativeFloat(animated.value.value())) {
         throwInvalidCommandAnimatedDoubleValue(runtime, propertyPath);
     }
     return animated;
