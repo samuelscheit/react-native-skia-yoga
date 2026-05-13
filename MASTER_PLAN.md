@@ -491,16 +491,27 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- Worker 227 post-Worker 226 root-cause audit.
+- Agent path: `/root/worker_227_post_226_root_cause_audit`.
+- Worktree: `../worker-227-post-226-root-cause-audit`.
+- Branch: `worker/227-post-226-root-cause-audit`.
+- Scope: report-only audit of Worker 226's text/paragraph style numeric
+  validation proof boundary, focused/full verification evidence, residual
+  risks, and next-target ranking.
+- Required tracked edit:
+  `worker-progress/worker-227-post-226-root-cause-audit.md`.
+- State: ready to spawn with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`.
 
 Next queued worker:
 
-- Fresh post-Worker 226 root-cause audit.
+- None until Worker 227 reports.
 
 Follow-up queue:
 
-- Audit Worker 226's text/paragraph style numeric validation proof boundary and
-  rank remaining finite-validation or runtime proof gaps.
+- After Worker 227, select the next highest-value finite-validation or runtime
+  proof target from its audit.
 
 Acceptance criteria:
 
