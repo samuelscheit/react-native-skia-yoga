@@ -121,9 +121,15 @@ Acceptance criteria:
 ## Phase 3: Integration and Example Confidence
 
 Status: active; latest accepted implementation is worker 230 YogaNode method
-numeric validation. Latest accepted audit is worker 229. Next queued work is a
-post-Worker 230 root-cause audit. Detailed historical accepted work lives in
-`MASTER_PROGRESS.md` and `worker-progress/`.
+numeric validation. Latest accepted audit is worker 231. Next queued work is
+dynamic `AnimatedDouble` mutation-time numeric validation. Detailed historical
+accepted work lives in `MASTER_PROGRESS.md` and `worker-progress/`.
+
+Latest accepted root-cause audit: worker 231 accepted Worker 230's YogaNode
+method numeric validation boundary, reconfirmed focused checks plus a full
+feasible matrix, and selected dynamic `AnimatedDouble` mutation-time numeric
+validation policy/implementation as the next locally unblocked root-cause
+target.
 
 Latest accepted implementation: worker 230 added deterministic
 finite/native-float validation for generated `computeLayout(width, height)` and
@@ -150,7 +156,7 @@ targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
 Current active worker: none.
-Next queued worker: post-Worker 230 root-cause audit.
+Next queued worker: dynamic `AnimatedDouble` mutation-time numeric validation.
 
 Goals:
 
@@ -478,32 +484,34 @@ Accepted package-hygiene implementation:
   raw hit-test implicit layout, or layout/interactivity state mutation, with
   raw JSI method, generated Nitro materialization, and full feasible matrix
   proof.
+- `worker-231-post-230-root-cause-audit`: accepted Worker 230's YogaNode
+  method numeric validation boundary, reconfirmed focused checks and a full
+  feasible matrix, and selected dynamic `AnimatedDouble` mutation-time numeric
+  validation policy/implementation as the next locally unblocked root-cause
+  target.
 
 Current active worker:
 
-- `worker-231-post-230-root-cause-audit`: report-only post-Worker 230
-  root-cause audit.
-- Agent path: `/root/worker_231_post_230_root_cause_audit`.
-- Worktree: `../worker-231-post-230-root-cause-audit`.
-- Branch: `worker/231-post-230-root-cause-audit`.
-- Scope: audit Worker 230's method numeric validation boundary, focused and
-  full-matrix verification evidence, residual risks, and next root-cause target
-  selection.
-- Required tracked report:
-  `worker-progress/worker-231-post-230-root-cause-audit.md`.
-- Required verification: Worker 230 diff check, raw JSI method verifier,
-  generated Nitro materialization verifier, and feasible matrix unless blocked.
-- State: spawned with `agent_type: "worker"`, `goal: true`,
-  `fork_turns: "none"`, `model: "gpt-5.5"`, and
-  `reasoning_effort: "xhigh"`.
+- None.
 
 Next queued worker:
 
-- None until Worker 231 reports.
+- `worker-232-dynamic-animateddouble-numeric-validation`: implementation.
+- State: not spawned. Create an isolated worktree and branch before launch.
+- Launch with `agent_type: "worker"`, `goal: true`, `fork_turns: "none"`,
+  `model: "gpt-5.5"`, and `reasoning_effort: "xhigh"`.
+- Scope: define and implement fail-closed finite/native-float policy for
+  dynamic `AnimatedDouble` values observed from Worklets `Synchronizable`
+  mutation after command installation.
+- Required tracked report:
+  `worker-progress/worker-232-dynamic-animateddouble-numeric-validation.md`.
+- Expected verification: focused `check:animated-double-synchronizable`,
+  selected dynamic `check:yoganode-native-commands-render` cases, syntax/diff
+  checks, and full feasible matrix unless blocked.
 
 Follow-up queue:
 
-- None until the post-Worker 230 audit selects the next target.
+- Post-Worker 232 root-cause audit after implementation acceptance.
 
 Acceptance criteria:
 
