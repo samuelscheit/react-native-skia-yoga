@@ -18,8 +18,12 @@
 #include "NodeCommand.hpp"
 #include <NitroModules/JSIConverter+Optional.hpp>
 #include <NitroModules/NitroHash.hpp>
+#include <array>
 #include <cmath>
 #include <jsi/jsi.h>
+#include <optional>
+#include <stdexcept>
+#include <string>
 
 namespace margelo::nitro {
 
@@ -117,19 +121,50 @@ inline std::optional<std::string> parseImageFit(jsi::Runtime& runtime, const jsi
     }
 }
 
-template <typename T>
-inline std::optional<T> parseOptionalNumericEnum(jsi::Runtime& runtime, const jsi::Value& value)
+inline std::string invalidNumericEnumMessage(const char* propertyPath, const char* validValues)
+{
+    return std::string("Invalid numeric enum value for ") + propertyPath +
+        ": expected a finite integer in " + validValues + ".";
+}
+
+template <typename T, size_t N>
+inline std::optional<T> parseOptionalNumericEnum(
+    const jsi::Value& value,
+    const char* propertyPath,
+    const std::array<T, N>& validValues,
+    const char* validValueDescription)
 {
     if (value.isUndefined() || value.isNull()) {
         return std::nullopt;
     }
-    return static_cast<T>(JSIConverter<int>::fromJSI(runtime, value));
+
+    const auto number = value.asNumber();
+    if (!std::isfinite(number) || std::trunc(number) != number) {
+        throw std::invalid_argument(invalidNumericEnumMessage(propertyPath, validValueDescription));
+    }
+
+    for (const auto validValue : validValues) {
+        if (number == static_cast<double>(static_cast<int>(validValue))) {
+            return validValue;
+        }
+    }
+
+    throw std::invalid_argument(invalidNumericEnumMessage(propertyPath, validValueDescription));
 }
 
 inline std::optional<SkBlurStyle> parseBlurStyle(jsi::Runtime& runtime, const jsi::Value& value)
 {
     if (value.isNumber()) {
-        return parseOptionalNumericEnum<SkBlurStyle>(runtime, value);
+        return parseOptionalNumericEnum<SkBlurStyle>(
+            value,
+            "blurMaskFilter.blurStyle",
+            std::array<SkBlurStyle, 4> {
+                SkBlurStyle::kNormal_SkBlurStyle,
+                SkBlurStyle::kSolid_SkBlurStyle,
+                SkBlurStyle::kOuter_SkBlurStyle,
+                SkBlurStyle::kInner_SkBlurStyle,
+            },
+            "[0, 1, 2, 3]");
     }
 
     auto blurStyle = JSIConverter<std::optional<std::string>>::fromJSI(runtime, value);
@@ -154,7 +189,15 @@ inline std::optional<SkBlurStyle> parseBlurStyle(jsi::Runtime& runtime, const js
 inline std::optional<SkCanvas::PointMode> parsePointMode(jsi::Runtime& runtime, const jsi::Value& value)
 {
     if (value.isNumber()) {
-        return parseOptionalNumericEnum<SkCanvas::PointMode>(runtime, value);
+        return parseOptionalNumericEnum<SkCanvas::PointMode>(
+            value,
+            "points.pointMode",
+            std::array<SkCanvas::PointMode, 3> {
+                SkCanvas::PointMode::kPoints_PointMode,
+                SkCanvas::PointMode::kLines_PointMode,
+                SkCanvas::PointMode::kPolygon_PointMode,
+            },
+            "[0, 1, 2]");
     }
 
     auto pointMode = JSIConverter<std::optional<std::string>>::fromJSI(runtime, value);
@@ -177,7 +220,16 @@ inline std::optional<SkCanvas::PointMode> parsePointMode(jsi::Runtime& runtime, 
 inline std::optional<SkPathFillType> parsePathFillType(jsi::Runtime& runtime, const jsi::Value& value)
 {
     if (value.isNumber()) {
-        return parseOptionalNumericEnum<SkPathFillType>(runtime, value);
+        return parseOptionalNumericEnum<SkPathFillType>(
+            value,
+            "path.fillType",
+            std::array<SkPathFillType, 4> {
+                SkPathFillType::kWinding,
+                SkPathFillType::kEvenOdd,
+                SkPathFillType::kInverseWinding,
+                SkPathFillType::kInverseEvenOdd,
+            },
+            "[0, 1, 2, 3]");
     }
 
     auto fillType = JSIConverter<std::optional<std::string>>::fromJSI(runtime, value);
@@ -199,10 +251,21 @@ inline std::optional<SkPathFillType> parsePathFillType(jsi::Runtime& runtime, co
     }
 }
 
-inline std::optional<SkPaint::Join> parseStrokeJoin(jsi::Runtime& runtime, const jsi::Value& value)
+inline std::optional<SkPaint::Join> parseStrokeJoin(
+    jsi::Runtime& runtime,
+    const jsi::Value& value,
+    const char* propertyPath)
 {
     if (value.isNumber()) {
-        return parseOptionalNumericEnum<SkPaint::Join>(runtime, value);
+        return parseOptionalNumericEnum<SkPaint::Join>(
+            value,
+            propertyPath,
+            std::array<SkPaint::Join, 3> {
+                SkPaint::Join::kMiter_Join,
+                SkPaint::Join::kRound_Join,
+                SkPaint::Join::kBevel_Join,
+            },
+            "[0, 1, 2]");
     }
 
     auto join = JSIConverter<std::optional<std::string>>::fromJSI(runtime, value);
@@ -222,10 +285,21 @@ inline std::optional<SkPaint::Join> parseStrokeJoin(jsi::Runtime& runtime, const
     }
 }
 
-inline std::optional<SkPaint::Cap> parseStrokeCap(jsi::Runtime& runtime, const jsi::Value& value)
+inline std::optional<SkPaint::Cap> parseStrokeCap(
+    jsi::Runtime& runtime,
+    const jsi::Value& value,
+    const char* propertyPath)
 {
     if (value.isNumber()) {
-        return parseOptionalNumericEnum<SkPaint::Cap>(runtime, value);
+        return parseOptionalNumericEnum<SkPaint::Cap>(
+            value,
+            propertyPath,
+            std::array<SkPaint::Cap, 3> {
+                SkPaint::Cap::kButt_Cap,
+                SkPaint::Cap::kRound_Cap,
+                SkPaint::Cap::kSquare_Cap,
+            },
+            "[0, 1, 2]");
     }
 
     auto cap = JSIConverter<std::optional<std::string>>::fromJSI(runtime, value);
@@ -295,8 +369,8 @@ inline std::optional<margelo::nitro::RNSkiaYoga::PathCommandData::StrokeOptsData
             "path.stroke.miter_limit",
             "path.stroke.miterLimit"),
         .precision = getOptionalFiniteStrokeProperty(runtime, object, "precision", "path.stroke.precision"),
-        .join = parseStrokeJoin(runtime, object.getProperty(runtime, "join")),
-        .cap = parseStrokeCap(runtime, object.getProperty(runtime, "cap")),
+        .join = parseStrokeJoin(runtime, object.getProperty(runtime, "join"), "path.stroke.join"),
+        .cap = parseStrokeCap(runtime, object.getProperty(runtime, "cap"), "path.stroke.cap"),
     };
 }
 

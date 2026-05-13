@@ -8,6 +8,7 @@
 
 #include <include/core/SkPaint.h>
 #include <jsi/jsi.h>
+#include <array>
 #include <cmath>
 #include <optional>
 #include <stdexcept>
@@ -58,6 +59,39 @@ inline std::optional<float> getOptionalFloatPropertyWithAlias(
   return getOptionalFloatProperty(runtime, object, aliasKey, aliasPropertyPath);
 }
 
+inline std::string invalidNumericStrokeEnumMessage(
+    const char* propertyPath,
+    const char* validValues) {
+  return std::string("Invalid numeric enum value for ") + propertyPath +
+      ": expected a finite integer in " + validValues + ".";
+}
+
+template <typename T, size_t N>
+inline std::optional<T> parseOptionalStrokeNumericEnum(
+    const jsi::Value& value,
+    const char* propertyPath,
+    const std::array<T, N>& validValues,
+    const char* validValueDescription) {
+  if (value.isUndefined() || value.isNull()) {
+    return std::nullopt;
+  }
+
+  const auto number = value.asNumber();
+  if (!std::isfinite(number) || std::trunc(number) != number) {
+    throw std::invalid_argument(
+        invalidNumericStrokeEnumMessage(propertyPath, validValueDescription));
+  }
+
+  for (const auto validValue : validValues) {
+    if (number == static_cast<double>(static_cast<int>(validValue))) {
+      return validValue;
+    }
+  }
+
+  throw std::invalid_argument(
+      invalidNumericStrokeEnumMessage(propertyPath, validValueDescription));
+}
+
 inline std::optional<SkPaint::Join> getOptionalStrokeJoin(
     jsi::Runtime& runtime,
     const jsi::Object& object) {
@@ -66,7 +100,15 @@ inline std::optional<SkPaint::Join> getOptionalStrokeJoin(
     return std::nullopt;
   }
   if (value.isNumber()) {
-    return static_cast<SkPaint::Join>(static_cast<int>(value.asNumber()));
+    return parseOptionalStrokeNumericEnum<SkPaint::Join>(
+        value,
+        "stroke.join",
+        std::array<SkPaint::Join, 3> {
+            SkPaint::Join::kMiter_Join,
+            SkPaint::Join::kRound_Join,
+            SkPaint::Join::kBevel_Join,
+        },
+        "[0, 1, 2]");
   }
 
   if (value.isString()) {
@@ -94,7 +136,15 @@ inline std::optional<SkPaint::Cap> getOptionalStrokeCap(
     return std::nullopt;
   }
   if (value.isNumber()) {
-    return static_cast<SkPaint::Cap>(static_cast<int>(value.asNumber()));
+    return parseOptionalStrokeNumericEnum<SkPaint::Cap>(
+        value,
+        "stroke.cap",
+        std::array<SkPaint::Cap, 3> {
+            SkPaint::Cap::kButt_Cap,
+            SkPaint::Cap::kRound_Cap,
+            SkPaint::Cap::kSquare_Cap,
+        },
+        "[0, 1, 2]");
   }
 
   if (value.isString()) {
