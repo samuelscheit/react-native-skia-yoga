@@ -120,16 +120,15 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active. Latest accepted audit is Worker 245, which accepted Worker
-244's deterministic `eventTag` validation and selected interaction `hitSlop`
-type/shape hardening as the next locally unblocked implementation target.
-Latest accepted implementation is Worker 244. Detailed historical accepted work
-lives in `MASTER_PROGRESS.md` and `worker-progress/`.
+Status: active. Latest accepted implementation is Worker 246, which added
+strict interaction `hitSlop` type/shape validation in the public registry and
+raw/native `YogaNode.setInteractionConfig(config)` boundary. Detailed
+historical accepted work lives in `MASTER_PROGRESS.md` and `worker-progress/`.
 
-Selected next target: Worker 246 should reject nonnumeric `hitSlop` payloads
-and object leaves in both the public interaction registry and raw/native
-`YogaNode.setInteractionConfig(config)` boundary before interaction state or
-registry handler/tag state can mutate.
+Selected next target: Worker 247 should audit Worker 246's proof boundary,
+then rank any remaining raw/native interaction config shape policies before
+falling back to platform build/runtime validation if no local source-boundary
+gap remains.
 
 Goals:
 
@@ -527,30 +526,24 @@ Accepted package-hygiene implementation:
   and selected `hitSlop` type/shape validation as the next target because
   present nonnumeric `hitSlop` values can still be silently defaulted before
   interaction state is applied.
+- `worker-246-interaction-hitslop-shape-validation`: implemented strict
+  `hitSlop` type/shape validation in `src/interactivity.ts` and
+  `cpp/YogaNode.cpp`, added public registry plus raw host-JSC coverage for
+  nonnumeric `hitSlop` payloads/leaves, and preserved valid scalar/object
+  behavior.
 
 Current active worker:
 
-- `worker-246-interaction-hitslop-shape-validation`: implement strict
-  interaction `hitSlop` type/shape validation in the public registry and
-  raw/native `YogaNode.setInteractionConfig(config)` boundary. State: spawned
-  as `/root/worker_246_interaction_hitslop_shape_validation`. Branch:
-  `worker/246-interaction-hitslop-shape-validation`.
-  Worktree:
-  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-246-interaction-hitslop-shape-validation`.
-  Expected files: `src/interactivity.ts`, `cpp/YogaNode.cpp`,
-  `scripts/verify-gesture-interaction-runtime.mjs`,
-  `scripts/verify-yoganode-jsi-raw-methods.mjs`, and worker report.
-  Verification: focused interaction checks, native hit-testing, typecheck, and
-  full feasible matrix.
+- None. Worker 246 was accepted and merged.
 
 Next queued worker:
 
-- Selected by Worker 246.
+- Worker 247 post-Worker 246 root-cause audit. Selected by Worker 246.
 
 Follow-up queue:
 
-- Monitor Worker 246 completion, then review its diff/report and merge if
-  accepted.
+- Create a fresh isolated worktree and branch for Worker 247, then spawn it as
+  a report-only top-level worker under the current `spawn_agent` policy.
 
 Acceptance criteria:
 

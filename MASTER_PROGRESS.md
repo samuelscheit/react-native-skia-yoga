@@ -5898,6 +5898,32 @@ Accepted worker reports:
   launched `/root/worker_246_interaction_hitslop_shape_validation` with
   `agent_type: "worker"`, `goal: true`, `fork_turns: "none"`, `model:
   "gpt-5.5"`, and `reasoning_effort: "xhigh"` as an implementation worker.
+- Worker 246's managed agent stalled without a report after leaving partial
+  scoped edits, so orchestration completed the implementation and report in the
+  assigned worktree. The branch commit was `84663cd Validate interaction
+  hitSlop shape`, merged as `ff7cc07 Merge worker 246 interaction hitSlop
+  shape validation`.
+- Worker 246 made public `src/interactivity.ts` reject nonnumeric top-level
+  `hitSlop` payloads, arrays, and nonnumeric object leaves before registry
+  tag/handler mutation. It also made `cpp/YogaNode.cpp` reject raw/native
+  nonnumeric `hitSlop` payloads/leaves before interaction state assignment,
+  while preserving omitted/null/undefined defaults and valid scalar/object
+  numeric behavior.
+- Worker 246 verification passed in the worker worktree: `git diff --check`,
+  both verifier `node --check` commands, `npm run
+  check:gesture-interaction-runtime`, `npm run
+  check:yoganode-jsi-raw-methods`, `npm run
+  check:yoganode-native-hit-testing`, `npm run typecheck`, and the full
+  28-command `npm run check:feasible-matrix` in `5m 36s`.
+- Main post-merge checks after Worker 246 passed `git diff --check HEAD~1
+  HEAD`, both verifier `node --check` commands, `npm run
+  check:yoganode-jsi-raw-methods`, `npm run
+  check:gesture-interaction-runtime`, `npm run
+  check:yoganode-native-hit-testing`, `npm run typecheck`, and the full
+  28-command `npm run check:feasible-matrix` in `4m 10s`.
+- Next queued worker is Worker 247, a post-Worker 246 root-cause audit of the
+  stricter interaction boundary and any remaining raw/native interaction config
+  shape gaps.
 
 ## Next Worker Candidates
 
