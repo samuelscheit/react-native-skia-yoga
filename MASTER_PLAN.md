@@ -1,6 +1,6 @@
 # React Native Skia Yoga Master Plan
 
-Last updated: 2026-05-12
+Last updated: 2026-05-13
 
 ## Mission
 
@@ -120,61 +120,44 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, example bundle feedback-loop hygiene fixed, post-worker-035 root-cause audit accepted, RN Skia private import cleanup integrated, post-worker-037 root-cause audit accepted, packed-package TypeScript consumer smoke coverage integrated, post-worker-039 root-cause audit accepted, `react-reconciler` package-surface dependency hygiene integrated, post-worker-041 root-cause audit accepted, public declaration/export boundary cleanup integrated, post-worker-043 root-cause audit accepted, `SkiaYogaObject` lazy initialization integrated, post-worker-045 root-cause audit accepted, `src/util.ts` Nitro boxing lazy-init integrated, post-worker-047 root-cause audit accepted, Worklets transform/closure verification integrated, post-worker-049 root-cause audit accepted, example/Expo Worklets transform verification integrated, public-import graph verifier hardening integrated, direct `NativeSkiaYoga` deep-import hardening integrated, post-worker-056 codegen-schema audit accepted, RN codegen schema verifier integrated, post-worker-058 root-cause audit accepted, Reconciler/gesture Worklets transform verification integrated, post-worker-060 root-cause audit accepted, Reconciler animated binding runtime verifier integrated, YogaCanvas gesture/interaction runtime verifier integrated, post-worker-062 root-cause audit accepted, YogaCanvas lifecycle runtime verifier integrated, post-worker-065 root-cause audit accepted, packed-package RN codegen/autolinking verification integrated, post-worker-067 root-cause audit accepted, example native-generation verifier integrated, local-artifact preservation hardening integrated, post-worker-069 root-cause audit accepted, aggregate feasible-matrix verifier integrated, post-worker-071 root-cause audit accepted, host-native YogaNode hit-testing verifier integrated, post-worker-073 root-cause audit accepted, host-native `SkiaYoga` / `RNSkYogaView` runtime verifier integrated, post-worker-075 root-cause audit accepted, feasible-matrix temp isolation hardening integrated, YogaNode hybrid/JSI raw-method boundary verification integrated, post-worker-078 root-cause audit accepted, YogaNode command/render verification integrated, post-worker-080 audit accepted, deterministic command/render expansion integrated, post-worker-082 audit accepted, ImageCmd command/render verification integrated, post-worker-084 audit accepted, TextCmd/ParagraphCmd command/render verification integrated, post-worker-086 root-cause audit accepted, Nitro YogaNode materialization verification integrated, dynamic AnimatedDouble Synchronizable verification integrated, selected dynamic AnimatedDouble NodeCommand verification integrated, dynamic PathCmd trim verification integrated, Reconciler native command-binding coverage integrated, post-worker-095 root-cause audit accepted, public `path.stroke` payload contract integration accepted, post-worker-097 root-cause audit accepted, Reconciler JS-mode command listener coverage integrated, post-worker-099 root-cause audit accepted, generated Nitro `setCommand(...)` breadth coverage integrated, post-worker-101 root-cause audit accepted, ImageCmd fit-mode coverage integrated, post-worker-103 root-cause audit accepted, TextCmd/ParagraphCmd CSS color-string coverage integrated, post-worker-105 root-cause audit accepted, expanded generated Nitro `setCommand(...)` breadth integrated, post-worker-107 root-cause audit accepted, direct `StrokeOpts` converter consistency integrated, post-worker-109 root-cause audit accepted, packed dynamic JSX type-boundary coverage integrated, post-worker-111 root-cause audit accepted, package export-boundary hardening integrated, NodeCommand `toJSI(...)` serialization symmetry integrated, post-worker-114 root-cause audit accepted, materialized `YogaNode.getChildren()` identity/prototype hardening integrated, post-worker-115 root-cause audit accepted, post-worker-116 root-cause audit accepted, whole `image.sampling` `SharedValue<SamplingOptions>` type support integrated, post-worker-118 root-cause audit accepted, value-bearing style/sampling `toJSI(...)` serialization integrated, post-worker-120 root-cause audit accepted, canonical `style.antiAlias` support integrated, post-worker-122 root-cause audit accepted, expanded `TextStyle` `toJSI(...)` serialization integrated, post-worker-124 root-cause audit accepted, bounded `TextStyle.fontFeatures` serialization integrated, post-worker-126 root-cause audit accepted, bounded `ParagraphStyle` scalar serialization integrated, post-worker-128 root-cause audit accepted, bounded `ParagraphStyle.strutStyle` parser/serializer coverage integrated, post-worker-130 root-cause audit accepted, unsupported public `fontVariations` contract closure integrated, post-worker-132 root-cause audit accepted, simple `<text textStyle>` contract closure integrated, post-worker-134 root-cause audit accepted, nested `paragraphStyle.textStyle` CSS color parsing integrated, post-worker-136 root-cause audit accepted, dynamic nested `paragraphStyle.textStyle` Reconciler proof integrated, post-worker-138 root-cause audit accepted, nested `ParagraphStyle::toJSI(...)` shape preservation integrated, SkPaint-backed `backgroundColor` paint ordering integrated, post-worker-147 root-cause audit accepted, `style.layer` / `_layerPaint` proof integrated, post-worker-149 root-cause audit accepted, dynamic `style.layer` / opaque style `SharedValue` proof integrated, post-worker-152 root-cause audit accepted, materialized `YogaNode.setStyle(...)` paint-field breadth proof integrated, generated materialized transform-operation breadth integrated, post-worker-162 root-cause audit accepted, bounded transform composition runtime proof integrated, post-worker-164 root-cause audit accepted, public/Reconciler transform authoring proof integrated, post-worker-166 root-cause audit accepted, overflow render/materialized bridge proof integrated, post-worker-195 root-cause audit accepted, residual generated materialized layout edge/constraint breadth integrated, post-worker-197 root-cause audit accepted, public/Reconciler dynamic layout-style proof integrated, post-worker-199 root-cause audit accepted, dynamic layout setter update proof integrated, post-worker-202 root-cause audit accepted, exact dynamic layout field-alignment proof integrated, post-worker-203 root-cause audit accepted, fresh audit-only gap discovery accepted, deterministic layout unit validation integrated, post-worker-207 root-cause audit accepted, deterministic `style.backgroundColor` string validation integrated, post-worker-209 root-cause audit accepted, selected numeric style finite validation integrated, post-worker-211 root-cause audit accepted, numeric Yoga layout finite validation integrated, post-worker-213 root-cause audit accepted, matrix/transform finite validation integrated, post-worker-215 root-cause audit accepted, radius finite validation integrated, and post-worker-217 root-cause audit accepted
+Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, example bundle feedback-loop hygiene fixed, post-worker-035 root-cause audit accepted, RN Skia private import cleanup integrated, post-worker-037 root-cause audit accepted, packed-package TypeScript consumer smoke coverage integrated, post-worker-039 root-cause audit accepted, `react-reconciler` package-surface dependency hygiene integrated, post-worker-041 root-cause audit accepted, public declaration/export boundary cleanup integrated, post-worker-043 root-cause audit accepted, `SkiaYogaObject` lazy initialization integrated, post-worker-045 root-cause audit accepted, `src/util.ts` Nitro boxing lazy-init integrated, post-worker-047 root-cause audit accepted, Worklets transform/closure verification integrated, post-worker-049 root-cause audit accepted, example/Expo Worklets transform verification integrated, public-import graph verifier hardening integrated, direct `NativeSkiaYoga` deep-import hardening integrated, post-worker-056 codegen-schema audit accepted, RN codegen schema verifier integrated, post-worker-058 root-cause audit accepted, Reconciler/gesture Worklets transform verification integrated, post-worker-060 root-cause audit accepted, Reconciler animated binding runtime verifier integrated, YogaCanvas gesture/interaction runtime verifier integrated, post-worker-062 root-cause audit accepted, YogaCanvas lifecycle runtime verifier integrated, post-worker-065 root-cause audit accepted, packed-package RN codegen/autolinking verification integrated, post-worker-067 root-cause audit accepted, example native-generation verifier integrated, local-artifact preservation hardening integrated, post-worker-069 root-cause audit accepted, aggregate feasible-matrix verifier integrated, post-worker-071 root-cause audit accepted, host-native YogaNode hit-testing verifier integrated, post-worker-073 root-cause audit accepted, host-native `SkiaYoga` / `RNSkYogaView` runtime verifier integrated, post-worker-075 root-cause audit accepted, feasible-matrix temp isolation hardening integrated, YogaNode hybrid/JSI raw-method boundary verification integrated, post-worker-078 root-cause audit accepted, YogaNode command/render verification integrated, post-worker-080 audit accepted, deterministic command/render expansion integrated, post-worker-082 audit accepted, ImageCmd command/render verification integrated, post-worker-084 audit accepted, TextCmd/ParagraphCmd command/render verification integrated, post-worker-086 root-cause audit accepted, Nitro YogaNode materialization verification integrated, dynamic AnimatedDouble Synchronizable verification integrated, selected dynamic AnimatedDouble NodeCommand verification integrated, dynamic PathCmd trim verification integrated, Reconciler native command-binding coverage integrated, post-worker-095 root-cause audit accepted, public `path.stroke` payload contract integration accepted, post-worker-097 root-cause audit accepted, Reconciler JS-mode command listener coverage integrated, post-worker-099 root-cause audit accepted, generated Nitro `setCommand(...)` breadth coverage integrated, post-worker-101 root-cause audit accepted, ImageCmd fit-mode coverage integrated, post-worker-103 root-cause audit accepted, TextCmd/ParagraphCmd CSS color-string coverage integrated, post-worker-105 root-cause audit accepted, expanded generated Nitro `setCommand(...)` breadth integrated, post-worker-107 root-cause audit accepted, direct `StrokeOpts` converter consistency integrated, post-worker-109 root-cause audit accepted, packed dynamic JSX type-boundary coverage integrated, post-worker-111 root-cause audit accepted, package export-boundary hardening integrated, NodeCommand `toJSI(...)` serialization symmetry integrated, post-worker-114 root-cause audit accepted, materialized `YogaNode.getChildren()` identity/prototype hardening integrated, post-worker-115 root-cause audit accepted, post-worker-116 root-cause audit accepted, whole `image.sampling` `SharedValue<SamplingOptions>` type support integrated, post-worker-118 root-cause audit accepted, value-bearing style/sampling `toJSI(...)` serialization integrated, post-worker-120 root-cause audit accepted, canonical `style.antiAlias` support integrated, post-worker-122 root-cause audit accepted, expanded `TextStyle` `toJSI(...)` serialization integrated, post-worker-124 root-cause audit accepted, bounded `TextStyle.fontFeatures` serialization integrated, post-worker-126 root-cause audit accepted, bounded `ParagraphStyle` scalar serialization integrated, post-worker-128 root-cause audit accepted, bounded `ParagraphStyle.strutStyle` parser/serializer coverage integrated, post-worker-130 root-cause audit accepted, unsupported public `fontVariations` contract closure integrated, post-worker-132 root-cause audit accepted, simple `<text textStyle>` contract closure integrated, post-worker-134 root-cause audit accepted, nested `paragraphStyle.textStyle` CSS color parsing integrated, post-worker-136 root-cause audit accepted, dynamic nested `paragraphStyle.textStyle` Reconciler proof integrated, post-worker-138 root-cause audit accepted, nested `ParagraphStyle::toJSI(...)` shape preservation integrated, SkPaint-backed `backgroundColor` paint ordering integrated, post-worker-147 root-cause audit accepted, `style.layer` / `_layerPaint` proof integrated, post-worker-149 root-cause audit accepted, dynamic `style.layer` / opaque style `SharedValue` proof integrated, post-worker-152 root-cause audit accepted, materialized `YogaNode.setStyle(...)` paint-field breadth proof integrated, generated materialized transform-operation breadth integrated, post-worker-162 root-cause audit accepted, bounded transform composition runtime proof integrated, post-worker-164 root-cause audit accepted, public/Reconciler transform authoring proof integrated, post-worker-166 root-cause audit accepted, overflow render/materialized bridge proof integrated, post-worker-195 root-cause audit accepted, residual generated materialized layout edge/constraint breadth integrated, post-worker-197 root-cause audit accepted, public/Reconciler dynamic layout-style proof integrated, post-worker-199 root-cause audit accepted, dynamic layout setter update proof integrated, post-worker-202 root-cause audit accepted, exact dynamic layout field-alignment proof integrated, post-worker-203 root-cause audit accepted, fresh audit-only gap discovery accepted, deterministic layout unit validation integrated, post-worker-207 root-cause audit accepted, deterministic `style.backgroundColor` string validation integrated, post-worker-209 root-cause audit accepted, selected numeric style finite validation integrated, post-worker-211 root-cause audit accepted, numeric Yoga layout finite validation integrated, post-worker-213 root-cause audit accepted, matrix/transform finite validation integrated, post-worker-215 root-cause audit accepted, radius finite validation integrated, post-worker-217 root-cause audit accepted, command point finite validation integrated, post-worker-219 root-cause audit accepted, and command `AnimatedDouble` finite validation integrated
 
-Latest accepted implementation: worker 216 added deterministic native
+Latest accepted implementation: worker 220 added deterministic native
+finite-number validation for static numeric command `AnimatedDouble` payloads:
+`rrect.cornerRadius`, `blurMaskFilter.blur`, `path.trimStart`, `path.trimEnd`,
+and `circle.radius`. Native command/render and generated materialized proof now
+show non-finite values reject before same-type `RRectCmd`,
+`BlurMaskFilterCmd`, `PathCmd`, or `CircleCmd` state mutates, while dynamic
+Worklets-backed `AnimatedDouble` command behavior remains intact.
+
+Previous accepted implementation: worker 218 added deterministic native
+finite-number validation for command `SkPoint` payloads: `line.from.x/y`,
+`line.to.x/y`, and indexed `points.points[].x/y`, with native command/render
+and generated materialized proof that previous `LineCmd` / `PointsCmd` state is
+preserved after rejection.
+
+Earlier accepted implementation: worker 216 added deterministic native
 finite-number validation for `style.borderRadius` and all per-corner
 `number | SkPoint` radius payload branches, with generated materialized proof
 that non-finite radius values reject before prior style radius,
 `_clipToBoundsRadii`, paint, Yoga, clip, layer, matrix, or computed-layout state
 mutates.
 
-Previous accepted implementation: worker 214 added deterministic native
+Earlier accepted implementation: worker 214 added deterministic native
 finite-number validation for `style.matrix` array / `SkMatrix` payloads and
 `style.transform` operation leaves, with generated materialized proof that
 non-finite matrix/transform values reject before prior style, matrix, paint,
 Yoga, clip/radius, layer, or computed-layout state mutates.
 
-Earlier accepted implementation: worker 212 added deterministic native
-finite-number validation for numeric Yoga layout style fields and generated
-materialized proof that non-finite values reject before prior layout, style,
-paint, Yoga, clip, layer, or matrix state mutates.
+Previous accepted root-cause audit: worker 217 accepted Worker 216's radius
+finite validation boundary and selected deterministic finite-number validation
+for command `SkPoint` payloads (`line.from`, `line.to`, and `points.points[]`)
+as the next strongest locally unblocked target.
 
-Earlier accepted implementation: worker 210 added deterministic native
-finite-number validation for selected numeric paint/border style fields and
-generated materialized proof that non-finite values reject before prior style,
-paint, Yoga, clip, layer, or matrix state mutates.
-
-Prior accepted implementation: worker 208 added deterministic native
-`style.backgroundColor` string validation and generated materialized proof for
-valid CSS strings, invalid-string rejection, and prior style/paint
-preservation.
-
-Prior accepted implementation: worker 206 added deterministic native Yoga
-layout unit string validation and generated materialized positive/negative
-proof for valid percentages, allowed `auto`, width-only special strings, and
-unsupported or malformed strings.
-
-Prior accepted audit: worker 209 accepted Worker 208's deterministic
-`style.backgroundColor` string validation boundary and selected deterministic
-finite-number validation for native style scalars as the next strongest
-locally unblocked target.
-
-Previous accepted root-cause audit: worker 211 accepted Worker 210's selected
-numeric finite validation boundary and selected finite-number validation for
-remaining numeric Yoga layout style fields as the next strongest locally
-unblocked target.
-
-Previous accepted root-cause audit: worker 215 accepted Worker 214's
-matrix/transform finite validation boundary and selected deterministic
-finite-number validation for `style.borderRadius` plus per-corner
-`number | SkPoint` radius payloads as the next strongest locally unblocked
-target.
-
-Latest accepted root-cause audit: worker 217 accepted Worker 216's radius finite
-validation boundary and selected deterministic finite-number validation for
-command `SkPoint` payloads (`line.from`, `line.to`, and `points.points[]`) as
-the next strongest locally unblocked target.
+Latest accepted root-cause audit: worker 219 accepted Worker 218's command
+`SkPoint` finite validation boundary and selected deterministic finite-number
+validation for static numeric command `AnimatedDouble` payloads as the next
+implementation target.
 
 Current active worker: none.
 
@@ -448,25 +431,19 @@ Accepted package-hygiene implementation:
   validation boundary, reconfirmed focused/full feasible verification, and
   selected command `AnimatedDouble` finite validation as the next
   implementation target.
-
-Current active worker:
-
-- Worker 220 command `AnimatedDouble` finite validation.
-- Agent path: `/root/worker_220_command_animated_double_finite_validation`.
-- Worktree: `../worker-220-command-animated-double-finite-validation`.
-- Branch: `worker/220-command-animated-double-finite-validation`.
-- Scope: implement deterministic finite validation for static numeric
+- `worker-220-command-animated-double-finite-validation`: implemented
+  deterministic pre-mutation finite-number validation for static numeric
   command `AnimatedDouble` payloads: `rrect.cornerRadius`,
-  `blurMaskFilter.blur`, `path.trimStart`, `path.trimEnd`, and
-  `circle.radius`, with native and generated materialized state-preservation
-  coverage.
-- State: spawned with `agent_type: "worker"`, `goal: true`,
-  `fork_turns: "none"`, `model: "gpt-5.5"`, and
-  `reasoning_effort: "xhigh"`; implementation in progress.
+  `blurMaskFilter.blur`, `path.trimStart`, `path.trimEnd`, and `circle.radius`,
+  with native command/render and generated materialized `setCommand(...)`
+  negative coverage proving previous same-type command state is preserved while
+  dynamic Worklets-backed command values remain supported.
+
+Current active worker: none.
 
 Next queued worker:
 
-- None until Worker 220 reports.
+- Worker 221 post-Worker 220 root-cause audit.
 
 Follow-up queue:
 

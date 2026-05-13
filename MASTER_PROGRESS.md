@@ -1,6 +1,6 @@
 # React Native Skia Yoga Master Progress
 
-Last updated: 2026-05-12
+Last updated: 2026-05-13
 
 ## Orchestrator State
 
@@ -5333,6 +5333,25 @@ Accepted worker reports:
     `reasoning_effort: "xhigh"`.
   - Ignored dependency symlinks were set to main's known-good `node_modules`
     and `example/node_modules` installs.
+- Worker 220 completed command `AnimatedDouble` finite validation. The final
+  branch commit was `4b162b6 Validate finite animated command numbers`, merged
+  as `5fe7ff0 Merge worker 220 animated command finite validation`. The change
+  adds deterministic pre-mutation finite validation for static numeric
+  `AnimatedDouble` command payloads: `rrect.cornerRadius`,
+  `blurMaskFilter.blur`, `path.trimStart`, `path.trimEnd`, and
+  `circle.radius`, while preserving dynamic Worklets-backed command behavior.
+- Worker 220 verification passed in the worker worktree: `node --check
+  scripts/verify-yoganode-native-commands-render.mjs`, `node --check
+  scripts/verify-yoganode-nitro-materialization.mjs`, `npm run
+  check:yoganode-native-commands-render`, `npm run
+  check:yoganode-nitro-materialization`, `git diff --check`, and `npm run
+  check:feasible-matrix` all 28 commands in `4m 48s`.
+- Main post-merge checks after Worker 220 passed: `git diff --check HEAD~1
+  HEAD`, both updated `node --check` commands, `npm run
+  check:yoganode-native-commands-render`, `npm run
+  check:yoganode-nitro-materialization`, and the full 28-command `npm run
+  check:feasible-matrix` in `9m 11s`. The next queued worker is a fresh
+  post-Worker 220 audit.
 
 ## Next Worker Candidates
 
