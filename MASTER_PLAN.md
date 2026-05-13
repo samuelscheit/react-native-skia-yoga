@@ -527,16 +527,25 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None. Worker 244 was accepted, merged, verified from `main`, and cleaned up.
+- `worker-245-post-244-root-cause-audit`: report-only audit of Worker 244's
+  accepted `eventTag` validation boundary and remaining raw/native numeric
+  mutation risks. State: spawned as
+  `/root/worker_245_post_244_root_cause_audit`. Branch:
+  `worker/245-post-244-root-cause-audit`.
+  Worktree:
+  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-245-post-244-root-cause-audit`.
+  Expected file:
+  `worker-progress/worker-245-post-244-root-cause-audit.md`.
+  Verification: focused Worker 244 acceptance checks, raw/native numeric
+  entry-point audit, and full feasible matrix only if needed for ambiguity.
 
 Next queued worker:
 
-- Worker 245 post-Worker 244 root-cause audit. Selected by Worker 244.
+- Selected by Worker 245.
 
 Follow-up queue:
 
-- Create a fresh isolated worktree and branch for Worker 245, then spawn it as
-  a report-only top-level worker under the current `spawn_agent` policy.
+- Monitor Worker 245 completion, then review its report and merge if accepted.
 
 Acceptance criteria:
 
