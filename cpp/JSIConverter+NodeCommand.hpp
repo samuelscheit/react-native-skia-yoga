@@ -266,6 +266,25 @@ inline std::optional<margelo::nitro::RNSkiaYoga::PathCommandData::StrokeOptsData
     };
 }
 
+[[noreturn]] inline void throwInvalidCommandAnimatedDoubleValue(jsi::Runtime& runtime, const std::string& propertyPath)
+{
+    throw jsi::JSError(
+        runtime,
+        "Invalid numeric AnimatedDouble command value for " + propertyPath + ": expected a finite number.");
+}
+
+inline margelo::nitro::RNSkiaYoga::AnimatedDouble parseStaticFiniteAnimatedDouble(
+    jsi::Runtime& runtime,
+    const jsi::Value& value,
+    const char* propertyPath)
+{
+    auto animated = JSIConverter<margelo::nitro::RNSkiaYoga::AnimatedDouble>::fromJSI(runtime, value);
+    if (!animated.isDynamic() && animated.value.has_value() && !std::isfinite(animated.value.value())) {
+        throwInvalidCommandAnimatedDoubleValue(runtime, propertyPath);
+    }
+    return animated;
+}
+
 [[noreturn]] inline void throwInvalidCommandPointValue(jsi::Runtime& runtime, const std::string& propertyPath)
 {
     throw jsi::JSError(
@@ -444,7 +463,7 @@ struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeCommand> final {
                 return NodeCommand { type, EmptyNodeCommandData {} };
             case NodeCommandKind::RRECT:
                 return NodeCommand { type, RoundedRectCommandData {
-                                               .cornerRadius = JSIConverter<AnimatedDouble>::fromJSI(runtime, data.getProperty(runtime, "cornerRadius")),
+                                               .cornerRadius = parseStaticFiniteAnimatedDouble(runtime, data.getProperty(runtime, "cornerRadius"), "rrect.cornerRadius"),
                                            } };
             case NodeCommandKind::TEXT:
                 rejectUnsupportedTextCommandTextStyleFields(runtime, data);
@@ -459,7 +478,7 @@ struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeCommand> final {
                                            } };
             case NodeCommandKind::BLUR_MASK_FILTER:
                 return NodeCommand { type, BlurMaskFilterCommandData {
-                                               .blur = JSIConverter<AnimatedDouble>::fromJSI(runtime, data.getProperty(runtime, "blur")),
+                                               .blur = parseStaticFiniteAnimatedDouble(runtime, data.getProperty(runtime, "blur"), "blurMaskFilter.blur"),
                                                .blurStyle = parseBlurStyle(runtime, data.getProperty(runtime, "blurStyle")),
                                                .respectCTM = getOptionalProperty<bool>(runtime, data, "respectCTM"),
                                            } };
@@ -474,8 +493,8 @@ struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeCommand> final {
                                                .fillType = parsePathFillType(runtime, data.getProperty(runtime, "fillType")),
                                                .path = getRequiredProperty<SkPath>(runtime, data, "path"),
                                                .stroke = parseStrokeOpts(runtime, data.getProperty(runtime, "stroke")),
-                                               .trimEnd = JSIConverter<AnimatedDouble>::fromJSI(runtime, data.getProperty(runtime, "trimEnd")),
-                                               .trimStart = JSIConverter<AnimatedDouble>::fromJSI(runtime, data.getProperty(runtime, "trimStart")),
+                                               .trimEnd = parseStaticFiniteAnimatedDouble(runtime, data.getProperty(runtime, "trimEnd"), "path.trimEnd"),
+                                               .trimStart = parseStaticFiniteAnimatedDouble(runtime, data.getProperty(runtime, "trimStart"), "path.trimStart"),
                                            } };
             case NodeCommandKind::PARAGRAPH:
                 return NodeCommand { type, ParagraphCommandData {
@@ -485,7 +504,7 @@ struct JSIConverter<margelo::nitro::RNSkiaYoga::NodeCommand> final {
                                            } };
             case NodeCommandKind::CIRCLE:
                 return NodeCommand { type, CircleCommandData {
-                                               .radius = JSIConverter<AnimatedDouble>::fromJSI(runtime, data.getProperty(runtime, "radius")),
+                                               .radius = parseStaticFiniteAnimatedDouble(runtime, data.getProperty(runtime, "radius"), "circle.radius"),
                                            } };
             case NodeCommandKind::LINE:
                 return NodeCommand { type, LineCommandData {
