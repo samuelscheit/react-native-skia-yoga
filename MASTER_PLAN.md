@@ -121,15 +121,15 @@ Acceptance criteria:
 ## Phase 3: Integration and Example Confidence
 
 Status: active; latest accepted implementation is worker 240 text/paragraph
-style pre-narrow native-float validation. Latest accepted audit worker remains
-worker 237; worker 239's post-worker-238 audit lane stalled across retries, so
-the orchestrator performed the acceptance audit for worker 238. Detailed
-historical accepted work lives in `MASTER_PROGRESS.md` and `worker-progress/`.
+style pre-narrow native-float validation. Latest accepted audit worker is
+worker 241, which selected `NodeStyle` native-float validation in
+`cpp/YogaNode.cpp` as the next implementation target. Detailed historical
+accepted work lives in `MASTER_PROGRESS.md` and `worker-progress/`.
 
-Latest accepted root-cause audit: worker 237 accepted Worker 236's command
-`SkPoint` native-float validation boundary, reconfirmed focused direct and
-generated checks, and selected deterministic pre-narrow native-float validation
-for path stroke numeric `float` leaves as the next locally unblocked
+Latest accepted root-cause audit: worker 241 accepted Worker 240's
+text/paragraph style pre-narrow validation boundary and audited remaining
+non-command numeric narrowing sites. It selected `NodeStyle` native-float
+validation for `YogaNode::setStyle(...)` as the next locally unblocked
 root-cause target.
 
 Latest accepted implementation: worker 240 moved text/paragraph style numeric
@@ -146,11 +146,11 @@ verifier `node --check` commands, `npm run check:yoganode-native-commands-render
 `npm run check:yoganode-nitro-materialization`, `npm run typecheck`, and the full
 28-command `npm run check:feasible-matrix` in 4m 05s.
 
-Selected next target: worker 241 should audit remaining non-command
-style/layout numeric narrowing sites in `cpp/YogaNode.cpp`, especially
-`NodeStyle` layout scalar/percent, transform, and radius paths that still
-validate only finite numbers before `static_cast<float>`, then select the next
-implementation target and proof boundary.
+Selected next target: worker 242 should add pre-narrow native-float validation
+for public `NodeStyle` numeric values in `cpp/YogaNode.cpp`, covering layout
+scalar/variant values, percentage parsing, border/paint/opacity scalars,
+radius scalars/points, matrix tuple values, transform leaves, and skew tangent
+results before Yoga/Skia float narrowing.
 
 Previous accepted implementation: worker 236 added command `SkPoint`
 native-float validation for `line.from`, `line.to`, and indexed
@@ -189,10 +189,8 @@ leaves now reject non-finite values, native-float overflow, fractional integer
 targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
-Current active worker: worker 241 post-worker-240 root-cause audit spawned as
-`/root/worker_241_post_240_root_cause_audit` in
-`/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-241-post-240-root-cause-audit`.
-Next queued worker: selected by worker 241.
+Current active worker: none.
+Next queued worker: worker 242 NodeStyle native-float validation.
 
 Goals:
 
@@ -568,30 +566,26 @@ Accepted package-hygiene implementation:
   numeric `float` leaves, with direct converter proof, direct/generated
   `TextCmd`/`ParagraphCmd` state-preservation coverage, and a full feasible
   matrix.
+- `worker-241-post-240-root-cause-audit`: accepted Worker 240's boundary,
+  audited remaining non-command `YogaNode::setStyle(...)` numeric narrowing
+  risks, and selected `NodeStyle` native-float validation as the next
+  implementation target.
 
 Current active worker:
 
-- `worker-241-post-240-root-cause-audit`: report-only audit of Worker 240's
-  accepted boundary, remaining numeric narrowing risks in `cpp/YogaNode.cpp`,
-  focused/full verification evidence, and next implementation target selection.
-  State: spawned via `spawn_agent` as
-  `/root/worker_241_post_240_root_cause_audit`. Branch:
-  `worker/241-post-240-root-cause-audit`. Worktree:
-  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-241-post-240-root-cause-audit`.
-  Expected tracked edit:
-  `worker-progress/worker-241-post-240-root-cause-audit.md`.
-  Verification: `git diff --check`, review of Worker 240 report/diff,
-  source audit of `cpp/YogaNode.cpp` numeric `static_cast<float>` paths, and
-  focused verifier/source-guard checks sufficient to support the selected next
-  target.
+- None currently running.
 
 Next queued worker:
 
-- Selected by worker 241.
+- `worker-242-nodestyle-native-float-validation`: implement pre-narrow
+  native-float validation for public `NodeStyle` numeric values in
+  `cpp/YogaNode.cpp`, including source guards and generated materialized
+  `setStyle(...)` runtime coverage.
 
 Follow-up queue:
 
-- Monitor worker 241 completion, then review its report/diff.
+- Create an isolated worktree/branch for worker 242 and launch it with
+  `spawn_agent` using the current worker model.
 
 Acceptance criteria:
 
