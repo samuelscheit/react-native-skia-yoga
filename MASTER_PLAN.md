@@ -163,9 +163,9 @@ leaves now reject non-finite values, native-float overflow, fractional integer
 targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
-Current active worker: none.
-Next queued worker: command `SkPoint` native-float validation for `line.from`,
-`line.to`, and `points.points[]` coordinates.
+Current active worker: worker 236 command `SkPoint` native-float validation
+(`spawn_agent` pending).
+Next queued worker: selected after worker 236.
 
 Goals:
 
@@ -522,17 +522,26 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- `worker-236-command-skpoint-native-float-validation`: reject non-finite and
+  native-float-overflowing command point coordinates before same-type
+  `LineCmd` or `PointsCmd` mutation in both direct and generated
+  `setCommand(...)` paths. State: spawn pending. Branch:
+  `worker/236-command-skpoint-native-float-validation`. Worktree:
+  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-236-command-skpoint-native-float-validation`.
+  Expected write scope: `cpp/JSIConverter+NodeCommand.hpp`,
+  `scripts/verify-yoganode-native-commands-render.mjs`,
+  `scripts/verify-yoganode-nitro-materialization.mjs`, and
+  `worker-progress/worker-236-command-skpoint-native-float-validation.md`.
 
 Next queued worker:
 
-- Command `SkPoint` native-float validation for `line.from`, `line.to`, and
-  `points.points[]` coordinates.
+- Selected after worker 236.
 
 Follow-up queue:
 
-- Launch the command `SkPoint` native-float validation worker from an isolated
-  worktree and branch.
+- Spawn worker 236 with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`.
 
 Acceptance criteria:
 
