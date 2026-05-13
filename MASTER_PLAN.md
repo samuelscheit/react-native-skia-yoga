@@ -481,20 +481,25 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - `worker-231-post-230-root-cause-audit`: report-only post-Worker 230
   root-cause audit.
-- State: not spawned. Create an isolated worktree and branch before launch.
-- Launch with `agent_type: "worker"`, `goal: true`, `fork_turns: "none"`,
-  `model: "gpt-5.5"`, and `reasoning_effort: "xhigh"`.
+- Agent path: `/root/worker_231_post_230_root_cause_audit`.
+- Worktree: `../worker-231-post-230-root-cause-audit`.
+- Branch: `worker/231-post-230-root-cause-audit`.
 - Scope: audit Worker 230's method numeric validation boundary, focused and
   full-matrix verification evidence, residual risks, and next root-cause target
   selection.
 - Required tracked report:
   `worker-progress/worker-231-post-230-root-cause-audit.md`.
+- Required verification: Worker 230 diff check, raw JSI method verifier,
+  generated Nitro materialization verifier, and feasible matrix unless blocked.
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`.
+
+Next queued worker:
+
+- None until Worker 231 reports.
 
 Follow-up queue:
 
