@@ -5390,6 +5390,25 @@ Accepted worker reports:
     `stroke.width`, `stroke.miter_limit` / `stroke.miterLimit`, and
     `stroke.precision`, with native and generated materialized
     state-preservation coverage.
+- Worker 222 completed path stroke numeric finite validation. The final branch
+  commit was `3ea9bb3 Validate path stroke numeric payloads`, merged as
+  `d4f868a Merge worker 222 path stroke finite validation`. The change adds
+  deterministic pre-mutation finite validation for direct `StrokeOpts`, public
+  `NodeCommand` path stroke parsing, and generated materialized
+  `setCommand(path)` delivery for `stroke.width`, `stroke.miter_limit` /
+  `stroke.miterLimit`, and `stroke.precision`, while preserving public-key
+  precedence, alias fallback, omitted/null stroke semantics, and join/cap
+  behavior.
+- Worker 222 verification passed in the worker worktree: `node --check` for
+  both edited verifier scripts, `npm run check:yoganode-native-commands-render`,
+  `npm run check:yoganode-nitro-materialization`, `git diff --check`, `npm run
+  check:rn-skia-imports`, and `npm run check:feasible-matrix`.
+- Main post-merge checks after Worker 222 passed: `git diff --check HEAD~1
+  HEAD`, both updated `node --check` commands, `npm run
+  check:yoganode-native-commands-render`, `npm run
+  check:yoganode-nitro-materialization`, and the full 28-command `npm run
+  check:feasible-matrix` in `5m 3s`. The next queued worker is a fresh
+  post-Worker 222 audit.
 
 ## Next Worker Candidates
 
