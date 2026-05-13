@@ -121,15 +121,15 @@ Acceptance criteria:
 ## Phase 3: Integration and Example Confidence
 
 Status: active; latest accepted implementation is worker 236 command `SkPoint`
-native-float validation. Latest accepted audit is worker 235. Next queued work
-is a post-Worker 236 root-cause audit. Detailed historical accepted work lives
+native-float validation. Latest accepted audit is worker 237. Next queued work
+is path stroke native-float validation. Detailed historical accepted work lives
 in `MASTER_PROGRESS.md` and `worker-progress/`.
 
-Latest accepted root-cause audit: worker 235 accepted Worker 234's static
-`AnimatedDouble` native-float validation boundary, reconfirmed focused direct
-and generated checks, and selected command `SkPoint` native-float validation
-for `line.from`, `line.to`, and `points.points[]` coordinates as the next
-locally unblocked root-cause target.
+Latest accepted root-cause audit: worker 237 accepted Worker 236's command
+`SkPoint` native-float validation boundary, reconfirmed focused direct and
+generated checks, and selected deterministic pre-narrow native-float validation
+for path stroke numeric `float` leaves as the next locally unblocked
+root-cause target.
 
 Latest accepted implementation: worker 236 added command `SkPoint`
 native-float validation for `line.from`, `line.to`, and indexed
@@ -168,9 +168,8 @@ leaves now reject non-finite values, native-float overflow, fractional integer
 targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
-Current active worker: worker 237 post-Worker 236 root-cause audit retry
-(`/root/worker_237_post_236_root_cause_audit_retry` spawned).
-Next queued worker: selected by worker 237.
+Current active worker: none.
+Next queued worker: path stroke native-float validation.
 
 Goals:
 
@@ -529,25 +528,25 @@ Accepted package-hygiene implementation:
   paths, covering `line.from`, `line.to`, and indexed `points.points[]`
   coordinates with prior command pointer/state preservation and a full
   feasible matrix.
+- `worker-237-post-236-root-cause-audit`: accepted Worker 236's command
+  `SkPoint` native-float validation boundary, reran focused direct and
+  generated verifier checks, and selected deterministic pre-narrow
+  native-float validation for path stroke numeric `float` leaves as the next
+  implementation target.
 
 Current active worker:
 
-- `worker-237-post-236-root-cause-audit`: audit Worker 236 command `SkPoint`
-  native-float validation and select the next strongest unblocked root-cause
-  target. State: retry spawned as
-  `/root/worker_237_post_236_root_cause_audit_retry` after
-  `/root/worker_237_post_236_root_cause_audit` stalled without worktree
-  changes and was closed. Branch: `worker/237-post-236-root-cause-audit`. Worktree:
-  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-237-post-236-root-cause-audit`.
-  Write scope: `worker-progress/worker-237-post-236-root-cause-audit.md`.
+- None.
 
 Next queued worker:
 
-- Selected by worker 237.
+- Path stroke native-float validation for direct `StrokeOpts` and public
+  `path.stroke` numeric `float` leaves.
 
 Follow-up queue:
 
-- Monitor worker 237 retry and review its report/diff when complete.
+- Launch the path stroke native-float validation worker from an isolated
+  worktree and branch.
 
 Acceptance criteria:
 
