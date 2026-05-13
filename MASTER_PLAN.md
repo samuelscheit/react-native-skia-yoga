@@ -121,9 +121,11 @@ Acceptance criteria:
 ## Phase 3: Integration and Example Confidence
 
 Status: active; latest accepted implementation is worker 238 path stroke
-native-float validation. Latest accepted audit is worker 237. Next queued work
-is a post-Worker 238 root-cause audit. Detailed historical accepted work lives
-in `MASTER_PROGRESS.md` and `worker-progress/`.
+native-float validation. Latest accepted audit worker remains worker 237;
+the Worker 239 post-Worker 238 audit lane stalled across retries, so the
+orchestrator performed the acceptance audit and selected worker 240. Detailed
+historical accepted work lives in `MASTER_PROGRESS.md` and
+`worker-progress/`.
 
 Latest accepted root-cause audit: worker 237 accepted Worker 236's command
 `SkPoint` native-float validation boundary, reconfirmed focused direct and
@@ -137,6 +139,20 @@ public command `path.stroke` numeric leaves. Direct and generated
 `setCommand(...)` paths now reject non-finite and native-float-overflowing
 stroke values before same-type `PathCmd` mutation, while direct `StrokeOpts`
 alias behavior remains preserved.
+
+Orchestrator post-Worker 238 audit: accepted Worker 238 after source review and
+current focused verification. `cpp/JSIConverter+StrokeOpts.hpp` validates
+finite/native-float range before `static_cast<float>`, `cpp/JSIConverter+NodeCommand.hpp`
+reuses those helpers for public `path.stroke`, alias precedence is preserved,
+and focused native/generated verifiers passed on main. Worker 239 spawned
+agents stalled without report changes and were closed.
+
+Selected next target: worker 240 should move text/paragraph style numeric
+`float` validation in `cpp/JSIConverter+SkTextStyle.hpp` from post-narrow
+finite checks to explicit pre-narrow native-float range checks. This should
+cover direct `TextStyle`/`ParagraphStyle`/`StrutStyle` conversion and
+direct/generated `TextCmd`/`ParagraphCmd` mutation paths without expanding
+typography or platform-runtime claims.
 
 Previous accepted implementation: worker 236 added command `SkPoint`
 native-float validation for `line.from`, `line.to`, and indexed
@@ -175,9 +191,9 @@ leaves now reject non-finite values, native-float overflow, fractional integer
 targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
-Current active worker: worker 239 post-Worker 238 root-cause audit third retry
-(`/root/worker_239_post_238_audit_third_retry` spawned).
-Next queued worker: selected by worker 239.
+Current active worker: worker 240 text/paragraph style pre-narrow
+native-float validation preparing to spawn.
+Next queued worker: selected by worker 240.
 
 Goals:
 
@@ -545,27 +561,34 @@ Accepted package-hygiene implementation:
   pre-narrow native-float validation for direct `StrokeOpts` numeric `float`
   leaves and public command `path.stroke` numeric leaves, with focused direct
   and generated verifier coverage plus a full feasible matrix.
+- Orchestrator fallback audit after Worker 239 retries: accepted Worker 238
+  based on source review and current focused verification, then selected
+  text/paragraph style pre-narrow native-float validation as the next target.
 
 Current active worker:
 
-- `worker-239-post-238-root-cause-audit`: audit Worker 238 path stroke
-  native-float validation and select the next strongest unblocked root-cause
-  target. State: third retry spawned as
-  `/root/worker_239_post_238_audit_third_retry` after
-  `/root/worker_239_post_238_root_cause_audit`,
-  `/root/worker_239_post_238_root_cause_audit_retry`, and
-  `/root/worker_239_post_238_audit_second_retry` stalled without worktree
-  changes and were closed. Branch: `worker/239-post-238-root-cause-audit`. Worktree:
-  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-239-post-238-root-cause-audit`.
-  Write scope: `worker-progress/worker-239-post-238-root-cause-audit.md`.
+- `worker-240-text-paragraph-prenarrow-native-float-validation`: move
+  text/paragraph style numeric `float` conversion to pre-narrow
+  finite/native-float range validation and update focused source/runtime
+  guards. State: preparing worktree and branch. Branch:
+  `worker/240-text-paragraph-prenarrow-native-float-validation`. Worktree:
+  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-240-text-paragraph-prenarrow-native-float-validation`.
+  Expected files: `cpp/JSIConverter+SkTextStyle.hpp`,
+  `scripts/verify-yoganode-native-commands-render.mjs`,
+  `scripts/verify-yoganode-nitro-materialization.mjs`, and worker report.
+  Verification: `git diff --check`, both updated verifier `node --check`
+  commands, `npm run check:yoganode-native-commands-render`, `npm run
+  check:yoganode-nitro-materialization`, `npm run typecheck`, and full feasible
+  matrix if the patch touches shared converter behavior broadly.
 
 Next queued worker:
 
-- Selected by worker 239.
+- Selected by worker 240.
 
 Follow-up queue:
 
-- Monitor worker 239 third retry and review its report/diff when complete.
+- Create the worker 240 isolated worktree/branch, spawn the worker, then
+  review its report/diff when complete.
 
 Acceptance criteria:
 
