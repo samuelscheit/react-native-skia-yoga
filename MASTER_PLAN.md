@@ -120,10 +120,9 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; latest accepted implementation is worker 232 dynamic
+Status: active; latest accepted implementation is worker 234 static
 `AnimatedDouble` native-float validation. Latest accepted audit is worker 233.
-Next queued work is static `AnimatedDouble` native-float-overflow conversion
-policy for direct/generated `setCommand(...)` paths. Detailed historical
+Next queued work is a post-Worker 234 root-cause audit. Detailed historical
 accepted work lives in `MASTER_PROGRESS.md` and `worker-progress/`.
 
 Latest accepted root-cause audit: worker 233 accepted Worker 232's dynamic
@@ -138,6 +137,12 @@ native-float validation to `blurMaskFilter.blur`, `rrect.cornerRadius`,
 `circle.radius`, `path.trimStart`, and `path.trimEnd`. Invalid dynamic
 Worklets `Synchronizable` values preserve the last safe render state before
 native `float` narrowing.
+
+Latest accepted follow-up implementation: worker 234 added deterministic
+static `AnimatedDouble` native-float validation for direct/generated
+`setCommand(...)` paths. Static numeric values now reject before same-type
+command mutation when they are non-finite or outside native `float` range,
+while dynamic Worklets-backed `AnimatedDouble` values still convert.
 
 Previous accepted root-cause audit: worker 229 accepted Worker 228's command
 numeric enum validation boundary and selected deterministic finite/native-float
@@ -502,35 +507,23 @@ Accepted package-hygiene implementation:
   checks plus generated materialization preservation, and selected static
   `AnimatedDouble` native-float-overflow conversion policy for direct/generated
   `setCommand(...)` paths as the next implementation target.
+- `worker-234-static-animateddouble-native-float-validation`: implemented
+  deterministic static `AnimatedDouble` native-float validation for
+  direct/generated `setCommand(...)` paths, covering `circle.radius`,
+  `rrect.cornerRadius`, `blurMaskFilter.blur`, `path.trimStart`, and
+  `path.trimEnd`, with focused verifier updates and a full feasible matrix.
 
 Current active worker:
 
-- `worker-234-static-animateddouble-native-float-validation`:
-  implementation.
-- Agent path: `/root/worker_234_static_animateddouble_native_float_validation`.
-- Worktree:
-  `../worker-234-static-animateddouble-native-float-validation`.
-- Branch: `worker/234-static-animateddouble-native-float-validation`.
-- Scope: implement deterministic static `AnimatedDouble`
-  native-float-overflow conversion policy for direct/generated
-  `setCommand(...)` paths, preserving dynamic `AnimatedDouble` support.
-- Required tracked report:
-  `worker-progress/worker-234-static-animateddouble-native-float-validation.md`.
-- Expected verification: focused native command/render and Nitro
-  materialization verifier updates, syntax/diff checks, typecheck as needed,
-  and full feasible matrix unless blocked.
-- State: spawned with `agent_type: "worker"`, `goal: true`,
-  `fork_turns: "none"`, `model: "gpt-5.5"`, and
-  `reasoning_effort: "xhigh"`.
+- None.
 
 Next queued worker:
 
-- None until Worker 234 reports.
+- Post-Worker 234 root-cause audit.
 
 Follow-up queue:
 
-- Accept or repair Worker 234, then launch the selected follow-up audit from
-  an isolated worktree and branch.
+- Launch the post-Worker 234 audit from an isolated worktree and branch.
 
 Acceptance criteria:
 
