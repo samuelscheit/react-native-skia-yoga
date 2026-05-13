@@ -499,15 +499,31 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- `worker-233-post-232-root-cause-audit`: report-only audit.
+- Agent path: `/root/worker_233_post_232_root_cause_audit` after spawn.
+- Worktree: `../worker-233-post-232-root-cause-audit`.
+- Branch: `worker/233-post-232-root-cause-audit`.
+- Scope: audit Worker 232's dynamic `AnimatedDouble` native-float validation
+  boundary, focused/full verification evidence, residual risks, and next
+  root-cause target selection.
+- Required tracked report:
+  `worker-progress/worker-233-post-232-root-cause-audit.md`.
+- Expected verification: inspect Worker 232 merge/report/diff, rerun focused
+  syntax/diff checks and relevant focused commands as needed, and either
+  reuse the accepted post-merge feasible matrix evidence or rerun a scoped/full
+  matrix if the audit finds uncertainty.
+- State: worktree and branch created; spawn pending with `agent_type:
+  "worker"`, `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`.
 
 Next queued worker:
 
-- Post-Worker 232 root-cause audit.
+- None until Worker 233 reports.
 
 Follow-up queue:
 
-- Launch the post-Worker 232 audit from an isolated worktree and branch.
+- Accept or repair Worker 233 audit, then launch the selected next root-cause
+  target from an isolated worktree and branch.
 
 Acceptance criteria:
 
