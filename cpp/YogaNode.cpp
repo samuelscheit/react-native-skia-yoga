@@ -263,6 +263,21 @@ RNSkia::StrokeOpts toNativeStrokeOpts(const PathCommandData::StrokeOptsData& str
         ": expected a finite native float.");
 }
 
+[[noreturn]] static void throwInvalidEventTag()
+{
+    throw std::invalid_argument(
+        "Invalid eventTag value: expected 0 or a positive JavaScript safe integer.");
+}
+
+double toValidEventTag(double value)
+{
+    constexpr auto maxSafeInteger = 9007199254740991.0;
+    if (!std::isfinite(value) || value < 0.0 || value > maxSafeInteger || std::trunc(value) != value) {
+        throwInvalidEventTag();
+    }
+    return value;
+}
+
 float toFiniteYogaNodeMethodFloat(double value, const char* propertyPath)
 {
     if (!std::isfinite(value) || std::abs(value) > static_cast<double>(std::numeric_limits<float>::max())) {
@@ -2089,9 +2104,7 @@ jsi::Value YogaNode::setInteractionConfig(jsi::Runtime& runtime, const jsi::Valu
             }
         }
 
-        _pointerEvents = pointerEvents;
-        _hitSlop = hitSlop;
-        _preciseHit =
+        const auto preciseHit =
             config.hasProperty(runtime, "preciseHit") &&
             config.getProperty(runtime, "preciseHit").isBool() &&
             config.getProperty(runtime, "preciseHit").getBool();
@@ -2099,11 +2112,15 @@ jsi::Value YogaNode::setInteractionConfig(jsi::Runtime& runtime, const jsi::Valu
         double nextEventTag = 0.0;
         if (config.hasProperty(runtime, "eventTag")) {
             const auto value = config.getProperty(runtime, "eventTag");
-            if (value.isNumber()) {
-                nextEventTag = value.asNumber();
+            if (!value.isNumber()) {
+                throwInvalidEventTag();
             }
+            nextEventTag = toValidEventTag(value.asNumber());
         }
 
+        _pointerEvents = pointerEvents;
+        _hitSlop = hitSlop;
+        _preciseHit = preciseHit;
         _eventTag = nextEventTag;
         updateSelfInteractionState(_eventTag > 0.0);
         return jsi::Value::undefined();
