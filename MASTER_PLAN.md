@@ -121,15 +121,16 @@ Acceptance criteria:
 ## Phase 3: Integration and Example Confidence
 
 Status: active; latest accepted implementation is worker 232 dynamic
-`AnimatedDouble` native-float validation. Latest accepted audit is worker 231.
-Next queued work is a post-Worker 232 root-cause audit. Detailed historical
+`AnimatedDouble` native-float validation. Latest accepted audit is worker 233.
+Next queued work is static `AnimatedDouble` native-float-overflow conversion
+policy for direct/generated `setCommand(...)` paths. Detailed historical
 accepted work lives in `MASTER_PROGRESS.md` and `worker-progress/`.
 
-Latest accepted root-cause audit: worker 231 accepted Worker 230's YogaNode
-method numeric validation boundary, reconfirmed focused checks plus a full
-feasible matrix, and selected dynamic `AnimatedDouble` mutation-time numeric
-validation policy/implementation as the next locally unblocked root-cause
-target.
+Latest accepted root-cause audit: worker 233 accepted Worker 232's dynamic
+`AnimatedDouble` native-float validation boundary, reconfirmed focused checks
+plus generated materialization preservation, and selected static
+`AnimatedDouble` native-float-overflow conversion policy for direct/generated
+`setCommand(...)` paths as the next locally unblocked root-cause target.
 
 Latest accepted implementation: worker 232 added
 `AnimatedDouble::resolveNativeFloat()` and applied fail-closed dynamic
@@ -496,37 +497,25 @@ Accepted package-hygiene implementation:
   NaN, Infinity, native-float overflow, and conversion failures never narrow
   into native `float` props. Focused dynamic render coverage and the full
   feasible matrix passed after merge.
+- `worker-233-post-232-root-cause-audit`: accepted Worker 232's dynamic
+  `AnimatedDouble` native-float validation boundary, reconfirmed focused
+  checks plus generated materialization preservation, and selected static
+  `AnimatedDouble` native-float-overflow conversion policy for direct/generated
+  `setCommand(...)` paths as the next implementation target.
 
 Current active worker:
 
-- `worker-233-post-232-root-cause-audit`: report-only audit.
-- Agent path: `/root/worker_233_post_232_audit_second_retry`. Initial agent
-  `/root/worker_233_post_232_root_cause_audit` and
-  retry `/root/worker_233_post_232_root_cause_audit_retry` stalled before
-  writing a report and were closed.
-- Worktree: `../worker-233-post-232-root-cause-audit`.
-- Branch: `worker/233-post-232-root-cause-audit`.
-- Scope: audit Worker 232's dynamic `AnimatedDouble` native-float validation
-  boundary, focused/full verification evidence, residual risks, and next
-  root-cause target selection.
-- Required tracked report:
-  `worker-progress/worker-233-post-232-root-cause-audit.md`.
-- Expected verification: inspect Worker 232 merge/report/diff, rerun focused
-  syntax/diff checks and relevant focused commands as needed, and either
-  reuse the accepted post-merge feasible matrix evidence or rerun a scoped/full
-  matrix if the audit finds uncertainty.
-- State: second restart spawned with `agent_type: "worker"`, `goal: true`,
-  `fork_turns: "none"`, `model: "gpt-5.5"`, and
-  `reasoning_effort: "xhigh"`.
+- None.
 
 Next queued worker:
 
-- None until Worker 233 reports.
+- Static `AnimatedDouble` native-float-overflow conversion policy for
+  direct/generated `setCommand(...)` paths.
 
 Follow-up queue:
 
-- Accept or repair Worker 233 audit, then launch the selected next root-cause
-  target from an isolated worktree and branch.
+- Launch the static `AnimatedDouble` native-float-overflow worker from an
+  isolated worktree and branch.
 
 Acceptance criteria:
 
