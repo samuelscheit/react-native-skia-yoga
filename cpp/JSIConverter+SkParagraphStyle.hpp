@@ -11,7 +11,9 @@
 #include "SkiaGlue.hpp"
 #include "JsiSkParagraphStyle.h"
 #include "JSIConverter+SkTextStyle.hpp"
+#include <cmath>
 #include <cstdint>
+#include <limits>
 #include <string>
 
 namespace margelo::nitro {
@@ -79,6 +81,101 @@ inline std::string paragraphStyleEllipsisToUtf8(
   return utf16ToUtf8(paragraphStyle.getEllipsisUtf16());
 }
 
+inline size_t getRequiredFiniteParagraphStyleSize(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* key,
+    const std::string& propertyPath)
+{
+  const auto number = getRequiredFiniteStyleNumber(runtime, object, key, propertyPath);
+  if (
+      std::trunc(number) != number ||
+      number < 0.0 ||
+      static_cast<long double>(number) >
+          static_cast<long double>(std::numeric_limits<size_t>::max())) {
+    throwInvalidTextParagraphStyleNumericValue(runtime, propertyPath);
+  }
+  return static_cast<size_t>(number);
+}
+
+inline void validateOptionalParagraphStyleSize(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* key,
+    const std::string& propertyPath)
+{
+  if (object.hasProperty(runtime, key)) {
+    (void)getRequiredFiniteParagraphStyleSize(runtime, object, key, propertyPath);
+  }
+}
+
+inline void validateParagraphStyleFontStyleNumericFields(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const std::string& stylePath)
+{
+  if (!object.hasProperty(runtime, "fontStyle")) {
+    return;
+  }
+
+  auto fontStyle = object.getProperty(runtime, "fontStyle").asObject(runtime);
+  validateOptionalStyleInt(runtime, fontStyle, "weight", stylePath + ".fontStyle.weight");
+  validateOptionalStyleInt(runtime, fontStyle, "width", stylePath + ".fontStyle.width");
+  validateOptionalStyleInt(runtime, fontStyle, "slant", stylePath + ".fontStyle.slant");
+}
+
+inline void validateParagraphStyleStrutStyleNumericFields(
+    jsi::Runtime& runtime,
+    const jsi::Object& object)
+{
+  if (!object.hasProperty(runtime, "strutStyle")) {
+    return;
+  }
+
+  auto strutStyle = object.getProperty(runtime, "strutStyle").asObject(runtime);
+  validateOptionalStyleFloat(runtime, strutStyle, "fontSize", "ParagraphStyle.strutStyle.fontSize");
+  validateOptionalStyleFloat(runtime, strutStyle, "heightMultiplier", "ParagraphStyle.strutStyle.heightMultiplier");
+  validateOptionalStyleFloat(runtime, strutStyle, "leading", "ParagraphStyle.strutStyle.leading");
+  validateParagraphStyleFontStyleNumericFields(runtime, strutStyle, "ParagraphStyle.strutStyle");
+}
+
+inline void validateParagraphStyleNumericFields(
+    jsi::Runtime& runtime,
+    const jsi::Value& value)
+{
+  if (value.isUndefined() || value.isNull() || !value.isObject()) {
+    return;
+  }
+
+  auto object = value.asObject(runtime);
+  validateOptionalStyleFloat(runtime, object, "heightMultiplier", "ParagraphStyle.heightMultiplier");
+  validateOptionalParagraphStyleSize(runtime, object, "maxLines", "ParagraphStyle.maxLines");
+  validateOptionalStyleInt(runtime, object, "textAlign", "ParagraphStyle.textAlign");
+  validateOptionalStyleInt(runtime, object, "textDirection", "ParagraphStyle.textDirection");
+  validateOptionalStyleInt(runtime, object, "textHeightBehavior", "ParagraphStyle.textHeightBehavior");
+  validateParagraphStyleStrutStyleNumericFields(runtime, object);
+
+  if (object.hasProperty(runtime, "textStyle")) {
+    auto textStyleValue = object.getProperty(runtime, "textStyle");
+    validateTextStyleNumericFields(runtime, textStyleValue, "ParagraphStyle.textStyle");
+  }
+
+  bool hasNestedTextStyleHeightMultiplier = false;
+  if (object.hasProperty(runtime, "textStyle")) {
+    auto textStyleValue = object.getProperty(runtime, "textStyle");
+    if (textStyleValue.isObject()) {
+      auto textStyleObject = textStyleValue.asObject(runtime);
+      hasNestedTextStyleHeightMultiplier = textStyleObject.hasProperty(runtime, "heightMultiplier");
+    }
+  }
+
+  validateTextStyleNumericFields(
+      runtime,
+      value,
+      "ParagraphStyle",
+      hasNestedTextStyleHeightMultiplier);
+}
+
 inline jsi::Object paragraphStyleObjectWithoutTextStyle(
     jsi::Runtime& runtime,
     const jsi::Object& object)
@@ -131,7 +228,7 @@ inline void applyNestedParagraphStyleTextStyleOverlay(
 
   auto textStyleValue = object.getProperty(runtime, "textStyle");
   auto textStyle = paragraphStyle.getTextStyle();
-  applyTextStyle(runtime, textStyleValue, textStyle);
+  applyTextStyle(runtime, textStyleValue, textStyle, false, "ParagraphStyle.textStyle");
   paragraphStyle.setTextStyle(textStyle);
 }
 
@@ -233,6 +330,7 @@ struct JSIConverter<skia::textlayout::ParagraphStyle> final {
       jsi::Runtime& runtime,
       const jsi::Value& arg) {
     rejectUnsupportedParagraphStyleFontVariations(runtime, arg);
+    validateParagraphStyleNumericFields(runtime, arg);
     auto paragraphStyle = paragraphStyleBaseFromValue(runtime, arg);
 
     if (arg.isObject()) {
@@ -248,7 +346,8 @@ struct JSIConverter<skia::textlayout::ParagraphStyle> final {
           runtime,
           arg,
           textStyle,
-          hasNestedParagraphStyleTextStyleHeightMultiplier(runtime, object));
+          hasNestedParagraphStyleTextStyleHeightMultiplier(runtime, object),
+          "ParagraphStyle");
       paragraphStyle.setTextStyle(textStyle);
       applyParagraphStyleStrutStyleOverlay(runtime, arg, paragraphStyle);
     }

@@ -164,6 +164,7 @@ try {
 	assertCommandPointFiniteValidationInventory()
 	assertCommandAnimatedDoubleFiniteValidationInventory()
 	assertPathStrokeNumericFiniteValidationInventory()
+	assertTextParagraphStyleNumericFiniteValidationInventory()
 	createNitroModulesShim(tmpDir)
 
 	const probePath = path.join(tmpDir, "yoganode-native-commands-render.cpp")
@@ -278,6 +279,7 @@ try {
 	console.log("- The executable asserted non-finite command point rejection for line.from.x/y, line.to.x/y, and indexed points.points[] x/y payloads with NaN, Infinity, and -Infinity, preserving the previously installed native LineCmd/PointsCmd state.")
 	console.log("- The executable asserted non-finite static AnimatedDouble command rejection for rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, path.trimEnd, and circle.radius payloads before same-type setCommand mutation, while retaining dynamic Worklets-backed AnimatedDouble command behavior.")
 	console.log("- The executable asserted non-finite path stroke numeric rejection for stroke.width, stroke.miter_limit, stroke.miterLimit alias fallback, and stroke.precision before same-type PathCmd state mutation, while preserving direct StrokeOpts converter behavior.")
+	console.log("- The executable asserted non-finite and native-range-overflow text/paragraph style numeric rejection for TextStyle.fontSize plus flattened/nested ParagraphStyle textStyle, maxLines, strutStyle.leading, and fontFeatures[].value before same-type TextCmd/ParagraphCmd state mutation.")
 	console.log(`- The verifier checked the installed RN Skia public style field inventory before native compilation: ${formatStyleInventorySummary()}`)
 	console.log("- The executable asserted inventory-backed value-bearing toJSI/fromJSI serialization for installed public SkSamplingOptions filter/mipmap and cubic B/C, installed public SkTextStyle supported fields including fontSize/fontFamilies/fontFeatures/decoration/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, normalized text color fields color/backgroundColor/foregroundColor/decorationColor, installed public SkParagraphStyle scalar/textStyle/strutStyle fields, installed public SkStrutStyle fields, dual flattened/nested default text style fields including nested textStyle heightMultiplier output, flattened fontSize/color precedence over nested values, and explicit unsupported fontVariations rejection.")
 	console.log("- The executable asserted generated NodeStyle transport and host-native SkPaint/Yoga state for canonical style.antiAlias, legacy style.antiaAlias fallback, canonical precedence when both keys are present, overflow hidden/scroll public strings, generated style.layer JsiSkPaint host-object transport, YogaNode::_layerPaint storage/reset behavior, ordinary _paint separation, and explicit style paint fields overriding SkPaint-backed backgroundColor base paint values.")
@@ -286,7 +288,7 @@ try {
 	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) plus flattened and nested ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection including nested paragraphStyle.textStyle.color, unsupported paragraph fontVariations rejection, and text.textStyle rich-key rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; finite rejection for direct width, miter_limit, miterLimit alias fallback, and precision payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, overflow hidden/scroll, and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias/Yoga overflow/_clipsToBounds state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded plain overflow hidden/scroll rectangular raster clipping through YogaNode::renderToContext() using a GroupCmd parent and oversized RectCmd child, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, bounded explicit style.clip rect/rrect/path and invertClip rect/rrect/path raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, command point finite rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate LineCmd/PointsCmd state, static numeric AnimatedDouble command finite rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate CircleCmd/RRectCmd/BlurMaskFilterCmd/PathCmd state, path stroke numeric finite rejection through direct JSIConverter<StrokeOpts>::fromJSI and JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate PathCmd stroke state, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact plain overflow clipping beyond the asserted host-raster pixels, exact style corner-radius, global style.borderRadius, or explicit style.clip render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, overflow hidden/scroll, and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias/Yoga overflow/_clipsToBounds state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded plain overflow hidden/scroll rectangular raster clipping through YogaNode::renderToContext() using a GroupCmd parent and oversized RectCmd child, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, bounded explicit style.clip rect/rrect/path and invertClip rect/rrect/path raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, command point finite rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate LineCmd/PointsCmd state, static numeric AnimatedDouble command finite rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate CircleCmd/RRectCmd/BlurMaskFilterCmd/PathCmd state, path stroke numeric finite rejection through direct JSIConverter<StrokeOpts>::fromJSI and JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate PathCmd stroke state, text/paragraph style numeric finite and native-range-overflow rejection through JSIConverter<NodeCommand>::fromJSI before same-type TextCmd/ParagraphCmd mutation, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact plain overflow clipping beyond the asserted host-raster pixels, exact style corner-radius, global style.borderRadius, or explicit style.clip render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -741,6 +743,100 @@ function assertPathStrokeNumericFiniteValidationInventory() {
 			materializationVerifier.includes("generated path.stroke.miterLimit -Infinity") &&
 			materializationVerifier.includes("generated path.stroke.precision NaN"),
 		"Generated materialized setCommand verifier must retain path stroke numeric finite rejection coverage.",
+	)
+}
+
+function assertTextParagraphStyleNumericFiniteValidationInventory() {
+	const textStyleConverter = readProjectFile("cpp/JSIConverter+SkTextStyle.hpp")
+	const paragraphStyleConverter = readProjectFile(
+		"cpp/JSIConverter+SkParagraphStyle.hpp",
+	)
+	const nativeVerifier = readProjectFile(
+		"scripts/verify-yoganode-native-commands-render.mjs",
+	)
+	const materializationVerifier = readProjectFile(
+		"scripts/verify-yoganode-nitro-materialization.mjs",
+	)
+
+	const textLabels = [
+		'stylePath + ".fontSize"',
+		'stylePath + ".decorationThickness"',
+		'stylePath + ".fontFeatures["',
+		'stylePath + ".fontStyle.weight"',
+		'stylePath + ".heightMultiplier"',
+		'stylePath + ".letterSpacing"',
+		'stylePath + ".wordSpacing"',
+		'stylePath + ".shadows["',
+		'stylePath + ".textBaseline"',
+	]
+	for (const label of textLabels) {
+		assertSource(
+			textStyleConverter.includes(label),
+			`TextStyle numeric finite validation must retain path label ${label}.`,
+		)
+	}
+
+	const paragraphLabels = [
+		"ParagraphStyle.heightMultiplier",
+		"ParagraphStyle.maxLines",
+		"ParagraphStyle.textAlign",
+		"ParagraphStyle.textDirection",
+		"ParagraphStyle.textHeightBehavior",
+		"ParagraphStyle.strutStyle.fontSize",
+		"ParagraphStyle.strutStyle.heightMultiplier",
+		"ParagraphStyle.strutStyle.leading",
+		"ParagraphStyle.textStyle",
+	]
+	for (const label of paragraphLabels) {
+		assertSource(
+			paragraphStyleConverter.includes(label) ||
+				textStyleConverter.includes(label),
+			`ParagraphStyle numeric finite validation must retain path label ${label}.`,
+		)
+	}
+
+	assertSource(
+		textStyleConverter.includes("validateTextStyleNumericFields") &&
+			textStyleConverter.includes("getRequiredFiniteStyleFloat") &&
+			textStyleConverter.includes("getRequiredFiniteStyleInt") &&
+			textStyleConverter.includes("parseFiniteTextStylePoint") &&
+			textStyleConverter.includes("std::isfinite(number)") &&
+			textStyleConverter.includes("std::isfinite(narrowed)") &&
+			textStyleConverter.includes("std::numeric_limits<int>::max()") &&
+			textStyleConverter.includes("Invalid numeric text/paragraph style value for "),
+		"TextStyle converter must finite/range-check public numeric float, int, enum, and shadow point leaves.",
+	)
+	assertSource(
+		paragraphStyleConverter.includes("validateParagraphStyleNumericFields") &&
+			paragraphStyleConverter.includes("getRequiredFiniteParagraphStyleSize") &&
+			paragraphStyleConverter.includes("validateParagraphStyleStrutStyleNumericFields") &&
+			paragraphStyleConverter.indexOf("validateParagraphStyleNumericFields(runtime, arg);") <
+				paragraphStyleConverter.indexOf("auto paragraphStyle = paragraphStyleBaseFromValue(runtime, arg);"),
+		"ParagraphStyle converter must validate paragraph and strut numeric leaves before delegating to RN Skia raw parsing.",
+	)
+	assertSource(
+		nativeVerifier.includes("assertTextParagraphStyleNumericFiniteRejections(*runtime);") &&
+			nativeVerifier.includes("text.textStyle.fontSize NaN") &&
+			nativeVerifier.includes("text.textStyle.fontSize float overflow") &&
+			nativeVerifier.includes("paragraph.paragraphStyle.textStyle.fontSize NaN") &&
+			nativeVerifier.includes("paragraph.paragraphStyle.strutStyle.leading -Infinity") &&
+			nativeVerifier.includes("paragraph.paragraphStyle.maxLines fractional") &&
+			nativeVerifier.includes("paragraph.paragraphStyle.fontFeatures[0].value fractional") &&
+			nativeVerifier.includes("paragraph.paragraphStyle.fontFeatures[0].value int overflow"),
+		"Native command/render verifier must retain text and paragraph style numeric finite/range state-preservation coverage.",
+	)
+	assertSource(
+		materializationVerifier.includes(
+			"assertGeneratedTextParagraphStyleNumericFiniteRejections(*runtime);",
+		) &&
+			materializationVerifier.includes("generated text.textStyle.fontSize NaN") &&
+			materializationVerifier.includes("generated text.textStyle.fontSize float overflow") &&
+			materializationVerifier.includes("generated paragraph.paragraphStyle.textStyle.fontSize NaN") &&
+			materializationVerifier.includes("generated paragraph.paragraphStyle.strutStyle.leading -Infinity") &&
+			materializationVerifier.includes(
+				"generated paragraph.paragraphStyle.fontFeatures[0].value int overflow",
+			),
+		"Generated materialized setCommand verifier must retain text and paragraph style numeric finite/range state-preservation coverage.",
 	)
 }
 
@@ -2770,6 +2866,18 @@ NodeCommand namedColorTextCommand(jsi::Runtime& runtime)
     return convertCommand(runtime, std::move(command));
 }
 
+jsi::Object textCommandObjectWithTextStyleFontSize(jsi::Runtime& runtime, double fontSize)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "text", "Invalid Text");
+    data.setProperty(runtime, "textStyle", textStyleObject(runtime, fontSize, SK_ColorRED));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "text");
+    command.setProperty(runtime, "data", std::move(data));
+    return command;
+}
+
 NodeCommand paragraphCommand(jsi::Runtime& runtime)
 {
     jsi::Object data(runtime);
@@ -2780,6 +2888,56 @@ NodeCommand paragraphCommand(jsi::Runtime& runtime)
     command.setProperty(runtime, "type", "paragraph");
     command.setProperty(runtime, "data", std::move(data));
     return convertCommand(runtime, std::move(command));
+}
+
+jsi::Object paragraphCommandObjectWithStyle(jsi::Runtime& runtime, jsi::Object paragraphStyle)
+{
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "text", "Invalid paragraph text");
+    data.setProperty(runtime, "paragraphStyle", std::move(paragraphStyle));
+
+    jsi::Object command(runtime);
+    command.setProperty(runtime, "type", "paragraph");
+    command.setProperty(runtime, "data", std::move(data));
+    return command;
+}
+
+jsi::Object paragraphStyleWithFlattenedFontSize(jsi::Runtime& runtime, double fontSize)
+{
+    return textStyleObject(runtime, fontSize, SK_ColorBLUE);
+}
+
+jsi::Object paragraphStyleWithNestedFontSize(jsi::Runtime& runtime, double fontSize)
+{
+    return paragraphStyleWithNestedTextStyleObject(runtime, fontSize, "#00ff00");
+}
+
+jsi::Object paragraphStyleWithFontFeatureValue(jsi::Runtime& runtime, double value)
+{
+    auto paragraphStyle = textStyleObject(runtime, 18.0, SK_ColorBLUE);
+    jsi::Array fontFeatures(runtime, 1);
+    jsi::Object feature(runtime);
+    feature.setProperty(runtime, "name", "kern");
+    feature.setProperty(runtime, "value", value);
+    fontFeatures.setValueAtIndex(runtime, 0, std::move(feature));
+    paragraphStyle.setProperty(runtime, "fontFeatures", std::move(fontFeatures));
+    return paragraphStyle;
+}
+
+jsi::Object paragraphStyleWithStrutLeading(jsi::Runtime& runtime, double leading)
+{
+    jsi::Object paragraphStyle(runtime);
+    auto strutStyle = strutStyleObject(runtime);
+    strutStyle.setProperty(runtime, "leading", leading);
+    paragraphStyle.setProperty(runtime, "strutStyle", std::move(strutStyle));
+    return paragraphStyle;
+}
+
+jsi::Object paragraphStyleWithMaxLines(jsi::Runtime& runtime, double maxLines)
+{
+    jsi::Object paragraphStyle(runtime);
+    paragraphStyle.setProperty(runtime, "maxLines", maxLines);
+    return paragraphStyle;
 }
 
 NodeCommand paragraphSerializationCommand(jsi::Runtime& runtime)
@@ -4771,6 +4929,129 @@ void assertPathStrokeNumericFiniteRejections(jsi::Runtime& runtime)
     }
 }
 
+std::string invalidTextParagraphStyleNumericMessage(const char* propertyPath)
+{
+    return std::string("Invalid numeric text/paragraph style value for ") + propertyPath + ": expected a finite number within native range.";
+}
+
+void expectTextCommandState(
+    const std::shared_ptr<YogaNode>& root,
+    const std::string& expectedText,
+    double expectedFontSize,
+    SkColor expectedColor,
+    const char* label)
+{
+    expect(root->_commandKind == YogaNodeCommandKind::TEXT, std::string(label) + " preserves TextCmd kind");
+    expect(root->_command != nullptr, std::string(label) + " preserves native command");
+    auto* textCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::TextCmd*>(root->_command.get());
+    expect(textCmd != nullptr, std::string(label) + " preserves TextCmd type");
+    expect(textCmd->props.text == expectedText, std::string(label) + " text payload");
+    expect(textCmd->props.font.has_value(), std::string(label) + " font optional");
+    expectNear(textCmd->props.font->getSize(), expectedFontSize, std::string(label) + " font size");
+    expect(textCmd->fallbackPaintColor().has_value(), std::string(label) + " fallback color optional");
+    expectColorNear(*textCmd->fallbackPaintColor(), expectedColor, 0, std::string(label) + " fallback color");
+}
+
+void expectParagraphCommandState(
+    const std::shared_ptr<YogaNode>& root,
+    const std::shared_ptr<RNSkia::JsiSkParagraph>& expectedParagraph,
+    const char* label)
+{
+    expect(root->_commandKind == YogaNodeCommandKind::PARAGRAPH, std::string(label) + " preserves ParagraphCmd kind");
+    expect(root->_command != nullptr, std::string(label) + " preserves native command");
+    auto* paragraphCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::ParagraphCmd*>(root->_command.get());
+    expect(paragraphCmd != nullptr, std::string(label) + " preserves ParagraphCmd type");
+    expect(YGNodeHasMeasureFunc(root->_node), std::string(label) + " preserves ParagraphCmd measure function");
+    expect(paragraphCmd->props.paragraph == expectedParagraph, std::string(label) + " paragraph object");
+    auto measured = margelo::nitro::RNSkiaYoga::ParagraphCmd::measureFunc(
+        root->_node,
+        92.0f,
+        YGMeasureModeAtMost,
+        YGUndefined,
+        YGMeasureModeUndefined);
+    expect(measured.width > 0.0f, std::string(label) + " measure width stays positive");
+    expect(measured.height > 0.0f, std::string(label) + " measure height stays positive");
+}
+
+void assertTextParagraphStyleNumericFiniteRejections(jsi::Runtime& runtime)
+{
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    const double positiveInfValue = std::numeric_limits<double>::infinity();
+    const double negativeInfValue = -std::numeric_limits<double>::infinity();
+    const double floatOverflow = std::numeric_limits<double>::max();
+    const double intOverflow = static_cast<double>(std::numeric_limits<int>::max()) * 2.0;
+
+    auto textRoot = makeYogaNode(
+        groupStyle(116.0, 42.0),
+        styledTextCommand(runtime));
+    const auto* initialTextCommand = textRoot->_command.get();
+    expectTextCommandState(textRoot, "Bounded Text", 18.0, SK_ColorBLUE, "text style finite rejection baseline");
+
+    struct TextInvalidCase {
+        const char* label;
+        double fontSize;
+    };
+
+    const std::array<TextInvalidCase, 4> textInvalidCases {{
+        { "text.textStyle.fontSize NaN", nan },
+        { "text.textStyle.fontSize Infinity", positiveInfValue },
+        { "text.textStyle.fontSize -Infinity", negativeInfValue },
+        { "text.textStyle.fontSize float overflow", floatOverflow },
+    }};
+
+    for (const auto& invalidCase : textInvalidCases) {
+        expectConvertedSetCommandRejects(
+            runtime,
+            *textRoot,
+            textCommandObjectWithTextStyleFontSize(runtime, invalidCase.fontSize),
+            invalidTextParagraphStyleNumericMessage("TextStyle.fontSize"),
+            invalidCase.label);
+        expect(textRoot->_command.get() == initialTextCommand, std::string(invalidCase.label) + " preserves command pointer");
+        expectTextCommandState(textRoot, "Bounded Text", 18.0, SK_ColorBLUE, invalidCase.label);
+    }
+
+    auto paragraphRoot = makeYogaNode(
+        widthOnlyStyle(92.0),
+        paragraphCommand(runtime));
+    const auto* initialParagraphCommand = paragraphRoot->_command.get();
+    auto* paragraphCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::ParagraphCmd*>(paragraphRoot->_command.get());
+    expect(paragraphCmd != nullptr, "paragraph style finite rejection baseline command type");
+    auto initialParagraph = paragraphCmd->props.paragraph;
+    expect(initialParagraph != nullptr, "paragraph style finite rejection baseline paragraph object");
+    expectParagraphCommandState(paragraphRoot, initialParagraph, "paragraph style finite rejection baseline");
+
+    struct ParagraphInvalidCase {
+        const char* label;
+        jsi::Object (*makeStyle)(jsi::Runtime&, double);
+        double value;
+        const char* propertyPath;
+    };
+
+	const std::array<ParagraphInvalidCase, 10> paragraphInvalidCases {{
+        { "paragraph.paragraphStyle.fontSize Infinity", paragraphStyleWithFlattenedFontSize, positiveInfValue, "ParagraphStyle.fontSize" },
+        { "paragraph.paragraphStyle.fontSize float overflow", paragraphStyleWithFlattenedFontSize, floatOverflow, "ParagraphStyle.fontSize" },
+        { "paragraph.paragraphStyle.textStyle.fontSize NaN", paragraphStyleWithNestedFontSize, nan, "ParagraphStyle.textStyle.fontSize" },
+        { "paragraph.paragraphStyle.textStyle.fontSize -Infinity", paragraphStyleWithNestedFontSize, negativeInfValue, "ParagraphStyle.textStyle.fontSize" },
+        { "paragraph.paragraphStyle.maxLines NaN", paragraphStyleWithMaxLines, nan, "ParagraphStyle.maxLines" },
+        { "paragraph.paragraphStyle.maxLines -Infinity", paragraphStyleWithMaxLines, negativeInfValue, "ParagraphStyle.maxLines" },
+        { "paragraph.paragraphStyle.maxLines fractional", paragraphStyleWithMaxLines, 1.5, "ParagraphStyle.maxLines" },
+        { "paragraph.paragraphStyle.strutStyle.leading -Infinity", paragraphStyleWithStrutLeading, negativeInfValue, "ParagraphStyle.strutStyle.leading" },
+        { "paragraph.paragraphStyle.fontFeatures[0].value fractional", paragraphStyleWithFontFeatureValue, 1.5, "ParagraphStyle.fontFeatures[0].value" },
+        { "paragraph.paragraphStyle.fontFeatures[0].value int overflow", paragraphStyleWithFontFeatureValue, intOverflow, "ParagraphStyle.fontFeatures[0].value" },
+    }};
+
+    for (const auto& invalidCase : paragraphInvalidCases) {
+        expectConvertedSetCommandRejects(
+            runtime,
+            *paragraphRoot,
+            paragraphCommandObjectWithStyle(runtime, invalidCase.makeStyle(runtime, invalidCase.value)),
+            invalidTextParagraphStyleNumericMessage(invalidCase.propertyPath),
+            invalidCase.label);
+        expect(paragraphRoot->_command.get() == initialParagraphCommand, std::string(invalidCase.label) + " preserves command pointer");
+        expectParagraphCommandState(paragraphRoot, initialParagraph, invalidCase.label);
+    }
+}
+
 void assertOvalCommandRender(jsi::Runtime& runtime)
 {
     auto root = makeYogaNode(
@@ -6189,6 +6470,7 @@ int main()
     assertCommandPointFiniteRejections(*runtime);
     assertStaticAnimatedDoubleCommandFiniteRejections(*runtime);
     assertPathStrokeNumericFiniteRejections(*runtime);
+    assertTextParagraphStyleNumericFiniteRejections(*runtime);
     assertOvalCommandRender(*runtime);
     assertCircleCommandRender(*runtime);
     assertDynamicCircleCommandRender(*runtime);
