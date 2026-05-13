@@ -280,7 +280,7 @@ try {
 	console.log("- The executable asserted non-finite and native-float-overflow command point rejection for line.from.x/y, line.to.x/y, and indexed points.points[] x/y payloads, preserving the previously installed native LineCmd/PointsCmd state.")
 	console.log("- The executable asserted non-finite and native-float-overflow static AnimatedDouble command rejection for rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, path.trimEnd, and circle.radius payloads before same-type setCommand mutation, while retaining dynamic Worklets-backed AnimatedDouble command behavior.")
 	console.log("- The executable asserted dynamic AnimatedDouble render-time native-float validation fails closed for NaN, Infinity, and native-float-overflow Synchronizable mutations without installing invalid float props.")
-	console.log("- The executable asserted non-finite path stroke numeric rejection for stroke.width, stroke.miter_limit, stroke.miterLimit alias fallback, and stroke.precision before same-type PathCmd state mutation, while preserving direct StrokeOpts converter behavior.")
+	console.log("- The executable asserted non-finite and native-float-overflow path stroke numeric rejection for stroke.width, stroke.miter_limit, stroke.miterLimit alias fallback, and stroke.precision before same-type PathCmd state mutation, while preserving direct StrokeOpts converter behavior.")
 	console.log("- The executable asserted numeric enum rejection for blurMaskFilter.blurStyle, points.pointMode, path.fillType, path.stroke.join, and path.stroke.cap finite/integer/range violations before same-type command mutation.")
 	console.log("- The executable asserted non-finite and native-range-overflow text/paragraph style numeric rejection for TextStyle.fontSize plus flattened/nested ParagraphStyle textStyle, maxLines, strutStyle.leading, and fontFeatures[].value before same-type TextCmd/ParagraphCmd state mutation.")
 	console.log(`- The verifier checked the installed RN Skia public style field inventory before native compilation: ${formatStyleInventorySummary()}`)
@@ -289,9 +289,9 @@ try {
 	console.log("- The executable asserted pixels/regions for opacity blending, Yoga-derived child coordinates, composed public transform-array rendering, style.layer saveLayer alpha modulation of a child subtree, plain overflow hidden/scroll rectangular clip-to-bounds raster clipping of oversized children, style corner-radius and global style.borderRadius clip-to-bounds raster clipping of full-size children, explicit style.clip rect/rrect/path raster clipping of full-size children, invertClip rect/rrect/path raster clipping, group raster-cache reuse/invalidation, circle/path-trim dynamic raster-cache bypass, point drawing, line stroke drawing, oval/circle/rrect fills, public-shaped path.stroke conversion/rendering, bounded blur-mask-filter inheritance, real JsiSkPath host-object conversion/rendering, expanded synthetic JsiSkImage fit/default rendering, numeric and CSS color-string TextCmd raster evidence, ParagraphCmd measure/raster evidence, and Worklets-backed dynamic circle/rrect/blur/path-trim render-time fallback, resolution, and mutation.")
 	console.log("- The executable asserted synthetic ImageCmd fit helper geometry, command state, draw bounds, and bounded raster evidence for fill, omitted/default contain, cover, none, scaleDown, fitWidth, and fitHeight, plus invalid fit rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) plus flattened and nested ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection including nested paragraphStyle.textStyle.color, unsupported paragraph fontVariations rejection, and text.textStyle rich-key rejection in JSIConverter<NodeCommand>::fromJSI(...).")
-	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; finite rejection for direct width, miter_limit, miterLimit alias fallback, and precision payloads; numeric enum rejection for direct join/cap finite/integer/range violations; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
+	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; non-finite and native-float-overflow rejection for direct width, miter_limit, miterLimit alias fallback, and precision payloads; numeric enum rejection for direct join/cap finite/integer/range violations; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, later Synchronizable::setBlocking(...) mutation observation, and invalid dynamic mutation fail-closed behavior through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, overflow hidden/scroll, and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias/Yoga overflow/_clipsToBounds state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded plain overflow hidden/scroll rectangular raster clipping through YogaNode::renderToContext() using a GroupCmd parent and oversized RectCmd child, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, bounded explicit style.clip rect/rrect/path and invertClip rect/rrect/path raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, command point native-float validation through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate LineCmd/PointsCmd state, static numeric AnimatedDouble command native-float validation through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate CircleCmd/RRectCmd/BlurMaskFilterCmd/PathCmd state, dynamic AnimatedDouble native-float validation through AnimatedDouble::resolveNativeFloat before selected render paths narrow or mutate command props, command numeric enum finite/integer/range rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate BlurMaskFilterCmd/PointsCmd/PathCmd state, path stroke numeric finite rejection through direct JSIConverter<StrokeOpts>::fromJSI and JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate PathCmd stroke state, direct StrokeOpts numeric enum finite/integer/range rejection through JSIConverter<StrokeOpts>::fromJSI for join/cap, text/paragraph style numeric finite and native-range-overflow rejection through JSIConverter<NodeCommand>::fromJSI before same-type TextCmd/ParagraphCmd mutation, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact plain overflow clipping beyond the asserted host-raster pixels, exact style corner-radius, global style.borderRadius, or explicit style.clip render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, overflow hidden/scroll, and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias/Yoga overflow/_clipsToBounds state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded plain overflow hidden/scroll rectangular raster clipping through YogaNode::renderToContext() using a GroupCmd parent and oversized RectCmd child, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, bounded explicit style.clip rect/rrect/path and invertClip rect/rrect/path raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, command point native-float validation through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate LineCmd/PointsCmd state, static numeric AnimatedDouble command native-float validation through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate CircleCmd/RRectCmd/BlurMaskFilterCmd/PathCmd state, dynamic AnimatedDouble native-float validation through AnimatedDouble::resolveNativeFloat before selected render paths narrow or mutate command props, command numeric enum finite/integer/range rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate BlurMaskFilterCmd/PointsCmd/PathCmd state, path stroke numeric native-float validation through direct JSIConverter<StrokeOpts>::fromJSI and JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate PathCmd stroke state, direct StrokeOpts numeric enum finite/integer/range rejection through JSIConverter<StrokeOpts>::fromJSI for join/cap, text/paragraph style numeric finite and native-range-overflow rejection through JSIConverter<NodeCommand>::fromJSI before same-type TextCmd/ParagraphCmd mutation, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact plain overflow clipping beyond the asserted host-raster pixels, exact style corner-radius, global style.borderRadius, or explicit style.clip render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -750,13 +750,15 @@ function assertPathStrokeNumericFiniteValidationInventory() {
 	const directPrecisionIndex = strokeOptsConverter.indexOf('"stroke.precision"')
 	assertSource(
 		strokeOptsConverter.includes("Invalid numeric stroke value for ") &&
-			strokeOptsConverter.includes("std::isfinite(number)") &&
-			strokeOptsConverter.includes("std::isfinite(narrowed)") &&
+			strokeOptsConverter.includes("isValidNativeStrokeFloat") &&
+			strokeOptsConverter.includes("std::isfinite(value)") &&
+			strokeOptsConverter.includes("std::numeric_limits<float>::max()") &&
+			strokeOptsConverter.includes("expected a finite native float") &&
 			directWidthIndex >= 0 &&
 			directMiterIndex > directWidthIndex &&
 			directAliasIndex > directMiterIndex &&
 			directPrecisionIndex > directAliasIndex,
-		"Direct StrokeOpts converter must finite-check width, miter_limit, miterLimit alias fallback, and precision with stable labels.",
+		"Direct StrokeOpts converter must native-float-check width, miter_limit, miterLimit alias fallback, and precision with stable labels.",
 	)
 
 	const parseStrokeIndex = nodeCommandConverter.indexOf("parseStrokeOpts(")
@@ -765,34 +767,41 @@ function assertPathStrokeNumericFiniteValidationInventory() {
 	const pathAliasIndex = nodeCommandConverter.indexOf('"path.stroke.miterLimit"', parseStrokeIndex)
 	const pathPrecisionIndex = nodeCommandConverter.indexOf('"path.stroke.precision"', parseStrokeIndex)
 	assertSource(
-		nodeCommandConverter.includes("getOptionalFiniteStrokeProperty") &&
-			nodeCommandConverter.includes("Invalid numeric stroke value for ") &&
-			nodeCommandConverter.includes("std::isfinite(*parsed)") &&
+		strokeOptsConverter.includes("getOptionalNativeStrokeFloatProperty") &&
+			nodeCommandConverter.includes("getOptionalNativeStrokeFloatProperty") &&
 			pathWidthIndex > parseStrokeIndex &&
 			pathMiterIndex > pathWidthIndex &&
 			pathAliasIndex > pathMiterIndex &&
 			pathPrecisionIndex > pathAliasIndex,
-		"Native NodeCommand path stroke parser must finite-check width, miter_limit, miterLimit alias fallback, and precision with stable path labels.",
+		"Native NodeCommand path stroke parser must native-float-check width, miter_limit, miterLimit alias fallback, and precision with stable path labels.",
 	)
 
 	assertSource(
 		nativeVerifier.includes("assertPathStrokeNumericFiniteRejections(*runtime);") &&
 			nativeVerifier.includes("path.stroke.width NaN") &&
+			nativeVerifier.includes("path.stroke.width native-float overflow") &&
 			nativeVerifier.includes("path.stroke.miter_limit Infinity") &&
+			nativeVerifier.includes("path.stroke.miter_limit native-float overflow") &&
 			nativeVerifier.includes("path.stroke.miterLimit -Infinity") &&
+			nativeVerifier.includes("path.stroke.miterLimit native-float overflow") &&
 			nativeVerifier.includes("path.stroke.precision NaN") &&
+			nativeVerifier.includes("path.stroke.precision native-float overflow") &&
 			nativeVerifier.includes("assertStrokeOptsConverterFiniteRejections(*runtime);"),
-		"Native command/render verifier must retain path stroke numeric finite rejection and direct StrokeOpts finite rejection coverage.",
+		"Native command/render verifier must retain path stroke numeric native-float rejection and direct StrokeOpts native-float rejection coverage.",
 	)
 	assertSource(
 		materializationVerifier.includes(
 			"assertGeneratedPathStrokeNumericFiniteRejections(*runtime);",
 		) &&
 			materializationVerifier.includes("generated path.stroke.width NaN") &&
+			materializationVerifier.includes("generated path.stroke.width native-float overflow") &&
 			materializationVerifier.includes("generated path.stroke.miter_limit Infinity") &&
+			materializationVerifier.includes("generated path.stroke.miter_limit native-float overflow") &&
 			materializationVerifier.includes("generated path.stroke.miterLimit -Infinity") &&
-			materializationVerifier.includes("generated path.stroke.precision NaN"),
-		"Generated materialized setCommand verifier must retain path stroke numeric finite rejection coverage.",
+			materializationVerifier.includes("generated path.stroke.miterLimit native-float overflow") &&
+			materializationVerifier.includes("generated path.stroke.precision NaN") &&
+			materializationVerifier.includes("generated path.stroke.precision native-float overflow"),
+		"Generated materialized setCommand verifier must retain path stroke numeric native-float rejection coverage.",
 	)
 }
 
@@ -4978,7 +4987,7 @@ void expectPathTrimCommandState(
 
 std::string invalidStrokeCommandMessage(const char* propertyPath)
 {
-    return std::string("Invalid numeric stroke value for ") + propertyPath + ": expected a finite number.";
+    return std::string("Invalid numeric stroke value for ") + propertyPath + ": expected a finite native float.";
 }
 
 std::string invalidNumericEnumMessage(const char* propertyPath, const char* validValues)
@@ -5153,6 +5162,7 @@ void assertPathStrokeNumericFiniteRejections(jsi::Runtime& runtime)
     const double nan = std::numeric_limits<double>::quiet_NaN();
     const double positiveInfValue = std::numeric_limits<double>::infinity();
     const double negativeInfValue = -std::numeric_limits<double>::infinity();
+    const double nativeFloatOverflow = nativeFloatOverflowValue();
 
     auto root = makeYogaNode(
         fixedStyle(20.0, 12.0, SK_ColorCYAN),
@@ -5169,19 +5179,23 @@ void assertPathStrokeNumericFiniteRejections(jsi::Runtime& runtime)
         const char* propertyPath;
     };
 
-    const std::array<InvalidCase, 12> invalidCases {{
+    const std::array<InvalidCase, 16> invalidCases {{
         { "path.stroke.width NaN", nan, "miter_limit", 7.0, 1.25, "path.stroke.width" },
         { "path.stroke.width Infinity", positiveInfValue, "miter_limit", 7.0, 1.25, "path.stroke.width" },
         { "path.stroke.width -Infinity", negativeInfValue, "miter_limit", 7.0, 1.25, "path.stroke.width" },
+        { "path.stroke.width native-float overflow", nativeFloatOverflow, "miter_limit", 7.0, 1.25, "path.stroke.width" },
         { "path.stroke.miter_limit NaN", 4.0, "miter_limit", nan, 1.25, "path.stroke.miter_limit" },
         { "path.stroke.miter_limit Infinity", 4.0, "miter_limit", positiveInfValue, 1.25, "path.stroke.miter_limit" },
         { "path.stroke.miter_limit -Infinity", 4.0, "miter_limit", negativeInfValue, 1.25, "path.stroke.miter_limit" },
+        { "path.stroke.miter_limit native-float overflow", 4.0, "miter_limit", -nativeFloatOverflow, 1.25, "path.stroke.miter_limit" },
         { "path.stroke.miterLimit NaN", 4.0, "miterLimit", nan, 1.25, "path.stroke.miterLimit" },
         { "path.stroke.miterLimit Infinity", 4.0, "miterLimit", positiveInfValue, 1.25, "path.stroke.miterLimit" },
         { "path.stroke.miterLimit -Infinity", 4.0, "miterLimit", negativeInfValue, 1.25, "path.stroke.miterLimit" },
+        { "path.stroke.miterLimit native-float overflow", 4.0, "miterLimit", nativeFloatOverflow, 1.25, "path.stroke.miterLimit" },
         { "path.stroke.precision NaN", 4.0, "miter_limit", 7.0, nan, "path.stroke.precision" },
         { "path.stroke.precision Infinity", 4.0, "miter_limit", 7.0, positiveInfValue, "path.stroke.precision" },
         { "path.stroke.precision -Infinity", 4.0, "miter_limit", 7.0, negativeInfValue, "path.stroke.precision" },
+        { "path.stroke.precision native-float overflow", 4.0, "miter_limit", 7.0, -nativeFloatOverflow, "path.stroke.precision" },
     }};
 
     for (const auto& invalidCase : invalidCases) {
@@ -5918,6 +5932,7 @@ void assertStrokeOptsConverterFiniteRejections(jsi::Runtime& runtime)
     const double nan = std::numeric_limits<double>::quiet_NaN();
     const double positiveInfValue = std::numeric_limits<double>::infinity();
     const double negativeInfValue = -std::numeric_limits<double>::infinity();
+    const double nativeFloatOverflow = nativeFloatOverflowValue();
 
     const auto expectRejected = [&](
         const std::function<void(jsi::Object&)>& configure,
@@ -5957,6 +5972,12 @@ void assertStrokeOptsConverterFiniteRejections(jsi::Runtime& runtime)
         "stroke.width -Infinity");
     expectRejected(
         [&](jsi::Object& stroke) {
+            stroke.setProperty(runtime, "width", nativeFloatOverflow);
+        },
+        invalidStrokeCommandMessage("stroke.width"),
+        "stroke.width native-float overflow");
+    expectRejected(
+        [&](jsi::Object& stroke) {
             stroke.setProperty(runtime, "miter_limit", nan);
         },
         invalidStrokeCommandMessage("stroke.miter_limit"),
@@ -5974,6 +5995,13 @@ void assertStrokeOptsConverterFiniteRejections(jsi::Runtime& runtime)
         },
         invalidStrokeCommandMessage("stroke.miter_limit"),
         "stroke.miter_limit -Infinity");
+    expectRejected(
+        [&](jsi::Object& stroke) {
+            stroke.setProperty(runtime, "miterLimit", 2.0);
+            stroke.setProperty(runtime, "miter_limit", -nativeFloatOverflow);
+        },
+        invalidStrokeCommandMessage("stroke.miter_limit"),
+        "stroke.miter_limit native-float overflow with alias present");
     expectRejected(
         [&](jsi::Object& stroke) {
             stroke.setProperty(runtime, "miterLimit", nan);
@@ -5994,6 +6022,12 @@ void assertStrokeOptsConverterFiniteRejections(jsi::Runtime& runtime)
         "stroke.miterLimit -Infinity");
     expectRejected(
         [&](jsi::Object& stroke) {
+            stroke.setProperty(runtime, "miterLimit", nativeFloatOverflow);
+        },
+        invalidStrokeCommandMessage("stroke.miterLimit"),
+        "stroke.miterLimit native-float overflow");
+    expectRejected(
+        [&](jsi::Object& stroke) {
             stroke.setProperty(runtime, "precision", nan);
         },
         invalidStrokeCommandMessage("stroke.precision"),
@@ -6010,6 +6044,12 @@ void assertStrokeOptsConverterFiniteRejections(jsi::Runtime& runtime)
         },
         invalidStrokeCommandMessage("stroke.precision"),
         "stroke.precision -Infinity");
+    expectRejected(
+        [&](jsi::Object& stroke) {
+            stroke.setProperty(runtime, "precision", -nativeFloatOverflow);
+        },
+        invalidStrokeCommandMessage("stroke.precision"),
+        "stroke.precision native-float overflow");
 }
 
 void assertStrokeOptsConverterNumericEnumRejections(jsi::Runtime& runtime)
