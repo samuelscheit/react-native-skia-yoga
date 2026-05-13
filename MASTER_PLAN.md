@@ -176,7 +176,7 @@ targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
 Current active worker: worker 239 post-Worker 238 root-cause audit second retry
-(`spawn_agent` pending).
+(`/root/worker_239_post_238_audit_second_retry` spawned).
 Next queued worker: selected by worker 239.
 
 Goals:
@@ -550,7 +550,8 @@ Current active worker:
 
 - `worker-239-post-238-root-cause-audit`: audit Worker 238 path stroke
   native-float validation and select the next strongest unblocked root-cause
-  target. State: second retry spawn pending after
+  target. State: second retry spawned as
+  `/root/worker_239_post_238_audit_second_retry` after
   `/root/worker_239_post_238_root_cause_audit` and
   `/root/worker_239_post_238_root_cause_audit_retry` stalled without worktree
   changes and were closed. Branch: `worker/239-post-238-root-cause-audit`. Worktree:
@@ -563,9 +564,7 @@ Next queued worker:
 
 Follow-up queue:
 
-- Spawn worker 239 second retry with `agent_type: "worker"`, `goal: true`,
-  `fork_turns: "none"`, `model: "gpt-5.5"`, and
-  `reasoning_effort: "xhigh"`.
+- Monitor worker 239 second retry and review its report/diff when complete.
 
 Acceptance criteria:
 
