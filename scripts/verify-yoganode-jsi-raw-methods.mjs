@@ -167,7 +167,7 @@ try {
 	console.log("YogaNode JSI raw-method verifier passed:")
 	console.log("- Source invariant holds: generated HybridYogaNodeSpec methods and manual YogaNode raw methods have no duplicate names.")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, and Nitro/JSI helper sources.")
-	console.log("- The executable called YogaNode::loadHybridMethods() without duplicate-name overlap, created a real JSC runtime, converted a generated NodeStyle object, and called raw setInteractionConfig() / hitTest() with valid and invalid JSI inputs, including invalid hitSlop and hitTest numeric state-preservation cases.")
+	console.log("- The executable called YogaNode::loadHybridMethods() without duplicate-name overlap, created a real JSC runtime, converted a generated NodeStyle object, and called raw setInteractionConfig() / hitTest() with valid and invalid JSI inputs, including invalid eventTag, hitSlop, and hitTest numeric state-preservation cases.")
 	console.log("- Proof boundary: source-level duplicate-registration invariant plus host-native compile/link and direct host-JSC execution of the remaining raw methods. This harness does not claim Nitro toObject()/prototype materialization proof, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, or RNGH native delivery.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
@@ -713,6 +713,26 @@ void expectInvalidHitSlopPreservesState(
     expectInteractionStatePreserved(node, state, parentInteractiveDescendantCount, parent, message);
 }
 
+void expectInvalidEventTagPreservesState(
+    YogaNode& node,
+    jsi::Runtime& runtime,
+    const YogaNode* parent,
+    double eventTag,
+    const char* message)
+{
+    const auto state = captureInteractionState(node);
+    const auto parentInteractiveDescendantCount = parent == nullptr ? 0 : parent->_interactiveDescendantCount;
+    auto config = makeConfig(runtime, eventTag, "none", false);
+    config.setProperty(runtime, "hitSlop", 0.0);
+    expectThrows(
+        [&]() {
+            callSetInteraction(node, runtime, config);
+        },
+        "eventTag",
+        message);
+    expectInteractionStatePreserved(node, state, parentInteractiveDescendantCount, parent, message);
+}
+
 void expectInvalidHitTestPreservesState(
     YogaNode& node,
     jsi::Runtime& runtime,
@@ -916,6 +936,45 @@ int main()
             config.setProperty(*runtime, "hitSlop", hitSlop);
         },
         "object vertical combined overflow hitSlop must preserve interaction state");
+
+    std::cerr << "probe: reject invalid eventTag without mutating interaction state" << std::endl;
+    const auto eventTagOverflow = 9007199254740992.0;
+    expectInvalidEventTagPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        nan,
+        "NaN eventTag must preserve interaction state");
+    expectInvalidEventTagPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        infinity,
+        "Infinity eventTag must preserve interaction state");
+    expectInvalidEventTagPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        -infinity,
+        "-Infinity eventTag must preserve interaction state");
+    expectInvalidEventTagPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        -1.0,
+        "negative eventTag must preserve interaction state");
+    expectInvalidEventTagPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        12.5,
+        "fractional eventTag must preserve interaction state");
+    expectInvalidEventTagPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        eventTagOverflow,
+        "safe-integer overflow eventTag must preserve interaction state");
 
     std::cerr << "probe: exercise pointerEvents none and reset" << std::endl;
     auto noneConfig = makeConfig(*runtime, 13.0, "none", false);
