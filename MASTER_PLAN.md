@@ -120,9 +120,9 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; latest accepted implementation is worker 236 command `SkPoint`
+Status: active; latest accepted implementation is worker 238 path stroke
 native-float validation. Latest accepted audit is worker 237. Next queued work
-is path stroke native-float validation. Detailed historical accepted work lives
+is a post-Worker 238 root-cause audit. Detailed historical accepted work lives
 in `MASTER_PROGRESS.md` and `worker-progress/`.
 
 Latest accepted root-cause audit: worker 237 accepted Worker 236's command
@@ -131,13 +131,20 @@ generated checks, and selected deterministic pre-narrow native-float validation
 for path stroke numeric `float` leaves as the next locally unblocked
 root-cause target.
 
-Latest accepted implementation: worker 236 added command `SkPoint`
+Latest accepted implementation: worker 238 added deterministic pre-narrow
+native-float validation for direct `StrokeOpts` numeric `float` leaves and
+public command `path.stroke` numeric leaves. Direct and generated
+`setCommand(...)` paths now reject non-finite and native-float-overflowing
+stroke values before same-type `PathCmd` mutation, while direct `StrokeOpts`
+alias behavior remains preserved.
+
+Previous accepted implementation: worker 236 added command `SkPoint`
 native-float validation for `line.from`, `line.to`, and indexed
 `points.points[]` coordinates. Direct and generated `setCommand(...)` paths
 now reject non-finite and native-float-overflowing point coordinates before
 same-type `LineCmd` or `PointsCmd` mutation.
 
-Previous accepted implementation: worker 234 added deterministic
+Earlier accepted implementation: worker 234 added deterministic
 static `AnimatedDouble` native-float validation for direct/generated
 `setCommand(...)` paths. Static numeric values now reject before same-type
 command mutation when they are non-finite or outside native `float` range,
@@ -168,9 +175,8 @@ leaves now reject non-finite values, native-float overflow, fractional integer
 targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
-Current active worker: worker 238 path stroke native-float validation
-(`/root/worker_238_path_stroke_native_float_validation` spawned).
-Next queued worker: selected after worker 238.
+Current active worker: none.
+Next queued worker: post-Worker 238 root-cause audit.
 
 Goals:
 
@@ -534,28 +540,22 @@ Accepted package-hygiene implementation:
   generated verifier checks, and selected deterministic pre-narrow
   native-float validation for path stroke numeric `float` leaves as the next
   implementation target.
+- `worker-238-path-stroke-native-float-validation`: implemented deterministic
+  pre-narrow native-float validation for direct `StrokeOpts` numeric `float`
+  leaves and public command `path.stroke` numeric leaves, with focused direct
+  and generated verifier coverage plus a full feasible matrix.
 
 Current active worker:
 
-- `worker-238-path-stroke-native-float-validation`: add deterministic
-  pre-narrow native-float validation for direct `StrokeOpts` numeric `float`
-  leaves and public command `path.stroke` numeric leaves. State: spawn
-  spawned as `/root/worker_238_path_stroke_native_float_validation`. Branch:
-  `worker/238-path-stroke-native-float-validation`. Worktree:
-  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-238-path-stroke-native-float-validation`.
-  Expected write scope: `cpp/JSIConverter+StrokeOpts.hpp`,
-  `cpp/JSIConverter+NodeCommand.hpp`,
-  `scripts/verify-yoganode-native-commands-render.mjs`,
-  `scripts/verify-yoganode-nitro-materialization.mjs`, and
-  `worker-progress/worker-238-path-stroke-native-float-validation.md`.
+- None.
 
 Next queued worker:
 
-- Selected after worker 238.
+- Post-Worker 238 root-cause audit.
 
 Follow-up queue:
 
-- Monitor worker 238 and review its implementation/report when complete.
+- Launch the post-Worker 238 audit from an isolated worktree and branch.
 
 Acceptance criteria:
 
