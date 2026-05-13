@@ -115,8 +115,9 @@ try {
 	console.log("- The executable created a real Worklets Synchronizable, wrapped it in a SerializableJSRef NativeState JSI object, asserted JSIConverter<AnimatedDouble>::canConvert(...), extracted it with JSIConverter<AnimatedDouble>::fromJSI(...), and asserted AnimatedDouble::isDynamic().")
 	console.log("- The executable asserted plain JS objects and non-Synchronizable Worklets SerializableJSRef objects are rejected with stable AnimatedDouble-owned failures.")
 	console.log("- The executable asserted AnimatedDouble::resolve() returns fallback while RN Skia's main runtime is unset, then resolves the Synchronizable getBlocking() numeric value after BaseRuntimeAwareCache::setMainJsRuntime(runtime).")
-	console.log("- The executable mutated the Synchronizable with setBlocking(...) and asserted AnimatedDouble::resolve() observes the updated number.")
-	console.log("- Proof boundary: host-JSC/native Worklets Synchronizable extraction into AnimatedDouble, canConvert(...), dynamic flag behavior, getBlocking() numeric resolution through RN Skia main runtime, fallback with no main runtime, mutation observation, and stable local rejection paths only. This does not prove UI-runtime Worklets execution, Reanimated SharedValue delivery, executeOnUIRuntimeSync, real JS listener scheduling, RNGH delivery, Nitro module registry install, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, image asset/decoding/loading, exact render fidelity, or command-converter integration.")
+	console.log("- The executable mutated the Synchronizable with setBlocking(...) and asserted AnimatedDouble::resolve() and resolveNativeFloat() observe updated finite numbers.")
+	console.log("- The executable asserted resolveNativeFloat() rejects dynamic NaN, Infinity, and native-float-overflow values after Synchronizable mutation without narrowing them to float.")
+	console.log("- Proof boundary: host-JSC/native Worklets Synchronizable extraction into AnimatedDouble, canConvert(...), dynamic flag behavior, getBlocking() numeric resolution through RN Skia main runtime, fallback with no main runtime, finite/native-float resolution classification, mutation observation, and stable local rejection paths only. This does not prove UI-runtime Worklets execution, Reanimated SharedValue delivery, executeOnUIRuntimeSync, real JS listener scheduling, RNGH delivery, Nitro module registry install, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, image asset/decoding/loading, exact render fidelity, or command-converter integration.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -156,15 +157,19 @@ function assertCurrentGapAndSourceShape() {
 		animatedHeader.includes("AnimatedDouble") &&
 			animatedHeader.includes("extractAnimatedSynchronizable") &&
 			animatedHeader.includes("canExtractAnimatedSynchronizable") &&
-			animatedHeader.includes("resolveAnimatedSynchronizable"),
-		"AnimatedDouble converter surface must expose extraction and resolution helpers.",
+			animatedHeader.includes("resolveAnimatedSynchronizable") &&
+			animatedHeader.includes("AnimatedDoubleNativeFloatResolutionState") &&
+			animatedHeader.includes("resolveNativeFloat"),
+		"AnimatedDouble converter surface must expose extraction, resolution, and native-float classification helpers.",
 	)
 	assert(
 		animatedCpp.includes("SerializableJSRef") &&
 			animatedCpp.includes("Worklets Synchronizable") &&
 			animatedCpp.includes("BaseRuntimeAwareCache::getMainJsRuntime") &&
-			animatedCpp.includes("getBlocking()"),
-		"AnimatedDouble.cpp must own Worklets SerializableJSRef extraction and getBlocking resolution.",
+			animatedCpp.includes("getBlocking()") &&
+			animatedCpp.includes("std::numeric_limits<float>::max()") &&
+			animatedCpp.includes("AnimatedDoubleNativeFloatResolutionState::Invalid"),
+		"AnimatedDouble.cpp must own Worklets SerializableJSRef extraction, getBlocking resolution, and native-float validation.",
 	)
 	assert(
 		workletsModuleProxy.includes("createSynchronizable") &&
@@ -269,6 +274,7 @@ function nativeProbeSource() {
 #include <cstdlib>
 #include <exception>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -283,6 +289,7 @@ function nativeProbeSource() {
 #include "SharedItems/Synchronizable.h"
 
 using margelo::nitro::RNSkiaYoga::AnimatedDouble;
+using margelo::nitro::RNSkiaYoga::AnimatedDoubleNativeFloatResolutionState;
 
 namespace {
 
@@ -312,6 +319,22 @@ void expectOptionalNear(const std::optional<double>& actual, double expected, co
 {
     expect(actual.has_value(), message + " must have a value");
     expectNear(*actual, expected, message);
+}
+
+void expectNativeFloatValue(
+    const margelo::nitro::RNSkiaYoga::AnimatedDoubleNativeFloatResolution& actual,
+    double expected,
+    const std::string& message)
+{
+    expect(actual.state == AnimatedDoubleNativeFloatResolutionState::Valid, message + " must have a valid native-float value");
+    expectNear(actual.value, expected, message);
+}
+
+void expectNativeFloatInvalid(
+    const margelo::nitro::RNSkiaYoga::AnimatedDoubleNativeFloatResolution& actual,
+    const std::string& message)
+{
+    expect(actual.state == AnimatedDoubleNativeFloatResolutionState::Invalid, message + " must be classified invalid");
 }
 
 template <typename Fn>
@@ -382,6 +405,7 @@ void assertStaticNumericFallback(jsi::Runtime& runtime)
     auto animated = margelo::nitro::JSIConverter<AnimatedDouble>::fromJSI(runtime, numericValue);
     expect(!animated.isDynamic(), "numeric AnimatedDouble must not be dynamic");
     expectOptionalNear(animated.resolve(), 14.25, "numeric AnimatedDouble resolve");
+    expectNativeFloatValue(animated.resolveNativeFloat(), 14.25, "numeric AnimatedDouble resolveNativeFloat");
 }
 
 void assertStableRejections(jsi::Runtime& runtime)
@@ -448,6 +472,10 @@ void assertDynamicSynchronizableResolution(jsi::Runtime& runtime)
         withFallback.resolve(),
         7.75,
         "dynamic AnimatedDouble resolve while main runtime is unset must return fallback");
+    expectNativeFloatValue(
+        withFallback.resolveNativeFloat(),
+        7.75,
+        "dynamic AnimatedDouble resolveNativeFloat while main runtime is unset must return fallback");
 
     RNJsi::BaseRuntimeAwareCache::setMainJsRuntime(&runtime);
     auto blockingValue = synchronizable->getBlocking()->toJSValue(runtime);
@@ -457,6 +485,10 @@ void assertDynamicSynchronizableResolution(jsi::Runtime& runtime)
         withFallback.resolve(),
         12.5,
         "dynamic AnimatedDouble resolve with main runtime must read Synchronizable value");
+    expectNativeFloatValue(
+        withFallback.resolveNativeFloat(),
+        12.5,
+        "dynamic AnimatedDouble resolveNativeFloat with main runtime must read Synchronizable value");
 
     auto resolvedJSValue = margelo::nitro::JSIConverter<AnimatedDouble>::toJSI(runtime, withFallback);
     expect(resolvedJSValue.isNumber(), "AnimatedDouble toJSI must emit the resolved dynamic number");
@@ -470,6 +502,33 @@ void assertDynamicSynchronizableResolution(jsi::Runtime& runtime)
         withFallback.resolve(),
         42.25,
         "dynamic AnimatedDouble resolve must observe Synchronizable setBlocking mutation");
+    expectNativeFloatValue(
+        withFallback.resolveNativeFloat(),
+        42.25,
+        "dynamic AnimatedDouble resolveNativeFloat must observe finite Synchronizable setBlocking mutation");
+
+    synchronizable->setBlocking(makeSerializableNumberValue(runtime, std::numeric_limits<double>::quiet_NaN()));
+    expectNativeFloatInvalid(
+        withFallback.resolveNativeFloat(),
+        "dynamic AnimatedDouble resolveNativeFloat must reject NaN Synchronizable mutation");
+
+    synchronizable->setBlocking(makeSerializableNumberValue(runtime, std::numeric_limits<double>::infinity()));
+    expectNativeFloatInvalid(
+        withFallback.resolveNativeFloat(),
+        "dynamic AnimatedDouble resolveNativeFloat must reject Infinity Synchronizable mutation");
+
+    synchronizable->setBlocking(makeSerializableNumberValue(
+        runtime,
+        static_cast<double>(std::numeric_limits<float>::max()) * 2.0));
+    expectNativeFloatInvalid(
+        withFallback.resolveNativeFloat(),
+        "dynamic AnimatedDouble resolveNativeFloat must reject native-float-overflow Synchronizable mutation");
+
+    synchronizable->setBlocking(makeSerializableNumberValue(runtime, 3.5));
+    expectNativeFloatValue(
+        withFallback.resolveNativeFloat(),
+        3.5,
+        "dynamic AnimatedDouble resolveNativeFloat must recover after an invalid Synchronizable mutation");
 }
 
 } // namespace

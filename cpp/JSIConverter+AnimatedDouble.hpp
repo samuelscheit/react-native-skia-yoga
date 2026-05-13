@@ -28,6 +28,32 @@ std::optional<double> resolveAnimatedSynchronizable(
     const std::shared_ptr<worklets::Synchronizable>& synchronizable,
     const std::optional<double>& fallback);
 
+enum class AnimatedDoubleNativeFloatResolutionState {
+    Unset,
+    Valid,
+    Invalid,
+};
+
+struct AnimatedDoubleNativeFloatResolution {
+    AnimatedDoubleNativeFloatResolutionState state = AnimatedDoubleNativeFloatResolutionState::Unset;
+    float value = 0.0f;
+
+    bool hasValue() const
+    {
+        return state == AnimatedDoubleNativeFloatResolutionState::Valid;
+    }
+
+    bool isUnset() const
+    {
+        return state == AnimatedDoubleNativeFloatResolutionState::Unset;
+    }
+
+    bool isInvalid() const
+    {
+        return state == AnimatedDoubleNativeFloatResolutionState::Invalid;
+    }
+};
+
 struct AnimatedDouble {
     std::optional<double> value;
     std::shared_ptr<worklets::Synchronizable> synchronizable;
@@ -41,6 +67,8 @@ struct AnimatedDouble {
     {
         return resolveAnimatedSynchronizable(synchronizable, value);
     }
+
+    AnimatedDoubleNativeFloatResolution resolveNativeFloat() const;
 };
 
 } // namespace margelo::nitro::RNSkiaYoga

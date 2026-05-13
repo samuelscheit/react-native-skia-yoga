@@ -43,6 +43,8 @@
 #include <modules/skparagraph/include/ParagraphBuilder.h>
 #include <modules/skparagraph/include/ParagraphStyle.h>
 #include <algorithm>
+#include <cmath>
+#include <limits>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -487,8 +489,13 @@ public:
 
     void draw(RNSkia::DrawingCtx* ctx) override
     {
-        const auto blur = static_cast<float>(_blur.resolve().value_or(0.0));
-        auto maskFilter = SkMaskFilter::MakeBlur(_props.style, blur, _props.respectCTM);
+        const auto blur = _blur.resolveNativeFloat();
+        if (blur.hasValue()) {
+            _nativeBlur = blur.value;
+        } else if (blur.isUnset()) {
+            _nativeBlur = 0.0f;
+        }
+        auto maskFilter = SkMaskFilter::MakeBlur(_props.style, _nativeBlur, _props.respectCTM);
         ctx->getPaint().setMaskFilter(maskFilter);
     }
     bool isDynamic() const override { return _blur.isDynamic(); }
@@ -498,6 +505,7 @@ public:
 private:
     BlurMaskFilterProps _props;
     AnimatedDouble _blur;
+    float _nativeBlur = 0.0f;
 };
 
 class RectCmd : public RNSkia::RectCmd, public YogaNodeCommand {
@@ -555,12 +563,15 @@ public:
 
     void draw(RNSkia::DrawingCtx* ctx) override
     {
-        const auto radius = static_cast<float>(_cornerRadius.resolve().value_or(0.0));
-        this->props.r = RNSkia::Radius { .rX = radius, .rY = radius };
-        this->props.rect = SkRRect::MakeRectXY(
-            SkRect::MakeXYWH(0, 0, node->_layout.width, node->_layout.height),
-            radius,
-            radius);
+        const auto resolvedRadius = _cornerRadius.resolveNativeFloat();
+        if (resolvedRadius.hasValue() || resolvedRadius.isUnset()) {
+            const auto radius = resolvedRadius.hasValue() ? resolvedRadius.value : 0.0f;
+            this->props.r = RNSkia::Radius { .rX = radius, .rY = radius };
+            this->props.rect = SkRRect::MakeRectXY(
+                SkRect::MakeXYWH(0, 0, node->_layout.width, node->_layout.height),
+                radius,
+                radius);
+        }
         RNSkia::RRectCmd::draw(ctx);
     }
     bool isDynamic() const override { return _cornerRadius.isDynamic(); }
@@ -655,10 +666,10 @@ public:
 
     void draw(RNSkia::DrawingCtx* ctx) override
     {
-        const auto resolvedRadius = _radius.resolve();
-        if (resolvedRadius.has_value()) {
-            setRadius(static_cast<float>(resolvedRadius.value()));
-        } else {
+        const auto resolvedRadius = _radius.resolveNativeFloat();
+        if (resolvedRadius.hasValue()) {
+            setRadius(resolvedRadius.value);
+        } else if (resolvedRadius.isUnset()) {
             clearRadius();
             setLayout(node->_layout);
         }
@@ -791,8 +802,19 @@ public:
 
     void draw(RNSkia::DrawingCtx* ctx) override
     {
-        this->props.start = static_cast<float>(_trimStart.resolve().value_or(0.0));
-        this->props.end = static_cast<float>(_trimEnd.resolve().value_or(1.0));
+        const auto trimStart = _trimStart.resolveNativeFloat();
+        if (trimStart.hasValue()) {
+            this->props.start = trimStart.value;
+        } else if (trimStart.isUnset()) {
+            this->props.start = 0.0f;
+        }
+
+        const auto trimEnd = _trimEnd.resolveNativeFloat();
+        if (trimEnd.hasValue()) {
+            this->props.end = trimEnd.value;
+        } else if (trimEnd.isUnset()) {
+            this->props.end = 1.0f;
+        }
         RNSkia::PathCmd::draw(ctx);
     }
     bool isDynamic() const override
