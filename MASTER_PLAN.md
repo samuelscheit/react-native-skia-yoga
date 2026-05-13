@@ -479,16 +479,24 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - Worker 226 public text/paragraph style numeric finite validation
   implementation.
+- Agent path: `/root/worker_226_text_paragraph_style_numeric_finite_validation`.
+- Worktree: `../worker-226-text-paragraph-style-numeric-finite-validation`.
+- Branch: `worker/226-text-paragraph-style-numeric-finite-validation`.
 - Scope: deterministic finite-number validation for public text and paragraph
   style numeric leaves while preserving current CSS color, unsupported
   `fontVariations`, flattened/nested paragraph precedence, omitted/null, and
   serialization behavior.
+- Required verification: native command/render, generated Nitro
+  materialization, and full feasible matrix unless blocked.
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`; implementation in progress.
+
+Next queued worker:
+
+- None until Worker 226 reports.
 
 Follow-up queue:
 
