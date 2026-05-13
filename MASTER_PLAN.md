@@ -506,12 +506,10 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None. Worker 229 has been accepted and merged; the next work item is Worker
-  230 YogaNode method numeric argument validation.
-
-Next queued worker:
-
 - Worker 230 YogaNode method numeric argument validation implementation.
+- Agent path: `/root/worker_230_yoganode_method_numeric_validation`.
+- Worktree: `../worker-230-yoganode-method-numeric-validation`.
+- Branch: `worker/230-yoganode-method-numeric-validation`.
 - Scope: deterministic finite/native-float validation for generated
   `computeLayout(width, height)` and raw `hitTest(x, y)` numeric arguments,
   rejecting invalid numbers before layout or hit-test state/traversal changes.
@@ -519,9 +517,13 @@ Next queued worker:
   `worker-progress/worker-230-yoganode-method-numeric-validation.md`.
 - Required verification: raw JSI methods, generated Nitro materialization,
   typecheck if TS changes, and full feasible matrix unless blocked.
-- Required launch parameters when prepared: `agent_type: "worker"`,
-  `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and
+- State: ready to spawn with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
   `reasoning_effort: "xhigh"`.
+
+Next queued worker:
+
+- None until Worker 230 reports.
 
 Follow-up queue:
 
