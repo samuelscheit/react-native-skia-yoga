@@ -176,7 +176,7 @@ targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
 Current active worker: worker 239 post-Worker 238 root-cause audit third retry
-(`/root/worker_239_post_238_audit_third_retry` preparing to spawn).
+(`/root/worker_239_post_238_audit_third_retry` spawned).
 Next queued worker: selected by worker 239.
 
 Goals:
@@ -550,7 +550,7 @@ Current active worker:
 
 - `worker-239-post-238-root-cause-audit`: audit Worker 238 path stroke
   native-float validation and select the next strongest unblocked root-cause
-  target. State: third retry preparing to spawn as
+  target. State: third retry spawned as
   `/root/worker_239_post_238_audit_third_retry` after
   `/root/worker_239_post_238_root_cause_audit`,
   `/root/worker_239_post_238_root_cause_audit_retry`, and
