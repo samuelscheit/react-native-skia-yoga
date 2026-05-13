@@ -192,7 +192,8 @@ targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
 Current active worker: worker 240 text/paragraph style pre-narrow
-native-float validation preparing to spawn.
+native-float validation spawned as
+`/root/worker_240_text_paragraph_prenarrow_native_float_validation`.
 Next queued worker: selected by worker 240.
 
 Goals:
@@ -570,7 +571,8 @@ Current active worker:
 - `worker-240-text-paragraph-prenarrow-native-float-validation`: move
   text/paragraph style numeric `float` conversion to pre-narrow
   finite/native-float range validation and update focused source/runtime
-  guards. State: preparing worktree and branch. Branch:
+  guards. State: spawned as
+  `/root/worker_240_text_paragraph_prenarrow_native_float_validation`. Branch:
   `worker/240-text-paragraph-prenarrow-native-float-validation`. Worktree:
   `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-240-text-paragraph-prenarrow-native-float-validation`.
   Expected files: `cpp/JSIConverter+SkTextStyle.hpp`,
@@ -587,8 +589,7 @@ Next queued worker:
 
 Follow-up queue:
 
-- Create the worker 240 isolated worktree/branch, spawn the worker, then
-  review its report/diff when complete.
+- Monitor worker 240 and review its report/diff when complete.
 
 Acceptance criteria:
 
