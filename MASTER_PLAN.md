@@ -120,79 +120,19 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; latest accepted implementation is worker 240 text/paragraph
-style pre-narrow native-float validation. Latest accepted audit worker is
-worker 241, which selected `NodeStyle` native-float validation in
-`cpp/YogaNode.cpp` as the next implementation target. Detailed historical
+Status: active. Latest accepted audit is Worker 243, which accepted Worker
+242's `NodeStyle` native-float validation boundary and selected raw/native
+interaction `eventTag` validation in `YogaNode::setInteractionConfig(...)` as
+the next locally unblocked implementation target. Latest accepted
+implementation is Worker 242, which moved non-command `NodeStyle` numeric
+application to pre-narrow finite/native-float validation. Detailed historical
 accepted work lives in `MASTER_PROGRESS.md` and `worker-progress/`.
 
-Latest accepted root-cause audit: worker 241 accepted Worker 240's
-text/paragraph style pre-narrow validation boundary and audited remaining
-non-command numeric narrowing sites. It selected `NodeStyle` native-float
-validation for `YogaNode::setStyle(...)` as the next locally unblocked
-root-cause target.
-
-Latest accepted implementation: worker 240 moved text/paragraph style numeric
-`float` conversion to pre-narrow finite/native-float range validation in
-`cpp/JSIConverter+SkTextStyle.hpp`. Direct `TextStyle` conversion and
-direct/generated `TextCmd`/`ParagraphCmd` mutation paths now reject finite
-values outside native `float` range before narrowing, while existing error
-wording and state-preservation behavior are preserved.
-
-Orchestrator post-Worker 240 acceptance: merged
-`worker/240-text-paragraph-prenarrow-native-float-validation` as `53be068`.
-Main verification passed: `git diff --check HEAD~1 HEAD`, both updated
-verifier `node --check` commands, `npm run check:yoganode-native-commands-render`,
-`npm run check:yoganode-nitro-materialization`, `npm run typecheck`, and the full
-28-command `npm run check:feasible-matrix` in 4m 05s.
-
-Selected next target: worker 242 should add pre-narrow native-float validation
-for public `NodeStyle` numeric values in `cpp/YogaNode.cpp`, covering layout
-scalar/variant values, percentage parsing, border/paint/opacity scalars,
-radius scalars/points, matrix tuple values, transform leaves, and skew tangent
-results before Yoga/Skia float narrowing.
-
-Previous accepted implementation: worker 236 added command `SkPoint`
-native-float validation for `line.from`, `line.to`, and indexed
-`points.points[]` coordinates. Direct and generated `setCommand(...)` paths
-now reject non-finite and native-float-overflowing point coordinates before
-same-type `LineCmd` or `PointsCmd` mutation.
-
-Earlier accepted implementation: worker 234 added deterministic
-static `AnimatedDouble` native-float validation for direct/generated
-`setCommand(...)` paths. Static numeric values now reject before same-type
-command mutation when they are non-finite or outside native `float` range,
-while dynamic Worklets-backed `AnimatedDouble` values still convert.
-
-Earlier accepted implementation: worker 232 added
-`AnimatedDouble::resolveNativeFloat()` and applied fail-closed dynamic
-native-float validation to `blurMaskFilter.blur`, `rrect.cornerRadius`,
-`circle.radius`, `path.trimStart`, and `path.trimEnd`. Invalid dynamic
-Worklets `Synchronizable` values preserve the last safe render state before
-native `float` narrowing.
-
-Previous accepted root-cause audit: worker 229 accepted Worker 228's command
-numeric enum validation boundary and selected deterministic finite/native-float
-validation for generated `computeLayout(width, height)` and raw `hitTest(x, y)`
-numeric arguments as the next implementation target.
-
-Previous accepted implementation: worker 228 added deterministic
-finite/integer/range validation for public command enum numeric payloads:
-`blurMaskFilter.blurStyle`, `points.pointMode`, `path.fillType`,
-`path.stroke.join`, `path.stroke.cap`, and direct `StrokeOpts`
-`stroke.join` / `stroke.cap`.
-
-Earlier accepted implementation: worker 226 added deterministic finite-number
-validation for public text/paragraph style numeric leaves at converter
-boundaries. Public `TextStyle`, `ParagraphStyle`, and `StrutStyle` numeric
-leaves now reject non-finite values, native-float overflow, fractional integer
-targets, and integer range overflow before local text/paragraph style mutation
-or same-type `TextCmd` / `ParagraphCmd` command-state updates.
-
-Current active worker: worker 242 NodeStyle native-float validation spawned as
-`/root/worker_242_nodestyle_native_float_validation` in
-`/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-242-nodestyle-native-float-validation`.
-Next queued worker: selected by worker 242.
+Selected next target: Worker 244 should add deterministic interaction
+`eventTag` validation so the raw/native `setInteractionConfig(config)` boundary
+accepts only the internal registry contract (`0` to clear or positive finite
+integer tags), rejects invalid tags before interaction state mutation, and adds
+focused raw-method state-preservation coverage.
 
 Goals:
 
@@ -577,28 +517,26 @@ Accepted package-hygiene implementation:
   `cpp/YogaNode.cpp` and public matrix arrays in
   `cpp/JSIConverter+SkMatrix.hpp`, with generated materialized
   `setStyle(...)` source/runtime coverage and a full feasible matrix.
+- `worker-243-post-242-root-cause-audit`: accepted Worker 242's boundary,
+  reconfirmed focused source/runtime evidence, and selected raw/native
+  interaction `eventTag` validation in `YogaNode::setInteractionConfig(...)`
+  as the next implementation target.
 
 Current active worker:
 
-- `worker-243-post-242-root-cause-audit`: audit Worker 242's accepted
-  `NodeStyle` native-float validation boundary, rerun focused evidence as
-  needed, and select the next highest-value locally unblocked root-cause
-  target. State: retry spawned as `/root/worker_243_post_242_audit_retry`
-  after `/root/worker_243_post_242_root_cause_audit` stalled without changes.
-  Branch: `worker/243-post-242-root-cause-audit`. Worktree:
-  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-243-post-242-root-cause-audit`.
-  Expected files: `worker-progress/worker-243-post-242-root-cause-audit.md`
-  only unless the audit finds a necessary verifier/doc correction.
-  Verification: `git diff --check`, focused source/runtime checks needed to
-  accept or challenge Worker 242, and no product-code edits.
+- None. Worker 243 has been accepted and merged.
 
 Next queued worker:
 
-- Selected by Worker 243.
+- `worker-244-interaction-eventtag-validation`: implement deterministic
+  validation for raw/native `setInteractionConfig(config).eventTag`, preserving
+  valid registry behavior and proving invalid values do not mutate native
+  interaction state or parent interactive descendant counts. This worker has
+  not been launched yet.
 
 Follow-up queue:
 
-- Launch Worker 243, monitor completion, then review its report/diff.
+- Prepare an isolated worktree/branch for Worker 244 before launch.
 
 Acceptance criteria:
 
