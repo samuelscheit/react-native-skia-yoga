@@ -120,17 +120,16 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active. Latest accepted implementation is Worker 244, which added
-deterministic raw/native `eventTag` validation in
-`YogaNode::setInteractionConfig(...)` and proved invalid tags reject before
-interaction state mutation. Detailed historical accepted work lives in
-`MASTER_PROGRESS.md` and `worker-progress/`.
+Status: active. Latest accepted audit is Worker 245, which accepted Worker
+244's deterministic `eventTag` validation and selected interaction `hitSlop`
+type/shape hardening as the next locally unblocked implementation target.
+Latest accepted implementation is Worker 244. Detailed historical accepted work
+lives in `MASTER_PROGRESS.md` and `worker-progress/`.
 
-Selected next target: Worker 245 should audit remaining raw/native numeric
-entry points that can mutate long-lived interaction or layout state before
-validation. If no similar local raw-boundary target remains, it should rank the
-next strongest platform build/runtime validation path available in this
-environment.
+Selected next target: Worker 246 should reject nonnumeric `hitSlop` payloads
+and object leaves in both the public interaction registry and raw/native
+`YogaNode.setInteractionConfig(config)` boundary before interaction state or
+registry handler/tag state can mutate.
 
 Goals:
 
@@ -524,28 +523,24 @@ Accepted package-hygiene implementation:
   only `0` or positive JavaScript safe integers, rejects invalid tags before
   interaction state assignment, and added focused raw-method preservation
   coverage.
+- `worker-245-post-244-root-cause-audit`: accepted Worker 244's proof boundary
+  and selected `hitSlop` type/shape validation as the next target because
+  present nonnumeric `hitSlop` values can still be silently defaulted before
+  interaction state is applied.
 
 Current active worker:
 
-- `worker-245-post-244-root-cause-audit`: report-only audit of Worker 244's
-  accepted `eventTag` validation boundary and remaining raw/native numeric
-  mutation risks. State: spawned as
-  `/root/worker_245_post_244_root_cause_audit`. Branch:
-  `worker/245-post-244-root-cause-audit`.
-  Worktree:
-  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-245-post-244-root-cause-audit`.
-  Expected file:
-  `worker-progress/worker-245-post-244-root-cause-audit.md`.
-  Verification: focused Worker 244 acceptance checks, raw/native numeric
-  entry-point audit, and full feasible matrix only if needed for ambiguity.
+- None. Worker 245 was accepted and merged.
 
 Next queued worker:
 
-- Selected by Worker 245.
+- Worker 246 interaction `hitSlop` type/shape validation. Selected by Worker
+  245.
 
 Follow-up queue:
 
-- Monitor Worker 245 completion, then review its report and merge if accepted.
+- Create a fresh isolated worktree and branch for Worker 246, then spawn it as
+  an implementation worker under the current `spawn_agent` policy.
 
 Acceptance criteria:
 
