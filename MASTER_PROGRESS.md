@@ -5804,6 +5804,26 @@ Accepted worker reports:
   as the next implementation target.
 - Main post-merge checks after Worker 241 passed: `git diff --check HEAD~1
   HEAD`, and the report final line is `Goal finished.`
+- Worker 242 completed `NodeStyle` native-float validation as an orchestrator
+  fallback after the managed subagent stalled without report changes. The
+  branch commit was `7e970ee Validate NodeStyle native floats`, merged as
+  `882dbf1 Merge worker 242 NodeStyle native-float validation`. The change
+  added shared native-float validation helpers in `cpp/YogaNode.cpp`, applied
+  them before layout, paint, radius, matrix, and transform float narrowing,
+  added public matrix-array range validation in
+  `cpp/JSIConverter+SkMatrix.hpp`, and strengthened generated materialized
+  `setStyle(...)` source/runtime coverage.
+- Worker 242 verification passed in the worker worktree: `git diff --check`,
+  both verifier `node --check` commands, `npm run
+  check:yoganode-nitro-materialization`, `npm run
+  check:yoganode-native-commands-render`, `npm run typecheck`, and the full
+  28-command `npm run check:feasible-matrix` in `3m 53s`.
+- Main post-merge checks after Worker 242 passed: `git diff --check HEAD~1
+  HEAD`, both verifier `node --check` commands, `npm run
+  check:yoganode-nitro-materialization`, `npm run
+  check:yoganode-native-commands-render`, `npm run typecheck`, and the full
+  28-command `npm run check:feasible-matrix` in `3m 50s`. The next queued
+  worker is a fresh post-Worker 242 root-cause audit.
 
 ## Next Worker Candidates
 
