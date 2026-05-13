@@ -534,16 +534,25 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None. Worker 246 was accepted and merged.
+- `worker-247-post-246-root-cause-audit`: report-only audit of Worker 246's
+  stricter interaction `hitSlop` boundary and any remaining raw/native
+  interaction config shape gaps. State: spawned as
+  `/root/worker_247_post_246_root_cause_audit`. Branch:
+  `worker/247-post-246-root-cause-audit`.
+  Worktree:
+  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-247-post-246-root-cause-audit`.
+  Expected file:
+  `worker-progress/worker-247-post-246-root-cause-audit.md`.
+  Verification: focused Worker 246 acceptance checks and full feasible matrix
+  only if focused evidence is ambiguous.
 
 Next queued worker:
 
-- Worker 247 post-Worker 246 root-cause audit. Selected by Worker 246.
+- Selected by Worker 247.
 
 Follow-up queue:
 
-- Create a fresh isolated worktree and branch for Worker 247, then spawn it as
-  a report-only top-level worker under the current `spawn_agent` policy.
+- Monitor Worker 247 completion, then review its report and merge if accepted.
 
 Acceptance criteria:
 

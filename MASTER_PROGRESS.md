@@ -5924,6 +5924,14 @@ Accepted worker reports:
 - Next queued worker is Worker 247, a post-Worker 246 root-cause audit of the
   stricter interaction boundary and any remaining raw/native interaction config
   shape gaps.
+- Removed the completed Worker 246 worktree and deleted branch
+  `worker/246-interaction-hitslop-shape-validation`.
+- Recorded Worker 246 acceptance in `dbcd58c Record worker 246 acceptance`.
+- Created `worker-247-post-246-root-cause-audit` from current `main`, symlinked
+  root and example `node_modules` from the main worktree, and launched
+  `/root/worker_247_post_246_root_cause_audit` with `agent_type: "worker"`,
+  `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"` as a report-only top-level worker.
 
 ## Next Worker Candidates
 
