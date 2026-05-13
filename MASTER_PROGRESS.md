@@ -5448,6 +5448,27 @@ Accepted worker reports:
     `YogaNode.setInteractionConfig(...)` parsing, with state-preservation
     coverage in gesture interaction runtime, raw JSI methods, native hit
     testing, and the feasible matrix.
+- Worker 224 completed interaction `hitSlop` finite validation. The final
+  branch commit was `7a3e3bd Validate interaction hitSlop numeric payloads`,
+  merged as `de071c7 Merge worker 224 hitSlop finite validation`. The change
+  adds deterministic finite-native-float validation for scalar and edge-object
+  `hitSlop` payloads in JS normalization and native raw
+  `YogaNode.setInteractionConfig(...)` parsing, including combined edge plus
+  horizontal/vertical overflow checks and rejected-update state preservation.
+- Worker 224 verification passed in the worker worktree: `git diff --check`,
+  `node --check` for edited verifier scripts, `npm run typecheck`, `npm run
+  check:gesture-interaction-runtime`, `npm run
+  check:yoganode-jsi-raw-methods`, `npm run
+  check:yoganode-native-hit-testing`, and `npm run check:feasible-matrix` all
+  passed. The feasible matrix passed 28/28 in `5m 5s`.
+- Main post-merge checks after Worker 224 passed: `git diff --check HEAD~1
+  HEAD`, `node --check scripts/verify-gesture-interaction-runtime.mjs`, `node
+  --check scripts/verify-yoganode-jsi-raw-methods.mjs`, `npm run typecheck`,
+  `npm run check:gesture-interaction-runtime`, `npm run
+  check:yoganode-jsi-raw-methods`, `npm run
+  check:yoganode-native-hit-testing`, and the full 28-command `npm run
+  check:feasible-matrix` in `4m 50s`. The next queued worker is a fresh
+  post-Worker 224 audit.
 
 ## Next Worker Candidates
 
