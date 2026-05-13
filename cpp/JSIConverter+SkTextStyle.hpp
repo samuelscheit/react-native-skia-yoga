@@ -87,6 +87,12 @@ inline double getRequiredFiniteStyleNumber(
     return number;
 }
 
+inline bool isFiniteNativeStyleFloat(double number)
+{
+    return std::isfinite(number) &&
+        std::abs(number) <= static_cast<double>(std::numeric_limits<float>::max());
+}
+
 inline float getRequiredFiniteStyleFloat(
     jsi::Runtime& runtime,
     const jsi::Object& object,
@@ -94,11 +100,10 @@ inline float getRequiredFiniteStyleFloat(
     const std::string& propertyPath)
 {
     const auto number = getRequiredFiniteStyleNumber(runtime, object, key, propertyPath);
-    const auto narrowed = static_cast<float>(number);
-    if (!std::isfinite(narrowed)) {
+    if (!isFiniteNativeStyleFloat(number)) {
         throwInvalidTextParagraphStyleNumericValue(runtime, propertyPath);
     }
-    return narrowed;
+    return static_cast<float>(number);
 }
 
 inline int getRequiredFiniteStyleInt(
