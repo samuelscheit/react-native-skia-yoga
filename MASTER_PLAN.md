@@ -120,68 +120,37 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; platform readiness audit accepted, prebuild-safe example workspace blockers fixed, Node-run CNG native generation verified, package metadata/install lifecycle hygiene resolved, Android RN Skia archive discovery fixed with source-level verification, root lint-ci configuration/formatter wiring repaired, React Native deep-import cleanup integrated, example lint-contract cleanup integrated, README/API contract drift fixed, native package publish-surface completeness fixed, example bundle feedback-loop hygiene fixed, post-worker-035 root-cause audit accepted, RN Skia private import cleanup integrated, post-worker-037 root-cause audit accepted, packed-package TypeScript consumer smoke coverage integrated, post-worker-039 root-cause audit accepted, `react-reconciler` package-surface dependency hygiene integrated, post-worker-041 root-cause audit accepted, public declaration/export boundary cleanup integrated, post-worker-043 root-cause audit accepted, `SkiaYogaObject` lazy initialization integrated, post-worker-045 root-cause audit accepted, `src/util.ts` Nitro boxing lazy-init integrated, post-worker-047 root-cause audit accepted, Worklets transform/closure verification integrated, post-worker-049 root-cause audit accepted, example/Expo Worklets transform verification integrated, public-import graph verifier hardening integrated, direct `NativeSkiaYoga` deep-import hardening integrated, post-worker-056 codegen-schema audit accepted, RN codegen schema verifier integrated, post-worker-058 root-cause audit accepted, Reconciler/gesture Worklets transform verification integrated, post-worker-060 root-cause audit accepted, Reconciler animated binding runtime verifier integrated, YogaCanvas gesture/interaction runtime verifier integrated, post-worker-062 root-cause audit accepted, YogaCanvas lifecycle runtime verifier integrated, post-worker-065 root-cause audit accepted, packed-package RN codegen/autolinking verification integrated, post-worker-067 root-cause audit accepted, example native-generation verifier integrated, local-artifact preservation hardening integrated, post-worker-069 root-cause audit accepted, aggregate feasible-matrix verifier integrated, post-worker-071 root-cause audit accepted, host-native YogaNode hit-testing verifier integrated, post-worker-073 root-cause audit accepted, host-native `SkiaYoga` / `RNSkYogaView` runtime verifier integrated, post-worker-075 root-cause audit accepted, feasible-matrix temp isolation hardening integrated, YogaNode hybrid/JSI raw-method boundary verification integrated, post-worker-078 root-cause audit accepted, YogaNode command/render verification integrated, post-worker-080 audit accepted, deterministic command/render expansion integrated, post-worker-082 audit accepted, ImageCmd command/render verification integrated, post-worker-084 audit accepted, TextCmd/ParagraphCmd command/render verification integrated, post-worker-086 root-cause audit accepted, Nitro YogaNode materialization verification integrated, dynamic AnimatedDouble Synchronizable verification integrated, selected dynamic AnimatedDouble NodeCommand verification integrated, dynamic PathCmd trim verification integrated, Reconciler native command-binding coverage integrated, post-worker-095 root-cause audit accepted, public `path.stroke` payload contract integration accepted, post-worker-097 root-cause audit accepted, Reconciler JS-mode command listener coverage integrated, post-worker-099 root-cause audit accepted, generated Nitro `setCommand(...)` breadth coverage integrated, post-worker-101 root-cause audit accepted, ImageCmd fit-mode coverage integrated, post-worker-103 root-cause audit accepted, TextCmd/ParagraphCmd CSS color-string coverage integrated, post-worker-105 root-cause audit accepted, expanded generated Nitro `setCommand(...)` breadth integrated, post-worker-107 root-cause audit accepted, direct `StrokeOpts` converter consistency integrated, post-worker-109 root-cause audit accepted, packed dynamic JSX type-boundary coverage integrated, post-worker-111 root-cause audit accepted, package export-boundary hardening integrated, NodeCommand `toJSI(...)` serialization symmetry integrated, post-worker-114 root-cause audit accepted, materialized `YogaNode.getChildren()` identity/prototype hardening integrated, post-worker-115 root-cause audit accepted, post-worker-116 root-cause audit accepted, whole `image.sampling` `SharedValue<SamplingOptions>` type support integrated, post-worker-118 root-cause audit accepted, value-bearing style/sampling `toJSI(...)` serialization integrated, post-worker-120 root-cause audit accepted, canonical `style.antiAlias` support integrated, post-worker-122 root-cause audit accepted, expanded `TextStyle` `toJSI(...)` serialization integrated, post-worker-124 root-cause audit accepted, bounded `TextStyle.fontFeatures` serialization integrated, post-worker-126 root-cause audit accepted, bounded `ParagraphStyle` scalar serialization integrated, post-worker-128 root-cause audit accepted, bounded `ParagraphStyle.strutStyle` parser/serializer coverage integrated, post-worker-130 root-cause audit accepted, unsupported public `fontVariations` contract closure integrated, post-worker-132 root-cause audit accepted, simple `<text textStyle>` contract closure integrated, post-worker-134 root-cause audit accepted, nested `paragraphStyle.textStyle` CSS color parsing integrated, post-worker-136 root-cause audit accepted, dynamic nested `paragraphStyle.textStyle` Reconciler proof integrated, post-worker-138 root-cause audit accepted, nested `ParagraphStyle::toJSI(...)` shape preservation integrated, SkPaint-backed `backgroundColor` paint ordering integrated, post-worker-147 root-cause audit accepted, `style.layer` / `_layerPaint` proof integrated, post-worker-149 root-cause audit accepted, dynamic `style.layer` / opaque style `SharedValue` proof integrated, post-worker-152 root-cause audit accepted, materialized `YogaNode.setStyle(...)` paint-field breadth proof integrated, generated materialized transform-operation breadth integrated, post-worker-162 root-cause audit accepted, bounded transform composition runtime proof integrated, post-worker-164 root-cause audit accepted, public/Reconciler transform authoring proof integrated, post-worker-166 root-cause audit accepted, overflow render/materialized bridge proof integrated, post-worker-195 root-cause audit accepted, residual generated materialized layout edge/constraint breadth integrated, post-worker-197 root-cause audit accepted, public/Reconciler dynamic layout-style proof integrated, post-worker-199 root-cause audit accepted, dynamic layout setter update proof integrated, post-worker-202 root-cause audit accepted, exact dynamic layout field-alignment proof integrated, post-worker-203 root-cause audit accepted, fresh audit-only gap discovery accepted, deterministic layout unit validation integrated, post-worker-207 root-cause audit accepted, deterministic `style.backgroundColor` string validation integrated, post-worker-209 root-cause audit accepted, selected numeric style finite validation integrated, post-worker-211 root-cause audit accepted, numeric Yoga layout finite validation integrated, post-worker-213 root-cause audit accepted, matrix/transform finite validation integrated, post-worker-215 root-cause audit accepted, radius finite validation integrated, post-worker-217 root-cause audit accepted, command point finite validation integrated, post-worker-219 root-cause audit accepted, command `AnimatedDouble` finite validation integrated, post-worker-221 root-cause audit accepted, path stroke numeric finite validation integrated, post-worker-223 root-cause audit accepted, interaction `hitSlop` finite validation integrated, post-worker-225 root-cause audit accepted, public text/paragraph style numeric finite validation integrated, and post-worker-227 root-cause audit accepted
+Status: active; latest accepted implementation is worker 230 YogaNode method
+numeric validation. Latest accepted audit is worker 229. Next queued work is a
+post-Worker 230 root-cause audit. Detailed historical accepted work lives in
+`MASTER_PROGRESS.md` and `worker-progress/`.
 
-Latest accepted implementation: worker 226 added deterministic finite-number
+Latest accepted implementation: worker 230 added deterministic
+finite/native-float validation for generated `computeLayout(width, height)` and
+raw `hitTest(x, y)` numeric arguments. Invalid method numbers now reject before
+`YGNodeCalculateLayout`, before raw hit-test implicit layout, and before native
+layout/interactivity state mutates.
+
+Previous accepted root-cause audit: worker 229 accepted Worker 228's command
+numeric enum validation boundary and selected deterministic finite/native-float
+validation for generated `computeLayout(width, height)` and raw `hitTest(x, y)`
+numeric arguments as the next implementation target.
+
+Previous accepted implementation: worker 228 added deterministic
+finite/integer/range validation for public command enum numeric payloads:
+`blurMaskFilter.blurStyle`, `points.pointMode`, `path.fillType`,
+`path.stroke.join`, `path.stroke.cap`, and direct `StrokeOpts`
+`stroke.join` / `stroke.cap`.
+
+Earlier accepted implementation: worker 226 added deterministic finite-number
 validation for public text/paragraph style numeric leaves at converter
 boundaries. Public `TextStyle`, `ParagraphStyle`, and `StrutStyle` numeric
 leaves now reject non-finite values, native-float overflow, fractional integer
 targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
-Previous accepted implementation: worker 224 added deterministic finite-number
-validation for interaction `hitSlop` payloads across JS normalization and
-native `YogaNode.setInteractionConfig(...)` parsing. Scalar and edge-object
-`hitSlop` values now reject non-finite or native-float-overflowing numbers
-before native interaction state mutates, including combined edge plus
-horizontal/vertical axis overflow.
-
-Previous accepted implementation: worker 222 added deterministic native
-finite-number validation for path stroke numeric payloads:
-`stroke.width`, `stroke.miter_limit` / `stroke.miterLimit`, and
-`stroke.precision`. Direct `StrokeOpts`, public `NodeCommand`, and generated
-materialized `setCommand(path)` proof now show non-finite values reject before
-same-type `PathCmd` stroke state mutates while preserving public-key
-precedence, alias fallback, omitted/null stroke semantics, and join/cap
-behavior.
-
-Previous accepted implementation: worker 220 added deterministic native
-finite-number validation for static numeric command `AnimatedDouble` payloads:
-`rrect.cornerRadius`, `blurMaskFilter.blur`, `path.trimStart`, `path.trimEnd`,
-and `circle.radius`. Native command/render and generated materialized proof now
-show non-finite values reject before same-type `RRectCmd`,
-`BlurMaskFilterCmd`, `PathCmd`, or `CircleCmd` state mutates, while dynamic
-Worklets-backed `AnimatedDouble` command behavior remains intact.
-
-Earlier accepted implementation: worker 216 added deterministic native
-finite-number validation for `style.borderRadius` and all per-corner
-`number | SkPoint` radius payload branches, with generated materialized proof
-that non-finite radius values reject before prior style radius,
-`_clipToBoundsRadii`, paint, Yoga, clip, layer, matrix, or computed-layout state
-mutates.
-
-Earlier accepted implementation: worker 214 added deterministic native
-finite-number validation for `style.matrix` array / `SkMatrix` payloads and
-`style.transform` operation leaves, with generated materialized proof that
-non-finite matrix/transform values reject before prior style, matrix, paint,
-Yoga, clip/radius, layer, or computed-layout state mutates.
-
-Previous accepted root-cause audit: worker 217 accepted Worker 216's radius
-finite validation boundary and selected deterministic finite-number validation
-for command `SkPoint` payloads (`line.from`, `line.to`, and `points.points[]`)
-as the next strongest locally unblocked target.
-
-Previous accepted root-cause audit: worker 219 accepted Worker 218's command
-`SkPoint` finite validation boundary and selected deterministic finite-number
-validation for static numeric command `AnimatedDouble` payloads as the next
-implementation target.
-
-Latest accepted root-cause audit: worker 227 accepted Worker 226's public
-text/paragraph style numeric validation boundary, reconfirmed focused checks
-and the post-merge feasible matrix, and selected deterministic numeric enum
-validation for public command enum payloads as the next implementation target.
-
 Current active worker: none.
+Next queued worker: post-Worker 230 root-cause audit.
 
 Goals:
 
@@ -503,32 +472,33 @@ Accepted package-hygiene implementation:
   numeric enum validation boundary, reconfirmed focused native/generated
   checks, and selected YogaNode method numeric argument validation as the next
   implementation target.
+- `worker-230-yoganode-method-numeric-validation`: implemented deterministic
+  finite/native-float validation for generated `computeLayout(width, height)`
+  and raw `hitTest(x, y)` numeric arguments before native layout calculation,
+  raw hit-test implicit layout, or layout/interactivity state mutation, with
+  raw JSI method, generated Nitro materialization, and full feasible matrix
+  proof.
 
 Current active worker:
 
-- Worker 230 YogaNode method numeric argument validation implementation.
-- Agent path: `/root/worker_230_yoganode_method_numeric_validation`.
-- Worktree: `../worker-230-yoganode-method-numeric-validation`.
-- Branch: `worker/230-yoganode-method-numeric-validation`.
-- Scope: deterministic finite/native-float validation for generated
-  `computeLayout(width, height)` and raw `hitTest(x, y)` numeric arguments,
-  rejecting invalid numbers before layout or hit-test state/traversal changes.
-- Required tracked report:
-  `worker-progress/worker-230-yoganode-method-numeric-validation.md`.
-- Required verification: raw JSI methods, generated Nitro materialization,
-  typecheck if TS changes, and full feasible matrix unless blocked.
-- State: ready to spawn with `agent_type: "worker"`, `goal: true`,
-  `fork_turns: "none"`, `model: "gpt-5.5"`, and
-  `reasoning_effort: "xhigh"`.
+- None.
 
 Next queued worker:
 
-- None until Worker 230 reports.
+- `worker-231-post-230-root-cause-audit`: report-only post-Worker 230
+  root-cause audit.
+- State: not spawned. Create an isolated worktree and branch before launch.
+- Launch with `agent_type: "worker"`, `goal: true`, `fork_turns: "none"`,
+  `model: "gpt-5.5"`, and `reasoning_effort: "xhigh"`.
+- Scope: audit Worker 230's method numeric validation boundary, focused and
+  full-matrix verification evidence, residual risks, and next root-cause target
+  selection.
+- Required tracked report:
+  `worker-progress/worker-231-post-230-root-cause-audit.md`.
 
 Follow-up queue:
 
-- Implement YogaNode method numeric argument finite/native-float validation for
-  generated `computeLayout(width, height)` and raw `hitTest(x, y)`.
+- None until the post-Worker 230 audit selects the next target.
 
 Acceptance criteria:
 
