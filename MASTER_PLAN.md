@@ -120,11 +120,10 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; latest accepted implementation is worker 234 static
-`AnimatedDouble` native-float validation. Latest accepted audit is worker 235.
-Next queued work is command `SkPoint` native-float validation for `line.from`,
-`line.to`, and `points.points[]` coordinates. Detailed historical accepted
-work lives in `MASTER_PROGRESS.md` and `worker-progress/`.
+Status: active; latest accepted implementation is worker 236 command `SkPoint`
+native-float validation. Latest accepted audit is worker 235. Next queued work
+is a post-Worker 236 root-cause audit. Detailed historical accepted work lives
+in `MASTER_PROGRESS.md` and `worker-progress/`.
 
 Latest accepted root-cause audit: worker 235 accepted Worker 234's static
 `AnimatedDouble` native-float validation boundary, reconfirmed focused direct
@@ -132,18 +131,24 @@ and generated checks, and selected command `SkPoint` native-float validation
 for `line.from`, `line.to`, and `points.points[]` coordinates as the next
 locally unblocked root-cause target.
 
-Latest accepted implementation: worker 232 added
+Latest accepted implementation: worker 236 added command `SkPoint`
+native-float validation for `line.from`, `line.to`, and indexed
+`points.points[]` coordinates. Direct and generated `setCommand(...)` paths
+now reject non-finite and native-float-overflowing point coordinates before
+same-type `LineCmd` or `PointsCmd` mutation.
+
+Previous accepted implementation: worker 234 added deterministic
+static `AnimatedDouble` native-float validation for direct/generated
+`setCommand(...)` paths. Static numeric values now reject before same-type
+command mutation when they are non-finite or outside native `float` range,
+while dynamic Worklets-backed `AnimatedDouble` values still convert.
+
+Earlier accepted implementation: worker 232 added
 `AnimatedDouble::resolveNativeFloat()` and applied fail-closed dynamic
 native-float validation to `blurMaskFilter.blur`, `rrect.cornerRadius`,
 `circle.radius`, `path.trimStart`, and `path.trimEnd`. Invalid dynamic
 Worklets `Synchronizable` values preserve the last safe render state before
 native `float` narrowing.
-
-Latest accepted follow-up implementation: worker 234 added deterministic
-static `AnimatedDouble` native-float validation for direct/generated
-`setCommand(...)` paths. Static numeric values now reject before same-type
-command mutation when they are non-finite or outside native `float` range,
-while dynamic Worklets-backed `AnimatedDouble` values still convert.
 
 Previous accepted root-cause audit: worker 229 accepted Worker 228's command
 numeric enum validation boundary and selected deterministic finite/native-float
@@ -163,9 +168,8 @@ leaves now reject non-finite values, native-float overflow, fractional integer
 targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
-Current active worker: worker 236 command `SkPoint` native-float validation
-(`/root/worker_236_command_skpoint_native_float_validation` spawned).
-Next queued worker: selected after worker 236.
+Current active worker: none.
+Next queued worker: post-Worker 236 root-cause audit.
 
 Goals:
 
@@ -519,28 +523,23 @@ Accepted package-hygiene implementation:
   generated verifier checks, and selected command `SkPoint` native-float
   validation for `line.from`, `line.to`, and `points.points[]` coordinates as
   the next implementation target.
+- `worker-236-command-skpoint-native-float-validation`: implemented command
+  `SkPoint` native-float validation for direct and generated `setCommand(...)`
+  paths, covering `line.from`, `line.to`, and indexed `points.points[]`
+  coordinates with prior command pointer/state preservation and a full
+  feasible matrix.
 
 Current active worker:
 
-- `worker-236-command-skpoint-native-float-validation`: reject non-finite and
-  native-float-overflowing command point coordinates before same-type
-  `LineCmd` or `PointsCmd` mutation in both direct and generated
-  `setCommand(...)` paths. State: spawned as
-  `/root/worker_236_command_skpoint_native_float_validation`. Branch:
-  `worker/236-command-skpoint-native-float-validation`. Worktree:
-  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-236-command-skpoint-native-float-validation`.
-  Expected write scope: `cpp/JSIConverter+NodeCommand.hpp`,
-  `scripts/verify-yoganode-native-commands-render.mjs`,
-  `scripts/verify-yoganode-nitro-materialization.mjs`, and
-  `worker-progress/worker-236-command-skpoint-native-float-validation.md`.
+- None.
 
 Next queued worker:
 
-- Selected after worker 236.
+- Post-Worker 236 root-cause audit.
 
 Follow-up queue:
 
-- Monitor worker 236 and review its implementation/report when complete.
+- Launch the post-Worker 236 audit from an isolated worktree and branch.
 
 Acceptance criteria:
 
