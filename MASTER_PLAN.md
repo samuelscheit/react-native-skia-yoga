@@ -189,8 +189,9 @@ leaves now reject non-finite values, native-float overflow, fractional integer
 targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
-Current active worker: none.
-Next queued worker: worker 242 NodeStyle native-float validation.
+Current active worker: worker 242 NodeStyle native-float validation prepared in
+`/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-242-nodestyle-native-float-validation`.
+Next queued worker: selected by worker 242.
 
 Goals:
 
@@ -573,19 +574,30 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None currently running.
-
-Next queued worker:
-
 - `worker-242-nodestyle-native-float-validation`: implement pre-narrow
   native-float validation for public `NodeStyle` numeric values in
   `cpp/YogaNode.cpp`, including source guards and generated materialized
-  `setStyle(...)` runtime coverage.
+  `setStyle(...)` runtime coverage. State: prepared for `spawn_agent` as
+  `/root/worker_242_nodestyle_native_float_validation`. Branch:
+  `worker/242-nodestyle-native-float-validation`. Worktree:
+  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-242-nodestyle-native-float-validation`.
+  Expected files: `cpp/YogaNode.cpp`,
+  `scripts/verify-yoganode-nitro-materialization.mjs`,
+  `scripts/verify-yoganode-native-commands-render.mjs` if direct render source
+  guards need updating, and worker report.
+  Verification: `git diff --check`, both updated verifier `node --check`
+  commands, `npm run check:yoganode-nitro-materialization`, `npm run
+  check:yoganode-native-commands-render`, `npm run typecheck`, and a full
+  feasible matrix because the patch touches shared style conversion behavior.
+
+Next queued worker:
+
+- Selected by worker 242.
 
 Follow-up queue:
 
-- Create an isolated worktree/branch for worker 242 and launch it with
-  `spawn_agent` using the current worker model.
+- Launch worker 242 with `spawn_agent`, monitor completion, then review its
+  report/diff.
 
 Acceptance criteria:
 
