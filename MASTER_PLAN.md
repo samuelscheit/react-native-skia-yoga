@@ -168,8 +168,9 @@ leaves now reject non-finite values, native-float overflow, fractional integer
 targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
-Current active worker: none.
-Next queued worker: path stroke native-float validation.
+Current active worker: worker 238 path stroke native-float validation
+(`spawn_agent` pending).
+Next queued worker: selected after worker 238.
 
 Goals:
 
@@ -536,17 +537,26 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- `worker-238-path-stroke-native-float-validation`: add deterministic
+  pre-narrow native-float validation for direct `StrokeOpts` numeric `float`
+  leaves and public command `path.stroke` numeric leaves. State: spawn
+  pending. Branch: `worker/238-path-stroke-native-float-validation`. Worktree:
+  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-238-path-stroke-native-float-validation`.
+  Expected write scope: `cpp/JSIConverter+StrokeOpts.hpp`,
+  `cpp/JSIConverter+NodeCommand.hpp`,
+  `scripts/verify-yoganode-native-commands-render.mjs`,
+  `scripts/verify-yoganode-nitro-materialization.mjs`, and
+  `worker-progress/worker-238-path-stroke-native-float-validation.md`.
 
 Next queued worker:
 
-- Path stroke native-float validation for direct `StrokeOpts` and public
-  `path.stroke` numeric `float` leaves.
+- Selected after worker 238.
 
 Follow-up queue:
 
-- Launch the path stroke native-float validation worker from an isolated
-  worktree and branch.
+- Spawn worker 238 with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`.
 
 Acceptance criteria:
 
