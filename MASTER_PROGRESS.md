@@ -5469,6 +5469,18 @@ Accepted worker reports:
   check:yoganode-native-hit-testing`, and the full 28-command `npm run
   check:feasible-matrix` in `4m 50s`. The next queued worker is a fresh
   post-Worker 224 audit.
+- Prepared Worker 225 post-Worker 224 root-cause audit:
+  - Worktree: `../worker-225-post-224-root-cause-audit`.
+  - Branch: `worker/225-post-224-root-cause-audit`.
+  - Agent path: `/root/worker_225_post_224_root_cause_audit`.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
+  - Ignored dependency symlinks were set to main's known-good `node_modules`
+    and `example/node_modules` installs.
+  - Scope: report-only audit of Worker 224's interaction `hitSlop` finite
+    validation boundary and next-target selection; intended tracked edit is
+    `worker-progress/worker-225-post-224-root-cause-audit.md`.
 
 ## Next Worker Candidates
 

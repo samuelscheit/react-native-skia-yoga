@@ -476,13 +476,20 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- Worker 225 post-Worker 224 root-cause audit.
+- Agent path: `/root/worker_225_post_224_root_cause_audit`.
+- Worktree: `../worker-225-post-224-root-cause-audit`.
+- Branch: `worker/225-post-224-root-cause-audit`.
+- Scope: report-only audit of Worker 224's interaction `hitSlop` finite
+  validation boundary, focused/full feasible verification, and next
+  root-cause target selection.
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`; audit in progress.
 
 Next queued worker:
 
-- Worker 225 post-Worker 224 root-cause audit.
-- Scope: report-only audit of Worker 224's `hitSlop` finite validation
-  boundary, focused/full verification evidence, and next-target selection.
+- None until Worker 225 reports.
 
 Follow-up queue:
 
