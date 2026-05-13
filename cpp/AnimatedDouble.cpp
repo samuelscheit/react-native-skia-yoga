@@ -3,6 +3,8 @@
 #include "RuntimeAwareCache.h"
 #include "SharedItems/Serializable.h"
 #include "SharedItems/Synchronizable.h"
+#include <cmath>
+#include <limits>
 
 namespace margelo::nitro::RNSkiaYoga {
 
@@ -30,6 +32,41 @@ std::shared_ptr<worklets::SerializableJSRef> extractSerializableRefOrThrow(
     }
 
     return serializableRef;
+}
+
+AnimatedDoubleNativeFloatResolution makeUnsetNativeFloatResolution()
+{
+    return AnimatedDoubleNativeFloatResolution {
+        .state = AnimatedDoubleNativeFloatResolutionState::Unset,
+    };
+}
+
+AnimatedDoubleNativeFloatResolution makeValidNativeFloatResolution(double value)
+{
+    return AnimatedDoubleNativeFloatResolution {
+        .state = AnimatedDoubleNativeFloatResolutionState::Valid,
+        .value = static_cast<float>(value),
+    };
+}
+
+AnimatedDoubleNativeFloatResolution makeInvalidNativeFloatResolution()
+{
+    return AnimatedDoubleNativeFloatResolution {
+        .state = AnimatedDoubleNativeFloatResolutionState::Invalid,
+    };
+}
+
+AnimatedDoubleNativeFloatResolution resolveNativeFloatValue(const std::optional<double>& value)
+{
+    if (!value.has_value()) {
+        return makeUnsetNativeFloatResolution();
+    }
+
+    if (!std::isfinite(*value) || std::abs(*value) > static_cast<double>(std::numeric_limits<float>::max())) {
+        return makeInvalidNativeFloatResolution();
+    }
+
+    return makeValidNativeFloatResolution(*value);
 }
 
 } // namespace
@@ -75,6 +112,15 @@ std::optional<double> resolveAnimatedSynchronizable(
     auto blockingValue = synchronizable->getBlocking();
     auto currentValue = blockingValue->toJSValue(*runtime);
     return JSIConverter<std::optional<double>>::fromJSI(*runtime, currentValue);
+}
+
+AnimatedDoubleNativeFloatResolution AnimatedDouble::resolveNativeFloat() const
+{
+    try {
+        return resolveNativeFloatValue(resolve());
+    } catch (...) {
+        return makeInvalidNativeFloatResolution();
+    }
 }
 
 } // namespace margelo::nitro::RNSkiaYoga
