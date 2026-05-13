@@ -189,7 +189,8 @@ leaves now reject non-finite values, native-float overflow, fractional integer
 targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
-Current active worker: worker 241 post-worker-240 root-cause audit prepared in
+Current active worker: worker 241 post-worker-240 root-cause audit spawned as
+`/root/worker_241_post_240_root_cause_audit` in
 `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-241-post-240-root-cause-audit`.
 Next queued worker: selected by worker 241.
 
@@ -573,7 +574,7 @@ Current active worker:
 - `worker-241-post-240-root-cause-audit`: report-only audit of Worker 240's
   accepted boundary, remaining numeric narrowing risks in `cpp/YogaNode.cpp`,
   focused/full verification evidence, and next implementation target selection.
-  State: prepared for `spawn_agent` as
+  State: spawned via `spawn_agent` as
   `/root/worker_241_post_240_root_cause_audit`. Branch:
   `worker/241-post-240-root-cause-audit`. Worktree:
   `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-241-post-240-root-cause-audit`.
@@ -590,8 +591,7 @@ Next queued worker:
 
 Follow-up queue:
 
-- Launch worker 241 with `spawn_agent`, monitor completion, then review its
-  report/diff.
+- Monitor worker 241 completion, then review its report/diff.
 
 Acceptance criteria:
 
