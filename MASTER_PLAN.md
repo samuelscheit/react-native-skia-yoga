@@ -189,8 +189,9 @@ leaves now reject non-finite values, native-float overflow, fractional integer
 targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
-Current active worker: none.
-Next queued worker: worker 241 post-worker-240 root-cause audit.
+Current active worker: worker 241 post-worker-240 root-cause audit prepared in
+`/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-241-post-240-root-cause-audit`.
+Next queued worker: selected by worker 241.
 
 Goals:
 
@@ -569,18 +570,28 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None currently running.
-
-Next queued worker:
-
 - `worker-241-post-240-root-cause-audit`: report-only audit of Worker 240's
   accepted boundary, remaining numeric narrowing risks in `cpp/YogaNode.cpp`,
   focused/full verification evidence, and next implementation target selection.
+  State: prepared for `spawn_agent` as
+  `/root/worker_241_post_240_root_cause_audit`. Branch:
+  `worker/241-post-240-root-cause-audit`. Worktree:
+  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-241-post-240-root-cause-audit`.
+  Expected tracked edit:
+  `worker-progress/worker-241-post-240-root-cause-audit.md`.
+  Verification: `git diff --check`, review of Worker 240 report/diff,
+  source audit of `cpp/YogaNode.cpp` numeric `static_cast<float>` paths, and
+  focused verifier/source-guard checks sufficient to support the selected next
+  target.
+
+Next queued worker:
+
+- Selected by worker 241.
 
 Follow-up queue:
 
-- Create an isolated worktree/branch for worker 241 and launch it with
-  `spawn_agent` using the current worker model.
+- Launch worker 241 with `spawn_agent`, monitor completion, then review its
+  report/diff.
 
 Acceptance criteria:
 
