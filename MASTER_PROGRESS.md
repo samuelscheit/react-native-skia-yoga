@@ -5364,6 +5364,19 @@ Accepted worker reports:
   - Scope: report-only audit of Worker 220's command `AnimatedDouble` finite
     validation boundary and next-target selection; intended tracked edit is
     `worker-progress/worker-221-post-220-root-cause-audit.md`.
+- Worker 221 completed the post-Worker 220 root-cause audit. The report branch
+  commit was `63e7382 Audit worker 220 animated command validation`, merged as
+  `f11bcb4 Merge worker 221 post-220 audit`. Worker 221 accepted Worker 220's
+  command `AnimatedDouble` finite validation boundary, reconfirmed `git diff
+  --check 5fe7ff0^1 5fe7ff0`, both updated `node --check` commands, `npm run
+  check:yoganode-native-commands-render`, `npm run
+  check:yoganode-nitro-materialization`, and the full 28-command `npm run
+  check:feasible-matrix` in `4m 50s`, then selected deterministic finite
+  validation for path stroke numeric payloads (`stroke.width`,
+  `stroke.miter_limit` / `stroke.miterLimit`, and `stroke.precision`) as the
+  next implementation target.
+- Main post-merge checks after Worker 221 passed: `git diff --check HEAD~1
+  HEAD`, and the report final line is `Goal finished.`
 
 ## Next Worker Candidates
 
