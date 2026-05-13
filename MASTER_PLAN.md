@@ -507,8 +507,7 @@ Current active worker:
 
 - `worker-234-static-animateddouble-native-float-validation`:
   implementation.
-- Agent path: `/root/worker_234_static_animateddouble_native_float_validation`
-  after spawn.
+- Agent path: `/root/worker_234_static_animateddouble_native_float_validation`.
 - Worktree:
   `../worker-234-static-animateddouble-native-float-validation`.
 - Branch: `worker/234-static-animateddouble-native-float-validation`.
@@ -520,8 +519,8 @@ Current active worker:
 - Expected verification: focused native command/render and Nitro
   materialization verifier updates, syntax/diff checks, typecheck as needed,
   and full feasible matrix unless blocked.
-- State: worktree and branch created; spawn pending with `agent_type:
-  "worker"`, `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
   `reasoning_effort: "xhigh"`.
 
 Next queued worker:
