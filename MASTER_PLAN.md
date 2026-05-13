@@ -120,9 +120,9 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; latest accepted implementation is worker 230 YogaNode method
-numeric validation. Latest accepted audit is worker 231. Next queued work is
-dynamic `AnimatedDouble` mutation-time numeric validation. Detailed historical
+Status: active; latest accepted implementation is worker 232 dynamic
+`AnimatedDouble` native-float validation. Latest accepted audit is worker 231.
+Next queued work is a post-Worker 232 root-cause audit. Detailed historical
 accepted work lives in `MASTER_PROGRESS.md` and `worker-progress/`.
 
 Latest accepted root-cause audit: worker 231 accepted Worker 230's YogaNode
@@ -131,11 +131,12 @@ feasible matrix, and selected dynamic `AnimatedDouble` mutation-time numeric
 validation policy/implementation as the next locally unblocked root-cause
 target.
 
-Latest accepted implementation: worker 230 added deterministic
-finite/native-float validation for generated `computeLayout(width, height)` and
-raw `hitTest(x, y)` numeric arguments. Invalid method numbers now reject before
-`YGNodeCalculateLayout`, before raw hit-test implicit layout, and before native
-layout/interactivity state mutates.
+Latest accepted implementation: worker 232 added
+`AnimatedDouble::resolveNativeFloat()` and applied fail-closed dynamic
+native-float validation to `blurMaskFilter.blur`, `rrect.cornerRadius`,
+`circle.radius`, `path.trimStart`, and `path.trimEnd`. Invalid dynamic
+Worklets `Synchronizable` values preserve the last safe render state before
+native `float` narrowing.
 
 Previous accepted root-cause audit: worker 229 accepted Worker 228's command
 numeric enum validation boundary and selected deterministic finite/native-float
@@ -489,32 +490,24 @@ Accepted package-hygiene implementation:
   feasible matrix, and selected dynamic `AnimatedDouble` mutation-time numeric
   validation policy/implementation as the next locally unblocked root-cause
   target.
+- `worker-232-dynamic-animateddouble-numeric-validation`: implemented
+  `AnimatedDouble::resolveNativeFloat()` with unset/valid/invalid
+  classification, then applied it to selected dynamic command render paths so
+  NaN, Infinity, native-float overflow, and conversion failures never narrow
+  into native `float` props. Focused dynamic render coverage and the full
+  feasible matrix passed after merge.
 
 Current active worker:
 
-- `worker-232-dynamic-animateddouble-numeric-validation`: implementation.
-- Agent path: `/root/worker_232_dynamic_animateddouble_numeric_validation`.
-- Worktree: `../worker-232-dynamic-animateddouble-numeric-validation`.
-- Branch: `worker/232-dynamic-animateddouble-numeric-validation`.
-- Scope: define and implement fail-closed finite/native-float policy for
-  dynamic `AnimatedDouble` values observed from Worklets `Synchronizable`
-  mutation after command installation.
-- Required tracked report:
-  `worker-progress/worker-232-dynamic-animateddouble-numeric-validation.md`.
-- Expected verification: focused `check:animated-double-synchronizable`,
-  selected dynamic `check:yoganode-native-commands-render` cases, syntax/diff
-  checks, and full feasible matrix unless blocked.
-- State: spawned with `agent_type: "worker"`, `goal: true`,
-  `fork_turns: "none"`, `model: "gpt-5.5"`, and
-  `reasoning_effort: "xhigh"`.
+- None.
 
 Next queued worker:
 
-- None until Worker 232 reports.
+- Post-Worker 232 root-cause audit.
 
 Follow-up queue:
 
-- Post-Worker 232 root-cause audit after implementation acceptance.
+- Launch the post-Worker 232 audit from an isolated worktree and branch.
 
 Acceptance criteria:
 
