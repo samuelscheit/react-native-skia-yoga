@@ -5834,6 +5834,35 @@ Accepted worker reports:
   `YogaNode::setInteractionConfig(...)` as the next implementation target.
 - Main post-merge checks after Worker 243 passed: `git diff --check HEAD~1
   HEAD`, and the report final line is `Goal finished.`
+- Worker 244 completed raw/native interaction `eventTag` validation. The
+  branch commit was `990d5d6 Validate interaction event tags`, merged as
+  `552e5e6 Merge worker 244 interaction eventTag validation`. The change added
+  native validation for `setInteractionConfig(config).eventTag` in
+  `cpp/YogaNode.cpp`, accepting only `0` or positive JavaScript safe integers,
+  rejecting nonnumeric, non-finite, negative, fractional, and above-safe-integer
+  values before persistent interaction state mutation.
+- Worker 244 added focused raw-method coverage in
+  `scripts/verify-yoganode-jsi-raw-methods.mjs` proving invalid `eventTag`
+  inputs preserve `_pointerEvents`, `_hitSlop`, `_preciseHit`, `_eventTag`,
+  `_selfInteractive`, node interactive descendant count, and parent interactive
+  descendant count. The worker report is
+  `worker-progress/worker-244-interaction-eventtag-validation.md`, and its
+  final line is `Goal finished.`
+- Orchestrator verification before merge passed `git diff --check HEAD~1
+  HEAD`, `node --check scripts/verify-yoganode-jsi-raw-methods.mjs`, `node
+  --check scripts/verify-gesture-interaction-runtime.mjs`, `npm run
+  check:yoganode-jsi-raw-methods`, `npm run
+  check:gesture-interaction-runtime`, `npm run
+  check:yoganode-native-hit-testing`, and `npm run typecheck`.
+- Main post-merge checks after Worker 244 passed `git diff --check HEAD~1
+  HEAD`, both updated verifier `node --check` commands, `npm run
+  check:yoganode-jsi-raw-methods`, `npm run
+  check:gesture-interaction-runtime`, `npm run
+  check:yoganode-native-hit-testing`, `npm run typecheck`, and the full
+  28-command `npm run check:feasible-matrix` in `5m 41s`.
+- Next queued worker is Worker 245, a post-Worker 244 root-cause audit of
+  remaining raw/native numeric entry points that can mutate long-lived
+  interaction or layout state before validation.
 
 ## Next Worker Candidates
 

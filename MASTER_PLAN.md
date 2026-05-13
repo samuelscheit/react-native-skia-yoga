@@ -120,19 +120,17 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active. Latest accepted audit is Worker 243, which accepted Worker
-242's `NodeStyle` native-float validation boundary and selected raw/native
-interaction `eventTag` validation in `YogaNode::setInteractionConfig(...)` as
-the next locally unblocked implementation target. Latest accepted
-implementation is Worker 242, which moved non-command `NodeStyle` numeric
-application to pre-narrow finite/native-float validation. Detailed historical
-accepted work lives in `MASTER_PROGRESS.md` and `worker-progress/`.
+Status: active. Latest accepted implementation is Worker 244, which added
+deterministic raw/native `eventTag` validation in
+`YogaNode::setInteractionConfig(...)` and proved invalid tags reject before
+interaction state mutation. Detailed historical accepted work lives in
+`MASTER_PROGRESS.md` and `worker-progress/`.
 
-Selected next target: Worker 244 should add deterministic interaction
-`eventTag` validation so the raw/native `setInteractionConfig(config)` boundary
-accepts only the internal registry contract (`0` to clear or positive finite
-integer tags), rejects invalid tags before interaction state mutation, and adds
-focused raw-method state-preservation coverage.
+Selected next target: Worker 245 should audit remaining raw/native numeric
+entry points that can mutate long-lived interaction or layout state before
+validation. If no similar local raw-boundary target remains, it should rank the
+next strongest platform build/runtime validation path available in this
+environment.
 
 Goals:
 
@@ -521,33 +519,24 @@ Accepted package-hygiene implementation:
   reconfirmed focused source/runtime evidence, and selected raw/native
   interaction `eventTag` validation in `YogaNode::setInteractionConfig(...)`
   as the next implementation target.
+- `worker-244-interaction-eventtag-validation`: implemented deterministic
+  raw/native `eventTag` validation for `setInteractionConfig(config)`, accepts
+  only `0` or positive JavaScript safe integers, rejects invalid tags before
+  interaction state assignment, and added focused raw-method preservation
+  coverage.
 
 Current active worker:
 
-- `worker-244-interaction-eventtag-validation`: implement deterministic
-  validation for raw/native `setInteractionConfig(config).eventTag`, preserving
-  valid registry behavior and proving invalid values do not mutate native
-  interaction state or parent interactive descendant counts. State: spawned as
-  `/root/worker_244_interaction_eventtag_validation`. Branch:
-  `worker/244-interaction-eventtag-validation`.
-  Worktree:
-  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-244-interaction-eventtag-validation`.
-  Expected files: `cpp/YogaNode.cpp`,
-  `scripts/verify-yoganode-jsi-raw-methods.mjs`,
-  `scripts/verify-gesture-interaction-runtime.mjs` if public registry
-  coverage needs adjustment, and worker report.
-  Verification: `git diff --check`, both updated verifier `node --check`
-  commands, `npm run check:yoganode-jsi-raw-methods`, `npm run
-  check:gesture-interaction-runtime`, `npm run check:yoganode-native-hit-testing`,
-  `npm run typecheck`, and a full feasible matrix.
+- None. Worker 244 was accepted, merged, verified from `main`, and cleaned up.
 
 Next queued worker:
 
-- Selected by Worker 244.
+- Worker 245 post-Worker 244 root-cause audit. Selected by Worker 244.
 
 Follow-up queue:
 
-- Launch Worker 244, monitor completion, then review its report/diff.
+- Create a fresh isolated worktree and branch for Worker 245, then spawn it as
+  a report-only top-level worker under the current `spawn_agent` policy.
 
 Acceptance criteria:
 
