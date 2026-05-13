@@ -527,8 +527,9 @@ Current active worker:
 - `worker-244-interaction-eventtag-validation`: implement deterministic
   validation for raw/native `setInteractionConfig(config).eventTag`, preserving
   valid registry behavior and proving invalid values do not mutate native
-  interaction state or parent interactive descendant counts. State: prepared
-  for `spawn_agent`. Branch: `worker/244-interaction-eventtag-validation`.
+  interaction state or parent interactive descendant counts. State: spawned as
+  `/root/worker_244_interaction_eventtag_validation`. Branch:
+  `worker/244-interaction-eventtag-validation`.
   Worktree:
   `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-244-interaction-eventtag-validation`.
   Expected files: `cpp/YogaNode.cpp`,
