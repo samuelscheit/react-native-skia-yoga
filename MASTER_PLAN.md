@@ -492,34 +492,35 @@ Accepted package-hygiene implementation:
   text/paragraph style numeric validation boundary, reconfirmed focused checks
   and the post-merge feasible matrix, and selected public command enum numeric
   validation as the next implementation target.
+- `worker-228-command-numeric-enum-validation`: implemented deterministic
+  finite/integer/range validation for public command enum numeric payloads
+  before same-type command mutation, covering `blurMaskFilter.blurStyle`,
+  `points.pointMode`, `path.fillType`, `path.stroke.join`, `path.stroke.cap`,
+  and direct `StrokeOpts` `stroke.join` / `stroke.cap`, with native
+  command/render and generated Nitro materialized `setCommand(...)`
+  state-preservation proof plus the full feasible matrix.
 
 Current active worker:
 
-- Worker 228 public command numeric enum validation implementation.
-- Agent path: `/root/worker_228_command_numeric_enum_validation`.
-- Worktree: `../worker-228-command-numeric-enum-validation`.
-- Branch: `worker/228-command-numeric-enum-validation`.
-- Scope: deterministic finite/integer/range validation for public command
-  enum numeric payloads: `blurMaskFilter.blurStyle`, `points.pointMode`,
-  `path.fillType`, and stroke `join`/`cap`.
-- Required tracked report:
-  `worker-progress/worker-228-command-numeric-enum-validation.md`.
-- Required verification: native command/render, generated Nitro
-  materialization, direct `StrokeOpts` coverage, typecheck if TS changes, and
-  full feasible matrix unless blocked.
-- State: ready to spawn with `agent_type: "worker"`, `goal: true`,
-  `fork_turns: "none"`, `model: "gpt-5.5"`, and
-  `reasoning_effort: "xhigh"`.
+- None. Worker 228 has been accepted and merged; the next work item is a fresh
+  post-Worker 228 audit.
 
 Next queued worker:
 
-- None until Worker 228 reports.
+- Worker 229 post-Worker 228 root-cause audit.
+- Scope: report-only audit of Worker 228's command numeric enum validation
+  boundary, focused verification evidence, residual risks, and next unblocked
+  root-cause target.
+- Required tracked report:
+  `worker-progress/worker-229-post-228-root-cause-audit.md`.
+- Required launch parameters when prepared: `agent_type: "worker"`,
+  `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`.
 
 Follow-up queue:
 
-- Implement deterministic finite/integer/range validation for public command
-  enum numeric payloads: `blurMaskFilter.blurStyle`, `points.pointMode`,
-  `path.fillType`, and stroke `join`/`cap`.
+- Audit the Worker 228 command numeric enum validation boundary and choose the
+  next root-cause target from the remaining local feasible gaps.
 
 Acceptance criteria:
 
