@@ -624,16 +624,20 @@ function assertCurrentGapAndRisk() {
 	assert(
 		textStyleConverter.includes("validateTextStyleNumericFields") &&
 			textStyleConverter.includes("getRequiredFiniteStyleFloat") &&
+			textStyleConverter.includes("isFiniteNativeStyleFloat") &&
 			textStyleConverter.includes("getRequiredFiniteStyleInt") &&
 			textStyleConverter.includes("parseFiniteTextStylePoint") &&
 			textStyleConverter.includes("std::isfinite(number)") &&
-			textStyleConverter.includes("std::isfinite(narrowed)") &&
+			textStyleConverter.includes("std::numeric_limits<float>::max()") &&
+			textStyleConverter.indexOf("std::numeric_limits<float>::max()") <
+				textStyleConverter.indexOf("static_cast<float>(number)") &&
+			!textStyleConverter.includes("std::isfinite(narrowed)") &&
 			textStyleConverter.includes("std::numeric_limits<int>::max()") &&
 			textStyleConverter.includes('stylePath + ".fontSize"') &&
 			textStyleConverter.includes('stylePath + ".fontFeatures["') &&
 			textStyleConverter.includes('stylePath + ".shadows["') &&
 			textStyleConverter.includes("Invalid numeric text/paragraph style value for "),
-		"TextStyle converter must finite/range-check public numeric float, int, enum, and shadow point leaves.",
+		"TextStyle converter must pre-narrow native-float-check public numeric float leaves and range-check int, enum, and shadow point leaves.",
 	)
 	assert(
 		paragraphStyleConverter.includes("validateParagraphStyleNumericFields") &&
@@ -648,9 +652,11 @@ function assertCurrentGapAndRisk() {
 	)
 	assert(
 		commandVerifier.includes("assertTextParagraphStyleNumericFiniteRejections(*runtime);") &&
+			commandVerifier.includes("direct TextStyle letterSpacing native-float overflow") &&
 			commandVerifier.includes("text.textStyle.fontSize NaN") &&
 			commandVerifier.includes("paragraph.paragraphStyle.textStyle.fontSize NaN") &&
 			commandVerifier.includes("paragraph.paragraphStyle.strutStyle.leading -Infinity") &&
+			commandVerifier.includes("paragraph.paragraphStyle.strutStyle.leading float overflow") &&
 			commandVerifier.includes("paragraph.paragraphStyle.maxLines fractional") &&
 			commandVerifier.includes("paragraph.paragraphStyle.fontFeatures[0].value fractional") &&
 			commandVerifier.includes("paragraph.paragraphStyle.fontFeatures[0].value int overflow") &&
@@ -660,6 +666,9 @@ function assertCurrentGapAndRisk() {
 			materializationVerifier.includes("generated text.textStyle.fontSize NaN") &&
 			materializationVerifier.includes("generated paragraph.paragraphStyle.textStyle.fontSize NaN") &&
 			materializationVerifier.includes("generated paragraph.paragraphStyle.strutStyle.leading -Infinity") &&
+			materializationVerifier.includes(
+				"generated paragraph.paragraphStyle.strutStyle.leading float overflow",
+			) &&
 			materializationVerifier.includes(
 				"generated paragraph.paragraphStyle.maxLines fractional",
 			) &&
@@ -5587,7 +5596,7 @@ void assertGeneratedTextParagraphStyleNumericFiniteRejections(jsi::Runtime& runt
         const char* propertyPath;
     };
 
-    const std::array<ParagraphInvalidCase, 10> paragraphInvalidCases {{
+    const std::array<ParagraphInvalidCase, 11> paragraphInvalidCases {{
         { "generated paragraph.paragraphStyle.fontSize Infinity", makeParagraphStyleWithFlattenedFontSize, positiveInfValue, "ParagraphStyle.fontSize" },
         { "generated paragraph.paragraphStyle.fontSize float overflow", makeParagraphStyleWithFlattenedFontSize, floatOverflow, "ParagraphStyle.fontSize" },
         { "generated paragraph.paragraphStyle.textStyle.fontSize NaN", makeParagraphStyleWithNestedFontSize, nan, "ParagraphStyle.textStyle.fontSize" },
@@ -5596,6 +5605,7 @@ void assertGeneratedTextParagraphStyleNumericFiniteRejections(jsi::Runtime& runt
         { "generated paragraph.paragraphStyle.maxLines -Infinity", makeParagraphStyleWithMaxLines, negativeInfValue, "ParagraphStyle.maxLines" },
         { "generated paragraph.paragraphStyle.maxLines fractional", makeParagraphStyleWithMaxLines, 1.5, "ParagraphStyle.maxLines" },
         { "generated paragraph.paragraphStyle.strutStyle.leading -Infinity", makeParagraphStyleWithStrutLeading, negativeInfValue, "ParagraphStyle.strutStyle.leading" },
+        { "generated paragraph.paragraphStyle.strutStyle.leading float overflow", makeParagraphStyleWithStrutLeading, floatOverflow, "ParagraphStyle.strutStyle.leading" },
         { "generated paragraph.paragraphStyle.fontFeatures[0].value fractional", makeParagraphStyleWithFontFeatureValue, 1.5, "ParagraphStyle.fontFeatures[0].value" },
         { "generated paragraph.paragraphStyle.fontFeatures[0].value int overflow", makeParagraphStyleWithFontFeatureValue, intOverflow, "ParagraphStyle.fontFeatures[0].value" },
     }};

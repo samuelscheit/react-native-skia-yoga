@@ -916,13 +916,17 @@ function assertTextParagraphStyleNumericFiniteValidationInventory() {
 	assertSource(
 		textStyleConverter.includes("validateTextStyleNumericFields") &&
 			textStyleConverter.includes("getRequiredFiniteStyleFloat") &&
+			textStyleConverter.includes("isFiniteNativeStyleFloat") &&
 			textStyleConverter.includes("getRequiredFiniteStyleInt") &&
 			textStyleConverter.includes("parseFiniteTextStylePoint") &&
 			textStyleConverter.includes("std::isfinite(number)") &&
-			textStyleConverter.includes("std::isfinite(narrowed)") &&
+			textStyleConverter.includes("std::numeric_limits<float>::max()") &&
+			textStyleConverter.indexOf("std::numeric_limits<float>::max()") <
+				textStyleConverter.indexOf("static_cast<float>(number)") &&
+			!textStyleConverter.includes("std::isfinite(narrowed)") &&
 			textStyleConverter.includes("std::numeric_limits<int>::max()") &&
 			textStyleConverter.includes("Invalid numeric text/paragraph style value for "),
-		"TextStyle converter must finite/range-check public numeric float, int, enum, and shadow point leaves.",
+		"TextStyle converter must pre-narrow native-float-check public numeric float leaves and range-check int, enum, and shadow point leaves.",
 	)
 	assertSource(
 		paragraphStyleConverter.includes("validateParagraphStyleNumericFields") &&
@@ -933,11 +937,13 @@ function assertTextParagraphStyleNumericFiniteValidationInventory() {
 		"ParagraphStyle converter must validate paragraph and strut numeric leaves before delegating to RN Skia raw parsing.",
 	)
 	assertSource(
-		nativeVerifier.includes("assertTextParagraphStyleNumericFiniteRejections(*runtime);") &&
+			nativeVerifier.includes("assertTextParagraphStyleNumericFiniteRejections(*runtime);") &&
+			nativeVerifier.includes("direct TextStyle letterSpacing native-float overflow") &&
 			nativeVerifier.includes("text.textStyle.fontSize NaN") &&
 			nativeVerifier.includes("text.textStyle.fontSize float overflow") &&
 			nativeVerifier.includes("paragraph.paragraphStyle.textStyle.fontSize NaN") &&
 			nativeVerifier.includes("paragraph.paragraphStyle.strutStyle.leading -Infinity") &&
+			nativeVerifier.includes("paragraph.paragraphStyle.strutStyle.leading float overflow") &&
 			nativeVerifier.includes("paragraph.paragraphStyle.maxLines fractional") &&
 			nativeVerifier.includes("paragraph.paragraphStyle.fontFeatures[0].value fractional") &&
 			nativeVerifier.includes("paragraph.paragraphStyle.fontFeatures[0].value int overflow"),
@@ -951,6 +957,9 @@ function assertTextParagraphStyleNumericFiniteValidationInventory() {
 			materializationVerifier.includes("generated text.textStyle.fontSize float overflow") &&
 			materializationVerifier.includes("generated paragraph.paragraphStyle.textStyle.fontSize NaN") &&
 			materializationVerifier.includes("generated paragraph.paragraphStyle.strutStyle.leading -Infinity") &&
+			materializationVerifier.includes(
+				"generated paragraph.paragraphStyle.strutStyle.leading float overflow",
+			) &&
 			materializationVerifier.includes(
 				"generated paragraph.paragraphStyle.fontFeatures[0].value int overflow",
 			),
@@ -3558,6 +3567,18 @@ void assertValueBearingStyleConverters(jsi::Runtime& runtime)
     }
 
     {
+        auto styleObject = richTextStyleObject(runtime, 21.0, SK_ColorMAGENTA);
+        styleObject.setProperty(runtime, "letterSpacing", nativeFloatOverflowValue());
+        jsi::Value styleValue(runtime, styleObject);
+        expectJsiThrows(
+            [&]() {
+                (void)margelo::nitro::JSIConverter<skia::textlayout::TextStyle>::fromJSI(runtime, styleValue);
+            },
+            "Invalid numeric text/paragraph style value for TextStyle.letterSpacing: expected a finite number within native range.",
+            "direct TextStyle letterSpacing native-float overflow");
+    }
+
+    {
         auto styleObject = paragraphStyleSerializationObject(runtime);
         auto paragraphStyle = margelo::nitro::JSIConverter<skia::textlayout::ParagraphStyle>::fromJSI(
             runtime,
@@ -5409,7 +5430,6 @@ void assertTextParagraphStyleNumericFiniteRejections(jsi::Runtime& runtime)
         expect(textRoot->_command.get() == initialTextCommand, std::string(invalidCase.label) + " preserves command pointer");
         expectTextCommandState(textRoot, "Bounded Text", 18.0, SK_ColorBLUE, invalidCase.label);
     }
-
     auto paragraphRoot = makeYogaNode(
         widthOnlyStyle(92.0),
         paragraphCommand(runtime));
@@ -5427,7 +5447,7 @@ void assertTextParagraphStyleNumericFiniteRejections(jsi::Runtime& runtime)
         const char* propertyPath;
     };
 
-	const std::array<ParagraphInvalidCase, 10> paragraphInvalidCases {{
+	const std::array<ParagraphInvalidCase, 11> paragraphInvalidCases {{
         { "paragraph.paragraphStyle.fontSize Infinity", paragraphStyleWithFlattenedFontSize, positiveInfValue, "ParagraphStyle.fontSize" },
         { "paragraph.paragraphStyle.fontSize float overflow", paragraphStyleWithFlattenedFontSize, floatOverflow, "ParagraphStyle.fontSize" },
         { "paragraph.paragraphStyle.textStyle.fontSize NaN", paragraphStyleWithNestedFontSize, nan, "ParagraphStyle.textStyle.fontSize" },
@@ -5436,6 +5456,7 @@ void assertTextParagraphStyleNumericFiniteRejections(jsi::Runtime& runtime)
         { "paragraph.paragraphStyle.maxLines -Infinity", paragraphStyleWithMaxLines, negativeInfValue, "ParagraphStyle.maxLines" },
         { "paragraph.paragraphStyle.maxLines fractional", paragraphStyleWithMaxLines, 1.5, "ParagraphStyle.maxLines" },
         { "paragraph.paragraphStyle.strutStyle.leading -Infinity", paragraphStyleWithStrutLeading, negativeInfValue, "ParagraphStyle.strutStyle.leading" },
+        { "paragraph.paragraphStyle.strutStyle.leading float overflow", paragraphStyleWithStrutLeading, floatOverflow, "ParagraphStyle.strutStyle.leading" },
         { "paragraph.paragraphStyle.fontFeatures[0].value fractional", paragraphStyleWithFontFeatureValue, 1.5, "ParagraphStyle.fontFeatures[0].value" },
         { "paragraph.paragraphStyle.fontFeatures[0].value int overflow", paragraphStyleWithFontFeatureValue, intOverflow, "ParagraphStyle.fontFeatures[0].value" },
     }};
