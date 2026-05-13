@@ -5507,6 +5507,28 @@ Accepted worker reports:
     numeric leaves, with native command/render, generated materialized
     `setCommand(text/paragraph)`, state-preservation proof, and full feasible
     verification.
+- Worker 226 completed public text/paragraph style numeric finite validation.
+  The final branch commit was `5a0dc76 Validate text paragraph style numeric
+  payloads`, merged as `17b9472 Merge worker 226 text paragraph style numeric
+  validation`. The change adds deterministic converter-boundary validation for
+  public `TextStyle`, `ParagraphStyle`, and `StrutStyle` numeric leaves before
+  local text/paragraph style mutation, including native-float overflow,
+  fractional integer, integer range, enum-cast, shadow offset, `maxLines`, and
+  strut leading cases. Numeric color-like fields intentionally retain existing
+  SkColor parsing/casting behavior rather than broadening this finite-number
+  scope.
+- Worker 226 verification passed in the worker worktree: `git diff --check`,
+  `node --check scripts/verify-yoganode-native-commands-render.mjs`, `node
+  --check scripts/verify-yoganode-nitro-materialization.mjs`, `npm run
+  check:yoganode-native-commands-render`, `npm run
+  check:yoganode-nitro-materialization`, `npm run typecheck`, and the full
+  28-command `npm run check:feasible-matrix` in `7m 44s`.
+- Main post-merge checks after Worker 226 passed: `git diff --check HEAD~1
+  HEAD`, both updated `node --check` commands, `npm run
+  check:yoganode-native-commands-render`, `npm run
+  check:yoganode-nitro-materialization`, `npm run typecheck`, and the full
+  28-command `npm run check:feasible-matrix` in `5m 28s`. The next queued
+  worker is a fresh post-Worker 226 audit.
 
 ## Next Worker Candidates
 
