@@ -524,19 +524,29 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None. Worker 243 has been accepted and merged.
-
-Next queued worker:
-
 - `worker-244-interaction-eventtag-validation`: implement deterministic
   validation for raw/native `setInteractionConfig(config).eventTag`, preserving
   valid registry behavior and proving invalid values do not mutate native
-  interaction state or parent interactive descendant counts. This worker has
-  not been launched yet.
+  interaction state or parent interactive descendant counts. State: prepared
+  for `spawn_agent`. Branch: `worker/244-interaction-eventtag-validation`.
+  Worktree:
+  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-244-interaction-eventtag-validation`.
+  Expected files: `cpp/YogaNode.cpp`,
+  `scripts/verify-yoganode-jsi-raw-methods.mjs`,
+  `scripts/verify-gesture-interaction-runtime.mjs` if public registry
+  coverage needs adjustment, and worker report.
+  Verification: `git diff --check`, both updated verifier `node --check`
+  commands, `npm run check:yoganode-jsi-raw-methods`, `npm run
+  check:gesture-interaction-runtime`, `npm run check:yoganode-native-hit-testing`,
+  `npm run typecheck`, and a full feasible matrix.
+
+Next queued worker:
+
+- Selected by Worker 244.
 
 Follow-up queue:
 
-- Prepare an isolated worktree/branch for Worker 244 before launch.
+- Launch Worker 244, monitor completion, then review its report/diff.
 
 Acceptance criteria:
 
