@@ -5377,6 +5377,19 @@ Accepted worker reports:
   next implementation target.
 - Main post-merge checks after Worker 221 passed: `git diff --check HEAD~1
   HEAD`, and the report final line is `Goal finished.`
+- Prepared Worker 222 path stroke numeric finite validation:
+  - Worktree: `../worker-222-path-stroke-numeric-finite-validation`.
+  - Branch: `worker/222-path-stroke-numeric-finite-validation`.
+  - Agent path: `/root/worker_222_path_stroke_numeric_finite_validation`.
+  - Launch parameters: `agent_type: "worker"`, `goal: true`,
+    `fork_turns: "none"`, `model: "gpt-5.5"`, and
+    `reasoning_effort: "xhigh"`.
+  - Ignored dependency symlinks were set to main's known-good `node_modules`
+    and `example/node_modules` installs.
+  - Scope: deterministic finite validation for path stroke numeric payloads:
+    `stroke.width`, `stroke.miter_limit` / `stroke.miterLimit`, and
+    `stroke.precision`, with native and generated materialized
+    state-preservation coverage.
 
 ## Next Worker Candidates
 
