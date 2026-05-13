@@ -505,17 +505,33 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
+- `worker-234-static-animateddouble-native-float-validation`:
+  implementation.
+- Agent path: `/root/worker_234_static_animateddouble_native_float_validation`
+  after spawn.
+- Worktree:
+  `../worker-234-static-animateddouble-native-float-validation`.
+- Branch: `worker/234-static-animateddouble-native-float-validation`.
+- Scope: implement deterministic static `AnimatedDouble`
+  native-float-overflow conversion policy for direct/generated
+  `setCommand(...)` paths, preserving dynamic `AnimatedDouble` support.
+- Required tracked report:
+  `worker-progress/worker-234-static-animateddouble-native-float-validation.md`.
+- Expected verification: focused native command/render and Nitro
+  materialization verifier updates, syntax/diff checks, typecheck as needed,
+  and full feasible matrix unless blocked.
+- State: worktree and branch created; spawn pending with `agent_type:
+  "worker"`, `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`.
 
 Next queued worker:
 
-- Static `AnimatedDouble` native-float-overflow conversion policy for
-  direct/generated `setCommand(...)` paths.
+- None until Worker 234 reports.
 
 Follow-up queue:
 
-- Launch the static `AnimatedDouble` native-float-overflow worker from an
-  isolated worktree and branch.
+- Accept or repair Worker 234, then launch the selected follow-up audit from
+  an isolated worktree and branch.
 
 Acceptance criteria:
 
