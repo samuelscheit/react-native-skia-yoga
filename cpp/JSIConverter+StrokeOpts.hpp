@@ -10,6 +10,7 @@
 #include <jsi/jsi.h>
 #include <array>
 #include <cmath>
+#include <limits>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -23,7 +24,20 @@ using namespace facebook;
 
 namespace {
 
-inline std::optional<float> getOptionalFloatProperty(
+[[noreturn]] inline void throwInvalidNumericStrokeValue(
+    const char* propertyPath) {
+  throw std::invalid_argument(
+      std::string("Invalid numeric stroke value for ") + propertyPath +
+      ": expected a finite native float.");
+}
+
+inline bool isValidNativeStrokeFloat(double value) {
+  return std::isfinite(value) &&
+      std::abs(value) <=
+          static_cast<double>(std::numeric_limits<float>::max());
+}
+
+inline std::optional<float> getOptionalNativeStrokeFloatProperty(
     jsi::Runtime& runtime,
     const jsi::Object& object,
     const char* key,
@@ -33,16 +47,13 @@ inline std::optional<float> getOptionalFloatProperty(
     return std::nullopt;
   }
   const auto number = value.asNumber();
-  const auto narrowed = static_cast<float>(number);
-  if (!std::isfinite(number) || !std::isfinite(narrowed)) {
-    throw std::invalid_argument(
-        std::string("Invalid numeric stroke value for ") + propertyPath +
-        ": expected a finite number.");
+  if (!isValidNativeStrokeFloat(number)) {
+    throwInvalidNumericStrokeValue(propertyPath);
   }
-  return narrowed;
+  return static_cast<float>(number);
 }
 
-inline std::optional<float> getOptionalFloatPropertyWithAlias(
+inline std::optional<float> getOptionalNativeStrokeFloatPropertyWithAlias(
     jsi::Runtime& runtime,
     const jsi::Object& object,
     const char* publicKey,
@@ -50,13 +61,17 @@ inline std::optional<float> getOptionalFloatPropertyWithAlias(
     const char* publicPropertyPath,
     const char* aliasPropertyPath) {
   if (object.hasProperty(runtime, publicKey)) {
-    return getOptionalFloatProperty(
+    return getOptionalNativeStrokeFloatProperty(
         runtime,
         object,
         publicKey,
         publicPropertyPath);
   }
-  return getOptionalFloatProperty(runtime, object, aliasKey, aliasPropertyPath);
+  return getOptionalNativeStrokeFloatProperty(
+      runtime,
+      object,
+      aliasKey,
+      aliasPropertyPath);
 }
 
 inline std::string invalidNumericStrokeEnumMessage(
@@ -177,19 +192,19 @@ struct JSIConverter<RNSkia::StrokeOpts> final {
 
     const auto object = arg.asObject(runtime);
     RNSkia::StrokeOpts opts;
-    opts.width = getOptionalFloatProperty(
+    opts.width = getOptionalNativeStrokeFloatProperty(
         runtime,
         object,
         "width",
         "stroke.width");
-    opts.miter_limit = getOptionalFloatPropertyWithAlias(
+    opts.miter_limit = getOptionalNativeStrokeFloatPropertyWithAlias(
         runtime,
         object,
         "miter_limit",
         "miterLimit",
         "stroke.miter_limit",
         "stroke.miterLimit");
-    opts.precision = getOptionalFloatProperty(
+    opts.precision = getOptionalNativeStrokeFloatProperty(
         runtime,
         object,
         "precision",
