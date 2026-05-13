@@ -175,8 +175,8 @@ leaves now reject non-finite values, native-float overflow, fractional integer
 targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
-Current active worker: worker 239 post-Worker 238 root-cause audit retry
-(`/root/worker_239_post_238_root_cause_audit_retry` spawned).
+Current active worker: worker 239 post-Worker 238 root-cause audit second retry
+(`spawn_agent` pending).
 Next queued worker: selected by worker 239.
 
 Goals:
@@ -550,10 +550,10 @@ Current active worker:
 
 - `worker-239-post-238-root-cause-audit`: audit Worker 238 path stroke
   native-float validation and select the next strongest unblocked root-cause
-  target. State: retry spawned as
-  `/root/worker_239_post_238_root_cause_audit_retry` after
-  `/root/worker_239_post_238_root_cause_audit` stalled without worktree
-  changes and was closed. Branch: `worker/239-post-238-root-cause-audit`. Worktree:
+  target. State: second retry spawn pending after
+  `/root/worker_239_post_238_root_cause_audit` and
+  `/root/worker_239_post_238_root_cause_audit_retry` stalled without worktree
+  changes and were closed. Branch: `worker/239-post-238-root-cause-audit`. Worktree:
   `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-239-post-238-root-cause-audit`.
   Write scope: `worker-progress/worker-239-post-238-root-cause-audit.md`.
 
@@ -563,7 +563,9 @@ Next queued worker:
 
 Follow-up queue:
 
-- Monitor worker 239 retry and review its report/diff when complete.
+- Spawn worker 239 second retry with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`.
 
 Acceptance criteria:
 
