@@ -502,20 +502,25 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None. Worker 228 has been accepted and merged; the next work item is a fresh
-  post-Worker 228 audit.
-
-Next queued worker:
-
 - Worker 229 post-Worker 228 root-cause audit.
+- Agent path: `/root/worker_229_post_228_root_cause_audit`.
+- Worktree: `../worker-229-post-228-root-cause-audit`.
+- Branch: `worker/229-post-228-root-cause-audit`.
 - Scope: report-only audit of Worker 228's command numeric enum validation
   boundary, focused verification evidence, residual risks, and next unblocked
   root-cause target.
 - Required tracked report:
   `worker-progress/worker-229-post-228-root-cause-audit.md`.
-- Required launch parameters when prepared: `agent_type: "worker"`,
-  `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and
+- Required verification: inspect Worker 228 diff/report and main post-merge
+  evidence; run focused checks only if the audit finds uncertainty that needs
+  fresh proof.
+- State: ready to spawn with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
   `reasoning_effort: "xhigh"`.
+
+Next queued worker:
+
+- None until Worker 229 reports.
 
 Follow-up queue:
 
