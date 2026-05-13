@@ -185,10 +185,11 @@ try {
 	console.log("- The executable asserted generated materialized setCommand(...) rejects non-finite line.from.x/y, line.to.x/y, and indexed points.points[] x/y payloads with NaN, Infinity, and -Infinity before mutating the existing native LineCmd/PointsCmd state.")
 	console.log("- The executable asserted generated materialized setCommand(...) rejects non-finite static AnimatedDouble payloads for rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, path.trimEnd, and circle.radius before mutating the existing same-type native command state.")
 	console.log("- The executable asserted generated materialized setCommand(path) rejects non-finite stroke.width, stroke.miter_limit, stroke.miterLimit alias fallback, and stroke.precision payloads before mutating the existing same-type native PathCmd stroke state.")
+	console.log("- The executable asserted generated materialized setCommand(...) rejects numeric enum finite/integer/range violations for blurMaskFilter.blurStyle, points.pointMode, path.fillType, path.stroke.join, and path.stroke.cap before mutating existing same-type native command state.")
 	console.log("- The executable asserted generated materialized setCommand(text/paragraph) rejects non-finite and native-range-overflow text/paragraph style numeric payloads before mutating existing same-type native TextCmd/ParagraphCmd state.")
 	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload and path stroke numeric finite rejection from a real JsiSkPath host object, TextCmd CSS string textStyle state plus generated text style numeric finite rejection, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state plus generated paragraph style numeric finite rejection, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized CSS-string backgroundColor delivery plus invalid-string rejection without previous _style.backgroundColor/_paint mutation, generated materialized selected finite numeric paint/border/layout rejection without previous _style/_paint/Yoga/clip/layer/matrix/computed-layout mutation, generated materialized radius finite rejection without previous _style radius/_clipToBoundsRadii/_paint/Yoga/clip/layer/matrix/computed-layout mutation, generated materialized matrix-array/SkMatrix/transform-leaf finite rejection without previous _style/_matrix/_paint/Yoga/clip/radius/layer/computed-layout mutation, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized global borderRadius delivery into _style.borderRadius, _clipsToBounds, and all four _clipToBoundsRadii slots without per-corner or explicit clip state, generated materialized overflow hidden/scroll delivery into _style.overflow, Yoga overflow state, and rectangular _clipsToBounds without radius or explicit clip state plus bounded renderToContext raster pixels, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect plus bounded renderToContext raster pixels, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate plus bounded rect/rrect/path renderToContext raster pixels, generated materialized layout style delivery into native _style optionals and selected Yoga style getters for flex, gap, padding, margin, position/inset, width stretch, alignContent, alignSelf, flexWrap, direction, display, boxSizing, min/max constraints, aspectRatio, edge-specific start/end/top/bottom, percentage values, and auto values, sequential generated materialized setStyle initial/update/cleanup delivery into the same parent/child Yoga nodes with stale optionals and Yoga setters reset, exact Worker 199 sequential edge-alias alignment for start/end, marginLeft/marginRight, and inset, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
 	console.log("- For CircleCmd, RRectCmd, and BlurMaskFilterCmd, selected no-pixel draw calls are used only to expose render-time native state/mask-filter side effects after generated wrapper delivery; no command-rendering or render-fidelity claim is made.")
-	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setCommand command-point finite rejection through generated JS-facing wrapper conversion before same-type LineCmd/PointsCmd state mutation, generated materialized static AnimatedDouble command finite rejection through generated JS-facing wrapper conversion before same-type CircleCmd/RRectCmd/BlurMaskFilterCmd/PathCmd state mutation, generated materialized path stroke numeric finite rejection through generated JS-facing wrapper conversion before same-type PathCmd stroke state mutation, generated materialized text/paragraph style numeric finite and native-range-overflow rejection through generated JS-facing wrapper conversion before same-type TextCmd/ParagraphCmd state mutation, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(CSS-string backgroundColor) delivery and invalid CSS-string rejection preserving previous _style.backgroundColor/_paint state, generated materialized selected finite numeric paint/border rejection for border-width family, strokeMiter, and opacity preserving previous _style/_paint/Yoga/clip/layer/matrix state, generated materialized selected finite numeric layout rejection for the Worker 212 scalar and variant numeric inventory preserving previous selected _style/Yoga/computed-layout state, generated materialized borderRadius/per-corner scalar/per-corner SkPoint x/y finite rejection preserving previous selected _style radius fields, _clipToBoundsRadii, _paint, Yoga, clip, layer, matrix, and computed-layout state, generated materialized matrix-array/SkMatrix/transform-leaf finite rejection preserving previous selected _style/_matrix/_paint/Yoga/clip/radius/layer/computed-layout state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/overflow hidden/scroll/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized setStyle flexbox/layout/edge/constraint delivery into selected native _style optionals, selected stable Yoga style getters, selected sequential same-node layout setter replacement/reset behavior including exact Worker 199 edge aliases, and selected computed native/generated layout getter values, generated materialized overflow hidden/scroll delivery followed by bounded host-raster renderToContext pixel assertions for rectangular parent bounds clipping, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect/rrect/path clips, and selected generated/raw YogaNode method/getter execution only; this does not prove exact Yoga conformance beyond asserted values, actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact overflow or clip render fidelity beyond asserted pixels, exact hit-test behavior beyond asserted clipping predicates, exhaustive numeric style validation beyond covered inventories, or every command rendering path.")
+	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setCommand command-point finite rejection through generated JS-facing wrapper conversion before same-type LineCmd/PointsCmd state mutation, generated materialized static AnimatedDouble command finite rejection through generated JS-facing wrapper conversion before same-type CircleCmd/RRectCmd/BlurMaskFilterCmd/PathCmd state mutation, generated materialized command numeric enum finite/integer/range rejection through generated JS-facing wrapper conversion before same-type BlurMaskFilterCmd/PointsCmd/PathCmd state mutation, generated materialized path stroke numeric finite rejection through generated JS-facing wrapper conversion before same-type PathCmd stroke state mutation, generated materialized text/paragraph style numeric finite and native-range-overflow rejection through generated JS-facing wrapper conversion before same-type TextCmd/ParagraphCmd state mutation, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(CSS-string backgroundColor) delivery and invalid CSS-string rejection preserving previous _style.backgroundColor/_paint state, generated materialized selected finite numeric paint/border rejection for border-width family, strokeMiter, and opacity preserving previous _style/_paint/Yoga/clip/layer/matrix state, generated materialized selected finite numeric layout rejection for the Worker 212 scalar and variant numeric inventory preserving previous selected _style/Yoga/computed-layout state, generated materialized borderRadius/per-corner scalar/per-corner SkPoint x/y finite rejection preserving previous selected _style radius fields, _clipToBoundsRadii, _paint, Yoga, clip, layer, matrix, and computed-layout state, generated materialized matrix-array/SkMatrix/transform-leaf finite rejection preserving previous selected _style/_matrix/_paint/Yoga/clip/radius/layer/computed-layout state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/overflow hidden/scroll/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized setStyle flexbox/layout/edge/constraint delivery into selected native _style optionals, selected stable Yoga style getters, selected sequential same-node layout setter replacement/reset behavior including exact Worker 199 edge aliases, and selected computed native/generated layout getter values, generated materialized overflow hidden/scroll delivery followed by bounded host-raster renderToContext pixel assertions for rectangular parent bounds clipping, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect/rrect/path clips, and selected generated/raw YogaNode method/getter execution only; this does not prove exact Yoga conformance beyond asserted values, actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact overflow or clip render fidelity beyond asserted pixels, exact hit-test behavior beyond asserted clipping predicates, exhaustive numeric style validation beyond covered inventories, or every command rendering path.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -545,6 +546,28 @@ function assertCurrentGapAndRisk() {
 			materializationVerifier.includes("generated path.stroke.miterLimit -Infinity") &&
 			materializationVerifier.includes("generated path.stroke.precision NaN"),
 		"Native and generated materialized verifiers must retain path stroke numeric finite rejection coverage.",
+	)
+	assert(
+		nodeCommandConverter.includes("Invalid numeric enum value for ") &&
+			nodeCommandConverter.includes("std::trunc(number)") &&
+			nodeCommandConverter.includes('"blurMaskFilter.blurStyle"') &&
+			nodeCommandConverter.includes('"points.pointMode"') &&
+			nodeCommandConverter.includes('"path.fillType"') &&
+			nodeCommandConverter.includes('"path.stroke.join"') &&
+			nodeCommandConverter.includes('"path.stroke.cap"') &&
+			strokeOptsConverter.includes('"stroke.join"') &&
+			strokeOptsConverter.includes('"stroke.cap"') &&
+			commandVerifier.includes("assertCommandNumericEnumRejections(*runtime);") &&
+			commandVerifier.includes("assertStrokeOptsConverterNumericEnumRejections(*runtime);") &&
+			materializationVerifier.includes(
+				"assertGeneratedCommandNumericEnumRejections(*runtime);",
+			) &&
+			materializationVerifier.includes("generated blurMaskFilter.blurStyle NaN") &&
+			materializationVerifier.includes("generated points.pointMode fractional") &&
+			materializationVerifier.includes("generated path.fillType out-of-range") &&
+			materializationVerifier.includes("generated path.stroke.join fractional") &&
+			materializationVerifier.includes("generated path.stroke.cap out-of-range"),
+		"Native and generated materialized verifiers must retain public command numeric enum finite/integer/range rejection coverage.",
 	)
 	assert(
 		textStyleConverter.includes("validateTextStyleNumericFields") &&
@@ -2129,6 +2152,23 @@ jsi::Object makePointsCommand(
     return command;
 }
 
+jsi::Object makePointsCommandWithNumericPointMode(
+    jsi::Runtime& runtime,
+    double pointMode)
+{
+    jsi::Array points(runtime, 2);
+    points.setValueAtIndex(runtime, 0, jsi::Value(runtime, makePointObject(runtime, 3.0, 4.0)));
+    points.setValueAtIndex(runtime, 1, jsi::Value(runtime, makePointObject(runtime, 13.0, 14.0)));
+
+    jsi::Object command(runtime);
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "pointMode", pointMode);
+    data.setProperty(runtime, "points", points);
+    command.setProperty(runtime, "type", "points");
+    command.setProperty(runtime, "data", data);
+    return command;
+}
+
 jsi::Object makePointsCommand(jsi::Runtime& runtime)
 {
     return makePointsCommand(runtime, 3.0, 4.0, 13.0, 14.0);
@@ -2197,6 +2237,32 @@ jsi::Object makePathStrokeCommand(
     return command;
 }
 
+jsi::Object makePathStrokeCommandWithNumericEnums(
+    jsi::Runtime& runtime,
+    double join,
+    double cap)
+{
+    SkPath path;
+    path.addRect(SkRect::MakeXYWH(0.0f, 0.0f, 10.0f, 6.0f));
+
+    jsi::Object stroke(runtime);
+    stroke.setProperty(runtime, "width", 4.0);
+    stroke.setProperty(runtime, "miter_limit", 7.0);
+    stroke.setProperty(runtime, "precision", 1.25);
+    stroke.setProperty(runtime, "join", join);
+    stroke.setProperty(runtime, "cap", cap);
+
+    jsi::Object command(runtime);
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
+    data.setProperty(runtime, "stroke", stroke);
+    data.setProperty(runtime, "trimStart", 0.0);
+    data.setProperty(runtime, "trimEnd", 1.0);
+    command.setProperty(runtime, "type", "path");
+    command.setProperty(runtime, "data", data);
+    return command;
+}
+
 jsi::Object makePathTrimCommand(
     jsi::Runtime& runtime,
     double trimStart,
@@ -2210,6 +2276,44 @@ jsi::Object makePathTrimCommand(
     data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
     data.setProperty(runtime, "trimStart", trimStart);
     data.setProperty(runtime, "trimEnd", trimEnd);
+    command.setProperty(runtime, "type", "path");
+    command.setProperty(runtime, "data", data);
+    return command;
+}
+
+jsi::Object makePathTrimCommandWithStringFillType(
+    jsi::Runtime& runtime,
+    const char* fillType,
+    double trimStart,
+    double trimEnd)
+{
+    SkPath path;
+    path.addRect(SkRect::MakeXYWH(0.0f, 0.0f, 10.0f, 6.0f));
+
+    jsi::Object command(runtime);
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "fillType", fillType);
+    data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
+    data.setProperty(runtime, "trimStart", trimStart);
+    data.setProperty(runtime, "trimEnd", trimEnd);
+    command.setProperty(runtime, "type", "path");
+    command.setProperty(runtime, "data", data);
+    return command;
+}
+
+jsi::Object makePathTrimCommandWithNumericFillType(
+    jsi::Runtime& runtime,
+    double fillType)
+{
+    SkPath path;
+    path.addRect(SkRect::MakeXYWH(0.0f, 0.0f, 10.0f, 6.0f));
+
+    jsi::Object command(runtime);
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "fillType", fillType);
+    data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
+    data.setProperty(runtime, "trimStart", 0.0);
+    data.setProperty(runtime, "trimEnd", 1.0);
     command.setProperty(runtime, "type", "path");
     command.setProperty(runtime, "data", data);
     return command;
@@ -2362,6 +2466,20 @@ jsi::Object makeBlurMaskFilterCommand(jsi::Runtime& runtime, double blur)
     jsi::Object data(runtime);
     data.setProperty(runtime, "blur", blur);
     data.setProperty(runtime, "blurStyle", "outer");
+    data.setProperty(runtime, "respectCTM", true);
+    command.setProperty(runtime, "type", "blurMaskFilter");
+    command.setProperty(runtime, "data", data);
+    return command;
+}
+
+jsi::Object makeBlurMaskFilterCommandWithNumericBlurStyle(
+    jsi::Runtime& runtime,
+    double blurStyle)
+{
+    jsi::Object command(runtime);
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "blur", 3.0);
+    data.setProperty(runtime, "blurStyle", blurStyle);
     data.setProperty(runtime, "respectCTM", true);
     command.setProperty(runtime, "type", "blurMaskFilter");
     command.setProperty(runtime, "data", data);
@@ -4689,6 +4807,26 @@ std::string invalidStrokeCommandMessage(const char* propertyPath)
     return std::string("Invalid numeric stroke value for ") + propertyPath + ": expected a finite number.";
 }
 
+std::string invalidNumericEnumMessage(const char* propertyPath, const char* validValues)
+{
+    return std::string("Invalid numeric enum value for ") + propertyPath +
+        ": expected a finite integer in " + validValues + ".";
+}
+
+void expectGeneratedPathFillTypeCommandState(
+    const MaterializedYogaNode& materialized,
+    SkPathFillType expectedFillType,
+    const char* label)
+{
+    expect(materialized.node->_commandKind == YogaNodeCommandKind::PATH, std::string(label) + " preserves PathCmd kind");
+    expect(materialized.node->_command != nullptr, std::string(label) + " preserves native command");
+    auto* pathCmd = dynamic_cast<PathCmd*>(materialized.node->_command.get());
+    expect(pathCmd != nullptr, std::string(label) + " preserves PathCmd type");
+    expect(!pathCmd->isDynamic(), std::string(label) + " preserves static PathCmd behavior");
+    expect(pathCmd->props.fillType.has_value(), std::string(label) + " preserves fillType optional");
+    expect(pathCmd->props.fillType.value() == expectedFillType, std::string(label) + " fillType");
+}
+
 void expectGeneratedPathStrokeCommandState(
     const MaterializedYogaNode& materialized,
     double expectedWidth,
@@ -4863,6 +5001,140 @@ void assertGeneratedPathStrokeNumericFiniteRejections(jsi::Runtime& runtime)
     }
 
     disposeMaterializedObject(runtime, materialized.object);
+}
+
+void assertGeneratedCommandNumericEnumRejections(jsi::Runtime& runtime)
+{
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+
+    struct InvalidNumericEnumCase {
+        const char* labelSuffix;
+        double value;
+    };
+
+    const std::array<InvalidNumericEnumCase, 3> invalidCases {{
+        { "NaN", nan },
+        { "fractional", 1.5 },
+        { "out-of-range", 99.0 },
+    }};
+
+    {
+        auto materialized = materializeYogaNode(runtime);
+        callGeneratedSetCommand(
+            runtime,
+            materialized,
+            makeBlurMaskFilterCommand(runtime),
+            "generated blurMaskFilter numeric enum baseline setCommand must return undefined");
+        const auto* initialCommand = materialized.node->_command.get();
+        expectGeneratedBlurMaskFilterCommandState(materialized, "generated blurMaskFilter.blurStyle numeric enum rejection baseline");
+
+        for (const auto& invalidCase : invalidCases) {
+            const auto label = std::string("generated blurMaskFilter.blurStyle ") + invalidCase.labelSuffix;
+            expectGeneratedSetCommandRejects(
+                runtime,
+                materialized,
+                makeBlurMaskFilterCommandWithNumericBlurStyle(runtime, invalidCase.value),
+                invalidNumericEnumMessage("blurMaskFilter.blurStyle", "[0, 1, 2, 3]"),
+                label.c_str());
+            expect(materialized.node->_command.get() == initialCommand, label + " preserves command pointer");
+            expectGeneratedBlurMaskFilterCommandState(materialized, label.c_str());
+        }
+
+        disposeMaterializedObject(runtime, materialized.object);
+    }
+
+    {
+        auto materialized = materializeYogaNode(runtime);
+        callGeneratedSetCommand(
+            runtime,
+            materialized,
+            makePointsCommand(runtime),
+            "generated points numeric enum baseline setCommand must return undefined");
+        const auto* initialCommand = materialized.node->_command.get();
+        const std::vector<::SkPoint> baselinePoints {
+            ::SkPoint::Make(3.0f, 4.0f),
+            ::SkPoint::Make(13.0f, 14.0f),
+        };
+        expectGeneratedPointsCommandState(materialized, baselinePoints, SkCanvas::PointMode::kLines_PointMode, "generated points.pointMode numeric enum rejection baseline");
+
+        for (const auto& invalidCase : invalidCases) {
+            const auto label = std::string("generated points.pointMode ") + invalidCase.labelSuffix;
+            expectGeneratedSetCommandRejects(
+                runtime,
+                materialized,
+                makePointsCommandWithNumericPointMode(runtime, invalidCase.value),
+                invalidNumericEnumMessage("points.pointMode", "[0, 1, 2]"),
+                label.c_str());
+            expect(materialized.node->_command.get() == initialCommand, label + " preserves command pointer");
+            expectGeneratedPointsCommandState(materialized, baselinePoints, SkCanvas::PointMode::kLines_PointMode, label.c_str());
+        }
+
+        disposeMaterializedObject(runtime, materialized.object);
+    }
+
+    {
+        auto materialized = materializeYogaNode(runtime);
+        callGeneratedSetCommand(
+            runtime,
+            materialized,
+            makePathTrimCommandWithStringFillType(runtime, "winding", 0.25, 0.75),
+            "generated path fillType numeric enum baseline setCommand must return undefined");
+        const auto* initialCommand = materialized.node->_command.get();
+        expectGeneratedPathFillTypeCommandState(materialized, SkPathFillType::kWinding, "generated path.fillType numeric enum rejection baseline");
+
+        for (const auto& invalidCase : invalidCases) {
+            const auto label = std::string("generated path.fillType ") + invalidCase.labelSuffix;
+            expectGeneratedSetCommandRejects(
+                runtime,
+                materialized,
+                makePathTrimCommandWithNumericFillType(runtime, invalidCase.value),
+                invalidNumericEnumMessage("path.fillType", "[0, 1, 2, 3]"),
+                label.c_str());
+            expect(materialized.node->_command.get() == initialCommand, label + " preserves command pointer");
+            expectGeneratedPathFillTypeCommandState(materialized, SkPathFillType::kWinding, label.c_str());
+        }
+
+        disposeMaterializedObject(runtime, materialized.object);
+    }
+
+    {
+        auto materialized = materializeYogaNode(runtime);
+        callGeneratedSetCommand(
+            runtime,
+            materialized,
+            makePublicPathStrokeCommand(runtime),
+            "generated path stroke numeric enum baseline setCommand must return undefined");
+        const auto* initialCommand = materialized.node->_command.get();
+        expectGeneratedPathStrokeCommandState(materialized, 4.0, 7.0, 1.25, "generated path.stroke numeric enum rejection baseline");
+        const auto validJoin = static_cast<double>(static_cast<int>(SkPaint::Join::kMiter_Join));
+        const auto validCap = static_cast<double>(static_cast<int>(SkPaint::Cap::kSquare_Cap));
+
+        for (const auto& invalidCase : invalidCases) {
+            const auto label = std::string("generated path.stroke.join ") + invalidCase.labelSuffix;
+            expectGeneratedSetCommandRejects(
+                runtime,
+                materialized,
+                makePathStrokeCommandWithNumericEnums(runtime, invalidCase.value, validCap),
+                invalidNumericEnumMessage("path.stroke.join", "[0, 1, 2]"),
+                label.c_str());
+            expect(materialized.node->_command.get() == initialCommand, label + " preserves command pointer");
+            expectGeneratedPathStrokeCommandState(materialized, 4.0, 7.0, 1.25, label.c_str());
+        }
+
+        for (const auto& invalidCase : invalidCases) {
+            const auto label = std::string("generated path.stroke.cap ") + invalidCase.labelSuffix;
+            expectGeneratedSetCommandRejects(
+                runtime,
+                materialized,
+                makePathStrokeCommandWithNumericEnums(runtime, validJoin, invalidCase.value),
+                invalidNumericEnumMessage("path.stroke.cap", "[0, 1, 2]"),
+                label.c_str());
+            expect(materialized.node->_command.get() == initialCommand, label + " preserves command pointer");
+            expectGeneratedPathStrokeCommandState(materialized, 4.0, 7.0, 1.25, label.c_str());
+        }
+
+        disposeMaterializedObject(runtime, materialized.object);
+    }
 }
 
 void assertGeneratedPublicPathStrokeSetCommand(jsi::Runtime& runtime)
@@ -6756,6 +7028,7 @@ int main()
     assertGeneratedCommandPointFiniteRejections(*runtime);
     assertGeneratedStaticAnimatedDoubleCommandFiniteRejections(*runtime);
     assertGeneratedPathStrokeNumericFiniteRejections(*runtime);
+    assertGeneratedCommandNumericEnumRejections(*runtime);
     assertGeneratedPublicPathStrokeSetCommand(*runtime);
     assertGeneratedTextSetCommand(*runtime);
     assertGeneratedParagraphSetCommand(*runtime);
