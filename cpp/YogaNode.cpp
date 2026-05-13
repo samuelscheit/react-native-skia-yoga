@@ -439,6 +439,35 @@ static std::string yogaLayoutValueExpectation(bool acceptsPercent, bool acceptsA
     throwInvalidNumericStyleValue(std::string(propertyName));
 }
 
+static bool isFiniteNativeStyleFloat(double value)
+{
+    return std::isfinite(value) &&
+        std::abs(value) <= static_cast<double>(std::numeric_limits<float>::max());
+}
+
+static void validateNativeStyleFloat(const std::string& propertyName, double value)
+{
+    if (!isFiniteNativeStyleFloat(value)) {
+        throwInvalidNumericStyleValue(propertyName);
+    }
+}
+
+static void validateNativeStyleFloat(const char* propertyName, double value)
+{
+    validateNativeStyleFloat(std::string(propertyName), value);
+}
+
+static float toNativeStyleFloat(const std::string& propertyName, double value)
+{
+    validateNativeStyleFloat(propertyName, value);
+    return static_cast<float>(value);
+}
+
+static float toNativeStyleFloat(const char* propertyName, double value)
+{
+    return toNativeStyleFloat(std::string(propertyName), value);
+}
+
 static float parseYogaPercent(
     const char* propertyName,
     const std::string& value,
@@ -458,12 +487,11 @@ static float parseYogaPercent(
     char* end = nullptr;
     const double parsed = std::strtod(numberString.c_str(), &end);
     const bool consumedAll = end == numberString.c_str() + numberString.size();
-    const auto percent = static_cast<float>(parsed);
-    if (!consumedAll || !std::isfinite(parsed) || !std::isfinite(percent)) {
+    if (!consumedAll || !isFiniteNativeStyleFloat(parsed)) {
         throwInvalidYogaLayoutString(propertyName, value, true, acceptsAuto, acceptsWidthSpecial);
     }
 
-    return percent;
+    return static_cast<float>(parsed);
 }
 
 static void validateYGValueOrPercent(
@@ -598,8 +626,8 @@ static void validateBackgroundColorString(const NodeStyle& style)
 
 static void validateFiniteStyleNumber(const char* propertyName, const std::optional<double>& value)
 {
-    if (value.has_value() && !std::isfinite(*value)) {
-        throwInvalidNumericStyleValue(propertyName);
+    if (value.has_value()) {
+        validateNativeStyleFloat(propertyName, *value);
     }
 }
 
@@ -611,9 +639,7 @@ static void validateFiniteStyleNumber(
         return;
     }
 
-    if (!std::isfinite(std::get<double>(*value))) {
-        throwInvalidNumericStyleValue(propertyName);
-    }
+    validateNativeStyleFloat(propertyName, std::get<double>(*value));
 }
 
 static void validateFiniteNumericStyleFields(const NodeStyle& style)
@@ -687,19 +713,13 @@ static void validateFiniteCornerRadius(
     }
 
     if (std::holds_alternative<double>(*value)) {
-        if (!std::isfinite(std::get<double>(*value))) {
-            throwInvalidNumericStyleValue(propertyName);
-        }
+        validateNativeStyleFloat(propertyName, std::get<double>(*value));
         return;
     }
 
     const auto& point = std::get<SkPoint>(*value);
-    if (!std::isfinite(point.x)) {
-        throwInvalidNumericStyleValue(std::string(propertyName) + ".x");
-    }
-    if (!std::isfinite(point.y)) {
-        throwInvalidNumericStyleValue(std::string(propertyName) + ".y");
-    }
+    validateNativeStyleFloat(std::string(propertyName) + ".x", point.x);
+    validateNativeStyleFloat(std::string(propertyName) + ".y", point.y);
 }
 
 static void validateFiniteRadiusStyleFields(const NodeStyle& style)
@@ -713,9 +733,7 @@ static void validateFiniteRadiusStyleFields(const NodeStyle& style)
 
 static void validateFiniteMatrixElement(size_t index, double value)
 {
-    if (!std::isfinite(value)) {
-        throwInvalidNumericStyleValue("matrix[" + std::to_string(index) + "]");
-    }
+    validateNativeStyleFloat("matrix[" + std::to_string(index) + "]", value);
 }
 
 static void validateFiniteSkMatrix(const std::shared_ptr<SkMatrix>& matrix)
@@ -763,9 +781,7 @@ static void validateFiniteMatrixStyleValue(const MatrixStyleValue& matrixValue)
 
 static void validateFiniteTransformLeaf(const char* propertyName, double value)
 {
-    if (!std::isfinite(value)) {
-        throwInvalidNumericStyleValue(propertyName);
-    }
+    validateNativeStyleFloat(propertyName, value);
 }
 
 template <typename TransformStyleValue>
@@ -838,7 +854,7 @@ static void setYGValueOrPercent(void (*setter)(YGNodeRef, float),
             percentSetter(node, percent);
         }
     } else {
-        float numValue = static_cast<float>(std::get<double>(value));
+        float numValue = toNativeStyleFloat(propertyName, std::get<double>(value));
         setter(node, numValue);
     }
 }
@@ -864,7 +880,7 @@ static void setYGEdgeValue(void (*setter)(YGNodeRef, YGEdge, float),
             percentSetter(node, edge, percent);
         }
     } else {
-        float numValue = static_cast<float>(std::get<double>(value));
+        float numValue = toNativeStyleFloat(propertyName, std::get<double>(value));
         setter(node, edge, numValue);
     }
 }
@@ -949,15 +965,15 @@ void YogaNode::setStyle(const NodeStyle& style)
 
     // Flex properties
     if (const auto& value = style.flex) {
-        YGNodeStyleSetFlex(_node, static_cast<float>(*value));
+        YGNodeStyleSetFlex(_node, toNativeStyleFloat("flex", *value));
     }
 
     if (const auto& value = style.flexGrow) {
-        YGNodeStyleSetFlexGrow(_node, static_cast<float>(*value));
+        YGNodeStyleSetFlexGrow(_node, toNativeStyleFloat("flexGrow", *value));
     }
 
     if (const auto& value = style.flexShrink) {
-        YGNodeStyleSetFlexShrink(_node, static_cast<float>(*value));
+        YGNodeStyleSetFlexShrink(_node, toNativeStyleFloat("flexShrink", *value));
     }
 
     if (const auto& value = style.flexBasis) {
@@ -1000,7 +1016,7 @@ void YogaNode::setStyle(const NodeStyle& style)
 
     // Aspect ratio
     if (const auto& value = style.aspectRatio) {
-        YGNodeStyleSetAspectRatio(_node, static_cast<float>(*value));
+        YGNodeStyleSetAspectRatio(_node, toNativeStyleFloat("aspectRatio", *value));
     }
 
     // Position properties
@@ -1142,7 +1158,7 @@ void YogaNode::setStyle(const NodeStyle& style)
 
     // Border properties
     if (const auto& value = style.borderWidth) {
-        auto val = static_cast<float>(*value);
+        auto val = toNativeStyleFloat("borderWidth", *value);
         YGNodeStyleSetBorder(_node, YGEdgeAll, val);
         _paint.setStrokeWidth(val);
     }
@@ -1160,50 +1176,50 @@ void YogaNode::setStyle(const NodeStyle& style)
     }
 
     if (const auto& value = style.borderTopWidth) {
-        YGNodeStyleSetBorder(_node, YGEdgeTop, static_cast<float>(*value));
+        YGNodeStyleSetBorder(_node, YGEdgeTop, toNativeStyleFloat("borderTopWidth", *value));
     }
 
     if (const auto& value = style.borderBottomWidth) {
-        YGNodeStyleSetBorder(_node, YGEdgeBottom, static_cast<float>(*value));
+        YGNodeStyleSetBorder(_node, YGEdgeBottom, toNativeStyleFloat("borderBottomWidth", *value));
     }
 
     if (const auto& value = style.borderLeftWidth) {
-        YGNodeStyleSetBorder(_node, YGEdgeLeft, static_cast<float>(*value));
+        YGNodeStyleSetBorder(_node, YGEdgeLeft, toNativeStyleFloat("borderLeftWidth", *value));
     }
 
     if (const auto& value = style.borderRightWidth) {
-        YGNodeStyleSetBorder(_node, YGEdgeRight, static_cast<float>(*value));
+        YGNodeStyleSetBorder(_node, YGEdgeRight, toNativeStyleFloat("borderRightWidth", *value));
     }
 
     if (const auto& value = style.borderStartWidth) {
-        YGNodeStyleSetBorder(_node, YGEdgeStart, static_cast<float>(*value));
+        YGNodeStyleSetBorder(_node, YGEdgeStart, toNativeStyleFloat("borderStartWidth", *value));
     }
 
     if (const auto& value = style.borderEndWidth) {
-        YGNodeStyleSetBorder(_node, YGEdgeEnd, static_cast<float>(*value));
+        YGNodeStyleSetBorder(_node, YGEdgeEnd, toNativeStyleFloat("borderEndWidth", *value));
     }
 
     if (const auto& value = style.borderHorizontalWidth) {
-        float width = static_cast<float>(*value);
+        float width = toNativeStyleFloat("borderHorizontalWidth", *value);
         YGNodeStyleSetBorder(_node, YGEdgeHorizontal, width);
     }
 
     if (const auto& value = style.borderVerticalWidth) {
-        float width = static_cast<float>(*value);
+        float width = toNativeStyleFloat("borderVerticalWidth", *value);
         YGNodeStyleSetBorder(_node, YGEdgeVertical, width);
     }
 
     // Gap properties
     if (const auto& value = style.gap) {
-        YGNodeStyleSetGap(_node, YGGutterAll, static_cast<float>(*value));
+        YGNodeStyleSetGap(_node, YGGutterAll, toNativeStyleFloat("gap", *value));
     }
 
     if (const auto& value = style.rowGap) {
-        YGNodeStyleSetGap(_node, YGGutterRow, static_cast<float>(*value));
+        YGNodeStyleSetGap(_node, YGGutterRow, toNativeStyleFloat("rowGap", *value));
     }
 
     if (const auto& value = style.columnGap) {
-        YGNodeStyleSetGap(_node, YGGutterColumn, static_cast<float>(*value));
+        YGNodeStyleSetGap(_node, YGGutterColumn, toNativeStyleFloat("columnGap", *value));
     }
 
     // Inset properties: TODO object
@@ -1236,7 +1252,7 @@ void YogaNode::setStyle(const NodeStyle& style)
     }
 
     if (const auto& value = style.opacity) {
-        _paint.setAlphaf(static_cast<float>(*value));
+        _paint.setAlphaf(toNativeStyleFloat("opacity", *value));
     }
 
     if (const auto& value = style.blendMode) {
@@ -1254,7 +1270,7 @@ void YogaNode::setStyle(const NodeStyle& style)
         radii.fill(SkVector::Make(0.0f, 0.0f));
 
         if (const auto& value = style.borderRadius) {
-            auto radius = static_cast<float>(*value);
+            auto radius = toNativeStyleFloat("borderRadius", *value);
             radii[SkRRect::kUpperLeft_Corner] = SkVector::Make(radius, radius);
             radii[SkRRect::kUpperRight_Corner] = SkVector::Make(radius, radius);
             radii[SkRRect::kLowerRight_Corner] = SkVector::Make(radius, radius);
@@ -1263,23 +1279,25 @@ void YogaNode::setStyle(const NodeStyle& style)
             shouldClipToBounds = true;
         }
 
-        auto setCornerRadius = [&](const auto& val, int corner) {
+        auto setCornerRadius = [&](const auto& val, int corner, const char* propertyName) {
             if (val) {
                 if (std::holds_alternative<SkPoint>(*val)) {
                     SkPoint p = std::get<SkPoint>(*val);
-                    radii[corner] = SkVector::Make(p.x, p.y);
+                    const auto x = toNativeStyleFloat(std::string(propertyName) + ".x", p.x);
+                    const auto y = toNativeStyleFloat(std::string(propertyName) + ".y", p.y);
+                    radii[corner] = SkVector::Make(x, y);
                 } else {
-                    auto radius = static_cast<float>(std::get<double>(*val));
+                    auto radius = toNativeStyleFloat(propertyName, std::get<double>(*val));
                     radii[corner] = SkVector::Make(radius, radius);
                 }
                 shouldClipToBounds = true;
             }
         };
 
-        setCornerRadius(style.borderTopLeftRadius, SkRRect::kUpperLeft_Corner);
-        setCornerRadius(style.borderTopRightRadius, SkRRect::kUpperRight_Corner);
-        setCornerRadius(style.borderBottomRightRadius, SkRRect::kLowerRight_Corner);
-        setCornerRadius(style.borderBottomLeftRadius, SkRRect::kLowerLeft_Corner);
+        setCornerRadius(style.borderTopLeftRadius, SkRRect::kUpperLeft_Corner, "borderTopLeftRadius");
+        setCornerRadius(style.borderTopRightRadius, SkRRect::kUpperRight_Corner, "borderTopRightRadius");
+        setCornerRadius(style.borderBottomRightRadius, SkRRect::kLowerRight_Corner, "borderBottomRightRadius");
+        setCornerRadius(style.borderBottomLeftRadius, SkRRect::kLowerLeft_Corner, "borderBottomLeftRadius");
 
         _clipsToBounds = true;
         _clipToBoundsRadii = radii;
@@ -1329,37 +1347,37 @@ void YogaNode::setStyle(const NodeStyle& style)
 
                     if constexpr (std::is_same_v<T, TransformRotateX>) {
                         SkM44 rotate;
-                        rotate.setRotateUnit({ 1.0f, 0.0f, 0.0f }, static_cast<float>(op.rotateX));
+                        rotate.setRotateUnit({ 1.0f, 0.0f, 0.0f }, toNativeStyleFloat("transform.rotateX", op.rotateX));
                         matrix.preConcat(rotate);
                         hasTransform = true;
                     } else if constexpr (std::is_same_v<T, TransformRotateY>) {
                         SkM44 rotate;
-                        rotate.setRotateUnit({ 0.0f, 1.0f, 0.0f }, static_cast<float>(op.rotateY));
+                        rotate.setRotateUnit({ 0.0f, 1.0f, 0.0f }, toNativeStyleFloat("transform.rotateY", op.rotateY));
                         matrix.preConcat(rotate);
                         hasTransform = true;
                     } else if constexpr (std::is_same_v<T, TransformRotateZ>) {
                         SkM44 rotate;
-                        rotate.setRotateUnit({ 0.0f, 0.0f, 1.0f }, static_cast<float>(op.rotateZ));
+                        rotate.setRotateUnit({ 0.0f, 0.0f, 1.0f }, toNativeStyleFloat("transform.rotateZ", op.rotateZ));
                         matrix.preConcat(rotate);
                         hasTransform = true;
                     } else if constexpr (std::is_same_v<T, TransformScale>) {
-                        const float s = static_cast<float>(op.scale);
+                        const float s = toNativeStyleFloat("transform.scale", op.scale);
                         matrix.preScale(s, s, 1.0f);
                         hasTransform = true;
                     } else if constexpr (std::is_same_v<T, TransformScaleX>) {
-                        matrix.preScale(static_cast<float>(op.scaleX), 1.0f, 1.0f);
+                        matrix.preScale(toNativeStyleFloat("transform.scaleX", op.scaleX), 1.0f, 1.0f);
                         hasTransform = true;
                     } else if constexpr (std::is_same_v<T, TransformScaleY>) {
-                        matrix.preScale(1.0f, static_cast<float>(op.scaleY), 1.0f);
+                        matrix.preScale(1.0f, toNativeStyleFloat("transform.scaleY", op.scaleY), 1.0f);
                         hasTransform = true;
                     } else if constexpr (std::is_same_v<T, TransformTranslateX>) {
-                        matrix.preTranslate(static_cast<float>(op.translateX), 0.0f, 0.0f);
+                        matrix.preTranslate(toNativeStyleFloat("transform.translateX", op.translateX), 0.0f, 0.0f);
                         hasTransform = true;
                     } else if constexpr (std::is_same_v<T, TransformTranslateY>) {
-                        matrix.preTranslate(0.0f, static_cast<float>(op.translateY), 0.0f);
+                        matrix.preTranslate(0.0f, toNativeStyleFloat("transform.translateY", op.translateY), 0.0f);
                         hasTransform = true;
                     } else if constexpr (std::is_same_v<T, TransformSkewX>) {
-                        const float tangent = static_cast<float>(std::tan(op.skewX));
+                        const float tangent = toNativeStyleFloat("transform.skewX", std::tan(op.skewX));
                         SkM44 skew(1.0f, 0.0f, 0.0f, 0.0f,
                             tangent, 1.0f, 0.0f, 0.0f,
                             0.0f, 0.0f, 1.0f, 0.0f,
@@ -1367,7 +1385,7 @@ void YogaNode::setStyle(const NodeStyle& style)
                         matrix.preConcat(skew);
                         hasTransform = true;
                     } else if constexpr (std::is_same_v<T, TransformSkewY>) {
-                        const float tangent = static_cast<float>(std::tan(op.skewY));
+                        const float tangent = toNativeStyleFloat("transform.skewY", std::tan(op.skewY));
                         SkM44 skew(1.0f, tangent, 0.0f, 0.0f,
                             0.0f, 1.0f, 0.0f, 0.0f,
                             0.0f, 0.0f, 1.0f, 0.0f,
