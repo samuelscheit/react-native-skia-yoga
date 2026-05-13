@@ -492,14 +492,10 @@ Accepted package-hygiene implementation:
 
 Current active worker:
 
-- None.
-
-Next queued worker:
-
 - `worker-232-dynamic-animateddouble-numeric-validation`: implementation.
-- State: not spawned. Create an isolated worktree and branch before launch.
-- Launch with `agent_type: "worker"`, `goal: true`, `fork_turns: "none"`,
-  `model: "gpt-5.5"`, and `reasoning_effort: "xhigh"`.
+- Agent path: `/root/worker_232_dynamic_animateddouble_numeric_validation`.
+- Worktree: `../worker-232-dynamic-animateddouble-numeric-validation`.
+- Branch: `worker/232-dynamic-animateddouble-numeric-validation`.
 - Scope: define and implement fail-closed finite/native-float policy for
   dynamic `AnimatedDouble` values observed from Worklets `Synchronizable`
   mutation after command installation.
@@ -508,6 +504,13 @@ Next queued worker:
 - Expected verification: focused `check:animated-double-synchronizable`,
   selected dynamic `check:yoganode-native-commands-render` cases, syntax/diff
   checks, and full feasible matrix unless blocked.
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
+  `reasoning_effort: "xhigh"`.
+
+Next queued worker:
+
+- None until Worker 232 reports.
 
 Follow-up queue:
 
