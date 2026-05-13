@@ -167,7 +167,7 @@ try {
 	console.log("YogaNode JSI raw-method verifier passed:")
 	console.log("- Source invariant holds: generated HybridYogaNodeSpec methods and manual YogaNode raw methods have no duplicate names.")
 	console.log("- clang++ compiled and linked a host executable against real YogaNode.cpp, generated Nitro specs, React Native JSC, upstream Yoga sources, RN Skia macOS archives, and Nitro/JSI helper sources.")
-	console.log("- The executable called YogaNode::loadHybridMethods() without duplicate-name overlap, created a real JSC runtime, converted a generated NodeStyle object, and called raw setInteractionConfig() / hitTest() with valid and invalid JSI inputs, including invalid eventTag, hitSlop, and hitTest numeric state-preservation cases.")
+	console.log("- The executable called YogaNode::loadHybridMethods() without duplicate-name overlap, created a real JSC runtime, converted a generated NodeStyle object, and called raw setInteractionConfig() / hitTest() with valid and invalid JSI inputs, including invalid eventTag, hitSlop numeric/shape, and hitTest numeric state-preservation cases.")
 	console.log("- Proof boundary: source-level duplicate-registration invariant plus host-native compile/link and direct host-JSC execution of the remaining raw methods. This harness does not claim Nitro toObject()/prototype materialization proof, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, or RNGH native delivery.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
@@ -468,6 +468,7 @@ function nativeProbeSource() {
 #include <memory>
 #include <optional>
 #include <string>
+#include <utility>
 #include <variant>
 #include <vector>
 #include <yoga/Yoga.h>
@@ -859,6 +860,31 @@ int main()
         *runtime,
         parent.get(),
         [&](jsi::Object& config) {
+            config.setProperty(*runtime, "hitSlop", jsi::String::createFromUtf8(*runtime, "wide"));
+        },
+        "scalar string hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            config.setProperty(*runtime, "hitSlop", true);
+        },
+        "scalar boolean hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            jsi::Array hitSlop(*runtime, 0);
+            config.setProperty(*runtime, "hitSlop", std::move(hitSlop));
+        },
+        "array hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
             jsi::Object hitSlop(*runtime);
             hitSlop.setProperty(*runtime, "left", nan);
             config.setProperty(*runtime, "hitSlop", hitSlop);
@@ -894,6 +920,37 @@ int main()
             config.setProperty(*runtime, "hitSlop", hitSlop);
         },
         "object bottom native-float overflow hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            jsi::Object hitSlop(*runtime);
+            hitSlop.setProperty(*runtime, "left", jsi::String::createFromUtf8(*runtime, "wide"));
+            config.setProperty(*runtime, "hitSlop", hitSlop);
+        },
+        "object left string hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            jsi::Object hitSlop(*runtime);
+            hitSlop.setProperty(*runtime, "right", false);
+            config.setProperty(*runtime, "hitSlop", hitSlop);
+        },
+        "object right boolean hitSlop must preserve interaction state");
+    expectInvalidHitSlopPreservesState(
+        *node,
+        *runtime,
+        parent.get(),
+        [&](jsi::Object& config) {
+            jsi::Object hitSlop(*runtime);
+            jsi::Array horizontal(*runtime, 0);
+            hitSlop.setProperty(*runtime, "horizontal", std::move(horizontal));
+            config.setProperty(*runtime, "hitSlop", hitSlop);
+        },
+        "object horizontal array hitSlop must preserve interaction state");
     expectInvalidHitSlopPreservesState(
         *node,
         *runtime,

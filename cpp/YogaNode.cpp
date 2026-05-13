@@ -256,6 +256,13 @@ RNSkia::StrokeOpts toNativeStrokeOpts(const PathCommandData::StrokeOptsData& str
         ": expected a finite native float.");
 }
 
+[[noreturn]] static void throwInvalidHitSlopShape(const char* propertyPath)
+{
+    throw std::invalid_argument(
+        std::string("Invalid hitSlop value for ") + propertyPath +
+        ": expected a finite native float, non-array object, null, or undefined.");
+}
+
 [[noreturn]] static void throwInvalidYogaNodeMethodNumber(const char* propertyPath)
 {
     throw std::invalid_argument(
@@ -312,8 +319,11 @@ float getHitSlopNumericProperty(
     }
 
     const auto value = object.getProperty(runtime, key);
-    if (!value.isNumber()) {
+    if (value.isUndefined() || value.isNull()) {
         return fallback;
+    }
+    if (!value.isNumber()) {
+        throwInvalidHitSlopNumber(propertyPath);
     }
 
     return toFiniteHitSlopFloat(value.asNumber(), propertyPath);
@@ -2088,8 +2098,13 @@ jsi::Value YogaNode::setInteractionConfig(jsi::Runtime& runtime, const jsi::Valu
                 hitSlop.right = inset;
                 hitSlop.bottom = inset;
                 hitSlop.left = inset;
+            } else if (hitSlopValue.isUndefined() || hitSlopValue.isNull()) {
+                // Explicit null/undefined matches omitted hitSlop.
             } else if (hitSlopValue.isObject()) {
                 const auto hitSlopObject = hitSlopValue.asObject(runtime);
+                if (hitSlopObject.isArray(runtime)) {
+                    throwInvalidHitSlopShape("hitSlop");
+                }
                 const auto left = getHitSlopNumericProperty(runtime, hitSlopObject, "left", "hitSlop.left", 0.0f);
                 const auto right = getHitSlopNumericProperty(runtime, hitSlopObject, "right", "hitSlop.right", 0.0f);
                 const auto top = getHitSlopNumericProperty(runtime, hitSlopObject, "top", "hitSlop.top", 0.0f);
@@ -2101,6 +2116,8 @@ jsi::Value YogaNode::setInteractionConfig(jsi::Runtime& runtime, const jsi::Valu
                 hitSlop.right = addHitSlopValues(right, horizontal, "hitSlop.right");
                 hitSlop.top = addHitSlopValues(top, vertical, "hitSlop.top");
                 hitSlop.bottom = addHitSlopValues(bottom, vertical, "hitSlop.bottom");
+            } else {
+                throwInvalidHitSlopShape("hitSlop");
             }
         }
 

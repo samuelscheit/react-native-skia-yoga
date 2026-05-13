@@ -85,19 +85,34 @@ function validateHitSlopNumber(value: number, propertyPath: string): number {
 	return value
 }
 
-function validateHitSlopValue(value: unknown, propertyPath: string): unknown {
-	if (typeof value === "number") {
-		return validateHitSlopNumber(value, propertyPath)
+function throwInvalidHitSlopValue(propertyPath: string): never {
+	throw new Error(
+		`Invalid hitSlop value for ${propertyPath}: expected a finite native float.`,
+	)
+}
+
+function throwInvalidHitSlopShape(propertyPath: string): never {
+	throw new Error(
+		`Invalid hitSlop value for ${propertyPath}: expected a finite native float, non-array object, null, or undefined.`,
+	)
+}
+
+function validateHitSlopLeaf(value: unknown, propertyPath: string): number {
+	if (value == null) {
+		return 0
 	}
-	return value
+	if (typeof value !== "number") {
+		return throwInvalidHitSlopValue(propertyPath)
+	}
+	return validateHitSlopNumber(value, propertyPath)
 }
 
-function hitSlopValueOrDefault(value: unknown, propertyPath: string): unknown {
-	return validateHitSlopValue(value ?? 0, propertyPath)
-}
-
-function addHitSlopValues(value: unknown, axis: unknown): unknown {
-	return (value as number) + (axis as number)
+function addHitSlopValues(
+	value: number,
+	axis: number,
+	propertyPath: string,
+): number {
+	return validateHitSlopNumber(value + axis, propertyPath)
 }
 
 function normalizeHitSlop(
@@ -113,49 +128,44 @@ function normalizeHitSlop(
 		}
 	}
 
-	if (!hitSlop) {
+	if (hitSlop == null) {
 		return emptyHitSlop
+	}
+	if (typeof hitSlop !== "object" || Array.isArray(hitSlop)) {
+		return throwInvalidHitSlopShape("hitSlop")
 	}
 
 	const hitSlopRecord = hitSlop as Record<string, unknown>
-	const horizontal = hitSlopValueOrDefault(
+	const horizontal = validateHitSlopLeaf(
 		hitSlopRecord.horizontal,
 		"hitSlop.horizontal",
 	)
-	const vertical = hitSlopValueOrDefault(
+	const vertical = validateHitSlopLeaf(
 		hitSlopRecord.vertical,
 		"hitSlop.vertical",
 	)
 
 	return {
-		bottom: validateHitSlopValue(
-			addHitSlopValues(
-				hitSlopValueOrDefault(hitSlopRecord.bottom, "hitSlop.bottom"),
-				vertical,
-			),
+		bottom: addHitSlopValues(
+			validateHitSlopLeaf(hitSlopRecord.bottom, "hitSlop.bottom"),
+			vertical,
 			"hitSlop.bottom",
-		) as number,
-		left: validateHitSlopValue(
-			addHitSlopValues(
-				hitSlopValueOrDefault(hitSlopRecord.left, "hitSlop.left"),
-				horizontal,
-			),
+		),
+		left: addHitSlopValues(
+			validateHitSlopLeaf(hitSlopRecord.left, "hitSlop.left"),
+			horizontal,
 			"hitSlop.left",
-		) as number,
-		right: validateHitSlopValue(
-			addHitSlopValues(
-				hitSlopValueOrDefault(hitSlopRecord.right, "hitSlop.right"),
-				horizontal,
-			),
+		),
+		right: addHitSlopValues(
+			validateHitSlopLeaf(hitSlopRecord.right, "hitSlop.right"),
+			horizontal,
 			"hitSlop.right",
-		) as number,
-		top: validateHitSlopValue(
-			addHitSlopValues(
-				hitSlopValueOrDefault(hitSlopRecord.top, "hitSlop.top"),
-				vertical,
-			),
+		),
+		top: addHitSlopValues(
+			validateHitSlopLeaf(hitSlopRecord.top, "hitSlop.top"),
+			vertical,
 			"hitSlop.top",
-		) as number,
+		),
 	}
 }
 
