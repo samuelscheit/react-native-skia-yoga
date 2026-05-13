@@ -8,6 +8,7 @@
 #include <cmath>
 #include <functional>
 #include <jsi/jsi.h>
+#include <limits>
 #include <optional>
 #include <string>
 #include "JsiSkCanvas.h"
@@ -248,7 +249,33 @@ RNSkia::StrokeOpts toNativeStrokeOpts(const PathCommandData::StrokeOptsData& str
     return nativeStroke;
 }
 
-float getNumericProperty(jsi::Runtime& runtime, const jsi::Object& object, const char* key, float fallback)
+[[noreturn]] static void throwInvalidHitSlopNumber(const char* propertyPath)
+{
+    throw std::invalid_argument(
+        std::string("Invalid hitSlop value for ") + propertyPath +
+        ": expected a finite native float.");
+}
+
+float toFiniteHitSlopFloat(double value, const char* propertyPath)
+{
+    if (!std::isfinite(value) || std::abs(value) > static_cast<double>(std::numeric_limits<float>::max())) {
+        throwInvalidHitSlopNumber(propertyPath);
+    }
+    return static_cast<float>(value);
+}
+
+float addHitSlopValues(float value, float axis, const char* propertyPath)
+{
+    const auto result = static_cast<double>(value) + static_cast<double>(axis);
+    return toFiniteHitSlopFloat(result, propertyPath);
+}
+
+float getHitSlopNumericProperty(
+    jsi::Runtime& runtime,
+    const jsi::Object& object,
+    const char* key,
+    const char* propertyPath,
+    float fallback)
 {
     if (!object.hasProperty(runtime, key)) {
         return fallback;
@@ -259,7 +286,7 @@ float getNumericProperty(jsi::Runtime& runtime, const jsi::Object& object, const
         return fallback;
     }
 
-    return static_cast<float>(value.asNumber());
+    return toFiniteHitSlopFloat(value.asNumber(), propertyPath);
 }
 
 PointerEventsMode parsePointerEventsMode(const std::string& value)
@@ -2008,24 +2035,24 @@ jsi::Value YogaNode::setInteractionConfig(jsi::Runtime& runtime, const jsi::Valu
         if (config.hasProperty(runtime, "hitSlop")) {
             const auto hitSlopValue = config.getProperty(runtime, "hitSlop");
             if (hitSlopValue.isNumber()) {
-                const auto inset = static_cast<float>(hitSlopValue.asNumber());
+                const auto inset = toFiniteHitSlopFloat(hitSlopValue.asNumber(), "hitSlop");
                 hitSlop.top = inset;
                 hitSlop.right = inset;
                 hitSlop.bottom = inset;
                 hitSlop.left = inset;
             } else if (hitSlopValue.isObject()) {
                 const auto hitSlopObject = hitSlopValue.asObject(runtime);
-                hitSlop.left = getNumericProperty(runtime, hitSlopObject, "left", 0.0f);
-                hitSlop.right = getNumericProperty(runtime, hitSlopObject, "right", 0.0f);
-                hitSlop.top = getNumericProperty(runtime, hitSlopObject, "top", 0.0f);
-                hitSlop.bottom = getNumericProperty(runtime, hitSlopObject, "bottom", 0.0f);
+                const auto left = getHitSlopNumericProperty(runtime, hitSlopObject, "left", "hitSlop.left", 0.0f);
+                const auto right = getHitSlopNumericProperty(runtime, hitSlopObject, "right", "hitSlop.right", 0.0f);
+                const auto top = getHitSlopNumericProperty(runtime, hitSlopObject, "top", "hitSlop.top", 0.0f);
+                const auto bottom = getHitSlopNumericProperty(runtime, hitSlopObject, "bottom", "hitSlop.bottom", 0.0f);
 
-                const auto horizontal = getNumericProperty(runtime, hitSlopObject, "horizontal", 0.0f);
-                const auto vertical = getNumericProperty(runtime, hitSlopObject, "vertical", 0.0f);
-                hitSlop.left += horizontal;
-                hitSlop.right += horizontal;
-                hitSlop.top += vertical;
-                hitSlop.bottom += vertical;
+                const auto horizontal = getHitSlopNumericProperty(runtime, hitSlopObject, "horizontal", "hitSlop.horizontal", 0.0f);
+                const auto vertical = getHitSlopNumericProperty(runtime, hitSlopObject, "vertical", "hitSlop.vertical", 0.0f);
+                hitSlop.left = addHitSlopValues(left, horizontal, "hitSlop.left");
+                hitSlop.right = addHitSlopValues(right, horizontal, "hitSlop.right");
+                hitSlop.top = addHitSlopValues(top, vertical, "hitSlop.top");
+                hitSlop.bottom = addHitSlopValues(bottom, vertical, "hitSlop.bottom");
             }
         }
 

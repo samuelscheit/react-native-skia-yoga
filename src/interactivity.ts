@@ -74,15 +74,42 @@ const emptyHitSlop: YogaNormalizedHitSlop = {
 	top: 0,
 }
 
+const maxNativeFloat = 3.4028234663852886e38
+
+function validateHitSlopNumber(value: number, propertyPath: string): number {
+	if (!Number.isFinite(value) || Math.abs(value) > maxNativeFloat) {
+		throw new Error(
+			`Invalid hitSlop value for ${propertyPath}: expected a finite native float.`,
+		)
+	}
+	return value
+}
+
+function validateHitSlopValue(value: unknown, propertyPath: string): unknown {
+	if (typeof value === "number") {
+		return validateHitSlopNumber(value, propertyPath)
+	}
+	return value
+}
+
+function hitSlopValueOrDefault(value: unknown, propertyPath: string): unknown {
+	return validateHitSlopValue(value ?? 0, propertyPath)
+}
+
+function addHitSlopValues(value: unknown, axis: unknown): unknown {
+	return (value as number) + (axis as number)
+}
+
 function normalizeHitSlop(
 	hitSlop: YogaHitSlop | undefined,
 ): YogaNormalizedHitSlop {
 	if (typeof hitSlop === "number") {
+		const inset = validateHitSlopNumber(hitSlop, "hitSlop")
 		return {
-			bottom: hitSlop,
-			left: hitSlop,
-			right: hitSlop,
-			top: hitSlop,
+			bottom: inset,
+			left: inset,
+			right: inset,
+			top: inset,
 		}
 	}
 
@@ -90,14 +117,45 @@ function normalizeHitSlop(
 		return emptyHitSlop
 	}
 
-	const horizontal = hitSlop.horizontal ?? 0
-	const vertical = hitSlop.vertical ?? 0
+	const hitSlopRecord = hitSlop as Record<string, unknown>
+	const horizontal = hitSlopValueOrDefault(
+		hitSlopRecord.horizontal,
+		"hitSlop.horizontal",
+	)
+	const vertical = hitSlopValueOrDefault(
+		hitSlopRecord.vertical,
+		"hitSlop.vertical",
+	)
 
 	return {
-		bottom: (hitSlop.bottom ?? 0) + vertical,
-		left: (hitSlop.left ?? 0) + horizontal,
-		right: (hitSlop.right ?? 0) + horizontal,
-		top: (hitSlop.top ?? 0) + vertical,
+		bottom: validateHitSlopValue(
+			addHitSlopValues(
+				hitSlopValueOrDefault(hitSlopRecord.bottom, "hitSlop.bottom"),
+				vertical,
+			),
+			"hitSlop.bottom",
+		) as number,
+		left: validateHitSlopValue(
+			addHitSlopValues(
+				hitSlopValueOrDefault(hitSlopRecord.left, "hitSlop.left"),
+				horizontal,
+			),
+			"hitSlop.left",
+		) as number,
+		right: validateHitSlopValue(
+			addHitSlopValues(
+				hitSlopValueOrDefault(hitSlopRecord.right, "hitSlop.right"),
+				horizontal,
+			),
+			"hitSlop.right",
+		) as number,
+		top: validateHitSlopValue(
+			addHitSlopValues(
+				hitSlopValueOrDefault(hitSlopRecord.top, "hitSlop.top"),
+				vertical,
+			),
+			"hitSlop.top",
+		) as number,
 	}
 }
 
@@ -135,6 +193,12 @@ export class YogaInteractionRegistry {
 		}
 
 		const hasHandlers = Object.values(interaction).some(Boolean)
+		const hitSlop = normalizeHitSlop(props.hitSlop as YogaHitSlop | undefined)
+		const pointerEvents =
+			typeof props.pointerEvents === "string"
+				? (props.pointerEvents as YogaPointerEvents)
+				: "auto"
+		const preciseHit = props.preciseHit === true
 		const existingTag = this.tagsByNode.get(node)
 		const tag = existingTag ?? this.nextEventTag++
 		if (!existingTag) {
@@ -149,12 +213,9 @@ export class YogaInteractionRegistry {
 
 		node.setInteractionConfig({
 			eventTag: hasHandlers ? tag : 0,
-			hitSlop: normalizeHitSlop(props.hitSlop as YogaHitSlop | undefined),
-			pointerEvents:
-				typeof props.pointerEvents === "string"
-					? (props.pointerEvents as YogaPointerEvents)
-					: "auto",
-			preciseHit: props.preciseHit === true,
+			hitSlop,
+			pointerEvents,
+			preciseHit,
 		})
 	}
 
