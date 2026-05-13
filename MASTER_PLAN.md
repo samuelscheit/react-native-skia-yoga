@@ -189,7 +189,8 @@ leaves now reject non-finite values, native-float overflow, fractional integer
 targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
-Current active worker: worker 242 NodeStyle native-float validation prepared in
+Current active worker: worker 242 NodeStyle native-float validation spawned as
+`/root/worker_242_nodestyle_native_float_validation` in
 `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-242-nodestyle-native-float-validation`.
 Next queued worker: selected by worker 242.
 
@@ -577,7 +578,7 @@ Current active worker:
 - `worker-242-nodestyle-native-float-validation`: implement pre-narrow
   native-float validation for public `NodeStyle` numeric values in
   `cpp/YogaNode.cpp`, including source guards and generated materialized
-  `setStyle(...)` runtime coverage. State: prepared for `spawn_agent` as
+  `setStyle(...)` runtime coverage. State: spawned via `spawn_agent` as
   `/root/worker_242_nodestyle_native_float_validation`. Branch:
   `worker/242-nodestyle-native-float-validation`. Worktree:
   `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-242-nodestyle-native-float-validation`.
@@ -596,8 +597,7 @@ Next queued worker:
 
 Follow-up queue:
 
-- Launch worker 242 with `spawn_agent`, monitor completion, then review its
-  report/diff.
+- Monitor worker 242 completion, then review its report/diff.
 
 Acceptance criteria:
 
