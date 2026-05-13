@@ -169,7 +169,7 @@ targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
 Current active worker: worker 237 post-Worker 236 root-cause audit
-(`spawn_agent` pending).
+(`/root/worker_237_post_236_root_cause_audit` spawned).
 Next queued worker: selected by worker 237.
 
 Goals:
@@ -534,8 +534,8 @@ Current active worker:
 
 - `worker-237-post-236-root-cause-audit`: audit Worker 236 command `SkPoint`
   native-float validation and select the next strongest unblocked root-cause
-  target. State: spawn pending. Branch:
-  `worker/237-post-236-root-cause-audit`. Worktree:
+  target. State: spawned as `/root/worker_237_post_236_root_cause_audit`.
+  Branch: `worker/237-post-236-root-cause-audit`. Worktree:
   `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-237-post-236-root-cause-audit`.
   Write scope: `worker-progress/worker-237-post-236-root-cause-audit.md`.
 
@@ -545,9 +545,7 @@ Next queued worker:
 
 Follow-up queue:
 
-- Spawn worker 237 with `agent_type: "worker"`, `goal: true`,
-  `fork_turns: "none"`, `model: "gpt-5.5"`, and
-  `reasoning_effort: "xhigh"`.
+- Monitor worker 237 and review its report/diff when complete.
 
 Acceptance criteria:
 
