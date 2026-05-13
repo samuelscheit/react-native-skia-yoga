@@ -120,12 +120,11 @@ Acceptance criteria:
 
 ## Phase 3: Integration and Example Confidence
 
-Status: active; latest accepted implementation is worker 238 path stroke
-native-float validation. Latest accepted audit worker remains worker 237;
-the Worker 239 post-Worker 238 audit lane stalled across retries, so the
-orchestrator performed the acceptance audit and selected worker 240. Detailed
-historical accepted work lives in `MASTER_PROGRESS.md` and
-`worker-progress/`.
+Status: active; latest accepted implementation is worker 240 text/paragraph
+style pre-narrow native-float validation. Latest accepted audit worker remains
+worker 237; worker 239's post-worker-238 audit lane stalled across retries, so
+the orchestrator performed the acceptance audit for worker 238. Detailed
+historical accepted work lives in `MASTER_PROGRESS.md` and `worker-progress/`.
 
 Latest accepted root-cause audit: worker 237 accepted Worker 236's command
 `SkPoint` native-float validation boundary, reconfirmed focused direct and
@@ -133,26 +132,25 @@ generated checks, and selected deterministic pre-narrow native-float validation
 for path stroke numeric `float` leaves as the next locally unblocked
 root-cause target.
 
-Latest accepted implementation: worker 238 added deterministic pre-narrow
-native-float validation for direct `StrokeOpts` numeric `float` leaves and
-public command `path.stroke` numeric leaves. Direct and generated
-`setCommand(...)` paths now reject non-finite and native-float-overflowing
-stroke values before same-type `PathCmd` mutation, while direct `StrokeOpts`
-alias behavior remains preserved.
+Latest accepted implementation: worker 240 moved text/paragraph style numeric
+`float` conversion to pre-narrow finite/native-float range validation in
+`cpp/JSIConverter+SkTextStyle.hpp`. Direct `TextStyle` conversion and
+direct/generated `TextCmd`/`ParagraphCmd` mutation paths now reject finite
+values outside native `float` range before narrowing, while existing error
+wording and state-preservation behavior are preserved.
 
-Orchestrator post-Worker 238 audit: accepted Worker 238 after source review and
-current focused verification. `cpp/JSIConverter+StrokeOpts.hpp` validates
-finite/native-float range before `static_cast<float>`, `cpp/JSIConverter+NodeCommand.hpp`
-reuses those helpers for public `path.stroke`, alias precedence is preserved,
-and focused native/generated verifiers passed on main. Worker 239 spawned
-agents stalled without report changes and were closed.
+Orchestrator post-Worker 240 acceptance: merged
+`worker/240-text-paragraph-prenarrow-native-float-validation` as `53be068`.
+Main verification passed: `git diff --check HEAD~1 HEAD`, both updated
+verifier `node --check` commands, `npm run check:yoganode-native-commands-render`,
+`npm run check:yoganode-nitro-materialization`, `npm run typecheck`, and the full
+28-command `npm run check:feasible-matrix` in 4m 05s.
 
-Selected next target: worker 240 should move text/paragraph style numeric
-`float` validation in `cpp/JSIConverter+SkTextStyle.hpp` from post-narrow
-finite checks to explicit pre-narrow native-float range checks. This should
-cover direct `TextStyle`/`ParagraphStyle`/`StrutStyle` conversion and
-direct/generated `TextCmd`/`ParagraphCmd` mutation paths without expanding
-typography or platform-runtime claims.
+Selected next target: worker 241 should audit remaining non-command
+style/layout numeric narrowing sites in `cpp/YogaNode.cpp`, especially
+`NodeStyle` layout scalar/percent, transform, and radius paths that still
+validate only finite numbers before `static_cast<float>`, then select the next
+implementation target and proof boundary.
 
 Previous accepted implementation: worker 236 added command `SkPoint`
 native-float validation for `line.from`, `line.to`, and indexed
@@ -191,10 +189,8 @@ leaves now reject non-finite values, native-float overflow, fractional integer
 targets, and integer range overflow before local text/paragraph style mutation
 or same-type `TextCmd` / `ParagraphCmd` command-state updates.
 
-Current active worker: worker 240 text/paragraph style pre-narrow
-native-float validation spawned as
-`/root/worker_240_text_paragraph_prenarrow_native_float_validation`.
-Next queued worker: selected by worker 240.
+Current active worker: none.
+Next queued worker: worker 241 post-worker-240 root-cause audit.
 
 Goals:
 
@@ -565,31 +561,26 @@ Accepted package-hygiene implementation:
 - Orchestrator fallback audit after Worker 239 retries: accepted Worker 238
   based on source review and current focused verification, then selected
   text/paragraph style pre-narrow native-float validation as the next target.
+- `worker-240-text-paragraph-prenarrow-native-float-validation`: implemented
+  pre-narrow finite/native-float range validation for text/paragraph style
+  numeric `float` leaves, with direct converter proof, direct/generated
+  `TextCmd`/`ParagraphCmd` state-preservation coverage, and a full feasible
+  matrix.
 
 Current active worker:
 
-- `worker-240-text-paragraph-prenarrow-native-float-validation`: move
-  text/paragraph style numeric `float` conversion to pre-narrow
-  finite/native-float range validation and update focused source/runtime
-  guards. State: spawned as
-  `/root/worker_240_text_paragraph_prenarrow_native_float_validation`. Branch:
-  `worker/240-text-paragraph-prenarrow-native-float-validation`. Worktree:
-  `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-240-text-paragraph-prenarrow-native-float-validation`.
-  Expected files: `cpp/JSIConverter+SkTextStyle.hpp`,
-  `scripts/verify-yoganode-native-commands-render.mjs`,
-  `scripts/verify-yoganode-nitro-materialization.mjs`, and worker report.
-  Verification: `git diff --check`, both updated verifier `node --check`
-  commands, `npm run check:yoganode-native-commands-render`, `npm run
-  check:yoganode-nitro-materialization`, `npm run typecheck`, and full feasible
-  matrix if the patch touches shared converter behavior broadly.
+- None currently running.
 
 Next queued worker:
 
-- Selected by worker 240.
+- `worker-241-post-240-root-cause-audit`: report-only audit of Worker 240's
+  accepted boundary, remaining numeric narrowing risks in `cpp/YogaNode.cpp`,
+  focused/full verification evidence, and next implementation target selection.
 
 Follow-up queue:
 
-- Monitor worker 240 and review its report/diff when complete.
+- Create an isolated worktree/branch for worker 241 and launch it with
+  `spawn_agent` using the current worker model.
 
 Acceptance criteria:
 

@@ -5751,6 +5751,49 @@ Accepted worker reports:
   check:yoganode-nitro-materialization`, `npm run typecheck`, and the full
   28-command `npm run check:feasible-matrix` in `4m 18s`. The next queued
   worker is a fresh post-Worker 234 root-cause audit.
+- Worker 235 completed the post-Worker 234 root-cause audit. It accepted Worker
+  234's static `AnimatedDouble` native-float validation boundary, reran focused
+  direct/generated verifier checks, and selected command `SkPoint`
+  native-float validation for `line.from`, `line.to`, and `points.points[]`
+  coordinates as the next implementation target.
+- Worker 236 completed command `SkPoint` native-float validation. The change
+  validates direct and generated `setCommand(...)` point coordinates for
+  `line.from`, `line.to`, and indexed `points.points[]` before narrowing or
+  same-type command mutation, with focused verifier coverage and a full
+  feasible matrix.
+- Worker 237 completed the post-Worker 236 root-cause audit. It accepted Worker
+  236's command `SkPoint` validation boundary, reran focused direct/generated
+  verifier checks, and selected deterministic pre-narrow native-float
+  validation for path stroke numeric `float` leaves as the next implementation
+  target.
+- Worker 238 completed path stroke native-float validation. The change added
+  pre-narrow finite/native-float range validation for direct `StrokeOpts`
+  numeric `float` leaves and public command `path.stroke` numeric leaves, with
+  direct/generated verifier coverage and a full feasible matrix.
+- Worker 239's post-Worker 238 audit lane stalled across retries without report
+  changes and was closed. The orchestrator performed a fallback audit, accepted
+  Worker 238 from source review plus focused main verification, and selected
+  text/paragraph style pre-narrow native-float validation as the next target.
+- Worker 240 completed text/paragraph style pre-narrow native-float validation.
+  The branch commit was `9cda646 Validate text paragraph floats before
+  narrowing`, merged as `53be068 Merge worker 240 text paragraph pre-narrow
+  float validation`. The change moved text/paragraph style numeric `float`
+  conversion to explicit pre-narrow finite/native-float range validation in
+  `cpp/JSIConverter+SkTextStyle.hpp`, strengthened source guards, and added
+  direct converter plus direct/generated `TextCmd`/`ParagraphCmd`
+  state-preservation coverage.
+- Worker 240 verification passed in the worker worktree: `git diff --check`,
+  both updated verifier `node --check` commands, `npm run
+  check:yoganode-native-commands-render`, `npm run
+  check:yoganode-nitro-materialization`, `npm run typecheck`, and the full
+  28-command `npm run check:feasible-matrix` in `4m 13s`.
+- Main post-merge checks after Worker 240 passed: `git diff --check HEAD~1
+  HEAD`, both updated verifier `node --check` commands, `npm run
+  check:yoganode-native-commands-render`, `npm run
+  check:yoganode-nitro-materialization`, `npm run typecheck`, and the full
+  28-command `npm run check:feasible-matrix` in `4m 05s`. The next queued
+  worker is a post-Worker 240 root-cause audit of remaining non-command
+  style/layout numeric narrowing sites in `cpp/YogaNode.cpp`.
 
 ## Next Worker Candidates
 
