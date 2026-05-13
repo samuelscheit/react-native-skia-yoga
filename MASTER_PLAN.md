@@ -500,7 +500,7 @@ Accepted package-hygiene implementation:
 Current active worker:
 
 - `worker-233-post-232-root-cause-audit`: report-only audit.
-- Agent path: `/root/worker_233_post_232_root_cause_audit` after spawn.
+- Agent path: `/root/worker_233_post_232_root_cause_audit`.
 - Worktree: `../worker-233-post-232-root-cause-audit`.
 - Branch: `worker/233-post-232-root-cause-audit`.
 - Scope: audit Worker 232's dynamic `AnimatedDouble` native-float validation
@@ -512,8 +512,8 @@ Current active worker:
   syntax/diff checks and relevant focused commands as needed, and either
   reuse the accepted post-merge feasible matrix evidence or rerun a scoped/full
   matrix if the audit finds uncertainty.
-- State: worktree and branch created; spawn pending with `agent_type:
-  "worker"`, `goal: true`, `fork_turns: "none"`, `model: "gpt-5.5"`, and
+- State: spawned with `agent_type: "worker"`, `goal: true`,
+  `fork_turns: "none"`, `model: "gpt-5.5"`, and
   `reasoning_effort: "xhigh"`.
 
 Next queued worker:
