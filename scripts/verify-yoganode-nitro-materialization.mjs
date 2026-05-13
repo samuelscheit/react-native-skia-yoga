@@ -183,9 +183,10 @@ try {
 	console.log("- The executable materialized parent/child YogaNodes, called generated setCommand(group/rect) and setStyle(overflow hidden/scroll, clip rect/rrect/path, plus invertClip rect/rrect/path) wrappers, inserted the child through the generated parent.insertChild(...) wrapper, rendered the native parent through YogaNode::renderToContext(), and asserted bounded in-clip/out-of-clip raster pixels.")
 	console.log("- The executable used fresh materialized YogaNode objects to invoke generated JS-facing setCommand(line), setCommand(points), setCommand(path), setCommand(text), setCommand(paragraph), setCommand(circle), setCommand(rrect), setCommand(blurMaskFilter), setCommand(rect), setCommand(oval), and setCommand(image) wrappers, preserving the native no-command-kind-change invariant.")
 	console.log("- The executable asserted generated materialized setCommand(...) rejects non-finite line.from.x/y, line.to.x/y, and indexed points.points[] x/y payloads with NaN, Infinity, and -Infinity before mutating the existing native LineCmd/PointsCmd state.")
+	console.log("- The executable asserted generated materialized setCommand(...) rejects non-finite static AnimatedDouble payloads for rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, path.trimEnd, and circle.radius before mutating the existing same-type native command state.")
 	console.log("- The executable asserted native side effects from generated calls: GroupCmd installation/rasterize state, LineCmd nested from/to base points, PointsCmd array payload and point mode, PathCmd public stroke.miter_limit payload from a real JsiSkPath host object, TextCmd CSS string textStyle state, ParagraphCmd text/nested paragraphStyle.textStyle CSS color measure state, CircleCmd radius state, RRectCmd corner-radius state, BlurMaskFilterCmd mask-filter state, RectCmd/OvalCmd layout rect state, ImageCmd synthetic JsiSkImage host-object fit/layout state, NodeStyle width/height/antiAlias/layer state, generated materialized JsiSkPaint layer delivery, generated materialized CSS-string backgroundColor delivery plus invalid-string rejection without previous _style.backgroundColor/_paint mutation, generated materialized selected finite numeric paint/border/layout rejection without previous _style/_paint/Yoga/clip/layer/matrix/computed-layout mutation, generated materialized radius finite rejection without previous _style radius/_clipToBoundsRadii/_paint/Yoga/clip/layer/matrix/computed-layout mutation, generated materialized matrix-array/SkMatrix/transform-leaf finite rejection without previous _style/_matrix/_paint/Yoga/clip/radius/layer/computed-layout mutation, generated materialized SkPaint-backed backgroundColor delivery, public paint-field override state for borderWidth/strokeCap/strokeJoin/strokeMiter/dither/opacity/blendMode, generated materialized global borderRadius delivery into _style.borderRadius, _clipsToBounds, and all four _clipToBoundsRadii slots without per-corner or explicit clip state, generated materialized overflow hidden/scroll delivery into _style.overflow, Yoga overflow state, and rectangular _clipsToBounds without radius or explicit clip state plus bounded renderToContext raster pixels, generated materialized clip path/rect/rrect delivery into _style.clip and _clipPath/_clipRect/_clipRRect plus bounded renderToContext raster pixels, generated materialized all-four style corner-radius delivery into _style SkPoint/scalar variants, _clipsToBounds, and _clipToBoundsRadii, generated materialized 9- and 16-value matrix array delivery into _style.matrix and _matrix, generated materialized single-operation transform delivery for rotateX/rotateY/rotateZ/scale/scaleX/scaleY/translateX/translateY/skewX/skewY into _style.transform and _matrix, generated materialized non-empty transform-array delivery into _style.transform and _matrix with transform-over-matrix precedence, generated materialized empty transform-array delivery that preserves empty _style.transform and falls back to _style.matrix for _matrix, generated materialized empty transform-array delivery with no matrix that clears _style.matrix and resets _matrix to nullptr, generated materialized invertClip delivery into _style.invertClip and the clipping predicate plus bounded rect/rrect/path renderToContext raster pixels, generated materialized layout style delivery into native _style optionals and selected Yoga style getters for flex, gap, padding, margin, position/inset, width stretch, alignContent, alignSelf, flexWrap, direction, display, boxSizing, min/max constraints, aspectRatio, edge-specific start/end/top/bottom, percentage values, and auto values, sequential generated materialized setStyle initial/update/cleanup delivery into the same parent/child Yoga nodes with stale optionals and Yoga setters reset, exact Worker 199 sequential edge-alias alignment for start/end, marginLeft/marginRight, and inset, Yoga border state from borderWidth, YogaNode::setStyle SkPaint antiAlias and _layerPaint state, ordinary _paint separation, Yoga layout computation, and generated layout getter values.")
 	console.log("- For CircleCmd, RRectCmd, and BlurMaskFilterCmd, selected no-pixel draw calls are used only to expose render-time native state/mask-filter side effects after generated wrapper delivery; no command-rendering or render-fidelity claim is made.")
-	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setCommand command-point finite rejection through generated JS-facing wrapper conversion before same-type LineCmd/PointsCmd state mutation, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(CSS-string backgroundColor) delivery and invalid CSS-string rejection preserving previous _style.backgroundColor/_paint state, generated materialized selected finite numeric paint/border rejection for border-width family, strokeMiter, and opacity preserving previous _style/_paint/Yoga/clip/layer/matrix state, generated materialized selected finite numeric layout rejection for the Worker 212 scalar and variant numeric inventory preserving previous selected _style/Yoga/computed-layout state, generated materialized borderRadius/per-corner scalar/per-corner SkPoint x/y finite rejection preserving previous selected _style radius fields, _clipToBoundsRadii, _paint, Yoga, clip, layer, matrix, and computed-layout state, generated materialized matrix-array/SkMatrix/transform-leaf finite rejection preserving previous selected _style/_matrix/_paint/Yoga/clip/radius/layer/computed-layout state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/overflow hidden/scroll/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized setStyle flexbox/layout/edge/constraint delivery into selected native _style optionals, selected stable Yoga style getters, selected sequential same-node layout setter replacement/reset behavior including exact Worker 199 edge aliases, and selected computed native/generated layout getter values, generated materialized overflow hidden/scroll delivery followed by bounded host-raster renderToContext pixel assertions for rectangular parent bounds clipping, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect/rrect/path clips, and selected generated/raw YogaNode method/getter execution only; this does not prove exact Yoga conformance beyond asserted values, actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact overflow or clip render fidelity beyond asserted pixels, exact hit-test behavior beyond asserted clipping predicates, exhaustive numeric style validation beyond covered inventories, or every command rendering path.")
+	console.log("- Proof boundary: host-JSC Nitro YogaNode toObject/prototype materialization, materialized getChildren returned-child identity/prototype behavior, generated materialized setCommand command-point finite rejection through generated JS-facing wrapper conversion before same-type LineCmd/PointsCmd state mutation, generated materialized static AnimatedDouble command finite rejection through generated JS-facing wrapper conversion before same-type CircleCmd/RRectCmd/BlurMaskFilterCmd/PathCmd state mutation, generated materialized setStyle(layer) delivery from a JsiSkPaint host object into native _layerPaint state, generated materialized setStyle(CSS-string backgroundColor) delivery and invalid CSS-string rejection preserving previous _style.backgroundColor/_paint state, generated materialized selected finite numeric paint/border rejection for border-width family, strokeMiter, and opacity preserving previous _style/_paint/Yoga/clip/layer/matrix state, generated materialized selected finite numeric layout rejection for the Worker 212 scalar and variant numeric inventory preserving previous selected _style/Yoga/computed-layout state, generated materialized borderRadius/per-corner scalar/per-corner SkPoint x/y finite rejection preserving previous selected _style radius fields, _clipToBoundsRadii, _paint, Yoga, clip, layer, matrix, and computed-layout state, generated materialized matrix-array/SkMatrix/transform-leaf finite rejection preserving previous selected _style/_matrix/_paint/Yoga/clip/radius/layer/computed-layout state, generated materialized setStyle(SkPaint-backed backgroundColor plus public paint fields) delivery into native NodeStyle/_paint/Yoga border state, generated materialized setStyle(global borderRadius/corner-radius/overflow hidden/scroll/clip/matrix-9/matrix-16/single-operation-transform/non-empty-transform/empty-transform fallback/empty-transform no-matrix reset/invertClip) delivery into native NodeStyle/_clipToBoundsRadii/_clipPath/_clipRect/_clipRRect/_matrix/invertClip predicate state, generated materialized setStyle flexbox/layout/edge/constraint delivery into selected native _style optionals, selected stable Yoga style getters, selected sequential same-node layout setter replacement/reset behavior including exact Worker 199 edge aliases, and selected computed native/generated layout getter values, generated materialized overflow hidden/scroll delivery followed by bounded host-raster renderToContext pixel assertions for rectangular parent bounds clipping, generated materialized clip/invertClip delivery followed by bounded host-raster renderToContext pixel assertions for rect/rrect/path clips and inverted rect/rrect/path clips, and selected generated/raw YogaNode method/getter execution only; this does not prove exact Yoga conformance beyond asserted values, actual React Native bridge delivery, Nitro module registry install in a React Native runtime, React Native runtime integration, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, real Reanimated SharedValue delivery, RNGH native delivery, gesture delivery, image assets/decoding/loading, exact saveLayer/GPU blend fidelity, exact typography, exact overflow or clip render fidelity beyond asserted pixels, exact hit-test behavior beyond asserted clipping predicates, exhaustive numeric style validation beyond covered inventories, or every command rendering path.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -367,6 +368,133 @@ function assertCurrentGapAndRisk() {
 			materializationVerifier.includes("generated line.from.x NaN") &&
 			materializationVerifier.includes("generated points.points[1].y NaN"),
 		"Generated materialized setCommand verifier must retain non-finite command point rejection coverage.",
+	)
+	assert(
+		JSON.stringify(extractInterfaceFields(commandSpec, "RoundedRectCommandPayload")) ===
+			JSON.stringify(["cornerRadius"]) &&
+			commandSpec.includes("cornerRadius?: number"),
+		"Public RoundedRectCommandPayload must keep the cornerRadius numeric AnimatedDouble inventory.",
+	)
+	assert(
+		JSON.stringify(extractInterfaceFields(commandSpec, "PathCommandPayload")) ===
+			JSON.stringify(["fillType", "path", "stroke", "trimEnd", "trimStart"]) &&
+			commandSpec.includes("trimEnd?: number") &&
+			commandSpec.includes("trimStart?: number"),
+		"Public PathCommandPayload must keep trimEnd before trimStart in the numeric AnimatedDouble inventory.",
+	)
+	assert(
+		JSON.stringify(extractInterfaceFields(commandSpec, "BlurMaskFilterCommandPayload")) ===
+			JSON.stringify(["blur", "blurStyle", "respectCTM"]) &&
+			commandSpec.includes("blur?: number"),
+		"Public BlurMaskFilterCommandPayload must keep the blur numeric AnimatedDouble inventory.",
+	)
+	assert(
+		JSON.stringify(extractInterfaceFields(commandSpec, "CircleCommandPayload")) ===
+			JSON.stringify(["radius"]) &&
+			commandSpec.includes("radius?: number"),
+		"Public CircleCommandPayload must keep the radius numeric AnimatedDouble inventory.",
+	)
+	assert(
+		reconciler.includes('rrect: ["cornerRadius"],') &&
+			reconciler.includes('path: ["fillType", "path", "stroke", "trimEnd", "trimStart"],') &&
+			reconciler.includes('blurMaskFilter: ["blur", "blurStyle", "respectCTM"],') &&
+			reconciler.includes('circle: ["radius"],'),
+		"Reconciler command key inventories must retain static AnimatedDouble command fields and order.",
+	)
+	const buildRRectCommandIndex = reconciler.indexOf('case "rrect":')
+	const buildRRectRadiusIndex = reconciler.indexOf(
+		"cornerRadius: optionalCommandNumber(props.cornerRadius)",
+		buildRRectCommandIndex,
+	)
+	const buildCircleCommandIndex = reconciler.indexOf('case "circle":')
+	const buildCircleRadiusIndex = reconciler.indexOf(
+		"radius: optionalCommandNumber(props.radius)",
+		buildCircleCommandIndex,
+	)
+	const buildPathCommandIndex = reconciler.indexOf('case "path":')
+	const buildPathTrimEndIndex = reconciler.indexOf(
+		"trimEnd: optionalCommandNumber(props.trimEnd)",
+		buildPathCommandIndex,
+	)
+	const buildPathTrimStartIndex = reconciler.indexOf(
+		"trimStart: optionalCommandNumber(props.trimStart)",
+		buildPathCommandIndex,
+	)
+	const buildBlurCommandIndex = reconciler.indexOf('case "blurMaskFilter":')
+	const buildBlurFieldIndex = reconciler.indexOf(
+		"blur: optionalCommandNumber(props.blur)",
+		buildBlurCommandIndex,
+	)
+	assert(
+		buildRRectRadiusIndex > buildRRectCommandIndex &&
+			buildCircleRadiusIndex > buildCircleCommandIndex &&
+			buildPathTrimEndIndex > buildPathCommandIndex &&
+			buildPathTrimStartIndex > buildPathTrimEndIndex &&
+			buildBlurFieldIndex > buildBlurCommandIndex,
+		"Reconciler command builders must retain static AnimatedDouble payload extraction order.",
+	)
+	const converterRRectCommandIndex = nodeCommandConverter.indexOf(
+		"case NodeCommandKind::RRECT:",
+	)
+	const converterRRectRadiusIndex = nodeCommandConverter.indexOf(
+		'parseStaticFiniteAnimatedDouble(runtime, data.getProperty(runtime, "cornerRadius"), "rrect.cornerRadius")',
+		converterRRectCommandIndex,
+	)
+	const converterBlurCommandIndex = nodeCommandConverter.indexOf(
+		"case NodeCommandKind::BLUR_MASK_FILTER:",
+	)
+	const converterBlurFieldIndex = nodeCommandConverter.indexOf(
+		'parseStaticFiniteAnimatedDouble(runtime, data.getProperty(runtime, "blur"), "blurMaskFilter.blur")',
+		converterBlurCommandIndex,
+	)
+	const converterPathCommandIndex = nodeCommandConverter.indexOf(
+		"case NodeCommandKind::PATH:",
+	)
+	const converterPathTrimEndIndex = nodeCommandConverter.indexOf(
+		'parseStaticFiniteAnimatedDouble(runtime, data.getProperty(runtime, "trimEnd"), "path.trimEnd")',
+		converterPathCommandIndex,
+	)
+	const converterPathTrimStartIndex = nodeCommandConverter.indexOf(
+		'parseStaticFiniteAnimatedDouble(runtime, data.getProperty(runtime, "trimStart"), "path.trimStart")',
+		converterPathCommandIndex,
+	)
+	const converterCircleCommandIndex = nodeCommandConverter.indexOf(
+		"case NodeCommandKind::CIRCLE:",
+	)
+	const converterCircleRadiusIndex = nodeCommandConverter.indexOf(
+		'parseStaticFiniteAnimatedDouble(runtime, data.getProperty(runtime, "radius"), "circle.radius")',
+		converterCircleCommandIndex,
+	)
+	assert(
+		nodeCommandConverter.includes("parseStaticFiniteAnimatedDouble") &&
+			nodeCommandConverter.includes("std::isfinite(animated.value.value())") &&
+			nodeCommandConverter.includes("Invalid numeric AnimatedDouble command value for ") &&
+			converterRRectRadiusIndex > converterRRectCommandIndex &&
+			converterBlurFieldIndex > converterBlurCommandIndex &&
+			converterPathTrimEndIndex > converterPathCommandIndex &&
+			converterPathTrimStartIndex > converterPathTrimEndIndex &&
+			converterCircleRadiusIndex > converterCircleCommandIndex,
+		"Native NodeCommand converter must finite-check static numeric AnimatedDouble command payloads with stable field labels.",
+	)
+	assert(
+		commandVerifier.includes("assertStaticAnimatedDoubleCommandFiniteRejections(*runtime);") &&
+			commandVerifier.includes("circle.radius NaN") &&
+			commandVerifier.includes("rrect.cornerRadius Infinity") &&
+			commandVerifier.includes("blurMaskFilter.blur -Infinity") &&
+			commandVerifier.includes("path.trimStart NaN") &&
+			commandVerifier.includes("path.trimEnd Infinity"),
+		"Command/render verifier must retain non-finite static AnimatedDouble rejection coverage.",
+	)
+	assert(
+		materializationVerifier.includes(
+			"assertGeneratedStaticAnimatedDoubleCommandFiniteRejections(*runtime);",
+		) &&
+			materializationVerifier.includes("generated circle.radius NaN") &&
+			materializationVerifier.includes("generated rrect.cornerRadius Infinity") &&
+			materializationVerifier.includes("generated blurMaskFilter.blur -Infinity") &&
+			materializationVerifier.includes("generated path.trimStart NaN") &&
+			materializationVerifier.includes("generated path.trimEnd Infinity"),
+		"Generated materialized setCommand verifier must retain non-finite static AnimatedDouble rejection coverage.",
 	)
 	assert(
 		yogaNodeCpp.includes("_children[i]->toObject(runtime)") &&
@@ -1935,6 +2063,24 @@ jsi::Object makePublicPathStrokeCommand(jsi::Runtime& runtime)
     return command;
 }
 
+jsi::Object makePathTrimCommand(
+    jsi::Runtime& runtime,
+    double trimStart,
+    double trimEnd)
+{
+    SkPath path;
+    path.addRect(SkRect::MakeXYWH(0.0f, 0.0f, 10.0f, 6.0f));
+
+    jsi::Object command(runtime);
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
+    data.setProperty(runtime, "trimStart", trimStart);
+    data.setProperty(runtime, "trimEnd", trimEnd);
+    command.setProperty(runtime, "type", "path");
+    command.setProperty(runtime, "data", data);
+    return command;
+}
+
 jsi::Object makeEmptyCommand(jsi::Runtime& runtime, const char* type)
 {
     jsi::Object command(runtime);
@@ -1981,36 +2127,51 @@ jsi::Object makeParagraphCommand(jsi::Runtime& runtime)
     return command;
 }
 
-jsi::Object makeCircleCommand(jsi::Runtime& runtime)
+jsi::Object makeCircleCommand(jsi::Runtime& runtime, double radius)
 {
     jsi::Object command(runtime);
     jsi::Object data(runtime);
-    data.setProperty(runtime, "radius", 5.5);
+    data.setProperty(runtime, "radius", radius);
     command.setProperty(runtime, "type", "circle");
+    command.setProperty(runtime, "data", data);
+    return command;
+}
+
+jsi::Object makeCircleCommand(jsi::Runtime& runtime)
+{
+    return makeCircleCommand(runtime, 5.5);
+}
+
+jsi::Object makeRRectCommand(jsi::Runtime& runtime, double cornerRadius)
+{
+    jsi::Object command(runtime);
+    jsi::Object data(runtime);
+    data.setProperty(runtime, "cornerRadius", cornerRadius);
+    command.setProperty(runtime, "type", "rrect");
     command.setProperty(runtime, "data", data);
     return command;
 }
 
 jsi::Object makeRRectCommand(jsi::Runtime& runtime)
 {
+    return makeRRectCommand(runtime, 6.0);
+}
+
+jsi::Object makeBlurMaskFilterCommand(jsi::Runtime& runtime, double blur)
+{
     jsi::Object command(runtime);
     jsi::Object data(runtime);
-    data.setProperty(runtime, "cornerRadius", 6.0);
-    command.setProperty(runtime, "type", "rrect");
+    data.setProperty(runtime, "blur", blur);
+    data.setProperty(runtime, "blurStyle", "outer");
+    data.setProperty(runtime, "respectCTM", true);
+    command.setProperty(runtime, "type", "blurMaskFilter");
     command.setProperty(runtime, "data", data);
     return command;
 }
 
 jsi::Object makeBlurMaskFilterCommand(jsi::Runtime& runtime)
 {
-    jsi::Object command(runtime);
-    jsi::Object data(runtime);
-    data.setProperty(runtime, "blur", 3.0);
-    data.setProperty(runtime, "blurStyle", "outer");
-    data.setProperty(runtime, "respectCTM", true);
-    command.setProperty(runtime, "type", "blurMaskFilter");
-    command.setProperty(runtime, "data", data);
-    return command;
+    return makeBlurMaskFilterCommand(runtime, 3.0);
 }
 
 jsi::Object makeImageCommand(jsi::Runtime& runtime)
@@ -4256,6 +4417,164 @@ void assertGeneratedCommandPointFiniteRejections(jsi::Runtime& runtime)
     disposeMaterializedObject(runtime, pointsMaterialized.object);
 }
 
+std::string invalidStaticAnimatedDoubleCommandMessage(const char* propertyPath)
+{
+    return std::string("Invalid numeric AnimatedDouble command value for ") + propertyPath + ": expected a finite number.";
+}
+
+void expectGeneratedCircleCommandState(
+    const MaterializedYogaNode& materialized,
+    double expectedRadius,
+    const char* label)
+{
+    expect(materialized.node->_commandKind == YogaNodeCommandKind::CIRCLE, std::string(label) + " preserves CircleCmd kind");
+    expect(materialized.node->_command != nullptr, std::string(label) + " preserves native command");
+    auto* circleCmd = dynamic_cast<CircleCmd*>(materialized.node->_command.get());
+    expect(circleCmd != nullptr, std::string(label) + " preserves CircleCmd type");
+    expect(!circleCmd->isDynamic(), std::string(label) + " preserves static CircleCmd behavior");
+    drawCommandToResolveRenderTimeState(*materialized.node);
+    expect(circleCmd->hasExplicitRadius(), std::string(label) + " preserves explicit radius flag");
+    expectNear(circleCmd->props.r, expectedRadius, std::string(label) + " radius");
+}
+
+void expectGeneratedRRectCommandState(
+    const MaterializedYogaNode& materialized,
+    double expectedRadius,
+    const char* label)
+{
+    expect(materialized.node->_commandKind == YogaNodeCommandKind::RRECT, std::string(label) + " preserves RRectCmd kind");
+    expect(materialized.node->_command != nullptr, std::string(label) + " preserves native command");
+    auto* rrectCmd = dynamic_cast<RRectCmd*>(materialized.node->_command.get());
+    expect(rrectCmd != nullptr, std::string(label) + " preserves RRectCmd type");
+    expect(!rrectCmd->isDynamic(), std::string(label) + " preserves static RRectCmd behavior");
+    drawCommandToResolveRenderTimeState(*materialized.node);
+    expect(rrectCmd->props.r.has_value(), std::string(label) + " preserves radius optional");
+    expectNear(rrectCmd->props.r->rX, expectedRadius, std::string(label) + " radius x");
+    expectNear(rrectCmd->props.r->rY, expectedRadius, std::string(label) + " radius y");
+}
+
+void expectGeneratedBlurMaskFilterCommandState(
+    const MaterializedYogaNode& materialized,
+    const char* label)
+{
+    expect(materialized.node->_commandKind == YogaNodeCommandKind::BLUR_MASK_FILTER, std::string(label) + " preserves BlurMaskFilterCmd kind");
+    expect(materialized.node->_command != nullptr, std::string(label) + " preserves native command");
+    auto* blurCmd = dynamic_cast<BlurMaskFilterCmd*>(materialized.node->_command.get());
+    expect(blurCmd != nullptr, std::string(label) + " preserves BlurMaskFilterCmd type");
+    expect(!blurCmd->isDynamic(), std::string(label) + " preserves static BlurMaskFilterCmd behavior");
+
+    auto surface = makeSurface(16, 16);
+    RNSkia::DrawingCtx ctx(surface->getCanvas());
+    blurCmd->draw(&ctx);
+    expect(ctx.getPaint().refMaskFilter() != nullptr, std::string(label) + " preserves mask-filter draw side effect");
+}
+
+void expectGeneratedPathTrimCommandState(
+    const MaterializedYogaNode& materialized,
+    double expectedTrimStart,
+    double expectedTrimEnd,
+    const char* label)
+{
+    expect(materialized.node->_commandKind == YogaNodeCommandKind::PATH, std::string(label) + " preserves PathCmd kind");
+    expect(materialized.node->_command != nullptr, std::string(label) + " preserves native command");
+    auto* pathCmd = dynamic_cast<PathCmd*>(materialized.node->_command.get());
+    expect(pathCmd != nullptr, std::string(label) + " preserves PathCmd type");
+    expect(!pathCmd->isDynamic(), std::string(label) + " preserves static PathCmd behavior");
+    drawCommandToResolveRenderTimeState(*materialized.node);
+    expectNear(pathCmd->props.start, expectedTrimStart, std::string(label) + " trimStart");
+    expectNear(pathCmd->props.end, expectedTrimEnd, std::string(label) + " trimEnd");
+}
+
+void assertGeneratedStaticAnimatedDoubleCommandFiniteRejections(jsi::Runtime& runtime)
+{
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    const double positiveInfValue = std::numeric_limits<double>::infinity();
+    const double negativeInfValue = -std::numeric_limits<double>::infinity();
+
+    auto circleMaterialized = materializeYogaNode(runtime);
+    callGeneratedSetCommand(
+        runtime,
+        circleMaterialized,
+        makeCircleCommand(runtime),
+        "generated circle finite rejection baseline setCommand must return undefined");
+    applyGeneratedSizeAndComputeLayout(runtime, circleMaterialized, 24.0, 20.0);
+    const auto* initialCircleCommand = circleMaterialized.node->_command.get();
+    expectGeneratedCircleCommandState(circleMaterialized, 5.5, "generated circle.radius finite rejection baseline");
+    expectGeneratedSetCommandRejects(
+        runtime,
+        circleMaterialized,
+        makeCircleCommand(runtime, nan),
+        invalidStaticAnimatedDoubleCommandMessage("circle.radius"),
+        "generated circle.radius NaN");
+    expect(circleMaterialized.node->_command.get() == initialCircleCommand, "generated circle.radius NaN preserves command pointer");
+    expectGeneratedCircleCommandState(circleMaterialized, 5.5, "generated circle.radius NaN");
+    disposeMaterializedObject(runtime, circleMaterialized.object);
+
+    auto rrectMaterialized = materializeYogaNode(runtime);
+    callGeneratedSetCommand(
+        runtime,
+        rrectMaterialized,
+        makeRRectCommand(runtime),
+        "generated rrect finite rejection baseline setCommand must return undefined");
+    applyGeneratedSizeAndComputeLayout(runtime, rrectMaterialized, 30.0, 18.0);
+    const auto* initialRRectCommand = rrectMaterialized.node->_command.get();
+    expectGeneratedRRectCommandState(rrectMaterialized, 6.0, "generated rrect.cornerRadius finite rejection baseline");
+    expectGeneratedSetCommandRejects(
+        runtime,
+        rrectMaterialized,
+        makeRRectCommand(runtime, positiveInfValue),
+        invalidStaticAnimatedDoubleCommandMessage("rrect.cornerRadius"),
+        "generated rrect.cornerRadius Infinity");
+    expect(rrectMaterialized.node->_command.get() == initialRRectCommand, "generated rrect.cornerRadius Infinity preserves command pointer");
+    expectGeneratedRRectCommandState(rrectMaterialized, 6.0, "generated rrect.cornerRadius Infinity");
+    disposeMaterializedObject(runtime, rrectMaterialized.object);
+
+    auto blurMaterialized = materializeYogaNode(runtime);
+    callGeneratedSetCommand(
+        runtime,
+        blurMaterialized,
+        makeBlurMaskFilterCommand(runtime),
+        "generated blurMaskFilter finite rejection baseline setCommand must return undefined");
+    const auto* initialBlurCommand = blurMaterialized.node->_command.get();
+    expectGeneratedBlurMaskFilterCommandState(blurMaterialized, "generated blurMaskFilter.blur finite rejection baseline");
+    expectGeneratedSetCommandRejects(
+        runtime,
+        blurMaterialized,
+        makeBlurMaskFilterCommand(runtime, negativeInfValue),
+        invalidStaticAnimatedDoubleCommandMessage("blurMaskFilter.blur"),
+        "generated blurMaskFilter.blur -Infinity");
+    expect(blurMaterialized.node->_command.get() == initialBlurCommand, "generated blurMaskFilter.blur -Infinity preserves command pointer");
+    expectGeneratedBlurMaskFilterCommandState(blurMaterialized, "generated blurMaskFilter.blur -Infinity");
+    disposeMaterializedObject(runtime, blurMaterialized.object);
+
+    auto pathMaterialized = materializeYogaNode(runtime);
+    callGeneratedSetCommand(
+        runtime,
+        pathMaterialized,
+        makePathTrimCommand(runtime, 0.25, 0.75),
+        "generated path finite rejection baseline setCommand must return undefined");
+    applyGeneratedSizeAndComputeLayout(runtime, pathMaterialized, 20.0, 12.0);
+    const auto* initialPathCommand = pathMaterialized.node->_command.get();
+    expectGeneratedPathTrimCommandState(pathMaterialized, 0.25, 0.75, "generated path trim finite rejection baseline");
+    expectGeneratedSetCommandRejects(
+        runtime,
+        pathMaterialized,
+        makePathTrimCommand(runtime, nan, 0.75),
+        invalidStaticAnimatedDoubleCommandMessage("path.trimStart"),
+        "generated path.trimStart NaN");
+    expect(pathMaterialized.node->_command.get() == initialPathCommand, "generated path.trimStart NaN preserves command pointer");
+    expectGeneratedPathTrimCommandState(pathMaterialized, 0.25, 0.75, "generated path.trimStart NaN");
+    expectGeneratedSetCommandRejects(
+        runtime,
+        pathMaterialized,
+        makePathTrimCommand(runtime, 0.25, positiveInfValue),
+        invalidStaticAnimatedDoubleCommandMessage("path.trimEnd"),
+        "generated path.trimEnd Infinity");
+    expect(pathMaterialized.node->_command.get() == initialPathCommand, "generated path.trimEnd Infinity preserves command pointer");
+    expectGeneratedPathTrimCommandState(pathMaterialized, 0.25, 0.75, "generated path.trimEnd Infinity");
+    disposeMaterializedObject(runtime, pathMaterialized.object);
+}
+
 void assertGeneratedPublicPathStrokeSetCommand(jsi::Runtime& runtime)
 {
     auto materialized = materializeYogaNode(runtime);
@@ -6014,6 +6333,7 @@ int main()
     assertGeneratedLineSetCommand(*runtime);
     assertGeneratedPointsSetCommand(*runtime);
     assertGeneratedCommandPointFiniteRejections(*runtime);
+    assertGeneratedStaticAnimatedDoubleCommandFiniteRejections(*runtime);
     assertGeneratedPublicPathStrokeSetCommand(*runtime);
     assertGeneratedTextSetCommand(*runtime);
     assertGeneratedParagraphSetCommand(*runtime);

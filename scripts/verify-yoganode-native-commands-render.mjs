@@ -162,6 +162,7 @@ const samplingOptionsUnionInventory = {
 try {
 	assertInstalledStyleSerializerFieldInventory()
 	assertCommandPointFiniteValidationInventory()
+	assertCommandAnimatedDoubleFiniteValidationInventory()
 	createNitroModulesShim(tmpDir)
 
 	const probePath = path.join(tmpDir, "yoganode-native-commands-render.cpp")
@@ -274,6 +275,7 @@ try {
 	console.log("- The executable rendered real RectCmd, GroupCmd, PointsCmd, LineCmd, OvalCmd, CircleCmd, RRectCmd, BlurMaskFilterCmd, PathCmd, ImageCmd, TextCmd, and ParagraphCmd paths through YogaNode::renderToContext() onto raster SkSurfaces.")
 	console.log("- The executable asserted NodeCommand toJSI payload shape and representative toJSI/fromJSI round-trip coverage for blurMaskFilter, image, path, text, paragraph, line, and points, including numeric enum output for blurStyle, fillType, and pointMode, resolved-number AnimatedDouble output, public path.stroke.miter_limit output, SkPath/JsiSkPath and SkImage/JsiSkImage host-object fields, simple text.textStyle fontSize/color fields, inventory-backed paragraphStyle fields including nested textStyle output, distinct paragraph/text-style heightMultiplier preservation, fontFeatures and strutStyle, line from/to points, and points arrays.")
 	console.log("- The executable asserted non-finite command point rejection for line.from.x/y, line.to.x/y, and indexed points.points[] x/y payloads with NaN, Infinity, and -Infinity, preserving the previously installed native LineCmd/PointsCmd state.")
+	console.log("- The executable asserted non-finite static AnimatedDouble command rejection for rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, path.trimEnd, and circle.radius payloads before same-type setCommand mutation, while retaining dynamic Worklets-backed AnimatedDouble command behavior.")
 	console.log(`- The verifier checked the installed RN Skia public style field inventory before native compilation: ${formatStyleInventorySummary()}`)
 	console.log("- The executable asserted inventory-backed value-bearing toJSI/fromJSI serialization for installed public SkSamplingOptions filter/mipmap and cubic B/C, installed public SkTextStyle supported fields including fontSize/fontFamilies/fontFeatures/decoration/fontStyle/heightMultiplier/halfLeading/letterSpacing/wordSpacing/locale/shadows/textBaseline, normalized text color fields color/backgroundColor/foregroundColor/decorationColor, installed public SkParagraphStyle scalar/textStyle/strutStyle fields, installed public SkStrutStyle fields, dual flattened/nested default text style fields including nested textStyle heightMultiplier output, flattened fontSize/color precedence over nested values, and explicit unsupported fontVariations rejection.")
 	console.log("- The executable asserted generated NodeStyle transport and host-native SkPaint/Yoga state for canonical style.antiAlias, legacy style.antiaAlias fallback, canonical precedence when both keys are present, overflow hidden/scroll public strings, generated style.layer JsiSkPaint host-object transport, YogaNode::_layerPaint storage/reset behavior, ordinary _paint separation, and explicit style paint fields overriding SkPaint-backed backgroundColor base paint values.")
@@ -282,7 +284,7 @@ try {
 	console.log("- The executable asserted TextCmd/ParagraphCmd CSS color-string conversion, installed command state, bounded raster evidence for TextCmd rgba(...) plus flattened and nested ParagraphCmd hex colors, named-color conversion, invalid text/paragraph color-string rejection including nested paragraphStyle.textStyle.color, unsupported paragraph fontVariations rejection, and text.textStyle rich-key rejection in JSIConverter<NodeCommand>::fromJSI(...).")
 	console.log("- The executable asserted direct StrokeOpts converter canConvert/fromJSI consistency for object, null, undefined, number, boolean, and string payloads; public path.stroke width, miter_limit, precision, numeric/string join, and numeric/string cap parsing; miterLimit alias fallback with public-key precedence; StrokeOpts toJSI public miter_limit output; non-object stroke rejection; and invalid join/cap rejection.")
 	console.log("- The executable asserted selected dynamic Worklets-backed AnimatedDouble NodeCommand props for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, including render-time fallback behavior while RN Skia's main runtime is unset, main-runtime numeric resolution, and later Synchronizable::setBlocking(...) mutation observation through render/object-state evidence.")
-	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, overflow hidden/scroll, and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias/Yoga overflow/_clipsToBounds state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded plain overflow hidden/scroll rectangular raster clipping through YogaNode::renderToContext() using a GroupCmd parent and oversized RectCmd child, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, bounded explicit style.clip rect/rrect/path and invertClip rect/rrect/path raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, command point finite rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate LineCmd/PointsCmd state, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact plain overflow clipping beyond the asserted host-raster pixels, exact style corner-radius, global style.borderRadius, or explicit style.clip render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
+	console.log("- Proof boundary: host-native macOS C++ command construction, generated NodeStyle JSIConverter transport for antiAlias/antiaAlias, overflow hidden/scroll, and style.layer JsiSkPaint payloads, YogaNode::setStyle SkPaint antiAlias/Yoga overflow/_clipsToBounds state, _layerPaint storage/reset behavior, ordinary _paint separation from _layerPaint, explicit paint field precedence over SkPaint-backed backgroundColor for borderWidth/stroke width, strokeCap, strokeJoin, strokeMiter, dither, opacity, and blendMode, bounded raster evidence that a composed public transform array reaches render through YogaNode::_matrix/canvas concat, bounded raster evidence that a layer paint alpha modulates a rendered child subtree through saveLayer, bounded plain overflow hidden/scroll rectangular raster clipping through YogaNode::renderToContext() using a GroupCmd parent and oversized RectCmd child, bounded style corner-radius raster clipping through YogaNode::renderToContext() using parent style radii and a full-size child, bounded global style.borderRadius scalar raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, bounded explicit style.clip rect/rrect/path and invertClip rect/rrect/path raster clipping through YogaNode::renderToContext() using a GroupCmd parent and full-size RectCmd child, NodeCommand toJSI converter serialization shape and representative host-JSC/native toJSI/fromJSI round trips, command point finite rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate LineCmd/PointsCmd state, static numeric AnimatedDouble command finite rejection through JSIConverter<NodeCommand>::fromJSI before a same-type YogaNode::setCommand update can mutate CircleCmd/RRectCmd/BlurMaskFilterCmd/PathCmd state, source-level installed RN Skia field-inventory drift check for SkSamplingOptions, SkTextStyle, SkParagraphStyle, and SkStrutStyle, value-bearing converter coverage for the currently inventoried supported fields, normalized CSS-string-to-SkColor handling for text color fields, unsupported fontVariations rejection, simple TextCmd textStyle fontSize/color plus rich-key rejection, paragraphStyle serialization including disableHinting/replaceTabCharacters/textDirection/textHeightBehavior/strutStyle/textStyle, dual flattened/nested paragraph textStyle output including distinct paragraph/text-style heightMultiplier preservation, flattened/nested unsupported fontVariations rejection, nested paragraphStyle.textStyle CSS string color conversion, and flattened fontSize/color precedence over nested values, selected TextCmd/ParagraphCmd CSS color-string payload conversion/rendering, paragraph measurement, public-shaped path.stroke payload conversion and bounded PathCmd stroke raster evidence, direct StrokeOpts converter top-level value consistency, synthetic in-memory JsiSkImage fit/default/invalid command-render coverage, selected dynamic Worklets-backed AnimatedDouble NodeCommand conversion/resolution for circle.radius, rrect.cornerRadius, blurMaskFilter.blur, path.trimStart, and path.trimEnd, and bounded raster behavior for selected commands. This does not prove future RN Skia public style fields absent from the installed source inventory, nested SharedValue leaves inside opaque SamplingOptions, fontVariations native support or preservation, rich simple TextCmd textStyle rendering, CSS color string preservation, exact transform geometry fidelity beyond the asserted raster points, exact plain overflow clipping beyond the asserted host-raster pixels, exact style corner-radius, global style.borderRadius, or explicit style.clip render fidelity beyond the asserted host-raster pixels, exact path/stroke geometry fidelity, exact typography, font fallback correctness, paragraph shaping fidelity, Nitro toObject()/prototype materialization, iOS/Android app build/run, simulator/device launch, native platform presentation, UI-runtime Worklets execution, Reanimated SharedValue delivery, JS listener scheduling, RNGH native delivery, image decoding/assets/loading, local/remote asset resolution, texture-backed images, exact image render fidelity, exact saveLayer/GPU blend fidelity, or every AnimatedDouble command prop.")
 } finally {
 	rmSync(tmpDir, { recursive: true, force: true })
 }
@@ -497,6 +499,158 @@ function assertCommandPointFiniteValidationInventory() {
 			materializationVerifier.includes("generated line.from.x NaN") &&
 			materializationVerifier.includes("generated points.points[1].y NaN"),
 		"Generated materialized setCommand verifier must retain non-finite command point rejection coverage.",
+	)
+}
+
+function assertCommandAnimatedDoubleFiniteValidationInventory() {
+	const commandSpecPath = "src/specs/commands.ts"
+	const commandSpec = readProjectFile(commandSpecPath)
+	const reconciler = readProjectFile("src/Reconciler.ts")
+	const nodeCommandConverter = readProjectFile("cpp/JSIConverter+NodeCommand.hpp")
+	const nativeVerifier = readProjectFile(
+		"scripts/verify-yoganode-native-commands-render.mjs",
+	)
+	const materializationVerifier = readProjectFile(
+		"scripts/verify-yoganode-nitro-materialization.mjs",
+	)
+
+	assertSource(
+		JSON.stringify(
+			extractExportedInterfaceFields(
+				commandSpecPath,
+				"RoundedRectCommandPayload",
+			),
+		) === JSON.stringify(["cornerRadius"]) &&
+			commandSpec.includes("cornerRadius?: number"),
+		"Public RoundedRectCommandPayload must keep the cornerRadius numeric AnimatedDouble inventory.",
+	)
+	assertSource(
+		JSON.stringify(extractExportedInterfaceFields(commandSpecPath, "PathCommandPayload")) ===
+			JSON.stringify(["fillType", "path", "stroke", "trimEnd", "trimStart"]) &&
+			commandSpec.includes("trimEnd?: number") &&
+			commandSpec.includes("trimStart?: number"),
+		"Public PathCommandPayload must keep trimEnd before trimStart in the numeric AnimatedDouble inventory.",
+	)
+	assertSource(
+		JSON.stringify(
+			extractExportedInterfaceFields(
+				commandSpecPath,
+				"BlurMaskFilterCommandPayload",
+			),
+		) === JSON.stringify(["blur", "blurStyle", "respectCTM"]) &&
+			commandSpec.includes("blur?: number"),
+		"Public BlurMaskFilterCommandPayload must keep the blur numeric AnimatedDouble inventory.",
+	)
+	assertSource(
+		JSON.stringify(extractExportedInterfaceFields(commandSpecPath, "CircleCommandPayload")) ===
+			JSON.stringify(["radius"]) &&
+			commandSpec.includes("radius?: number"),
+		"Public CircleCommandPayload must keep the radius numeric AnimatedDouble inventory.",
+	)
+
+	assertSource(
+		reconciler.includes('rrect: ["cornerRadius"],') &&
+			reconciler.includes('path: ["fillType", "path", "stroke", "trimEnd", "trimStart"],') &&
+			reconciler.includes('blurMaskFilter: ["blur", "blurStyle", "respectCTM"],') &&
+			reconciler.includes('circle: ["radius"],'),
+		"Reconciler command key inventories must retain static AnimatedDouble command fields and order.",
+	)
+	const buildRRectIndex = reconciler.indexOf('case "rrect":')
+	const buildRRectRadiusIndex = reconciler.indexOf(
+		"cornerRadius: optionalCommandNumber(props.cornerRadius)",
+		buildRRectIndex,
+	)
+	const buildCircleIndex = reconciler.indexOf('case "circle":')
+	const buildCircleRadiusIndex = reconciler.indexOf(
+		"radius: optionalCommandNumber(props.radius)",
+		buildCircleIndex,
+	)
+	const buildPathIndex = reconciler.indexOf('case "path":')
+	const buildPathTrimEndIndex = reconciler.indexOf(
+		"trimEnd: optionalCommandNumber(props.trimEnd)",
+		buildPathIndex,
+	)
+	const buildPathTrimStartIndex = reconciler.indexOf(
+		"trimStart: optionalCommandNumber(props.trimStart)",
+		buildPathIndex,
+	)
+	const buildBlurIndex = reconciler.indexOf('case "blurMaskFilter":')
+	const buildBlurIndexField = reconciler.indexOf(
+		"blur: optionalCommandNumber(props.blur)",
+		buildBlurIndex,
+	)
+	assertSource(
+		buildRRectRadiusIndex > buildRRectIndex &&
+			buildCircleRadiusIndex > buildCircleIndex &&
+			buildPathTrimEndIndex > buildPathIndex &&
+			buildPathTrimStartIndex > buildPathTrimEndIndex &&
+			buildBlurIndexField > buildBlurIndex,
+		"Reconciler command builders must retain static AnimatedDouble payload extraction order.",
+	)
+
+	const converterRRectIndex = nodeCommandConverter.indexOf(
+		"case NodeCommandKind::RRECT:",
+	)
+	const converterRRectRadiusIndex = nodeCommandConverter.indexOf(
+		'parseStaticFiniteAnimatedDouble(runtime, data.getProperty(runtime, "cornerRadius"), "rrect.cornerRadius")',
+		converterRRectIndex,
+	)
+	const converterBlurIndex = nodeCommandConverter.indexOf(
+		"case NodeCommandKind::BLUR_MASK_FILTER:",
+	)
+	const converterBlurFieldIndex = nodeCommandConverter.indexOf(
+		'parseStaticFiniteAnimatedDouble(runtime, data.getProperty(runtime, "blur"), "blurMaskFilter.blur")',
+		converterBlurIndex,
+	)
+	const converterPathIndex = nodeCommandConverter.indexOf(
+		"case NodeCommandKind::PATH:",
+	)
+	const converterPathTrimEndIndex = nodeCommandConverter.indexOf(
+		'parseStaticFiniteAnimatedDouble(runtime, data.getProperty(runtime, "trimEnd"), "path.trimEnd")',
+		converterPathIndex,
+	)
+	const converterPathTrimStartIndex = nodeCommandConverter.indexOf(
+		'parseStaticFiniteAnimatedDouble(runtime, data.getProperty(runtime, "trimStart"), "path.trimStart")',
+		converterPathIndex,
+	)
+	const converterCircleIndex = nodeCommandConverter.indexOf(
+		"case NodeCommandKind::CIRCLE:",
+	)
+	const converterCircleRadiusIndex = nodeCommandConverter.indexOf(
+		'parseStaticFiniteAnimatedDouble(runtime, data.getProperty(runtime, "radius"), "circle.radius")',
+		converterCircleIndex,
+	)
+	assertSource(
+		nodeCommandConverter.includes("parseStaticFiniteAnimatedDouble") &&
+			nodeCommandConverter.includes("std::isfinite(animated.value.value())") &&
+			nodeCommandConverter.includes("Invalid numeric AnimatedDouble command value for ") &&
+			converterRRectRadiusIndex > converterRRectIndex &&
+			converterBlurFieldIndex > converterBlurIndex &&
+			converterPathTrimEndIndex > converterPathIndex &&
+			converterPathTrimStartIndex > converterPathTrimEndIndex &&
+			converterCircleRadiusIndex > converterCircleIndex,
+		"Native NodeCommand converter must finite-check static numeric AnimatedDouble command payloads with stable field labels.",
+	)
+
+	assertSource(
+		nativeVerifier.includes("assertStaticAnimatedDoubleCommandFiniteRejections(*runtime);") &&
+			nativeVerifier.includes("circle.radius NaN") &&
+			nativeVerifier.includes("rrect.cornerRadius Infinity") &&
+			nativeVerifier.includes("blurMaskFilter.blur -Infinity") &&
+			nativeVerifier.includes("path.trimStart NaN") &&
+			nativeVerifier.includes("path.trimEnd Infinity"),
+		"Native command/render verifier must retain non-finite static AnimatedDouble rejection coverage.",
+	)
+	assertSource(
+		materializationVerifier.includes(
+			"assertGeneratedStaticAnimatedDoubleCommandFiniteRejections(*runtime);",
+		) &&
+			materializationVerifier.includes("generated circle.radius NaN") &&
+			materializationVerifier.includes("generated rrect.cornerRadius Infinity") &&
+			materializationVerifier.includes("generated blurMaskFilter.blur -Infinity") &&
+			materializationVerifier.includes("generated path.trimStart NaN") &&
+			materializationVerifier.includes("generated path.trimEnd Infinity"),
+		"Generated materialized setCommand verifier must retain non-finite static AnimatedDouble rejection coverage.",
 	)
 }
 
@@ -1949,14 +2103,20 @@ NodeCommand ovalCommand(jsi::Runtime& runtime)
     return convertCommand(runtime, std::move(command));
 }
 
-NodeCommand circleCommand(jsi::Runtime& runtime)
+jsi::Object circleCommandObject(jsi::Runtime& runtime, double radius)
 {
     jsi::Object data(runtime);
-    data.setProperty(runtime, "radius", 8.0);
+    data.setProperty(runtime, "radius", radius);
 
     jsi::Object command(runtime);
     command.setProperty(runtime, "type", "circle");
     command.setProperty(runtime, "data", std::move(data));
+    return command;
+}
+
+NodeCommand circleCommand(jsi::Runtime& runtime)
+{
+    auto command = circleCommandObject(runtime, 8.0);
     return convertCommand(runtime, std::move(command));
 }
 
@@ -1973,14 +2133,20 @@ NodeCommand dynamicCircleCommand(
     return convertCommand(runtime, std::move(command));
 }
 
-NodeCommand rrectCommand(jsi::Runtime& runtime)
+jsi::Object rrectCommandObject(jsi::Runtime& runtime, double cornerRadius)
 {
     jsi::Object data(runtime);
-    data.setProperty(runtime, "cornerRadius", 5.0);
+    data.setProperty(runtime, "cornerRadius", cornerRadius);
 
     jsi::Object command(runtime);
     command.setProperty(runtime, "type", "rrect");
     command.setProperty(runtime, "data", std::move(data));
+    return command;
+}
+
+NodeCommand rrectCommand(jsi::Runtime& runtime)
+{
+    auto command = rrectCommandObject(runtime, 5.0);
     return convertCommand(runtime, std::move(command));
 }
 
@@ -1997,16 +2163,22 @@ NodeCommand dynamicRRectCommand(
     return convertCommand(runtime, std::move(command));
 }
 
-NodeCommand blurMaskFilterCommand(jsi::Runtime& runtime)
+jsi::Object blurMaskFilterCommandObject(jsi::Runtime& runtime, double blur)
 {
     jsi::Object data(runtime);
-    data.setProperty(runtime, "blur", 4.0);
+    data.setProperty(runtime, "blur", blur);
     data.setProperty(runtime, "blurStyle", "normal");
     data.setProperty(runtime, "respectCTM", false);
 
     jsi::Object command(runtime);
     command.setProperty(runtime, "type", "blurMaskFilter");
     command.setProperty(runtime, "data", std::move(data));
+    return command;
+}
+
+NodeCommand blurMaskFilterCommand(jsi::Runtime& runtime)
+{
+    auto command = blurMaskFilterCommandObject(runtime, 4.0);
     return convertCommand(runtime, std::move(command));
 }
 
@@ -2047,7 +2219,10 @@ SkPath makeTrimProbePath()
     return path;
 }
 
-NodeCommand pathCommand(jsi::Runtime& runtime)
+jsi::Object pathTrimCommandObject(
+    jsi::Runtime& runtime,
+    double trimStart,
+    double trimEnd)
 {
     SkPath path;
     path.addRect(SkRect::MakeXYWH(0.0f, 0.0f, 10.0f, 6.0f));
@@ -2055,12 +2230,18 @@ NodeCommand pathCommand(jsi::Runtime& runtime)
     jsi::Object data(runtime);
     data.setProperty(runtime, "fillType", "winding");
     data.setProperty(runtime, "path", RNSkia::JsiSkPath::toValue(runtime, nullptr, std::move(path)));
-    data.setProperty(runtime, "trimStart", 0.0);
-    data.setProperty(runtime, "trimEnd", 1.0);
+    data.setProperty(runtime, "trimStart", trimStart);
+    data.setProperty(runtime, "trimEnd", trimEnd);
 
     jsi::Object command(runtime);
     command.setProperty(runtime, "type", "path");
     command.setProperty(runtime, "data", std::move(data));
+    return command;
+}
+
+NodeCommand pathCommand(jsi::Runtime& runtime)
+{
+    auto command = pathTrimCommandObject(runtime, 0.0, 1.0);
     return convertCommand(runtime, std::move(command));
 }
 
@@ -4227,6 +4408,161 @@ void assertCommandPointFiniteRejections(jsi::Runtime& runtime)
     }
 }
 
+std::string invalidStaticAnimatedDoubleCommandMessage(const char* propertyPath)
+{
+    return std::string("Invalid numeric AnimatedDouble command value for ") + propertyPath + ": expected a finite number.";
+}
+
+void expectCircleCommandState(
+    const std::shared_ptr<YogaNode>& root,
+    double expectedRadius,
+    const char* label)
+{
+    expect(root->_commandKind == YogaNodeCommandKind::CIRCLE, std::string(label) + " preserves CircleCmd kind");
+    expect(root->_command != nullptr, std::string(label) + " preserves native command");
+    auto* circleCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::CircleCmd*>(root->_command.get());
+    expect(circleCmd != nullptr, std::string(label) + " preserves CircleCmd type");
+    expect(!circleCmd->isDynamic(), std::string(label) + " preserves static CircleCmd behavior");
+
+    auto surface = makeSurface(32, 32);
+    renderNode(root, surface);
+    expect(circleCmd->hasExplicitRadius(), std::string(label) + " preserves explicit radius flag");
+    expectNear(circleCmd->props.r, expectedRadius, std::string(label) + " radius");
+}
+
+void expectRRectCommandState(
+    const std::shared_ptr<YogaNode>& root,
+    double expectedRadius,
+    const char* label)
+{
+    expect(root->_commandKind == YogaNodeCommandKind::RRECT, std::string(label) + " preserves RRectCmd kind");
+    expect(root->_command != nullptr, std::string(label) + " preserves native command");
+    auto* rrectCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::RRectCmd*>(root->_command.get());
+    expect(rrectCmd != nullptr, std::string(label) + " preserves RRectCmd type");
+    expect(!rrectCmd->isDynamic(), std::string(label) + " preserves static RRectCmd behavior");
+
+    auto surface = makeSurface(28, 24);
+    renderNode(root, surface);
+    expect(rrectCmd->props.r.has_value(), std::string(label) + " preserves radius optional");
+    expectNear(rrectCmd->props.r->rX, expectedRadius, std::string(label) + " radius x");
+    expectNear(rrectCmd->props.r->rY, expectedRadius, std::string(label) + " radius y");
+}
+
+void expectBlurMaskFilterCommandState(
+    const std::shared_ptr<YogaNode>& root,
+    const char* label)
+{
+    expect(root->_commandKind == YogaNodeCommandKind::BLUR_MASK_FILTER, std::string(label) + " preserves BlurMaskFilterCmd kind");
+    expect(root->_command != nullptr, std::string(label) + " preserves native command");
+    auto* blurCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::BlurMaskFilterCmd*>(root->_command.get());
+    expect(blurCmd != nullptr, std::string(label) + " preserves BlurMaskFilterCmd type");
+    expect(!blurCmd->isDynamic(), std::string(label) + " preserves static BlurMaskFilterCmd behavior");
+
+    auto surface = makeSurface(16, 16);
+    RNSkia::DrawingCtx ctx(surface->getCanvas());
+    blurCmd->draw(&ctx);
+    expect(ctx.getPaint().refMaskFilter() != nullptr, std::string(label) + " preserves mask-filter draw side effect");
+}
+
+void expectPathTrimCommandState(
+    const std::shared_ptr<YogaNode>& root,
+    double expectedTrimStart,
+    double expectedTrimEnd,
+    const char* label)
+{
+    expect(root->_commandKind == YogaNodeCommandKind::PATH, std::string(label) + " preserves PathCmd kind");
+    expect(root->_command != nullptr, std::string(label) + " preserves native command");
+    auto* pathCmd = dynamic_cast<margelo::nitro::RNSkiaYoga::PathCmd*>(root->_command.get());
+    expect(pathCmd != nullptr, std::string(label) + " preserves PathCmd type");
+    expect(!pathCmd->isDynamic(), std::string(label) + " preserves static PathCmd behavior");
+
+    auto surface = makeSurface(28, 20);
+    renderNode(root, surface);
+    expectNear(pathCmd->props.start, expectedTrimStart, std::string(label) + " trimStart");
+    expectNear(pathCmd->props.end, expectedTrimEnd, std::string(label) + " trimEnd");
+}
+
+void assertStaticAnimatedDoubleCommandFiniteRejections(jsi::Runtime& runtime)
+{
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    const double positiveInfValue = std::numeric_limits<double>::infinity();
+    const double negativeInfValue = -std::numeric_limits<double>::infinity();
+
+    {
+        auto root = makeYogaNode(
+            fixedStyle(24.0, 24.0, SK_ColorYELLOW),
+            circleCommand(runtime));
+        const auto* initialCommand = root->_command.get();
+        expectCircleCommandState(root, 8.0, "circle.radius finite rejection baseline");
+        expectConvertedSetCommandRejects(
+            runtime,
+            *root,
+            circleCommandObject(runtime, nan),
+            invalidStaticAnimatedDoubleCommandMessage("circle.radius"),
+            "circle.radius NaN");
+        expect(root->_command.get() == initialCommand, "circle.radius NaN preserves command pointer");
+        expectCircleCommandState(root, 8.0, "circle.radius NaN");
+    }
+
+    {
+        auto root = makeYogaNode(
+            fixedStyle(20.0, 16.0, SK_ColorMAGENTA),
+            rrectCommand(runtime));
+        const auto* initialCommand = root->_command.get();
+        expectRRectCommandState(root, 5.0, "rrect.cornerRadius finite rejection baseline");
+        expectConvertedSetCommandRejects(
+            runtime,
+            *root,
+            rrectCommandObject(runtime, positiveInfValue),
+            invalidStaticAnimatedDoubleCommandMessage("rrect.cornerRadius"),
+            "rrect.cornerRadius Infinity");
+        expect(root->_command.get() == initialCommand, "rrect.cornerRadius Infinity preserves command pointer");
+        expectRRectCommandState(root, 5.0, "rrect.cornerRadius Infinity");
+    }
+
+    {
+        auto root = makeYogaNode(
+            groupStyle(32.0, 32.0),
+            blurMaskFilterCommand(runtime));
+        const auto* initialCommand = root->_command.get();
+        expectBlurMaskFilterCommandState(root, "blurMaskFilter.blur finite rejection baseline");
+        expectConvertedSetCommandRejects(
+            runtime,
+            *root,
+            blurMaskFilterCommandObject(runtime, negativeInfValue),
+            invalidStaticAnimatedDoubleCommandMessage("blurMaskFilter.blur"),
+            "blurMaskFilter.blur -Infinity");
+        expect(root->_command.get() == initialCommand, "blurMaskFilter.blur -Infinity preserves command pointer");
+        expectBlurMaskFilterCommandState(root, "blurMaskFilter.blur -Infinity");
+    }
+
+    {
+        auto root = makeYogaNode(
+            strokeStyle(20.0, 12.0, SK_ColorCYAN, 2.0f),
+            convertCommand(runtime, pathTrimCommandObject(runtime, 0.25, 0.75)));
+        const auto* initialCommand = root->_command.get();
+        expectPathTrimCommandState(root, 0.25, 0.75, "path trim finite rejection baseline");
+
+        expectConvertedSetCommandRejects(
+            runtime,
+            *root,
+            pathTrimCommandObject(runtime, nan, 0.75),
+            invalidStaticAnimatedDoubleCommandMessage("path.trimStart"),
+            "path.trimStart NaN");
+        expect(root->_command.get() == initialCommand, "path.trimStart NaN preserves command pointer");
+        expectPathTrimCommandState(root, 0.25, 0.75, "path.trimStart NaN");
+
+        expectConvertedSetCommandRejects(
+            runtime,
+            *root,
+            pathTrimCommandObject(runtime, 0.25, positiveInfValue),
+            invalidStaticAnimatedDoubleCommandMessage("path.trimEnd"),
+            "path.trimEnd Infinity");
+        expect(root->_command.get() == initialCommand, "path.trimEnd Infinity preserves command pointer");
+        expectPathTrimCommandState(root, 0.25, 0.75, "path.trimEnd Infinity");
+    }
+}
+
 void assertOvalCommandRender(jsi::Runtime& runtime)
 {
     auto root = makeYogaNode(
@@ -5532,6 +5868,7 @@ int main()
     assertAdditionalPointsCommandRender(*runtime);
     assertLineCommandRender(*runtime);
     assertCommandPointFiniteRejections(*runtime);
+    assertStaticAnimatedDoubleCommandFiniteRejections(*runtime);
     assertOvalCommandRender(*runtime);
     assertCircleCommandRender(*runtime);
     assertDynamicCircleCommandRender(*runtime);
