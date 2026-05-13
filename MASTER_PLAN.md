@@ -583,8 +583,8 @@ Current active worker:
 - `worker-243-post-242-root-cause-audit`: audit Worker 242's accepted
   `NodeStyle` native-float validation boundary, rerun focused evidence as
   needed, and select the next highest-value locally unblocked root-cause
-  target. State: prepared for `spawn_agent`. Branch:
-  `worker/243-post-242-root-cause-audit`. Worktree:
+  target. State: spawned as `/root/worker_243_post_242_root_cause_audit`.
+  Branch: `worker/243-post-242-root-cause-audit`. Worktree:
   `/Users/user/Developer/Developer/respond/react-native-skia-yoga-workspace/worker-243-post-242-root-cause-audit`.
   Expected files: `worker-progress/worker-243-post-242-root-cause-audit.md`
   only unless the audit finds a necessary verifier/doc correction.
