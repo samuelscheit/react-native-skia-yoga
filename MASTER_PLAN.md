@@ -500,8 +500,8 @@ Accepted package-hygiene implementation:
 Current active worker:
 
 - `worker-233-post-232-root-cause-audit`: report-only audit.
-- Agent path: `/root/worker_233_post_232_audit_second_retry` after second
-  restart. Initial agent `/root/worker_233_post_232_root_cause_audit` and
+- Agent path: `/root/worker_233_post_232_audit_second_retry`. Initial agent
+  `/root/worker_233_post_232_root_cause_audit` and
   retry `/root/worker_233_post_232_root_cause_audit_retry` stalled before
   writing a report and were closed.
 - Worktree: `../worker-233-post-232-root-cause-audit`.
@@ -515,7 +515,7 @@ Current active worker:
   syntax/diff checks and relevant focused commands as needed, and either
   reuse the accepted post-merge feasible matrix evidence or rerun a scoped/full
   matrix if the audit finds uncertainty.
-- State: second restart pending with `agent_type: "worker"`, `goal: true`,
+- State: second restart spawned with `agent_type: "worker"`, `goal: true`,
   `fork_turns: "none"`, `model: "gpt-5.5"`, and
   `reasoning_effort: "xhigh"`.
 
