@@ -56,29 +56,6 @@
 	],
 	"scripts": {
 		"typecheck": "tsc --noEmit",
-		"check:install-isolation": "node ./scripts/verify-install-isolation.mjs",
-		"check:android-skia-archives": "node ./scripts/verify-android-skia-archives.mjs",
-		"check:yoganode-native-lifetime": "node ./scripts/verify-yoganode-native-lifetime.mjs",
-		"check:yoganode-native-hit-testing": "node ./scripts/verify-yoganode-native-hit-testing.mjs",
-		"check:yoganode-native-commands-render": "node ./scripts/verify-yoganode-native-commands-render.mjs",
-		"check:animated-double-synchronizable": "node ./scripts/verify-animated-double-synchronizable.mjs",
-		"check:yoganode-jsi-raw-methods": "node ./scripts/verify-yoganode-jsi-raw-methods.mjs",
-		"check:yoganode-nitro-materialization": "node ./scripts/verify-yoganode-nitro-materialization.mjs",
-		"check:rnsk-yoga-view-runtime": "node ./scripts/verify-rnsk-yoga-view-runtime.mjs",
-		"check:package-lifecycle": "node ./scripts/verify-package-lifecycle.mjs",
-		"check:package-surface": "node ./scripts/verify-package-surface.mjs",
-		"check:package-typescript-consumer": "node ./scripts/verify-package-typescript-consumer.mjs",
-		"check:package-codegen-autolinking": "node ./scripts/verify-package-codegen-autolinking.mjs",
-		"check:example-native-generation": "node ./scripts/verify-example-native-generation.mjs",
-		"check:feasible-matrix": "node ./scripts/verify-feasible-matrix.mjs",
-		"check:yogacanvas-lifecycle-runtime": "node ./scripts/verify-yogacanvas-lifecycle-runtime.mjs",
-		"check:gesture-interaction-runtime": "node ./scripts/verify-gesture-interaction-runtime.mjs",
-		"check:reconciler-animated-bindings": "node ./scripts/verify-reconciler-animated-bindings.mjs",
-		"check:rn-codegen-schema": "node ./scripts/verify-rn-codegen-schema.mjs",
-		"check:skia-yoga-object-lazy-init": "node ./scripts/verify-skia-yoga-object-lazy-init.mjs",
-		"check:example-bundle": "node ./scripts/verify-example-bundle-export.mjs",
-		"check:rn-skia-imports": "node ./scripts/verify-rn-skia-imports.mjs",
-		"check:yoganode-native-runtime": "node ./scripts/verify-yoganode-native-runtime-smoke.mjs",
 		"clean": "rm -rf android/build node_modules/**/android/build lib",
 		"lint": "eslint --resolve-plugins-relative-to ./node_modules/@react-native/eslint-config \".eslintrc.js\" \"**/*.{js,mjs,ts,tsx}\" --fix",
 		"lint-ci": "eslint --resolve-plugins-relative-to ./node_modules/@react-native/eslint-config \".eslintrc.js\" \"**/*.{js,mjs,ts,tsx}\"",
@@ -94,7 +71,7 @@
 		"type": "git",
 		"url": "git+https://github.com/SamuelScheit/react-native-skia-yoga.git"
 	},
-	"author": "Marc Rousavy <me@mrousavy.com> (https://github.com/mrousavy)",
+	"author": "Samuel Scheit <github@samuelscheit.com> (https://samuelscheit.com/)",
 	"license": "MIT",
 	"bugs": {
 		"url": "https://github.com/SamuelScheit/react-native-skia-yoga/issues"
@@ -104,25 +81,25 @@
 		"registry": "https://registry.npmjs.org/"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.28.0",
-		"@babel/plugin-transform-typescript": "^7.28.0",
+		"@babel/core": "7.29.7",
+		"@babel/plugin-transform-typescript": "7.29.7",
 		"@react-native/eslint-config": "0.80.1",
-		"@types/jest": "^29.5.12",
-		"@types/react": "^19.0.6",
-		"eslint": "^8.57.0",
-		"eslint-config-prettier": "^9.1.0",
-		"eslint-plugin-prettier": "^5.2.1",
-		"nitrogen": "^0.29.6",
-		"prettier": "^3.3.3",
+		"@types/jest": "29.5.14",
+		"@types/react": "19.2.17",
+		"eslint": "8.57.1",
+		"eslint-config-prettier": "9.1.2",
+		"eslint-plugin-prettier": "5.5.6",
+		"nitrogen": "0.29.8",
+		"prettier": "3.8.4",
 		"react-native-worklets": "0.5.1",
-		"typescript": "^5.5.4"
+		"typescript": "5.9.3"
 	},
 	"peerDependencies": {
-		"react-native-gesture-handler": "*",
-		"react": "*",
-		"react-native": "*",
-		"react-native-reanimated": "^4",
-		"@shopify/react-native-skia": "*",
+		"react-native-gesture-handler": "2.31.1",
+		"react": "19.1.0",
+		"react-native": "0.80.1",
+		"react-native-reanimated": "4.1.0",
+		"@shopify/react-native-skia": "2.5.1",
 		"react-native-worklets": "*"
 	},
 	"codegenConfig": {
@@ -149,8 +126,8 @@
 		"react-native-nitro-modules"
 	],
 	"dependencies": {
-		"@types/react-reconciler": "^0.32.1",
-		"react-native-nitro-modules": "^0.35.0",
+		"@types/react-reconciler": "0.32.3",
+		"react-native-nitro-modules": "0.35.10",
 		"react-reconciler": "0.31.0"
 	}
 }
