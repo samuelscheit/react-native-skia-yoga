@@ -36,6 +36,7 @@
 #include <include/core/SkBlurTypes.h>
 #include <include/core/SkFontMgr.h>
 #include <include/core/SkMaskFilter.h>
+#include <include/core/SkPathBuilder.h>
 #include <include/core/SkSpan.h>
 #include <include/core/SkTypeface.h>
 #include <include/private/base/SkTypeTraits.h>
@@ -65,6 +66,11 @@ namespace para = skia::textlayout;
 namespace detail {
 
     using CornerRadii = std::array<SkVector, 4>;
+
+    inline SkPath makePath(const SkRRect& rrect)
+    {
+        return SkPathBuilder().addRRect(rrect).snapshot();
+    }
 
     struct FamilyCacheKey {
         std::string name;
@@ -582,9 +588,7 @@ public:
             return false;
         }
 
-        SkPath path;
-        path.addRRect(*this->props.rect);
-        return path.contains(point.fX, point.fY);
+        return detail::makePath(*this->props.rect).contains(point.fX, point.fY);
     }
 
 private:
@@ -795,7 +799,7 @@ public:
         auto bounds = _basePath.getBounds();
 
         const auto transform = detail::calculateLayoutTransform(bounds, layout);
-        this->props.path.transform(transform);
+        this->props.path = SkPathBuilder(this->props.path).transform(transform).snapshot();
     }
 
     void setBasePath(const SkPath& path) { _basePath = path; }

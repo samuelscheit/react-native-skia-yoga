@@ -26,6 +26,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "./plugins/with-mac-catalyst",
       "expo-router",
       [
         "expo-splash-screen",

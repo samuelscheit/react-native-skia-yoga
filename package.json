@@ -61,6 +61,7 @@
 		"lint-ci": "eslint --resolve-plugins-relative-to ./node_modules/@react-native/eslint-config \".eslintrc.js\" \"**/*.{js,mjs,ts,tsx}\"",
 		"typescript": "tsc",
 		"specs": "nitrogen --logLevel=\"debug\"",
+		"prepare:skia-catalyst": "node ./scripts/prepare-react-native-skia-catalyst.mjs",
 		"sync:example-links": "node ./scripts/sync-example-links.mjs --root --example"
 	},
 	"keywords": [
@@ -84,6 +85,7 @@
 		"@babel/core": "7.29.7",
 		"@babel/plugin-transform-typescript": "7.29.7",
 		"@react-native/eslint-config": "0.80.1",
+		"@shopify/react-native-skia": "2.6.7",
 		"@types/jest": "29.5.14",
 		"@types/react": "19.2.17",
 		"eslint": "8.57.1",
@@ -95,11 +97,11 @@
 		"typescript": "5.9.3"
 	},
 	"peerDependencies": {
-		"react-native-gesture-handler": "2.31.1",
+		"@shopify/react-native-skia": "2.6.7",
 		"react": "19.1.0",
 		"react-native": "0.80.1",
+		"react-native-gesture-handler": "2.31.1",
 		"react-native-reanimated": "4.1.0",
-		"@shopify/react-native-skia": "2.5.1",
 		"react-native-worklets": "*"
 	},
 	"codegenConfig": {

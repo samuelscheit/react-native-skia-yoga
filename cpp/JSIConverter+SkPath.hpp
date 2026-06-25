@@ -31,7 +31,7 @@ struct JSIConverter<SkPath> final {
     if (obj.isHostObject(runtime)) {
       auto host = obj.asHostObject<RNSkia::JsiSkPath>(runtime);
       if (host) {
-        return *host->getObject();
+        return host->getObject()->snapshot();
       }
     }
     throw jsi::JSError(runtime, "SkPath: unsupported JS value. Expected JsiSkPath host object.");

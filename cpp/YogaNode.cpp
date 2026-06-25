@@ -27,6 +27,11 @@
 #include <modules/skparagraph/include/FontCollection.h>
 #include <modules/skparagraph/include/ParagraphBuilder.h>
 #include <modules/skparagraph/include/ParagraphStyle.h>
+#ifdef __APPLE__
+#include <modules/skunicode/include/SkUnicode_libgrapheme.h>
+#else
+#include <modules/skunicode/include/SkUnicode_icu.h>
+#endif
 #include <type_traits>
 #include <variant>
 #include <yoga/Yoga.h>
@@ -226,6 +231,15 @@ void detachAllChildren(YogaNode& parent, bool propagateInvalidation)
         parent.adjustInteractiveDescendantCount(-removedInteractiveDescendants);
         parent.invalidateLayout();
     }
+}
+
+sk_sp<SkUnicode> makeUnicode()
+{
+#ifdef __APPLE__
+    return SkUnicodes::Libgrapheme::Make();
+#else
+    return SkUnicodes::ICU::Make();
+#endif
 }
 
 } // namespace
@@ -1748,8 +1762,7 @@ void YogaNode::drawInternal(RNSkia::DrawingCtx& ctx)
     if (_clipsToBounds) {
         if (_clipToBoundsRadii.has_value()) {
             const auto clipBounds = detail::makeRoundedRect(_layout, *_clipToBoundsRadii);
-            SkPath clipPath;
-            clipPath.addRRect(clipBounds);
+            const auto clipPath = detail::makePath(clipBounds);
             ctx.canvas->clipPath(clipPath, SkClipOp::kIntersect, true);
         } else {
             ctx.canvas->clipRect(
@@ -1977,8 +1990,7 @@ bool YogaNode::pointPassesClipping(const ::SkPoint& point) const
         explicitClipContains = _clipRect->contains(point.fX, point.fY);
     } else if (_clipRRect.has_value()) {
         hasExplicitClip = true;
-        SkPath clipPath;
-        clipPath.addRRect(*_clipRRect);
+        const auto clipPath = detail::makePath(*_clipRRect);
         explicitClipContains = clipPath.contains(point.fX, point.fY);
     }
 
@@ -2242,7 +2254,7 @@ void ParagraphCmd::updateProps(const ParagraphCommandData& props)
     fontCollection->setDefaultFontManager(fontMgr);
     fontCollection->enableFontFallback();
 
-    auto builder = para::ParagraphBuilder::make(paragraphStyle, fontCollection);
+    auto builder = para::ParagraphBuilder::make(paragraphStyle, fontCollection, makeUnicode());
     if (!builder) {
         return;
     }
@@ -2286,7 +2298,7 @@ void ParagraphCmd::ensureDefaultParagraphResources()
     }
     sDefaultFontCollection->enableFontFallback();
 
-    sDefaultParagraphBuilder = para::ParagraphBuilder::make(*sDefaultParagraphStyle, sDefaultFontCollection);
+    sDefaultParagraphBuilder = para::ParagraphBuilder::make(*sDefaultParagraphStyle, sDefaultFontCollection, makeUnicode());
 }
 
 // Factory used by generated RNSkiaYogaOnLoad.cpp to avoid including headers there
